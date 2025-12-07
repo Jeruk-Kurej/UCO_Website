@@ -29,12 +29,18 @@ class BusinessController extends Controller
      * Display a listing of the businesses.
      * Public access.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $businesses = Business::with(['user', 'businessType', 'products', 'photos'])
-            ->latest()
-            ->paginate(15);
-
+        $query = Business::with(['user', 'businessType', 'products', 'photos']);
+        
+        // Filter for "My Businesses" if query param present
+        if ($request->get('my') && Auth::check()) {
+            /** @var User $user */
+            $user = Auth::user();
+            $query->where('user_id', $user->id);
+        }
+        
+        $businesses = $query->latest()->paginate(15);
         return view('businesses.index', compact('businesses'));
     }
 
