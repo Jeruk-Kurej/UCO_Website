@@ -12,43 +12,17 @@ use Illuminate\Support\Facades\Storage;
 class ProductPhotoController extends Controller
 {
     /**
-     * Get authenticated user as User instance
-     */
-    private function getAuthUser(): User
-    {
-        /** @var User $user */
-        $user = Auth::user();
-        
-        if (!$user) {
-            abort(401, 'Unauthenticated.');
-        }
-        
-        return $user;
-    }
-
-    /**
-     * Check if user can manage product (via business ownership)
-     */
-    private function authorizeProductAccess(Product $product): void
-    {
-        $user = $this->getAuthUser();
-        
-        // Load business relationship to check ownership
-        $product->load('business');
-        
-        if ($product->business->user_id !== $user->id && !$user->isAdmin()) {
-            abort(403, 'Unauthorized action.');
-        }
-    }
-
-    /**
      * Display a listing of photos for a product.
-     * ✅ CHANGED: Redirect to product show page
+     * ✅ CHANGED: Show photos directly, no redirect
      */
     public function index(Product $product)
     {
+        $this->authorizeProductAccess($product);
+
+        $photos = $product->photos()->latest()->get();
         $product->load('business');
-        return redirect()->route('businesses.products.show', [$product->business, $product]);
+
+        return view('product-photos.index', compact('product', 'photos'));
     }
 
     /**
@@ -92,10 +66,9 @@ class ProductPhotoController extends Controller
 
         $photo = ProductPhoto::create($validated);
 
-        // ✅ FIXED: Redirect to product show page
-        $product->load('business');
+        // ✅ FIXED: Redirect back to photo index
         return redirect()
-            ->route('businesses.products.show', [$product->business, $product])
+            ->route('products.photos.index', $product)
             ->with('success', 'Product photo uploaded successfully!');
     }
 
@@ -168,10 +141,9 @@ class ProductPhotoController extends Controller
 
         $photo->update($validated);
 
-        // ✅ FIXED: Redirect to product show page
-        $product->load('business');
+        // ✅ FIXED: Redirect back to photo index
         return redirect()
-            ->route('businesses.products.show', [$product->business, $product])
+            ->route('products.photos.index', $product)
             ->with('success', 'Product photo updated successfully!');
     }
 
@@ -194,10 +166,39 @@ class ProductPhotoController extends Controller
 
         $photo->delete();
 
-        // ✅ FIXED: Redirect to product show page
-        $product->load('business');
+        // ✅ FIXED: Redirect back to photo index
         return redirect()
-            ->route('businesses.products.show', [$product->business, $product])
+            ->route('products.photos.index', $product)
             ->with('success', 'Product photo deleted successfully!');
+    }
+
+    /**
+     * Get authenticated user as User instance
+     */
+    private function getAuthUser(): User
+    {
+        /** @var User $user */
+        $user = Auth::user();
+        
+        if (!$user) {
+            abort(401, 'Unauthenticated.');
+        }
+        
+        return $user;
+    }
+
+    /**
+     * Check if user can manage product (via business ownership)
+     */
+    private function authorizeProductAccess(Product $product): void
+    {
+        $user = $this->getAuthUser();
+        
+        // Load business relationship to check ownership
+        $product->load('business');
+        
+        if ($product->business->user_id !== $user->id && !$user->isAdmin()) {
+            abort(403, 'Unauthorized action.');
+        }
     }
 }

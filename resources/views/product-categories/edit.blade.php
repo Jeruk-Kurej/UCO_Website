@@ -8,7 +8,7 @@
             </a>
             <div>
                 <h1 class="text-2xl font-bold text-gray-900">Edit Product Category</h1>
-                <p class="text-sm text-gray-600">{{ $productCategory->name }}</p>
+                <p class="text-sm text-gray-600">{{ $businessType->name }}</p>
             </div>
         </div>
 
@@ -28,21 +28,31 @@
                                id="name" 
                                value="{{ old('name', $productCategory->name) }}"
                                required
+                               autofocus
                                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm @error('name') border-red-500 @enderror">
                         @error('name')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
 
-                    {{-- Usage Info --}}
-                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                        <div class="flex items-start gap-3">
-                            <i class="bi bi-info-circle text-blue-600 text-xl"></i>
-                            <div>
-                                <h3 class="text-sm font-semibold text-blue-900">Usage Information</h3>
-                                <p class="mt-1 text-sm text-blue-800">
-                                    This category is currently used by <strong>{{ $productCategory->products->count() }}</strong> product(s).
-                                </p>
+                    {{-- Usage Stats --}}
+                    <div class="bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-200 rounded-lg p-4">
+                        <div class="flex gap-3">
+                            <i class="bi bi-info-circle text-blue-600 text-xl flex-shrink-0"></i>
+                            <div class="text-sm text-blue-800">
+                                <p class="font-semibold mb-2">Category Usage</p>
+                                <div class="flex items-center gap-2">
+                                    <span class="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                                        <i class="bi bi-box-seam me-2"></i>
+                                        {{ $productCategory->products->count() }} {{ Str::plural('product', $productCategory->products->count()) }} using this category
+                                    </span>
+                                </div>
+                                @if($productCategory->products->count() > 0)
+                                    <p class="text-xs mt-2 text-blue-700">
+                                        <i class="bi bi-exclamation-triangle me-1"></i>
+                                        Renaming this category will affect all products using it.
+                                    </p>
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -57,7 +67,7 @@
                         <div class="flex items-center gap-3">
                             @if($productCategory->products->count() === 0)
                                 <button type="button" 
-                                        onclick="if(confirm('Delete this category?')) document.getElementById('delete-form').submit();"
+                                        onclick="if(confirm('Delete category {{ $productCategory->name }}?')) document.getElementById('delete-form').submit();"
                                         class="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition duration-150">
                                     <i class="bi bi-trash me-2"></i>
                                     Delete

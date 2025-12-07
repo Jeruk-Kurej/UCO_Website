@@ -1,8 +1,8 @@
 <?php
 
 use App\Http\Controllers\AiAnalysisController;
-use App\Http\Controllers\BusinessController;
 use App\Http\Controllers\BusinessContactController;
+use App\Http\Controllers\BusinessController;
 use App\Http\Controllers\BusinessPhotoController;
 use App\Http\Controllers\BusinessTypeController;
 use App\Http\Controllers\ContactTypeController;
@@ -63,26 +63,55 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     /*
     |--------------------------------------------------------------------------
-    | Nested Resources: Business Child Entities
+    | ✅ FIXED: Nested Resources with Explicit Scoping
     |--------------------------------------------------------------------------
     */
+    
+    // Products (nested under businesses)
     Route::resource('businesses.products', ProductController::class)
-        ->scoped(['product' => 'business']);
+        ->except(['index'])
+        ->scoped([
+            'business' => 'id',  // ✅ FIXED: Explicit column name
+            'product' => 'id'
+        ]);
 
+    // Services (nested under businesses)
     Route::resource('businesses.services', ServiceController::class)
-        ->scoped(['service' => 'business']);
+        ->except(['index'])
+        ->scoped([
+            'business' => 'id',
+            'service' => 'id'
+        ]);
 
+    // Business Photos (nested under businesses)
     Route::resource('businesses.photos', BusinessPhotoController::class)
-        ->scoped(['photo' => 'business']);
+        ->except(['index'])
+        ->scoped([
+            'business' => 'id',
+            'photo' => 'id'
+        ]);
 
+    // Business Contacts (nested under businesses)
     Route::resource('businesses.contacts', BusinessContactController::class)
-        ->scoped(['contact' => 'business']);
+        ->except(['index'])
+        ->scoped([
+            'business' => 'id',
+            'contact' => 'id'
+        ]);
 
+    // Product Photos (nested under products)
     Route::resource('products.photos', ProductPhotoController::class)
-        ->scoped(['photo' => 'product']);
+        ->scoped([
+            'product' => 'id',
+            'photo' => 'id'
+        ]);
 
+    // Testimonies (nested under businesses)
     Route::resource('businesses.testimonies', TestimonyController::class)
-        ->scoped(['testimony' => 'business']);
+        ->scoped([
+            'business' => 'id',
+            'testimony' => 'id'
+        ]);
 
     /*
     |--------------------------------------------------------------------------

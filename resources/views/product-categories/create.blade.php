@@ -8,7 +8,7 @@
             </a>
             <div>
                 <h1 class="text-2xl font-bold text-gray-900">Create Product Category</h1>
-                <p class="text-sm text-gray-600">For {{ $businessType->name }}</p>
+                <p class="text-sm text-gray-600">{{ $businessType->name }}</p>
             </div>
         </div>
 
@@ -27,12 +27,28 @@
                                id="name" 
                                value="{{ old('name') }}"
                                required
-                               class="block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm @error('name') border-red-500 @enderror"
-                               placeholder="e.g., Main Course, Appetizer, Dessert">
+                               autofocus
+                               placeholder="e.g., Beverages, Appetizers, Main Course"
+                               class="block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm @error('name') border-red-500 @enderror">
                         @error('name')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
-                        <p class="mt-1 text-xs text-gray-500">Product category for {{ $businessType->name }} businesses</p>
+                    </div>
+
+                    {{-- Info Card --}}
+                    <div class="bg-gradient-to-br from-yellow-50 to-orange-50 border border-yellow-200 rounded-lg p-4">
+                        <div class="flex gap-3">
+                            <i class="bi bi-lightbulb text-yellow-600 text-xl flex-shrink-0"></i>
+                            <div class="text-sm text-yellow-800">
+                                <p class="font-semibold mb-1">Category Naming Tips</p>
+                                <ul class="space-y-1 text-xs">
+                                    <li>• Use clear, descriptive names that users will understand</li>
+                                    <li>• Keep it short and concise (1-3 words)</li>
+                                    <li>• Examples for Restaurant: "Beverages", "Appetizers", "Desserts"</li>
+                                    <li>• Examples for Fashion: "Shirts", "Pants", "Accessories"</li>
+                                </ul>
+                            </div>
+                        </div>
                     </div>
 
                     {{-- Submit Buttons --}}
