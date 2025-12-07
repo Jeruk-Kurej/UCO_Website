@@ -47,6 +47,13 @@ class TestimonyController extends Controller
      */
     public function create(Business $business)
     {
+        // ✅ ADDED: Block admin from creating testimonies
+        $user = $this->getAuthUser();
+        
+        if ($user->isAdmin()) {
+            abort(403, 'Administrators cannot create testimonies. Only students and alumni can.');
+        }
+
         return view('testimonies.create', compact('business'));
     }
 
@@ -56,6 +63,13 @@ class TestimonyController extends Controller
      */
     public function store(Request $request, Business $business)
     {
+        // ✅ ADDED: Block admin from creating testimonies
+        $user = $this->getAuthUser();
+        
+        if ($user->isAdmin()) {
+            abort(403, 'Administrators cannot create testimonies. Only students and alumni can.');
+        }
+
         $validated = $request->validate([
             'customer_name' => 'required|string|max:255',
             'content' => 'required|string|min:10',
@@ -119,7 +133,6 @@ class TestimonyController extends Controller
     {
         $user = $this->getAuthUser();
 
-        // Only admin can delete testimonies
         if (!$user->isAdmin()) {
             abort(403, 'Unauthorized action.');
         }

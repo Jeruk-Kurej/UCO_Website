@@ -74,7 +74,13 @@ class BusinessPhotoController extends Controller
         if ($request->hasFile('photo')) {
             $file = $request->file('photo');
             $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-            $path = $file->storeAs('business_photos', $filename, 'public');
+            
+            // ✅ FIXED: Hierarchical folder structure
+            $path = $file->storeAs(
+                "businesses/{$business->id}/photos",
+                $filename,
+                'public'
+            );
             
             $validated['photo_url'] = $path;
         }
@@ -142,7 +148,13 @@ class BusinessPhotoController extends Controller
 
             $file = $request->file('photo');
             $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-            $path = $file->storeAs('business_photos', $filename, 'public');
+            
+            // ✅ FIXED: Hierarchical folder structure
+            $path = $file->storeAs(
+                "businesses/{$business->id}/photos",
+                $filename,
+                'public'
+            );
             
             $validated['photo_url'] = $path;
         }

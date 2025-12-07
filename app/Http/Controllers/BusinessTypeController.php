@@ -9,48 +9,34 @@ use Illuminate\Support\Facades\Auth;
 
 class BusinessTypeController extends Controller
 {
-    /**
-     * Get authenticated user as User instance
-     */
-    private function getAuthUser(): User
+    private function getAuthUser(): ?User // ✅ CHANGED: Allow null for public access
     {
-        /** @var User $user */
+        /** @var User|null $user */
         $user = Auth::user();
-        
-        if (!$user) {
-            abort(401, 'Unauthenticated.');
-        }
-        
         return $user;
     }
 
-    /**
-     * Check if user is admin
-     */
     private function authorizeAdmin(): void
     {
         $user = $this->getAuthUser();
         
-        if (!$user->isAdmin()) {
+        if (!$user || !$user->isAdmin()) { // ✅ ADDED: Check if user exists
             abort(403, 'Only administrators can manage business types.');
         }
     }
 
     /**
      * Display a listing of business types.
-     * Public access.
+     * ✅ PUBLIC ACCESS - Everyone can read
      */
     public function index()
     {
+        // ✅ NO AUTHORIZATION - Public access for reading
         $businessTypes = BusinessType::withCount('businesses')->latest()->paginate(15);
 
         return view('business-types.index', compact('businessTypes'));
     }
 
-    /**
-     * Show the form for creating a new business type.
-     * Admin only.
-     */
     public function create()
     {
         $this->authorizeAdmin();
@@ -58,10 +44,6 @@ class BusinessTypeController extends Controller
         return view('business-types.create');
     }
 
-    /**
-     * Store a newly created business type in storage.
-     * Admin only.
-     */
     public function store(Request $request)
     {
         $this->authorizeAdmin();
@@ -80,18 +62,16 @@ class BusinessTypeController extends Controller
 
     /**
      * Display the specified business type.
+     * ✅ PUBLIC ACCESS - Everyone can read
      */
     public function show(BusinessType $businessType)
     {
+        // ✅ NO AUTHORIZATION - Public access for reading
         $businessType->load('businesses.user');
 
         return view('business-types.show', compact('businessType'));
     }
 
-    /**
-     * Show the form for editing the specified business type.
-     * Admin only.
-     */
     public function edit(BusinessType $businessType)
     {
         $this->authorizeAdmin();
@@ -99,10 +79,6 @@ class BusinessTypeController extends Controller
         return view('business-types.edit', compact('businessType'));
     }
 
-    /**
-     * Update the specified business type in storage.
-     * Admin only.
-     */
     public function update(Request $request, BusinessType $businessType)
     {
         $this->authorizeAdmin();
@@ -119,15 +95,10 @@ class BusinessTypeController extends Controller
             ->with('success', 'Business type updated successfully!');
     }
 
-    /**
-     * Remove the specified business type from storage.
-     * Admin only.
-     */
     public function destroy(BusinessType $businessType)
     {
         $this->authorizeAdmin();
 
-        // Check if any businesses are using this type
         if ($businessType->businesses()->count() > 0) {
             return redirect()
                 ->route('business-types.index')

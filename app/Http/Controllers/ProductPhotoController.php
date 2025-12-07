@@ -78,7 +78,14 @@ class ProductPhotoController extends Controller
         if ($request->hasFile('photo')) {
             $file = $request->file('photo');
             $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-            $path = $file->storeAs('product_photos', $filename, 'public');
+            
+            // ✅ FIXED: Hierarchical folder structure
+            $product->load('business');
+            $path = $file->storeAs(
+                "businesses/{$product->business_id}/products/{$product->id}/photos",
+                $filename,
+                'public'
+            );
             
             $validated['photo_url'] = $path;
         }
@@ -148,7 +155,14 @@ class ProductPhotoController extends Controller
 
             $file = $request->file('photo');
             $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-            $path = $file->storeAs('product_photos', $filename, 'public');
+            
+            // ✅ FIXED: Hierarchical folder structure
+            $product->load('business');
+            $path = $file->storeAs(
+                "businesses/{$product->business_id}/products/{$product->id}/photos",
+                $filename,
+                'public'
+            );
             
             $validated['photo_url'] = $path;
         }

@@ -26,18 +26,6 @@ class ProductCategoryController extends Controller
     }
 
     /**
-     * Only admin can manage product categories
-     */
-    private function authorizeAdmin(): void
-    {
-        $user = $this->getAuthUser();
-        
-        if (!$user->isAdmin()) {
-            abort(403, 'Only administrators can manage product categories.');
-        }
-    }
-
-    /**
      * Display a listing of product categories for a business type.
      */
     public function index(BusinessType $businessType)
@@ -52,7 +40,7 @@ class ProductCategoryController extends Controller
      */
     public function create(BusinessType $businessType)
     {
-        $this->authorizeAdmin();
+        $this->getAuthUser(); // Just check authentication
 
         return view('product-categories.create', compact('businessType'));
     }
@@ -62,7 +50,7 @@ class ProductCategoryController extends Controller
      */
     public function store(Request $request, BusinessType $businessType)
     {
-        $this->authorizeAdmin();
+        $this->getAuthUser(); // Just check authentication
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -96,7 +84,7 @@ class ProductCategoryController extends Controller
      */
     public function edit(BusinessType $businessType, ProductCategory $productCategory)
     {
-        $this->authorizeAdmin();
+        $this->getAuthUser(); // Just check authentication
 
         if ($productCategory->business_type_id !== $businessType->id) {
             abort(404);
@@ -110,7 +98,7 @@ class ProductCategoryController extends Controller
      */
     public function update(Request $request, BusinessType $businessType, ProductCategory $productCategory)
     {
-        $this->authorizeAdmin();
+        $this->getAuthUser(); // Just check authentication
 
         if ($productCategory->business_type_id !== $businessType->id) {
             abort(404);
@@ -132,7 +120,7 @@ class ProductCategoryController extends Controller
      */
     public function destroy(BusinessType $businessType, ProductCategory $productCategory)
     {
-        $this->authorizeAdmin();
+        $this->getAuthUser(); // Just check authentication
 
         if ($productCategory->business_type_id !== $businessType->id) {
             abort(404);

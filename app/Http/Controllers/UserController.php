@@ -30,6 +30,8 @@ class UserController extends Controller
      */
     public function index()
     {
+        $this->authorize('viewAny', User::class); 
+
         $users = User::with('businesses')
             ->latest()
             ->paginate(20);
@@ -42,6 +44,8 @@ class UserController extends Controller
      */
     public function create()
     {
+        $this->authorize('create', User::class); 
+
         return view('users.create');
     }
 
@@ -51,6 +55,8 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
+        $this->authorize('create', User::class); 
+
         $validated = $request->validate([
             'username' => 'required|string|max:255|unique:users',
             'name' => 'required|string|max:255',
@@ -74,6 +80,8 @@ class UserController extends Controller
      */
     public function show(User $userToShow)
     {
+        $this->authorize('view', $userToShow); 
+
         $userToShow->load('businesses.products');
 
         return view('users.show', compact('userToShow'));
@@ -84,6 +92,7 @@ class UserController extends Controller
      */
     public function edit(User $userToEdit)
     {
+        $this->authorize('update', $userToEdit); 
         return view('users.edit', compact('userToEdit'));
     }
 
@@ -92,6 +101,8 @@ class UserController extends Controller
      */
     public function update(Request $request, User $userToUpdate)
     {
+        $this->authorize('update', $userToUpdate); 
+
         $validated = $request->validate([
             'username' => 'required|string|max:255|unique:users,username,' . $userToUpdate->id,
             'name' => 'required|string|max:255',
@@ -120,6 +131,8 @@ class UserController extends Controller
      */
     public function destroy(User $userToDelete)
     {
+        $this->authorize('delete', $userToDelete); 
+
         $currentUser = $this->getAuthUser();
 
         // Prevent deleting yourself
