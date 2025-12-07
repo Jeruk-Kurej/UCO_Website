@@ -11,6 +11,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductPhotoController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ServiceController;
+use App\Http\Controllers\TestimonyController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -25,16 +26,14 @@ Route::get('/', function () {
     return view('welcome');
 })->name('home');
 
-// Public Business Directory (Read-Only)
+// ✅ Public Business Index
 Route::get('/businesses', [BusinessController::class, 'index'])->name('businesses.index');
-Route::get('/businesses/{business}', [BusinessController::class, 'show'])->name('businesses.show');
 
-// ✅ Public Business Types & Contact Types (Read Access for All)
+// ✅ Public Business Types Index (READ ONLY)
 Route::get('/business-types', [BusinessTypeController::class, 'index'])->name('business-types.index');
-Route::get('/business-types/{businessType}', [BusinessTypeController::class, 'show'])->name('business-types.show');
 
+// ✅ Public Contact Types Index (READ ONLY)
 Route::get('/contact-types', [ContactTypeController::class, 'index'])->name('contact-types.index');
-Route::get('/contact-types/{contactType}', [ContactTypeController::class, 'show'])->name('contact-types.show');
 
 /*
 |--------------------------------------------------------------------------
@@ -56,7 +55,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     /*
     |--------------------------------------------------------------------------
-    | Business Management (Create, Edit, Update, Delete)
+    | ✅ FIXED: Business Management (CRUD)
+    | MUST come BEFORE public show route
     |--------------------------------------------------------------------------
     */
     Route::resource('businesses', BusinessController::class)->except(['index', 'show']);
@@ -66,34 +66,27 @@ Route::middleware(['auth', 'verified'])->group(function () {
     | Nested Resources: Business Child Entities
     |--------------------------------------------------------------------------
     */
-
-    // Business Products
     Route::resource('businesses.products', ProductController::class)
         ->scoped(['product' => 'business']);
 
-    // Business Services
     Route::resource('businesses.services', ServiceController::class)
         ->scoped(['service' => 'business']);
 
-    // Business Photos
     Route::resource('businesses.photos', BusinessPhotoController::class)
         ->scoped(['photo' => 'business']);
 
-    // Business Contacts
     Route::resource('businesses.contacts', BusinessContactController::class)
         ->scoped(['contact' => 'business']);
 
-    /*
-    |--------------------------------------------------------------------------
-    | Product Photos (Nested under Products)
-    |--------------------------------------------------------------------------
-    */
     Route::resource('products.photos', ProductPhotoController::class)
         ->scoped(['photo' => 'product']);
 
+    Route::resource('businesses.testimonies', TestimonyController::class)
+        ->scoped(['testimony' => 'business']);
+
     /*
     |--------------------------------------------------------------------------
-    | AI Analysis (Read-Only) 🤖
+    | AI Analysis (Read-Only)
     |--------------------------------------------------------------------------
     */
     Route::get('/ai-analyses', [AiAnalysisController::class, 'index'])->name('ai-analyses.index');
@@ -111,15 +104,39 @@ Route::middleware(['auth', 'verified', 'admin'])->group(function () {
     // User Management
     Route::resource('users', UserController::class);
 
-    // ✅ Business Type Management (Admin CRUD)
+    /*
+    |--------------------------------------------------------------------------
+    | ✅ FIXED: Business Type Management (Admin CRUD)
+    | MUST come BEFORE public show route
+    |--------------------------------------------------------------------------
+    */
     Route::resource('business-types', BusinessTypeController::class)->except(['index', 'show']);
 
-    // ✅ Contact Type Management (Admin CRUD)
+    /*
+    |--------------------------------------------------------------------------
+    | ✅ FIXED: Contact Type Management (Admin CRUD)
+    | MUST come BEFORE public show route
+    |--------------------------------------------------------------------------
+    */
     Route::resource('contact-types', ContactTypeController::class)->except(['index', 'show']);
 
-    // ✅ FIXED: Product Categories nested under Business Types
+    /*
+    |--------------------------------------------------------------------------
+    | Product Categories nested under Business Types
+    |--------------------------------------------------------------------------
+    */
     Route::resource('business-types.product-categories', ProductCategoryController::class)
         ->scoped(['productCategory' => 'businessType']);
 });
+
+/*
+|--------------------------------------------------------------------------
+| ✅ MOVED: Public Show Routes (AFTER all specific routes)
+| These MUST come LAST to avoid catching /create, /edit, etc.
+|--------------------------------------------------------------------------
+*/
+Route::get('/businesses/{business}', [BusinessController::class, 'show'])->name('businesses.show');
+Route::get('/business-types/{businessType}', [BusinessTypeController::class, 'show'])->name('business-types.show');
+Route::get('/contact-types/{contactType}', [ContactTypeController::class, 'show'])->name('contact-types.show');
 
 require __DIR__.'/auth.php';

@@ -13,58 +13,99 @@
             </div>
 
             <!-- Center: Main Navigation Links (Desktop) -->
-            <div class="hidden md:flex items-center space-x-1">
-                <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" class="px-3 py-2 rounded-md hover:bg-orange-50">
-                    <i class="bi bi-speedometer2 me-1"></i>
-                    Dashboard
-                </x-nav-link>
-
-                <x-nav-link :href="route('businesses.index')" :active="request()->routeIs('businesses.*')" class="px-3 py-2 rounded-md hover:bg-orange-50">
-                    <i class="bi bi-briefcase me-1"></i>
-                    Businesses
-                </x-nav-link>
-
+            <div class="hidden md:flex items-center space-x-2">
+                {{-- Dashboard (All Authenticated Users) --}}
                 @auth
-                    @if(Auth::user()->isAdmin())
-                        <x-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')" class="px-3 py-2 rounded-md hover:bg-orange-50">
-                            <i class="bi bi-people me-1"></i>
-                            Users
-                        </x-nav-link>
+                    <a href="{{ route('dashboard') }}" 
+                       class="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition duration-150
+                              {{ request()->routeIs('dashboard') 
+                                  ? 'bg-orange-50 text-orange-600' 
+                                  : 'text-gray-700 hover:bg-orange-50 hover:text-orange-600' }}">
+                        <i class="bi bi-speedometer2"></i>
+                        Dashboard
+                    </a>
+                @endauth
 
-                        <x-nav-link :href="route('business-types.index')" :active="request()->routeIs('business-types.*')" class="px-3 py-2 rounded-md hover:bg-orange-50">
-                            <i class="bi bi-tags me-1"></i>
-                            Categories
-                        </x-nav-link>
+                {{-- ✅ UPDATED: Browse Businesses (ONLY link for all users) --}}
+                <a href="{{ route('businesses.index') }}" 
+                   class="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition duration-150
+                          {{ request()->routeIs('businesses.index') || request()->routeIs('businesses.show')
+                              ? 'bg-orange-50 text-orange-600' 
+                              : 'text-gray-700 hover:bg-orange-50 hover:text-orange-600' }}">
+                    <i class="bi bi-shop"></i>
+                    Browse Businesses
+                </a>
+
+                {{-- Admin Panel Dropdown (Admin Only) --}}
+                @auth
+                    @if(auth()->user()->isAdmin())
+                        <div class="relative" x-data="{ adminOpen: false }" @click.away="adminOpen = false">
+                            <button @click="adminOpen = !adminOpen" 
+                                    class="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition duration-150
+                                           {{ request()->routeIs('users.*') || request()->routeIs('business-types.*') || request()->routeIs('contact-types.*')
+                                               ? 'bg-orange-50 text-orange-600' 
+                                               : 'text-gray-700 hover:bg-orange-50 hover:text-orange-600' }}">
+                                <i class="bi bi-shield-check"></i>
+                                Admin Panel
+                                <i class="bi bi-chevron-down text-xs" :class="{'rotate-180': adminOpen}"></i>
+                            </button>
+
+                            <div x-show="adminOpen"
+                                 x-transition:enter="transition ease-out duration-200"
+                                 x-transition:enter-start="opacity-0 scale-95"
+                                 x-transition:enter-end="opacity-100 scale-100"
+                                 x-transition:leave="transition ease-in duration-75"
+                                 x-transition:leave-start="opacity-100 scale-100"
+                                 x-transition:leave-end="opacity-0 scale-95"
+                                 class="absolute z-50 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5"
+                                 style="display: none;">
+                                <div class="py-1">
+                                    <a href="{{ route('businesses.index') }}" 
+                                       class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition duration-150">
+                                        <i class="bi bi-briefcase-fill"></i>
+                                        Manage All Businesses
+                                    </a>
+
+                                    <div class="border-t border-gray-200 my-1"></div>
+
+                                    <a href="{{ route('users.index') }}" 
+                                       class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition duration-150">
+                                        <i class="bi bi-people"></i>
+                                        Manage Users
+                                    </a>
+                                    <a href="{{ route('business-types.index') }}" 
+                                       class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition duration-150">
+                                        <i class="bi bi-tags"></i>
+                                        Business Types
+                                    </a>
+                                    <a href="{{ route('contact-types.index') }}" 
+                                       class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition duration-150">
+                                        <i class="bi bi-telephone"></i>
+                                        Contact Types
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
                     @endif
                 @endauth
             </div>
 
-            <!-- Right: User Menu / Auth Buttons -->
+            <!-- Right: User Menu -->
             <div class="hidden md:flex items-center gap-3">
                 @auth
-                    <!-- User Dropdown -->
                     <x-dropdown align="right" width="56">
                         <x-slot name="trigger">
                             <button class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white rounded-lg transition duration-150 shadow-sm">
                                 <i class="bi bi-person-circle text-lg"></i>
                                 <div class="text-left hidden lg:block">
                                     <p class="text-sm font-semibold">{{ Auth::user()->name }}</p>
-                                    <p class="text-xs opacity-90">
-                                        @if(Auth::user()->isAdmin())
-                                            Admin
-                                        @elseif(Auth::user()->isStudent())
-                                            Student
-                                        @else
-                                            Alumni
-                                        @endif
-                                    </p>
+                                    <p class="text-xs opacity-90">{{ ucfirst(Auth::user()->role) }}</p>
                                 </div>
                                 <i class="bi bi-chevron-down text-xs"></i>
                             </button>
                         </x-slot>
 
                         <x-slot name="content">
-                            <!-- User Info Header -->
                             <div class="px-4 py-3 bg-gradient-to-r from-orange-50 to-yellow-50 border-b border-gray-200">
                                 <p class="text-sm font-semibold text-gray-800">{{ Auth::user()->name }}</p>
                                 <p class="text-xs text-gray-600">{{ Auth::user()->email }}</p>
@@ -72,7 +113,7 @@
                                     @if(Auth::user()->isAdmin()) bg-indigo-100 text-indigo-800
                                     @elseif(Auth::user()->isStudent()) bg-green-100 text-green-800
                                     @else bg-blue-100 text-blue-800 @endif">
-                                    {{ Auth::user()->role }}
+                                    {{ ucfirst(Auth::user()->role) }}
                                 </span>
                             </div>
 
@@ -81,14 +122,8 @@
                                 My Profile
                             </x-dropdown-link>
 
-                            <x-dropdown-link :href="route('businesses.index')">
-                                <i class="bi bi-briefcase me-2"></i>
-                                My Businesses
-                            </x-dropdown-link>
-
                             <div class="border-t border-gray-100"></div>
 
-                            <!-- Logout -->
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
                                 <x-dropdown-link :href="route('logout')"
@@ -101,7 +136,6 @@
                         </x-slot>
                     </x-dropdown>
                 @else
-                    <!-- Guest Buttons -->
                     <a href="{{ route('login') }}" class="px-4 py-2 text-sm font-medium text-gray-700 hover:text-orange-600 transition duration-150">
                         <i class="bi bi-box-arrow-in-right me-1"></i>
                         Login
@@ -130,36 +164,63 @@
     <!-- Mobile Navigation Menu -->
     <div :class="{'block': open, 'hidden': ! open}" class="hidden md:hidden border-t border-gray-200 bg-gray-50">
         <div class="px-2 pt-2 pb-3 space-y-1">
-            <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                <i class="bi bi-speedometer2 me-2"></i>
-                Dashboard
-            </x-responsive-nav-link>
-
-            <x-responsive-nav-link :href="route('businesses.index')" :active="request()->routeIs('businesses.*')">
-                <i class="bi bi-briefcase me-2"></i>
-                Businesses
-            </x-responsive-nav-link>
-
             @auth
-                @if(Auth::user()->isAdmin())
-                    <x-responsive-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')">
-                        <i class="bi bi-people me-2"></i>
-                        Users
-                    </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
+                    <i class="bi bi-speedometer2 me-2"></i>
+                    Dashboard
+                </x-responsive-nav-link>
+            @endauth
 
-                    <x-responsive-nav-link :href="route('business-types.index')" :active="request()->routeIs('business-types.*')">
-                        <i class="bi bi-tags me-2"></i>
-                        Categories
-                    </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('businesses.index')" :active="request()->routeIs('businesses.index') || request()->routeIs('businesses.show')">
+                <i class="bi bi-shop me-2"></i>
+                Browse Businesses
+            </x-responsive-nav-link>
+
+            {{-- Admin Panel Section (Mobile) --}}
+            @auth
+                @if(auth()->user()->isAdmin())
+                    <div class="pt-2 pb-1 border-t border-gray-300">
+                        <div class="px-4 py-2">
+                            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Admin Panel</p>
+                        </div>
+
+                        <x-responsive-nav-link :href="route('businesses.index')" :active="request()->routeIs('businesses.index')">
+                            <i class="bi bi-briefcase-fill me-2"></i>
+                            Manage All Businesses
+                        </x-responsive-nav-link>
+                        
+                        <x-responsive-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')">
+                            <i class="bi bi-people me-2"></i>
+                            Manage Users
+                        </x-responsive-nav-link>
+
+                        <x-responsive-nav-link :href="route('business-types.index')" :active="request()->routeIs('business-types.*')">
+                            <i class="bi bi-tags me-2"></i>
+                            Business Types
+                        </x-responsive-nav-link>
+
+                        <x-responsive-nav-link :href="route('contact-types.index')" :active="request()->routeIs('contact-types.*')">
+                            <i class="bi bi-telephone me-2"></i>
+                            Contact Types
+                        </x-responsive-nav-link>
+                    </div>
                 @endif
             @endauth
         </div>
 
-        <!-- Mobile User Section -->
+        {{-- Mobile User Section --}}
         @auth
             <div class="pt-4 pb-3 border-t border-gray-300">
                 <div class="px-4 mb-3">
-                    <p class="text-base font-semibold text-gray-800">{{ Auth::user()->name }}</p>
+                    <p class="text-base font-semibold text-gray-800 flex items-center gap-2">
+                        {{ Auth::user()->name }}
+                        <span class="px-2 py-0.5 text-xs rounded-full 
+                            @if(Auth::user()->isAdmin()) bg-indigo-100 text-indigo-800
+                            @elseif(Auth::user()->isStudent()) bg-green-100 text-green-800
+                            @else bg-blue-100 text-blue-800 @endif">
+                            {{ ucfirst(Auth::user()->role) }}
+                        </span>
+                    </p>
                     <p class="text-sm text-gray-600">{{ Auth::user()->email }}</p>
                 </div>
 

@@ -30,9 +30,12 @@ class UserController extends Controller
      */
     public function index()
     {
-        $this->authorize('viewAny', User::class); 
+        // ✅ CHANGED: Use Gate instead of authorize for better error handling
+        if (!$this->getAuthUser()->isAdmin()) {
+            abort(403, 'Only administrators can view user list.');
+        }
 
-        $users = User::with('businesses')
+        $users = User::withCount('businesses')
             ->latest()
             ->paginate(20);
 
@@ -44,18 +47,21 @@ class UserController extends Controller
      */
     public function create()
     {
-        $this->authorize('create', User::class); 
+        if (!$this->getAuthUser()->isAdmin()) {
+            abort(403, 'Only administrators can create users.');
+        }
 
         return view('users.create');
     }
 
     /**
      * Store a newly created user in storage.
-     * Admin creates users manually.
      */
     public function store(Request $request)
     {
-        $this->authorize('create', User::class); 
+        if (!$this->getAuthUser()->isAdmin()) {
+            abort(403, 'Only administrators can create users.');
+        }
 
         $validated = $request->validate([
             'username' => 'required|string|max:255|unique:users',
@@ -67,6 +73,7 @@ class UserController extends Controller
         ]);
 
         $validated['password'] = Hash::make($validated['password']);
+        $validated['email_verified_at'] = now(); // Auto-verify admin-created users
 
         $newUser = User::create($validated);
 
@@ -78,35 +85,43 @@ class UserController extends Controller
     /**
      * Display the specified user.
      */
-    public function show(User $userToShow)
+    public function show(User $user)
     {
-        $this->authorize('view', $userToShow); 
+        // ✅ SIMPLIFIED: Admin can view any user
+        if (!$this->getAuthUser()->isAdmin()) {
+            abort(403, 'Only administrators can view user details.');
+        }
 
-        $userToShow->load('businesses.products');
+        $user->load('businesses.products');
 
-        return view('users.show', compact('userToShow'));
+        return view('users.show', ['userToShow' => $user]);
     }
 
     /**
      * Show the form for editing the specified user.
      */
-    public function edit(User $userToEdit)
+    public function edit(User $user)
     {
-        $this->authorize('update', $userToEdit); 
-        return view('users.edit', compact('userToEdit'));
+        if (!$this->getAuthUser()->isAdmin()) {
+            abort(403, 'Only administrators can edit users.');
+        }
+
+        return view('users.edit', ['userToEdit' => $user]);
     }
 
     /**
      * Update the specified user in storage.
      */
-    public function update(Request $request, User $userToUpdate)
+    public function update(Request $request, User $user)
     {
-        $this->authorize('update', $userToUpdate); 
+        if (!$this->getAuthUser()->isAdmin()) {
+            abort(403, 'Only administrators can update users.');
+        }
 
         $validated = $request->validate([
-            'username' => 'required|string|max:255|unique:users,username,' . $userToUpdate->id,
+            'username' => 'required|string|max:255|unique:users,username,' . $user->id,
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email,' . $userToUpdate->id,
+            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
             'password' => ['nullable', 'confirmed', Rules\Password::defaults()],
             'role' => 'required|in:student,alumni,admin',
             'is_active' => 'required|boolean',
@@ -119,7 +134,7 @@ class UserController extends Controller
             unset($validated['password']);
         }
 
-        $userToUpdate->update($validated);
+        $user->update($validated);
 
         return redirect()
             ->route('users.index')
@@ -129,20 +144,22 @@ class UserController extends Controller
     /**
      * Remove the specified user from storage.
      */
-    public function destroy(User $userToDelete)
+    public function destroy(User $user)
     {
-        $this->authorize('delete', $userToDelete); 
-
         $currentUser = $this->getAuthUser();
 
+        if (!$currentUser->isAdmin()) {
+            abort(403, 'Only administrators can delete users.');
+        }
+
         // Prevent deleting yourself
-        if ($userToDelete->id === $currentUser->id) {
+        if ($user->id === $currentUser->id) {
             return redirect()
                 ->route('users.index')
                 ->with('error', 'You cannot delete your own account.');
         }
 
-        $userToDelete->delete();
+        $user->delete();
 
         return redirect()
             ->route('users.index')
