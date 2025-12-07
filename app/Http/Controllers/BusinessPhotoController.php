@@ -40,12 +40,11 @@ class BusinessPhotoController extends Controller
 
     /**
      * Display a listing of photos for a business.
+     * ✅ CHANGED: Redirect to business show page with photos tab
      */
     public function index(Business $business)
     {
-        $photos = $business->photos()->latest()->get();
-
-        return view('business-photos.index', compact('business', 'photos'));
+        return redirect()->route('businesses.show', $business)->with('activeTab', 'photos');
     }
 
     /**
@@ -75,7 +74,6 @@ class BusinessPhotoController extends Controller
             $file = $request->file('photo');
             $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
             
-            // ✅ FIXED: Hierarchical folder structure
             $path = $file->storeAs(
                 "businesses/{$business->id}/photos",
                 $filename,
@@ -89,9 +87,11 @@ class BusinessPhotoController extends Controller
 
         $photo = BusinessPhoto::create($validated);
 
+        // ✅ FIXED: Redirect to business show page
         return redirect()
-            ->route('businesses.photos.index', $business)
-            ->with('success', 'Photo uploaded successfully!');
+            ->route('businesses.show', $business)
+            ->with('success', 'Photo uploaded successfully!')
+            ->with('activeTab', 'photos');
     }
 
     /**
@@ -149,7 +149,6 @@ class BusinessPhotoController extends Controller
             $file = $request->file('photo');
             $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
             
-            // ✅ FIXED: Hierarchical folder structure
             $path = $file->storeAs(
                 "businesses/{$business->id}/photos",
                 $filename,
@@ -161,9 +160,11 @@ class BusinessPhotoController extends Controller
 
         $photo->update($validated);
 
+        // ✅ FIXED: Redirect to business show page
         return redirect()
-            ->route('businesses.photos.index', $business)
-            ->with('success', 'Photo updated successfully!');
+            ->route('businesses.show', $business)
+            ->with('success', 'Photo updated successfully!')
+            ->with('activeTab', 'photos');
     }
 
     /**
@@ -185,8 +186,10 @@ class BusinessPhotoController extends Controller
 
         $photo->delete();
 
+        // ✅ FIXED: Redirect to business show page
         return redirect()
-            ->route('businesses.photos.index', $business)
-            ->with('success', 'Photo deleted successfully!');
+            ->route('businesses.show', $business)
+            ->with('success', 'Photo deleted successfully!')
+            ->with('activeTab', 'photos');
     }
 }
