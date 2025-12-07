@@ -5,9 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 
-class Testimony extends Model
+class AiAnalysis extends Model
 {
     use HasFactory;
 
@@ -17,11 +16,10 @@ class Testimony extends Model
      * @var array<int, string>
      */
     protected $fillable = [
-        'business_id',
-        'customer_name',
-        'content',
-        'rating',
-        'date',
+        'testimony_id',
+        'sentiment_score',
+        'rejection_reason',
+        'is_approved',
     ];
 
     /**
@@ -32,24 +30,16 @@ class Testimony extends Model
     protected function casts(): array
     {
         return [
-            'rating' => 'integer',
-            'date' => 'date',
+            'sentiment_score' => 'decimal:2',
+            'is_approved' => 'boolean',
         ];
     }
 
     /**
-     * Get the business that owns this testimony
+     * Get the testimony that owns this AI analysis
      */
-    public function business(): BelongsTo
+    public function testimony(): BelongsTo
     {
-        return $this->belongsTo(Business::class);
-    }
-
-    /**
-     * Get the AI analysis for this testimony
-     */
-    public function aiAnalysis(): HasOne
-    {
-        return $this->hasOne(AiAnalysis::class);
+        return $this->belongsTo(Testimony::class);
     }
 }

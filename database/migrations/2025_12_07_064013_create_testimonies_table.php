@@ -11,10 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('testimony_statuses', function (Blueprint $table) {
+        Schema::create('testimonies', function (Blueprint $table) {
             $table->id();
-            $table->string('reason');
-            $table->boolean('is_approved');
+            $table->foreignId('business_id')->constrained('businesses')->onDelete('cascade');
+            $table->string('customer_name');
+            $table->text('content');
+            $table->integer('rating');
+            $table->date('date');
             $table->timestamps();
         });
     }
@@ -24,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('testimony_statuses');
+        Schema::dropIfExists('testimonies');
     }
 };
