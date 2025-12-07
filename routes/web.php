@@ -11,6 +11,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductPhotoController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ServiceController;
+use App\Http\Controllers\TestimonyController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -25,9 +26,8 @@ Route::get('/', function () {
     return view('welcome');
 })->name('home');
 
-// Public Business Directory (Read-Only)
+// ✅ Public Business Index (Read-Only)
 Route::get('/businesses', [BusinessController::class, 'index'])->name('businesses.index');
-Route::get('/businesses/{business}', [BusinessController::class, 'show'])->name('businesses.show');
 
 // ✅ Public Business Types & Contact Types (Read Access for All)
 Route::get('/business-types', [BusinessTypeController::class, 'index'])->name('business-types.index');
@@ -56,7 +56,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     /*
     |--------------------------------------------------------------------------
-    | Business Management (Create, Edit, Update, Delete)
+    | ✅ FIXED: Business Management (Create, Edit, Update, Delete)
+    | MUST come BEFORE public show route to avoid route conflict
     |--------------------------------------------------------------------------
     */
     Route::resource('businesses', BusinessController::class)->except(['index', 'show']);
@@ -93,12 +94,28 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     /*
     |--------------------------------------------------------------------------
+    | Testimonies Management
+    |--------------------------------------------------------------------------
+    */
+    Route::resource('businesses.testimonies', TestimonyController::class)
+        ->scoped(['testimony' => 'business']);
+
+    /*
+    |--------------------------------------------------------------------------
     | AI Analysis (Read-Only) 🤖
     |--------------------------------------------------------------------------
     */
     Route::get('/ai-analyses', [AiAnalysisController::class, 'index'])->name('ai-analyses.index');
     Route::get('/testimonies/{testimony}/ai-analysis', [AiAnalysisController::class, 'show'])->name('ai-analyses.show');
 });
+
+/*
+|--------------------------------------------------------------------------
+| ✅ MOVED: Public Business Show Route (AFTER authenticated routes)
+| This MUST come AFTER Route::resource to avoid catching /businesses/create
+|--------------------------------------------------------------------------
+*/
+Route::get('/businesses/{business}', [BusinessController::class, 'show'])->name('businesses.show');
 
 /*
 |--------------------------------------------------------------------------
@@ -117,7 +134,7 @@ Route::middleware(['auth', 'verified', 'admin'])->group(function () {
     // ✅ Contact Type Management (Admin CRUD)
     Route::resource('contact-types', ContactTypeController::class)->except(['index', 'show']);
 
-    // ✅ FIXED: Product Categories nested under Business Types
+    // ✅ Product Categories nested under Business Types
     Route::resource('business-types.product-categories', ProductCategoryController::class)
         ->scoped(['productCategory' => 'businessType']);
 });

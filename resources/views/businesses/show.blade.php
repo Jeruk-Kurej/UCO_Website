@@ -1,15 +1,17 @@
 <x-app-layout>
-    <x-slot name="header">
+    {{-- ✅ REMOVED: <x-slot name="header"> section --}}
+
+    {{-- ✅ NEW: Inline Back Button + Page Info --}}
+    <div class="mb-6">
         <div class="flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <a href="{{ route('businesses.index') }}" class="text-gray-500 hover:text-gray-700">
-                    <i class="bi bi-arrow-left text-xl"></i>
+                <a href="{{ route('businesses.index') }}" 
+                   class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-800 transition duration-150">
+                    <i class="bi bi-arrow-left text-lg"></i>
                 </a>
                 <div>
-                    <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                        {{ $business->name }}
-                    </h2>
-                    <p class="text-sm text-gray-500">
+                    <h1 class="text-2xl font-bold text-gray-900">{{ $business->name }}</h1>
+                    <p class="text-sm text-gray-600">
                         <i class="bi bi-tag me-1"></i>
                         {{ $business->businessType->name }}
                     </p>
@@ -19,14 +21,14 @@
             @auth
                 @if(auth()->id() === $business->user_id || auth()->user()->isAdmin())
                     <a href="{{ route('businesses.edit', $business) }}" 
-                       class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white rounded-lg font-semibold text-xs uppercase tracking-widest shadow-sm">
+                       class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white rounded-lg font-semibold text-sm shadow-sm transition duration-150">
                         <i class="bi bi-pencil me-2"></i>
                         Edit Business
                     </a>
                 @endif
             @endauth
         </div>
-    </x-slot>
+    </div>
 
     <div class="space-y-6">
         {{-- Business Overview Card --}}
@@ -44,8 +46,7 @@
             <div class="p-6">
                 <div class="flex items-start justify-between mb-4">
                     <div>
-                        <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ $business->name }}</h1>
-                        <div class="flex items-center gap-4 text-sm text-gray-600">
+                        <div class="flex items-center gap-4 text-sm text-gray-600 mb-3">
                             <span class="flex items-center gap-1">
                                 <i class="bi bi-tag"></i>
                                 {{ $business->businessType->name }}

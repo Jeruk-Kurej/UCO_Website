@@ -1,17 +1,17 @@
 <x-app-layout>
-    <x-slot name="header">
-        <div class="flex items-center gap-3">
-            <a href="{{ route('businesses.show', $business) }}" class="text-gray-500 hover:text-gray-700">
-                <i class="bi bi-arrow-left text-xl"></i>
-            </a>
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                <i class="bi bi-pencil me-2"></i>
-                Edit Business: {{ $business->name }}
-            </h2>
-        </div>
-    </x-slot>
-
     <div class="max-w-3xl mx-auto">
+        {{-- Inline Back Button + Page Title --}}
+        <div class="mb-6 flex items-center gap-3">
+            <a href="{{ route('businesses.show', $business) }}" 
+               class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-800 transition duration-150">
+                <i class="bi bi-arrow-left text-lg"></i>
+            </a>
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900">Edit Business</h1>
+                <p class="text-sm text-gray-600">{{ $business->name }}</p>
+            </div>
+        </div>
+
         <div class="bg-white shadow-sm sm:rounded-lg">
             <div class="p-6">
                 <form method="POST" action="{{ route('businesses.update', $business) }}" class="space-y-6">
@@ -96,7 +96,6 @@
                             Cancel
                         </a>
                         <div class="flex items-center gap-3">
-                            {{-- Delete Button --}}
                             @if(auth()->user()->isAdmin() || auth()->id() === $business->user_id)
                                 <button type="button" 
                                         onclick="if(confirm('Are you sure you want to delete this business? This action cannot be undone.')) document.getElementById('delete-form').submit();"
@@ -115,7 +114,6 @@
                     </div>
                 </form>
 
-                {{-- Delete Form (Separate) --}}
                 @if(auth()->user()->isAdmin() || auth()->id() === $business->user_id)
                     <form id="delete-form" action="{{ route('businesses.destroy', $business) }}" method="POST" class="hidden">
                         @csrf

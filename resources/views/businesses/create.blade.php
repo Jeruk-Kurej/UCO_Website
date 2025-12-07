@@ -1,17 +1,19 @@
 <x-app-layout>
-    <x-slot name="header">
-        <div class="flex items-center gap-3">
-            <a href="{{ route('businesses.index') }}" class="text-gray-500 hover:text-gray-700">
-                <i class="bi bi-arrow-left text-xl"></i>
-            </a>
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                <i class="bi bi-plus-circle me-2"></i>
-                Create New Business
-            </h2>
-        </div>
-    </x-slot>
+    {{-- ✅ REMOVED: <x-slot name="header"> section --}}
 
     <div class="max-w-3xl mx-auto">
+        {{-- ✅ NEW: Inline Back Button + Page Title --}}
+        <div class="mb-6 flex items-center gap-3">
+            <a href="{{ route('businesses.index') }}" 
+               class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-800 transition duration-150">
+                <i class="bi bi-arrow-left text-lg"></i>
+            </a>
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900">Create New Business</h1>
+                <p class="text-sm text-gray-600">Fill in the details to register your business</p>
+            </div>
+        </div>
+
         <div class="bg-white shadow-sm sm:rounded-lg">
             <div class="p-6">
                 <form method="POST" action="{{ route('businesses.store') }}" class="space-y-6">
