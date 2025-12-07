@@ -10,13 +10,14 @@
                 <h1 class="text-2xl font-bold text-gray-900">Product Categories</h1>
                 <p class="text-sm text-gray-600">{{ $businessType->name }}</p>
             </div>
-            @if(auth()->user()->isAdmin())
+            {{-- ✅ FIXED: All authenticated users can add --}}
+            @auth
                 <a href="{{ route('business-types.product-categories.create', $businessType) }}" 
                    class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white rounded-lg font-semibold text-sm shadow-sm transition duration-150">
                     <i class="bi bi-plus-lg me-2"></i>
                     Add Category
                 </a>
-            @endif
+            @endauth
         </div>
 
         {{-- Info Banner --}}
@@ -41,9 +42,10 @@
                                 <th class="w-[40%] px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category Name</th>
                                 <th class="w-[20%] px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Products Using</th>
                                 <th class="w-[15%] px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
-                                @if(auth()->user()->isAdmin())
+                                {{-- ✅ FIXED: All authenticated users can manage --}}
+                                @auth
                                     <th class="w-[15%] px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                                @endif
+                                @endauth
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
@@ -69,7 +71,8 @@
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                         {{ $category->created_at->format('d M Y') }}
                                     </td>
-                                    @if(auth()->user()->isAdmin())
+                                    {{-- ✅ FIXED: All authenticated users can edit/delete --}}
+                                    @auth
                                         <td class="px-6 py-4 whitespace-nowrap text-right">
                                             <div class="flex items-center justify-end gap-2">
                                                 <a href="{{ route('business-types.product-categories.edit', [$businessType, $category]) }}" 
@@ -77,7 +80,7 @@
                                                    title="Edit Category">
                                                     <i class="bi bi-pencil"></i>
                                                 </a>
-                                                
+
                                                 @if($category->products_count == 0)
                                                     <form action="{{ route('business-types.product-categories.destroy', [$businessType, $category]) }}" 
                                                           method="POST" 
@@ -101,7 +104,7 @@
                                                 @endif
                                             </div>
                                         </td>
-                                    @endif
+                                    @endauth
                                 </tr>
                             @endforeach
                         </tbody>
@@ -146,14 +149,15 @@
                 <div class="text-center py-12">
                     <i class="bi bi-tags text-6xl text-gray-300 mb-3"></i>
                     <p class="text-gray-500 text-lg font-medium mb-2">No categories yet</p>
-                    @if(auth()->user()->isAdmin())
+                    {{-- ✅ FIXED: All authenticated users can create --}}
+                    @auth
                         <p class="text-sm text-gray-400 mb-4">Create categories to organize products for this business type</p>
                         <a href="{{ route('business-types.product-categories.create', $businessType) }}" 
                            class="inline-flex items-center px-4 py-2 bg-orange-600 text-white text-sm rounded-md hover:bg-orange-700 transition duration-150">
                             <i class="bi bi-plus-lg me-2"></i>
                             Create First Category
                         </a>
-                    @endif
+                    @endauth
                 </div>
             @endif
         </div>
