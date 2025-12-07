@@ -13,39 +13,41 @@
             </div>
 
             <!-- Center: Main Navigation Links (Desktop) -->
-            <div class="hidden md:flex items-center space-x-1">
-                {{-- Dashboard --}}
+            <div class="hidden md:flex items-center space-x-2">
+                {{-- Dashboard (All Authenticated Users) --}}
                 @auth
-                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" class="px-3 py-2 rounded-md hover:bg-orange-50">
-                        <i class="bi bi-speedometer2 me-1"></i>
+                    <a href="{{ route('dashboard') }}" 
+                       class="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition duration-150
+                              {{ request()->routeIs('dashboard') 
+                                  ? 'bg-orange-50 text-orange-600' 
+                                  : 'text-gray-700 hover:bg-orange-50 hover:text-orange-600' }}">
+                        <i class="bi bi-speedometer2"></i>
                         Dashboard
-                    </x-nav-link>
+                    </a>
                 @endauth
 
-                {{-- Browse Businesses (All) --}}
-                <x-nav-link :href="route('businesses.index')" :active="request()->routeIs('businesses.index') && !request()->get('my')" class="px-3 py-2 rounded-md hover:bg-orange-50">
-                    <i class="bi bi-shop me-1"></i>
+                {{-- ✅ UPDATED: Browse Businesses (ONLY link for all users) --}}
+                <a href="{{ route('businesses.index') }}" 
+                   class="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition duration-150
+                          {{ request()->routeIs('businesses.index') || request()->routeIs('businesses.show')
+                              ? 'bg-orange-50 text-orange-600' 
+                              : 'text-gray-700 hover:bg-orange-50 hover:text-orange-600' }}">
+                    <i class="bi bi-shop"></i>
                     Browse Businesses
-                </x-nav-link>
+                </a>
 
-                {{-- My Businesses (Student, Alumni, Admin) --}}
+                {{-- Admin Panel Dropdown (Admin Only) --}}
                 @auth
-                    @if(Auth::user()->isStudent() || Auth::user()->isAlumni() || Auth::user()->isAdmin())
-                        <x-nav-link :href="route('businesses.index', ['my' => 'true'])" :active="request()->get('my')" class="px-3 py-2 rounded-md hover:bg-orange-50">
-                            <i class="bi bi-briefcase me-1"></i>
-                            My Businesses
-                        </x-nav-link>
-                    @endif
-                @endauth
-
-                {{-- Admin Panel Dropdown --}}
-                @auth
-                    @if(Auth::user()->isAdmin())
+                    @if(auth()->user()->isAdmin())
                         <div class="relative" x-data="{ adminOpen: false }" @click.away="adminOpen = false">
-                            <button @click="adminOpen = !adminOpen" class="inline-flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-700 hover:text-orange-600 hover:bg-orange-50 transition duration-150">
-                                <i class="bi bi-shield-check me-1"></i>
+                            <button @click="adminOpen = !adminOpen" 
+                                    class="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition duration-150
+                                           {{ request()->routeIs('users.*') || request()->routeIs('business-types.*') || request()->routeIs('contact-types.*')
+                                               ? 'bg-orange-50 text-orange-600' 
+                                               : 'text-gray-700 hover:bg-orange-50 hover:text-orange-600' }}">
+                                <i class="bi bi-shield-check"></i>
                                 Admin Panel
-                                <i class="bi bi-chevron-down ms-1 text-xs" :class="{'rotate-180': adminOpen}"></i>
+                                <i class="bi bi-chevron-down text-xs" :class="{'rotate-180': adminOpen}"></i>
                             </button>
 
                             <div x-show="adminOpen"
@@ -58,15 +60,26 @@
                                  class="absolute z-50 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5"
                                  style="display: none;">
                                 <div class="py-1">
-                                    <a href="{{ route('users.index') }}" class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition duration-150">
+                                    <a href="{{ route('businesses.index') }}" 
+                                       class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition duration-150">
+                                        <i class="bi bi-briefcase-fill"></i>
+                                        Manage All Businesses
+                                    </a>
+
+                                    <div class="border-t border-gray-200 my-1"></div>
+
+                                    <a href="{{ route('users.index') }}" 
+                                       class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition duration-150">
                                         <i class="bi bi-people"></i>
                                         Manage Users
                                     </a>
-                                    <a href="{{ route('business-types.index') }}" class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition duration-150">
+                                    <a href="{{ route('business-types.index') }}" 
+                                       class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition duration-150">
                                         <i class="bi bi-tags"></i>
                                         Business Types
                                     </a>
-                                    <a href="{{ route('contact-types.index') }}" class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition duration-150">
+                                    <a href="{{ route('contact-types.index') }}" 
+                                       class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition duration-150">
                                         <i class="bi bi-telephone"></i>
                                         Contact Types
                                     </a>
@@ -86,15 +99,7 @@
                                 <i class="bi bi-person-circle text-lg"></i>
                                 <div class="text-left hidden lg:block">
                                     <p class="text-sm font-semibold">{{ Auth::user()->name }}</p>
-                                    <p class="text-xs opacity-90">
-                                        @if(Auth::user()->isAdmin())
-                                            Admin
-                                        @elseif(Auth::user()->isStudent())
-                                            Student
-                                        @else
-                                            Alumni
-                                        @endif
-                                    </p>
+                                    <p class="text-xs opacity-90">{{ ucfirst(Auth::user()->role) }}</p>
                                 </div>
                                 <i class="bi bi-chevron-down text-xs"></i>
                             </button>
@@ -115,11 +120,6 @@
                             <x-dropdown-link :href="route('profile.edit')">
                                 <i class="bi bi-person me-2"></i>
                                 My Profile
-                            </x-dropdown-link>
-
-                            <x-dropdown-link :href="route('businesses.index', ['my' => 'true'])">
-                                <i class="bi bi-briefcase me-2"></i>
-                                My Businesses
                             </x-dropdown-link>
 
                             <div class="border-t border-gray-100"></div>
@@ -171,26 +171,23 @@
                 </x-responsive-nav-link>
             @endauth
 
-            <x-responsive-nav-link :href="route('businesses.index')" :active="request()->routeIs('businesses.index') && !request()->get('my')">
+            <x-responsive-nav-link :href="route('businesses.index')" :active="request()->routeIs('businesses.index') || request()->routeIs('businesses.show')">
                 <i class="bi bi-shop me-2"></i>
                 Browse Businesses
             </x-responsive-nav-link>
 
+            {{-- Admin Panel Section (Mobile) --}}
             @auth
-                @if(Auth::user()->isStudent() || Auth::user()->isAlumni() || Auth::user()->isAdmin())
-                    <x-responsive-nav-link :href="route('businesses.index', ['my' => 'true'])" :active="request()->get('my')">
-                        <i class="bi bi-briefcase me-2"></i>
-                        My Businesses
-                    </x-responsive-nav-link>
-                @endif
-            @endauth
-
-            @auth
-                @if(Auth::user()->isAdmin())
+                @if(auth()->user()->isAdmin())
                     <div class="pt-2 pb-1 border-t border-gray-300">
                         <div class="px-4 py-2">
                             <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Admin Panel</p>
                         </div>
+
+                        <x-responsive-nav-link :href="route('businesses.index')" :active="request()->routeIs('businesses.index')">
+                            <i class="bi bi-briefcase-fill me-2"></i>
+                            Manage All Businesses
+                        </x-responsive-nav-link>
                         
                         <x-responsive-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')">
                             <i class="bi bi-people me-2"></i>
@@ -211,6 +208,7 @@
             @endauth
         </div>
 
+        {{-- Mobile User Section --}}
         @auth
             <div class="pt-4 pb-3 border-t border-gray-300">
                 <div class="px-4 mb-3">
