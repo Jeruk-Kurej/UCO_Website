@@ -1,0 +1,172 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Business;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
+class BusinessController extends Controller
+{
+    /**
+     * Get authenticated user as User instance
+     */
+    private function getAuthUser(): User
+    {
+        /** @var User $user */
+        $user = Auth::user();
+        
+        if (!$user) {
+            abort(401, 'Unauthenticated.');
+        }
+        
+        return $user;
+    }
+
+    /**
+     * Display a listing of the businesses.
+     * Public access.
+     */
+    public function index()
+    {
+        $businesses = Business::with(['user', 'businessCategories', 'products', 'photos'])
+            ->latest()
+            ->paginate(15);
+
+        return view('businesses.index', compact('businesses'));
+    }
+
+    /**
+     * Show the form for creating a new business.
+     * Requires authentication.
+     */
+    public function create()
+    {
+        $this->authorize('create', Business::class);
+
+        $user = $this->getAuthUser();
+
+        // If admin, allow selecting user
+        $users = null;
+        if ($user->isAdmin()) {
+            $users = User::whereIn('role', ['student', 'alumni', 'admin'])->get();
+        }
+
+        return view('businesses.create', compact('users'));
+    }
+
+    /**
+     * Store a newly created business in storage.
+     */
+    public function store(Request $request)
+    {
+        $this->authorize('create', Business::class);
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'required|string',
+            'user_id' => 'nullable|exists:users,id', // Only if admin wants to assign
+        ]);
+
+        $user = $this->getAuthUser();
+
+        // Automatically set user_id to current user unless admin specifies
+        if (!isset($validated['user_id']) || !$user->isAdmin()) {
+            $validated['user_id'] = $user->id;
+        }
+
+        $business = Business::create($validated);
+
+        return redirect()
+            ->route('businesses.show', $business)
+            ->with('success', 'Business created successfully!');
+    }
+
+    /**
+     * Display the specified business.
+     * Public access.
+     */
+    public function show(Business $business)
+    {
+        $this->authorize('view', $business);
+
+        $business->load([
+            'user',
+            'businessCategories.products.photos',
+            'services',
+            'photos',
+            'contacts.contactType',
+            'testimonies.aiAnalysis'
+        ]);
+
+        // Only show approved testimonies to public
+        $approvedTestimonies = $business->testimonies()
+            ->whereHas('aiAnalysis', function ($query) {
+                $query->where('is_approved', true);
+            })
+            ->latest()
+            ->get();
+
+        return view('businesses.show', compact('business', 'approvedTestimonies'));
+    }
+
+    /**
+     * Show the form for editing the specified business.
+     */
+    public function edit(Business $business)
+    {
+        $this->authorize('update', $business);
+
+        $user = $this->getAuthUser();
+
+        // If admin, allow changing owner
+        $users = null;
+        if ($user->isAdmin()) {
+            $users = User::whereIn('role', ['student', 'alumni', 'admin'])->get();
+        }
+
+        return view('businesses.edit', compact('business', 'users'));
+    }
+
+    /**
+     * Update the specified business in storage.
+     */
+    public function update(Request $request, Business $business)
+    {
+        $this->authorize('update', $business);
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'required|string',
+            'user_id' => 'nullable|exists:users,id', // Only admin can change owner
+        ]);
+
+        $user = $this->getAuthUser();
+
+        // Only admin can change user_id
+        if (!$user->isAdmin()) {
+            unset($validated['user_id']);
+        }
+
+        $business->update($validated);
+
+        return redirect()
+            ->route('businesses.show', $business)
+            ->with('success', 'Business updated successfully!');
+    }
+
+    /**
+     * Remove the specified business from storage.
+     */
+    public function destroy(Business $business)
+    {
+        $this->authorize('delete', $business);
+
+        $business->delete();
+
+        return redirect()
+            ->route('businesses.index')
+            ->with('success', 'Business deleted successfully!');
+    }
+}
