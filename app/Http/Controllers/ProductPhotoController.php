@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Business;
-use App\Models\BusinessPhoto;
+use App\Models\Product;
+use App\Models\ProductPhoto;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
-class BusinessPhotoController extends Controller
+class ProductPhotoController extends Controller
 {
     /**
      * Get authenticated user as User instance
@@ -27,43 +27,47 @@ class BusinessPhotoController extends Controller
     }
 
     /**
-     * Check if user can manage business
+     * Check if user can manage product (via business ownership)
      */
-    private function authorizeBusinessAccess(Business $business): void
+    private function authorizeProductAccess(Product $product): void
     {
         $user = $this->getAuthUser();
         
-        if ($business->user_id !== $user->id && !$user->isAdmin()) {
+        // Load business relationship to check ownership
+        $product->load('business');
+        
+        if ($product->business->user_id !== $user->id && !$user->isAdmin()) {
             abort(403, 'Unauthorized action.');
         }
     }
 
     /**
-     * Display a listing of photos for a business.
+     * Display a listing of photos for a product.
      */
-    public function index(Business $business)
+    public function index(Product $product)
     {
-        $photos = $business->photos()->latest()->get();
+        $photos = $product->photos()->latest()->get();
+        $product->load('business');
 
-        return view('business-photos.index', compact('business', 'photos'));
+        return view('product-photos.index', compact('product', 'photos'));
     }
 
     /**
      * Show the form for creating a new photo.
      */
-    public function create(Business $business)
+    public function create(Product $product)
     {
-        $this->authorizeBusinessAccess($business);
+        $this->authorizeProductAccess($product);
 
-        return view('business-photos.create', compact('business'));
+        return view('product-photos.create', compact('product'));
     }
 
     /**
      * Store a newly created photo in storage.
      */
-    public function store(Request $request, Business $business)
+    public function store(Request $request, Product $product)
     {
-        $this->authorizeBusinessAccess($business);
+        $this->authorizeProductAccess($product);
 
         $validated = $request->validate([
             'photo' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
@@ -74,57 +78,59 @@ class BusinessPhotoController extends Controller
         if ($request->hasFile('photo')) {
             $file = $request->file('photo');
             $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-            $path = $file->storeAs('business_photos', $filename, 'public');
+            $path = $file->storeAs('product_photos', $filename, 'public');
             
             $validated['photo_url'] = $path;
         }
 
-        $validated['business_id'] = $business->id;
+        $validated['product_id'] = $product->id;
 
-        $photo = BusinessPhoto::create($validated);
+        $photo = ProductPhoto::create($validated);
 
         return redirect()
-            ->route('businesses.photos.index', $business)
-            ->with('success', 'Photo uploaded successfully!');
+            ->route('products.photos.index', $product)
+            ->with('success', 'Product photo uploaded successfully!');
     }
 
     /**
      * Display the specified photo.
      */
-    public function show(Business $business, BusinessPhoto $photo)
+    public function show(Product $product, ProductPhoto $photo)
     {
-        // Ensure photo belongs to this business
-        if ($photo->business_id !== $business->id) {
+        // Ensure photo belongs to this product
+        if ($photo->product_id !== $product->id) {
             abort(404);
         }
 
-        return view('business-photos.show', compact('business', 'photo'));
+        $product->load('business');
+
+        return view('product-photos.show', compact('product', 'photo'));
     }
 
     /**
      * Show the form for editing the specified photo.
      */
-    public function edit(Business $business, BusinessPhoto $photo)
+    public function edit(Product $product, ProductPhoto $photo)
     {
-        $this->authorizeBusinessAccess($business);
+        $this->authorizeProductAccess($product);
 
-        // Ensure photo belongs to this business
-        if ($photo->business_id !== $business->id) {
+        // Ensure photo belongs to this product
+        if ($photo->product_id !== $product->id) {
             abort(404);
         }
 
-        return view('business-photos.edit', compact('business', 'photo'));
+        return view('product-photos.edit', compact('product', 'photo'));
     }
 
     /**
      * Update the specified photo in storage.
      */
-    public function update(Request $request, Business $business, BusinessPhoto $photo)
+    public function update(Request $request, Product $product, ProductPhoto $photo)
     {
-        $this->authorizeBusinessAccess($business);
+        $this->authorizeProductAccess($product);
 
-        // Ensure photo belongs to this business
-        if ($photo->business_id !== $business->id) {
+        // Ensure photo belongs to this product
+        if ($photo->product_id !== $product->id) {
             abort(404);
         }
 
@@ -142,7 +148,7 @@ class BusinessPhotoController extends Controller
 
             $file = $request->file('photo');
             $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-            $path = $file->storeAs('business_photos', $filename, 'public');
+            $path = $file->storeAs('product_photos', $filename, 'public');
             
             $validated['photo_url'] = $path;
         }
@@ -150,19 +156,19 @@ class BusinessPhotoController extends Controller
         $photo->update($validated);
 
         return redirect()
-            ->route('businesses.photos.index', $business)
-            ->with('success', 'Photo updated successfully!');
+            ->route('products.photos.index', $product)
+            ->with('success', 'Product photo updated successfully!');
     }
 
     /**
      * Remove the specified photo from storage.
      */
-    public function destroy(Business $business, BusinessPhoto $photo)
+    public function destroy(Product $product, ProductPhoto $photo)
     {
-        $this->authorizeBusinessAccess($business);
+        $this->authorizeProductAccess($product);
 
-        // Ensure photo belongs to this business
-        if ($photo->business_id !== $business->id) {
+        // Ensure photo belongs to this product
+        if ($photo->product_id !== $product->id) {
             abort(404);
         }
 
@@ -174,7 +180,7 @@ class BusinessPhotoController extends Controller
         $photo->delete();
 
         return redirect()
-            ->route('businesses.photos.index', $business)
-            ->with('success', 'Photo deleted successfully!');
+            ->route('products.photos.index', $product)
+            ->with('success', 'Product photo deleted successfully!');
     }
 }
