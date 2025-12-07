@@ -12,16 +12,16 @@ class ProductCategory extends Model
     use HasFactory;
 
     protected $fillable = [
-        'business_id',
+        'business_type_id', // CHANGED from business_id
         'name',
     ];
 
     /**
-     * Get the business that owns this category
+     * Get the business type that owns this category
      */
-    public function business(): BelongsTo
+    public function businessType(): BelongsTo
     {
-        return $this->belongsTo(Business::class);
+        return $this->belongsTo(BusinessType::class);
     }
 
     /**

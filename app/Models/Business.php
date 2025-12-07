@@ -18,65 +18,36 @@ class Business extends Model
         'description',
     ];
 
-    /**
-     * Get the user that owns the business
-     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    /**
-     * Get the business type
-     */
     public function businessType(): BelongsTo
     {
         return $this->belongsTo(BusinessType::class);
     }
 
-    /**
-     * Get all product categories for this business
-     */
-    public function productCategories(): HasMany
-    {
-        return $this->hasMany(ProductCategory::class);
-    }
-
-    /**
-     * Get all products for this business
-     */
     public function products(): HasMany
     {
         return $this->hasMany(Product::class);
     }
 
-    /**
-     * Get all services for this business
-     */
     public function services(): HasMany
     {
         return $this->hasMany(Service::class);
     }
 
-    /**
-     * Get all photos for this business
-     */
     public function photos(): HasMany
     {
         return $this->hasMany(BusinessPhoto::class);
     }
 
-    /**
-     * Get all contacts for this business
-     */
     public function contacts(): HasMany
     {
         return $this->hasMany(BusinessContact::class);
     }
 
-    /**
-     * Get all testimonies for this business
-     */
     public function testimonies(): HasMany
     {
         return $this->hasMany(Testimony::class);

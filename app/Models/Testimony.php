@@ -11,11 +11,6 @@ class Testimony extends Model
 {
     use HasFactory;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'business_id',
         'customer_name',
@@ -24,29 +19,18 @@ class Testimony extends Model
         'date',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [
-            'rating' => 'integer',
-            'date' => 'date',
-        ];
-    }
+    protected $casts = [
+        'date' => 'date',
+        'rating' => 'integer',
+    ];
 
-    /**
-     * Get the business that owns this testimony
-     */
     public function business(): BelongsTo
     {
         return $this->belongsTo(Business::class);
     }
 
     /**
-     * Get the AI analysis for this testimony
+     * Get the AI analysis for this testimony (One-to-One)
      */
     public function aiAnalysis(): HasOne
     {

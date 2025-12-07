@@ -31,7 +31,7 @@ class BusinessController extends Controller
      */
     public function index()
     {
-        $businesses = Business::with(['user', 'businessCategories', 'products', 'photos'])
+        $businesses = Business::with(['user', 'businessType', 'products', 'photos'])
             ->latest()
             ->paginate(15);
 
@@ -98,7 +98,8 @@ class BusinessController extends Controller
 
         $business->load([
             'user',
-            'businessCategories.products.photos',
+            'businessType',
+            'businessType.productCategories.products.photos',
             'services',
             'photos',
             'contacts.contactType',

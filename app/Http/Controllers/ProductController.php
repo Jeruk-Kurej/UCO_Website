@@ -43,7 +43,7 @@ class ProductController extends Controller
     public function index(Business $business)
     {
         $products = $business->products()
-            ->with(['businessCategory', 'photos'])
+            ->with(['productCategory', 'photos'])  // ✅ FIXED
             ->latest()
             ->paginate(12);
 
@@ -57,8 +57,8 @@ class ProductController extends Controller
     {
         $this->authorizeBusinessAccess($business);
 
-        // Fetch product categories for this business
-        $categories = $business->productCategories;
+        // Fetch product categories for this BUSINESS TYPE (not business)
+        $categories = $business->businessType->productCategories;
 
         return view('products.create', compact('business', 'categories'));
     }
@@ -77,11 +77,11 @@ class ProductController extends Controller
             'price' => 'required|numeric|min:0',
         ]);
 
-        // Ensure the category belongs to this business
-        $category = $business->productCategories()->find($validated['product_category_id']);
+        // Ensure the category belongs to this BUSINESS TYPE
+        $category = $business->businessType->productCategories()->find($validated['product_category_id']);
         
         if (!$category) {
-            return back()->withErrors(['product_category_id' => 'The selected category does not belong to this business.']);
+            return back()->withErrors(['product_category_id' => 'The selected category does not belong to this business type.']);
         }
 
         $validated['business_id'] = $business->id;
@@ -98,12 +98,11 @@ class ProductController extends Controller
      */
     public function show(Business $business, Product $product)
     {
-        // Ensure product belongs to this business
         if ($product->business_id !== $business->id) {
             abort(404);
         }
 
-        $product->load(['businessCategory', 'photos']);
+        $product->load(['productCategory', 'photos']);  // ✅ FIXED
 
         return view('products.show', compact('business', 'product'));
     }
@@ -120,8 +119,8 @@ class ProductController extends Controller
             abort(404);
         }
 
-        // Fetch product categories for this business
-        $categories = $business->productCategories;
+        // Fetch product categories for this BUSINESS TYPE (not business)
+        $categories = $business->businessType->productCategories;
 
         return view('products.edit', compact('business', 'product', 'categories'));
     }
@@ -145,11 +144,11 @@ class ProductController extends Controller
             'price' => 'required|numeric|min:0',
         ]);
 
-        // Ensure the category belongs to this business
-        $category = $business->productCategories()->find($validated['product_category_id']);
+        // Ensure the category belongs to this BUSINESS TYPE
+        $category = $business->businessType->productCategories()->find($validated['product_category_id']);
         
         if (!$category) {
-            return back()->withErrors(['product_category_id' => 'The selected category does not belong to this business.']);
+            return back()->withErrors(['product_category_id' => 'The selected category does not belong to this business type.']);
         }
 
         $product->update($validated);
