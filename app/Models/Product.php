@@ -13,7 +13,7 @@ class Product extends Model
 
     protected $fillable = [
         'business_id',
-        'business_category_id',
+        'product_category_id', // CHANGE FROM business_category_id
         'name',
         'description',
         'price',
@@ -34,9 +34,9 @@ class Product extends Model
     /**
      * Get the category this product belongs to
      */
-    public function businessCategory(): BelongsTo
+    public function productCategory(): BelongsTo
     {
-        return $this->belongsTo(BusinessCategory::class);
+        return $this->belongsTo(ProductCategory::class);
     }
 
     /**

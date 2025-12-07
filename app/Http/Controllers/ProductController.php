@@ -57,8 +57,8 @@ class ProductController extends Controller
     {
         $this->authorizeBusinessAccess($business);
 
-        // Fetch business categories for this business
-        $categories = $business->businessCategories;
+        // Fetch product categories for this business
+        $categories = $business->productCategories;
 
         return view('products.create', compact('business', 'categories'));
     }
@@ -71,17 +71,17 @@ class ProductController extends Controller
         $this->authorizeBusinessAccess($business);
 
         $validated = $request->validate([
-            'business_category_id' => 'required|exists:business_categories,id',
+            'product_category_id' => 'required|exists:product_categories,id',
             'name' => 'required|string|max:255',
             'description' => 'required|string',
             'price' => 'required|numeric|min:0',
         ]);
 
         // Ensure the category belongs to this business
-        $category = $business->businessCategories()->find($validated['business_category_id']);
+        $category = $business->productCategories()->find($validated['product_category_id']);
         
         if (!$category) {
-            return back()->withErrors(['business_category_id' => 'The selected category does not belong to this business.']);
+            return back()->withErrors(['product_category_id' => 'The selected category does not belong to this business.']);
         }
 
         $validated['business_id'] = $business->id;
@@ -120,8 +120,8 @@ class ProductController extends Controller
             abort(404);
         }
 
-        // Fetch business categories for this business
-        $categories = $business->businessCategories;
+        // Fetch product categories for this business
+        $categories = $business->productCategories;
 
         return view('products.edit', compact('business', 'product', 'categories'));
     }
@@ -139,17 +139,17 @@ class ProductController extends Controller
         }
 
         $validated = $request->validate([
-            'business_category_id' => 'required|exists:business_categories,id',
+            'product_category_id' => 'required|exists:product_categories,id',
             'name' => 'required|string|max:255',
             'description' => 'required|string',
             'price' => 'required|numeric|min:0',
         ]);
 
         // Ensure the category belongs to this business
-        $category = $business->businessCategories()->find($validated['business_category_id']);
+        $category = $business->productCategories()->find($validated['product_category_id']);
         
         if (!$category) {
-            return back()->withErrors(['business_category_id' => 'The selected category does not belong to this business.']);
+            return back()->withErrors(['product_category_id' => 'The selected category does not belong to this business.']);
         }
 
         $product->update($validated);

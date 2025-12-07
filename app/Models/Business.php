@@ -13,6 +13,7 @@ class Business extends Model
 
     protected $fillable = [
         'user_id',
+        'business_type_id',
         'name',
         'description',
     ];
@@ -26,11 +27,19 @@ class Business extends Model
     }
 
     /**
-     * Get all categories for this business
+     * Get the business type
      */
-    public function businessCategories(): HasMany
+    public function businessType(): BelongsTo
     {
-        return $this->hasMany(BusinessCategory::class);
+        return $this->belongsTo(BusinessType::class);
+    }
+
+    /**
+     * Get all product categories for this business
+     */
+    public function productCategories(): HasMany
+    {
+        return $this->hasMany(ProductCategory::class);
     }
 
     /**

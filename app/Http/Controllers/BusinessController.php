@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Business;
 use App\Models\User;
+use App\Models\BusinessType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -47,13 +48,16 @@ class BusinessController extends Controller
 
         $user = $this->getAuthUser();
 
+        // Fetch all business types
+        $businessTypes = BusinessType::all();
+
         // If admin, allow selecting user
         $users = null;
         if ($user->isAdmin()) {
             $users = User::whereIn('role', ['student', 'alumni', 'admin'])->get();
         }
 
-        return view('businesses.create', compact('users'));
+        return view('businesses.create', compact('businessTypes', 'users'));
     }
 
     /**
@@ -66,6 +70,7 @@ class BusinessController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'required|string',
+            'business_type_id' => 'required|exists:business_types,id',
             'user_id' => 'nullable|exists:users,id', // Only if admin wants to assign
         ]);
 
@@ -120,13 +125,16 @@ class BusinessController extends Controller
 
         $user = $this->getAuthUser();
 
+        // Fetch all business types
+        $businessTypes = BusinessType::all();
+
         // If admin, allow changing owner
         $users = null;
         if ($user->isAdmin()) {
             $users = User::whereIn('role', ['student', 'alumni', 'admin'])->get();
         }
 
-        return view('businesses.edit', compact('business', 'users'));
+        return view('businesses.edit', compact('business', 'businessTypes', 'users'));
     }
 
     /**
@@ -139,6 +147,7 @@ class BusinessController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'required|string',
+            'business_type_id' => 'required|exists:business_types,id',
             'user_id' => 'nullable|exists:users,id', // Only admin can change owner
         ]);
 
