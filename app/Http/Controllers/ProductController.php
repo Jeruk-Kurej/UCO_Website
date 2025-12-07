@@ -39,15 +39,11 @@ class ProductController extends Controller
 
     /**
      * Display a listing of products for a business.
+     * ✅ CHANGED: Redirect to business show page with products tab
      */
     public function index(Business $business)
     {
-        $products = $business->products()
-            ->with(['productCategory', 'photos'])  // ✅ FIXED
-            ->latest()
-            ->paginate(12);
-
-        return view('products.index', compact('business', 'products'));
+        return redirect()->route('businesses.show', $business)->with('activeTab', 'products');
     }
 
     /**
@@ -88,9 +84,11 @@ class ProductController extends Controller
 
         $product = Product::create($validated);
 
+        // ✅ FIXED: Redirect to business show page with products tab active
         return redirect()
-            ->route('businesses.products.index', $business)
-            ->with('success', 'Product created successfully!');
+            ->route('businesses.show', $business)
+            ->with('success', 'Product created successfully!')
+            ->with('activeTab', 'products');
     }
 
     /**
@@ -102,7 +100,7 @@ class ProductController extends Controller
             abort(404);
         }
 
-        $product->load(['productCategory', 'photos']);  // ✅ FIXED
+        $product->load(['productCategory', 'photos']);
 
         return view('products.show', compact('business', 'product'));
     }
@@ -153,9 +151,11 @@ class ProductController extends Controller
 
         $product->update($validated);
 
+        // ✅ FIXED: Redirect to business show page
         return redirect()
-            ->route('businesses.products.index', $business)
-            ->with('success', 'Product updated successfully!');
+            ->route('businesses.show', $business)
+            ->with('success', 'Product updated successfully!')
+            ->with('activeTab', 'products');
     }
 
     /**
@@ -172,8 +172,10 @@ class ProductController extends Controller
 
         $product->delete();
 
+        // ✅ FIXED: Redirect to business show page
         return redirect()
-            ->route('businesses.products.index', $business)
-            ->with('success', 'Product deleted successfully!');
+            ->route('businesses.show', $business)
+            ->with('success', 'Product deleted successfully!')
+            ->with('activeTab', 'products');
     }
 }

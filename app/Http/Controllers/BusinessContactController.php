@@ -40,12 +40,11 @@ class BusinessContactController extends Controller
 
     /**
      * Display a listing of contacts for a business.
+     * ✅ CHANGED: Redirect to business show page with contacts tab
      */
     public function index(Business $business)
     {
-        $contacts = $business->contacts()->with('contactType')->get();
-
-        return view('business-contacts.index', compact('business', 'contacts'));
+        return redirect()->route('businesses.show', $business)->with('activeTab', 'contacts');
     }
 
     /**
@@ -84,9 +83,11 @@ class BusinessContactController extends Controller
 
         $contact = BusinessContact::create($validated);
 
+        // ✅ FIXED: Redirect to business show page
         return redirect()
-            ->route('businesses.contacts.index', $business)
-            ->with('success', 'Contact created successfully!');
+            ->route('businesses.show', $business)
+            ->with('success', 'Contact created successfully!')
+            ->with('activeTab', 'contacts');
     }
 
     /**
@@ -149,9 +150,11 @@ class BusinessContactController extends Controller
 
         $contact->update($validated);
 
+        // ✅ FIXED: Redirect to business show page
         return redirect()
-            ->route('businesses.contacts.index', $business)
-            ->with('success', 'Contact updated successfully!');
+            ->route('businesses.show', $business)
+            ->with('success', 'Contact updated successfully!')
+            ->with('activeTab', 'contacts');
     }
 
     /**
@@ -168,8 +171,10 @@ class BusinessContactController extends Controller
 
         $contact->delete();
 
+        // ✅ FIXED: Redirect to business show page
         return redirect()
-            ->route('businesses.contacts.index', $business)
-            ->with('success', 'Contact deleted successfully!');
+            ->route('businesses.show', $business)
+            ->with('success', 'Contact deleted successfully!')
+            ->with('activeTab', 'contacts');
     }
 }

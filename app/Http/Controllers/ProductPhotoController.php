@@ -43,13 +43,12 @@ class ProductPhotoController extends Controller
 
     /**
      * Display a listing of photos for a product.
+     * ✅ CHANGED: Redirect to product show page
      */
     public function index(Product $product)
     {
-        $photos = $product->photos()->latest()->get();
         $product->load('business');
-
-        return view('product-photos.index', compact('product', 'photos'));
+        return redirect()->route('businesses.products.show', [$product->business, $product]);
     }
 
     /**
@@ -79,7 +78,6 @@ class ProductPhotoController extends Controller
             $file = $request->file('photo');
             $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
             
-            // ✅ FIXED: Hierarchical folder structure
             $product->load('business');
             $path = $file->storeAs(
                 "businesses/{$product->business_id}/products/{$product->id}/photos",
@@ -94,8 +92,10 @@ class ProductPhotoController extends Controller
 
         $photo = ProductPhoto::create($validated);
 
+        // ✅ FIXED: Redirect to product show page
+        $product->load('business');
         return redirect()
-            ->route('products.photos.index', $product)
+            ->route('businesses.products.show', [$product->business, $product])
             ->with('success', 'Product photo uploaded successfully!');
     }
 
@@ -156,7 +156,6 @@ class ProductPhotoController extends Controller
             $file = $request->file('photo');
             $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
             
-            // ✅ FIXED: Hierarchical folder structure
             $product->load('business');
             $path = $file->storeAs(
                 "businesses/{$product->business_id}/products/{$product->id}/photos",
@@ -169,8 +168,10 @@ class ProductPhotoController extends Controller
 
         $photo->update($validated);
 
+        // ✅ FIXED: Redirect to product show page
+        $product->load('business');
         return redirect()
-            ->route('products.photos.index', $product)
+            ->route('businesses.products.show', [$product->business, $product])
             ->with('success', 'Product photo updated successfully!');
     }
 
@@ -193,8 +194,10 @@ class ProductPhotoController extends Controller
 
         $photo->delete();
 
+        // ✅ FIXED: Redirect to product show page
+        $product->load('business');
         return redirect()
-            ->route('products.photos.index', $product)
+            ->route('businesses.products.show', [$product->business, $product])
             ->with('success', 'Product photo deleted successfully!');
     }
 }

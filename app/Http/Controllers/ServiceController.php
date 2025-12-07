@@ -39,12 +39,11 @@ class ServiceController extends Controller
 
     /**
      * Display a listing of services for a business.
+     * ✅ CHANGED: Redirect to business show page with services tab
      */
     public function index(Business $business)
     {
-        $services = $business->services()->latest()->paginate(10);
-
-        return view('services.index', compact('business', 'services'));
+        return redirect()->route('businesses.show', $business)->with('activeTab', 'services');
     }
 
     /**
@@ -75,9 +74,11 @@ class ServiceController extends Controller
 
         $service = Service::create($validated);
 
+        // ✅ FIXED: Redirect to business show page
         return redirect()
-            ->route('businesses.services.index', $business)
-            ->with('success', 'Service created successfully!');
+            ->route('businesses.show', $business)
+            ->with('success', 'Service created successfully!')
+            ->with('activeTab', 'services');
     }
 
     /**
@@ -129,9 +130,11 @@ class ServiceController extends Controller
 
         $service->update($validated);
 
+        // ✅ FIXED: Redirect to business show page
         return redirect()
-            ->route('businesses.services.index', $business)
-            ->with('success', 'Service updated successfully!');
+            ->route('businesses.show', $business)
+            ->with('success', 'Service updated successfully!')
+            ->with('activeTab', 'services');
     }
 
     /**
@@ -148,8 +151,10 @@ class ServiceController extends Controller
 
         $service->delete();
 
+        // ✅ FIXED: Redirect to business show page
         return redirect()
-            ->route('businesses.services.index', $business)
-            ->with('success', 'Service deleted successfully!');
+            ->route('businesses.show', $business)
+            ->with('success', 'Service deleted successfully!')
+            ->with('activeTab', 'services');
     }
 }
