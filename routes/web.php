@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
-| Public Routes
+| Public Routes 🌍
 |--------------------------------------------------------------------------
 */
 
@@ -29,9 +29,16 @@ Route::get('/', function () {
 Route::get('/businesses', [BusinessController::class, 'index'])->name('businesses.index');
 Route::get('/businesses/{business}', [BusinessController::class, 'show'])->name('businesses.show');
 
+// ✅ Public Business Types & Contact Types (Read Access for All)
+Route::get('/business-types', [BusinessTypeController::class, 'index'])->name('business-types.index');
+Route::get('/business-types/{businessType}', [BusinessTypeController::class, 'show'])->name('business-types.show');
+
+Route::get('/contact-types', [ContactTypeController::class, 'index'])->name('contact-types.index');
+Route::get('/contact-types/{contactType}', [ContactTypeController::class, 'show'])->name('contact-types.show');
+
 /*
 |--------------------------------------------------------------------------
-| Authenticated Routes
+| Authenticated Routes (Student, Alumni, Admin) 🔐
 |--------------------------------------------------------------------------
 */
 
@@ -86,33 +93,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     /*
     |--------------------------------------------------------------------------
-    | Business Type - Product Categories (Nested)
-    |--------------------------------------------------------------------------
-    */
-    Route::resource('business-types.product-categories', ProductCategoryController::class)
-        ->scoped(['productCategory' => 'businessType']);
-
-    /*
-    |--------------------------------------------------------------------------
-    | Business Types (Public Read, Admin CRUD)
-    |--------------------------------------------------------------------------
-    */
-    // Public routes (index, show)
-    Route::get('/business-types', [BusinessTypeController::class, 'index'])->name('business-types.index');
-    Route::get('/business-types/{businessType}', [BusinessTypeController::class, 'show'])->name('business-types.show');
-
-    /*
-    |--------------------------------------------------------------------------
-    | Contact Types (Public Read, Admin CRUD)
-    |--------------------------------------------------------------------------
-    */
-    // Public routes (index, show)
-    Route::get('/contact-types', [ContactTypeController::class, 'index'])->name('contact-types.index');
-    Route::get('/contact-types/{contactType}', [ContactTypeController::class, 'show'])->name('contact-types.show');
-
-    /*
-    |--------------------------------------------------------------------------
-    | AI Analysis (Read-Only for Everyone)
+    | AI Analysis (Read-Only) 🤖
     |--------------------------------------------------------------------------
     */
     Route::get('/ai-analyses', [AiAnalysisController::class, 'index'])->name('ai-analyses.index');
@@ -121,25 +102,24 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 /*
 |--------------------------------------------------------------------------
-| Admin-Only Routes
+| Admin-Only Routes 👮‍♂️
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified', 'admin'])->group(function () {
     
-    // User Management (Admin Only)
+    // User Management
     Route::resource('users', UserController::class);
 
-    // Business Type Management (Create, Edit, Update, Delete - Admin Only)
+    // ✅ Business Type Management (Admin CRUD)
     Route::resource('business-types', BusinessTypeController::class)->except(['index', 'show']);
 
-    // Contact Type Management (Create, Edit, Update, Delete - Admin Only)
+    // ✅ Contact Type Management (Admin CRUD)
     Route::resource('contact-types', ContactTypeController::class)->except(['index', 'show']);
+
+    // ✅ FIXED: Product Categories nested under Business Types
+    Route::resource('business-types.product-categories', ProductCategoryController::class)
+        ->scoped(['productCategory' => 'businessType']);
 });
 
-/*
-|--------------------------------------------------------------------------
-| Authentication Routes
-|--------------------------------------------------------------------------
-*/
 require __DIR__.'/auth.php';
