@@ -63,6 +63,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     /*
     |--------------------------------------------------------------------------
+    | ✅ MOVED HERE: Product Categories (All Authenticated Users)
+    |--------------------------------------------------------------------------
+    */
+    Route::resource('business-types.product-categories', ProductCategoryController::class)
+        ->scoped([
+            'businessType' => 'id',
+            'productCategory' => 'id'
+        ]);
+
+    /*
+    |--------------------------------------------------------------------------
     | ✅ FIXED: Nested Resources with Explicit Scoping
     |--------------------------------------------------------------------------
     */
@@ -71,7 +82,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('businesses.products', ProductController::class)
         ->except(['index'])
         ->scoped([
-            'business' => 'id',  // ✅ FIXED: Explicit column name
+            'business' => 'id',
             'product' => 'id'
         ]);
 
@@ -149,13 +160,7 @@ Route::middleware(['auth', 'verified', 'admin'])->group(function () {
     */
     Route::resource('contact-types', ContactTypeController::class)->except(['index', 'show']);
 
-    /*
-    |--------------------------------------------------------------------------
-    | Product Categories nested under Business Types
-    |--------------------------------------------------------------------------
-    */
-    Route::resource('business-types.product-categories', ProductCategoryController::class)
-        ->scoped(['productCategory' => 'businessType']);
+    // ❌ REMOVED FROM HERE: Product Categories (moved to authenticated group above)
 });
 
 /*
