@@ -18,8 +18,8 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->enum('role', ['admin', 'student', 'alumni'])->default('student');
-            $table->boolean('is_active')->default(true)->comment('True for student, false for alumni');
+            $table->enum('role', ['student', 'alumni', 'admin'])->default('student');
+            $table->boolean('is_active')->default(true)->comment('True = Active Student, False = Alumni');
             $table->rememberToken();
             $table->timestamps();
         });
