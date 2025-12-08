@@ -43,22 +43,17 @@
                     <tbody class="bg-white divide-y divide-gray-200">
                         @forelse($users as $user)
                             <tr class="hover:bg-gray-50 transition duration-150">
-                                {{-- User Info --}}
+                                {{-- ✅ CHANGED: User Info WITHOUT Avatar Icon --}}
                                 <td class="px-4 py-4">
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-orange-400 to-yellow-400 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
-                                            {{ strtoupper(substr($user->name, 0, 1)) }}
-                                        </div>
-                                        <div class="min-w-0 flex-1">
-                                            <p class="text-sm font-semibold text-gray-900 truncate">{{ $user->name }}</p>
-                                            <p class="text-xs text-gray-500 truncate">{{ $user->username }}</p>
-                                        </div>
+                                    <div>
+                                        <p class="text-sm font-semibold text-gray-900">{{ $user->name }}</p>
+                                        <p class="text-xs text-gray-500">@<!-- -->{{ $user->username }}</p>
                                     </div>
                                 </td>
 
                                 {{-- Email --}}
                                 <td class="px-4 py-4">
-                                    <div class="text-sm text-gray-600 truncate">{{ $user->email }}</div>
+                                    <div class="text-sm text-gray-600">{{ $user->email }}</div>
                                 </td>
 
                                 {{-- Role --}}

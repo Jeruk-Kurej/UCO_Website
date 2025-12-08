@@ -10,8 +10,7 @@
                 @if(auth()->user()->isAdmin())
                     <a href="{{ route('contact-types.create') }}" 
                        class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white rounded-lg font-semibold text-sm shadow-sm transition duration-150">
-                        <i class="bi bi-plus-lg me-2"></i>
-                        Create Contact Type
+                         Create Contact Type
                     </a>
                 @endif
             @endauth

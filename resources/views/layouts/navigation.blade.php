@@ -1,159 +1,110 @@
-<nav x-data="{ open: false }" class="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">
+<nav class="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between h-16">
-            <!-- Left: Logo & Brand -->
+        <div class="flex justify-between items-center h-20">
+            {{-- Logo & Brand --}}
             <div class="flex items-center">
-                <a href="{{ route('dashboard') }}" class="flex items-center gap-3 group">
-                    <x-application-logo class="h-10 w-auto fill-current text-orange-500 group-hover:text-orange-600 transition duration-150" />
-                    <div class="hidden md:block">
-                        <h1 class="font-bold text-lg text-gray-800 leading-tight">UCO Platform</h1>
-                        <p class="text-xs text-gray-500">Student & Alumni Community</p>
+                <a href="{{ route('dashboard') }}" class="flex items-center gap-3">
+                    <x-application-logo class="h-12 w-auto fill-current text-orange-500" />
+                    <div>
+                        <h1 class="font-bold text-xl text-gray-900">UNIVERSITAS CIPUTRA</h1>
+                        <p class="text-xs text-gray-500 uppercase tracking-wide">Creating World Class Entrepreneurs</p>
                     </div>
                 </a>
             </div>
 
-            <!-- Center: Main Navigation Links (Desktop) -->
-            <div class="hidden md:flex items-center space-x-2">
-                {{-- Dashboard (All Authenticated Users) --}}
-                @auth
-                    <a href="{{ route('dashboard') }}" 
-                       class="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition duration-150
-                              {{ request()->routeIs('dashboard') 
-                                  ? 'bg-orange-50 text-orange-600' 
-                                  : 'text-gray-700 hover:bg-orange-50 hover:text-orange-600' }}">
-                        <i class="bi bi-speedometer2"></i>
-                        Dashboard
-                    </a>
-                @endauth
-
-                {{-- ✅ UPDATED: Browse Businesses (ONLY link for all users) --}}
-                <a href="{{ route('businesses.index') }}" 
-                   class="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition duration-150
-                          {{ request()->routeIs('businesses.index') || request()->routeIs('businesses.show')
-                              ? 'bg-orange-50 text-orange-600' 
-                              : 'text-gray-700 hover:bg-orange-50 hover:text-orange-600' }}">
-                    <i class="bi bi-shop"></i>
-                    Browse Businesses
+            {{-- Navigation Links (Desktop) --}}
+            <div class="hidden md:flex items-center space-x-8">
+                {{-- ✅ CHANGED: Larger font size (text-base instead of text-sm) --}}
+                <a href="{{ route('dashboard') }}" 
+                   class="text-base font-bold {{ request()->routeIs('dashboard') ? 'text-orange-500' : 'text-gray-700 hover:text-orange-500' }} transition duration-150">
+                    Home
                 </a>
 
-                {{-- Admin Panel Dropdown (Admin Only) --}}
                 @auth
+                    <a href="{{ route('businesses.index') }}" 
+                       class="text-base font-bold {{ request()->routeIs('businesses.*') ? 'text-orange-500' : 'text-gray-700 hover:text-orange-500' }} transition duration-150">
+                        Business
+                    </a>
+
                     @if(auth()->user()->isAdmin())
-                        <div class="relative" x-data="{ adminOpen: false }" @click.away="adminOpen = false">
-                            <button @click="adminOpen = !adminOpen" 
-                                    class="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition duration-150
-                                           {{ request()->routeIs('users.*') || request()->routeIs('business-types.*') || request()->routeIs('contact-types.*')
-                                               ? 'bg-orange-50 text-orange-600' 
-                                               : 'text-gray-700 hover:bg-orange-50 hover:text-orange-600' }}">
-                                <i class="bi bi-shield-check"></i>
+                        {{-- Admin Dropdown (Hover) --}}
+                        <div class="relative group">
+                            <button class="text-base font-bold {{ request()->routeIs('users.*') || request()->routeIs('business-types.*') || request()->routeIs('contact-types.*') ? 'text-orange-500' : 'text-gray-700 group-hover:text-orange-500' }} transition duration-150 flex items-center gap-1">
                                 Admin Panel
-                                <i class="bi bi-chevron-down text-xs" :class="{'rotate-180': adminOpen}"></i>
+                                <svg class="w-4 h-4 group-hover:rotate-180 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                </svg>
                             </button>
 
-                            <div x-show="adminOpen"
-                                 x-transition:enter="transition ease-out duration-200"
-                                 x-transition:enter-start="opacity-0 scale-95"
-                                 x-transition:enter-end="opacity-100 scale-100"
-                                 x-transition:leave="transition ease-in duration-75"
-                                 x-transition:leave-start="opacity-100 scale-100"
-                                 x-transition:leave-end="opacity-0 scale-95"
-                                 class="absolute z-50 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5"
-                                 style="display: none;">
-                                <div class="py-1">
-                                    <a href="{{ route('businesses.index') }}" 
-                                       class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition duration-150">
-                                        <i class="bi bi-briefcase-fill"></i>
-                                        Manage All Businesses
-                                    </a>
-
-                                    <div class="border-t border-gray-200 my-1"></div>
-
-                                    <a href="{{ route('users.index') }}" 
-                                       class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition duration-150">
-                                        <i class="bi bi-people"></i>
-                                        Manage Users
-                                    </a>
-                                    <a href="{{ route('business-types.index') }}" 
-                                       class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition duration-150">
-                                        <i class="bi bi-tags"></i>
-                                        Business Types
-                                    </a>
-                                    <a href="{{ route('contact-types.index') }}" 
-                                       class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition duration-150">
-                                        <i class="bi bi-telephone"></i>
-                                        Contact Types
-                                    </a>
-                                </div>
+                            {{-- Dropdown appears on hover --}}
+                            <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                                <a href="{{ route('users.index') }}" class="block px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 hover:text-orange-500">
+                                    Manage Users
+                                </a>
+                                <a href="{{ route('business-types.index') }}" class="block px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 hover:text-orange-500">
+                                    Business Types
+                                </a>
+                                <a href="{{ route('contact-types.index') }}" class="block px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 hover:text-orange-500">
+                                    Contact Types
+                                </a>
                             </div>
                         </div>
                     @endif
-                @endauth
-            </div>
+                    
 
-            <!-- Right: User Menu -->
-            <div class="hidden md:flex items-center gap-3">
-                @auth
-                    <x-dropdown align="right" width="56">
-                        <x-slot name="trigger">
-                            <button class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white rounded-lg transition duration-150 shadow-sm">
-                                <i class="bi bi-person-circle text-lg"></i>
-                                <div class="text-left hidden lg:block">
-                                    <p class="text-sm font-semibold">{{ Auth::user()->name }}</p>
-                                    <p class="text-xs opacity-90">{{ ucfirst(Auth::user()->role) }}</p>
-                                </div>
-                                <i class="bi bi-chevron-down text-xs"></i>
-                            </button>
-                        </x-slot>
+                    {{-- ✅ CHANGED: Profile Dropdown WITHOUT Avatar Icon --}}
+                    <div class="relative group">
+                        <button class="text-base font-bold text-gray-700 group-hover:text-orange-500 transition duration-150 flex items-center gap-1">
+                            {{ Auth::user()->name }}
+                            <svg class="w-4 h-4 group-hover:rotate-180 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
 
-                        <x-slot name="content">
-                            <div class="px-4 py-3 bg-gradient-to-r from-orange-50 to-yellow-50 border-b border-gray-200">
-                                <p class="text-sm font-semibold text-gray-800">{{ Auth::user()->name }}</p>
+                        {{-- Dropdown appears on hover --}}
+                        <div class="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg py-1 border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                            <div class="px-4 py-3 border-b border-gray-100">
+                                <p class="text-sm font-bold text-gray-900">{{ Auth::user()->name }}</p>
                                 <p class="text-xs text-gray-600">{{ Auth::user()->email }}</p>
-                                <span class="inline-block mt-1 px-2 py-0.5 text-xs rounded-full 
-                                    @if(Auth::user()->isAdmin()) bg-indigo-100 text-indigo-800
-                                    @elseif(Auth::user()->isStudent()) bg-green-100 text-green-800
-                                    @else bg-blue-100 text-blue-800 @endif">
+                                <span class="inline-block mt-1 px-2 py-0.5 text-xs font-semibold rounded-full 
+                                    {{ Auth::user()->isAdmin() ? 'bg-purple-100 text-purple-800' : (Auth::user()->isStudent() ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800') }}">
                                     {{ ucfirst(Auth::user()->role) }}
                                 </span>
                             </div>
-
-                            <x-dropdown-link :href="route('profile.edit')">
-                                <i class="bi bi-person me-2"></i>
+                            <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 hover:text-orange-500">
                                 My Profile
-                            </x-dropdown-link>
-
-                            <div class="border-t border-gray-100"></div>
-
+                            </a>
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
-                                <x-dropdown-link :href="route('logout')"
-                                        onclick="event.preventDefault(); this.closest('form').submit();"
-                                        class="text-red-600 hover:bg-red-50">
-                                    <i class="bi bi-box-arrow-right me-2"></i>
+                                <button type="submit" class="w-full text-left px-4 py-2 text-sm font-semibold text-red-600 hover:bg-red-50">
                                     Log Out
-                                </x-dropdown-link>
+                                </button>
                             </form>
-                        </x-slot>
-                    </x-dropdown>
+                        </div>
+                    </div>
                 @else
-                    <a href="{{ route('login') }}" class="px-4 py-2 text-sm font-medium text-gray-700 hover:text-orange-600 transition duration-150">
-                        <i class="bi bi-box-arrow-in-right me-1"></i>
-                        Login
+                    <a href="{{ route('businesses.index') }}" 
+                       class="text-base font-bold text-gray-700 hover:text-orange-500 transition duration-150">
+                        About Us
                     </a>
-                    @if (Route::has('register'))
-                        <a href="{{ route('register') }}" class="px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 rounded-lg shadow-sm transition duration-150">
-                            <i class="bi bi-person-plus me-1"></i>
-                            Register
-                        </a>
-                    @endif
+                    <a href="{{ route('businesses.index') }}" 
+                       class="text-base font-bold text-gray-700 hover:text-orange-500 transition duration-150">
+                        Program
+                    </a>
+                    <a href="{{ route('login') }}" 
+                       class="text-base font-bold text-gray-700 hover:text-orange-500 transition duration-150">
+                        Contact
+                    </a>
                 @endauth
             </div>
 
-            <!-- Mobile Hamburger -->
-            <div class="flex md:hidden items-center">
-                <button @click="open = ! open" class="p-2 rounded-md text-gray-500 hover:text-orange-600 hover:bg-orange-50 focus:outline-none transition duration-150">
+            {{-- Mobile Menu Button --}}
+            <div class="flex md:hidden">
+                <button @click="open = ! open" 
+                        x-data="{ open: false }"
+                        class="p-2 rounded-md text-gray-700 hover:text-orange-500 hover:bg-gray-100">
                     <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
-                        <path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        <path :class="{'hidden': open, 'inline-flex': ! open }" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                         <path :class="{'hidden': ! open, 'inline-flex': open }" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </button>
@@ -161,86 +112,49 @@
         </div>
     </div>
 
-    <!-- Mobile Navigation Menu -->
-    <div :class="{'block': open, 'hidden': ! open}" class="hidden md:hidden border-t border-gray-200 bg-gray-50">
-        <div class="px-2 pt-2 pb-3 space-y-1">
+    {{-- Mobile Menu --}}
+    <div x-data="{ open: false }" :class="{'block': open, 'hidden': ! open}" class="hidden md:hidden border-t border-gray-200 bg-white">
+        <div class="px-4 py-3 space-y-1">
+            <a href="{{ route('dashboard') }}" 
+               class="block py-2 text-base font-bold {{ request()->routeIs('dashboard') ? 'text-orange-500' : 'text-gray-700' }}">
+                Home
+            </a>
             @auth
-                <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                    <i class="bi bi-speedometer2 me-2"></i>
-                    Dashboard
-                </x-responsive-nav-link>
-            @endauth
-
-            <x-responsive-nav-link :href="route('businesses.index')" :active="request()->routeIs('businesses.index') || request()->routeIs('businesses.show')">
-                <i class="bi bi-shop me-2"></i>
-                Browse Businesses
-            </x-responsive-nav-link>
-
-            {{-- Admin Panel Section (Mobile) --}}
-            @auth
+                <a href="{{ route('businesses.index') }}" 
+                   class="block py-2 text-base font-bold {{ request()->routeIs('businesses.*') ? 'text-orange-500' : 'text-gray-700' }}">
+                    Program
+                </a>
                 @if(auth()->user()->isAdmin())
-                    <div class="pt-2 pb-1 border-t border-gray-300">
-                        <div class="px-4 py-2">
-                            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Admin Panel</p>
-                        </div>
-
-                        <x-responsive-nav-link :href="route('businesses.index')" :active="request()->routeIs('businesses.index')">
-                            <i class="bi bi-briefcase-fill me-2"></i>
-                            Manage All Businesses
-                        </x-responsive-nav-link>
-                        
-                        <x-responsive-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')">
-                            <i class="bi bi-people me-2"></i>
+                    <div class="pt-2 border-t border-gray-200">
+                        <p class="px-2 py-1 text-xs font-bold text-gray-500 uppercase">Admin</p>
+                        <a href="{{ route('users.index') }}" class="block py-2 text-sm font-semibold text-gray-700 hover:text-orange-500">
                             Manage Users
-                        </x-responsive-nav-link>
-
-                        <x-responsive-nav-link :href="route('business-types.index')" :active="request()->routeIs('business-types.*')">
-                            <i class="bi bi-tags me-2"></i>
+                        </a>
+                        <a href="{{ route('business-types.index') }}" class="block py-2 text-sm font-semibold text-gray-700 hover:text-orange-500">
                             Business Types
-                        </x-responsive-nav-link>
-
-                        <x-responsive-nav-link :href="route('contact-types.index')" :active="request()->routeIs('contact-types.*')">
-                            <i class="bi bi-telephone me-2"></i>
+                        </a>
+                        <a href="{{ route('contact-types.index') }}" class="block py-2 text-sm font-semibold text-gray-700 hover:text-orange-500">
                             Contact Types
-                        </x-responsive-nav-link>
+                        </a>
                     </div>
                 @endif
-            @endauth
-        </div>
-
-        {{-- Mobile User Section --}}
-        @auth
-            <div class="pt-4 pb-3 border-t border-gray-300">
-                <div class="px-4 mb-3">
-                    <p class="text-base font-semibold text-gray-800 flex items-center gap-2">
-                        {{ Auth::user()->name }}
-                        <span class="px-2 py-0.5 text-xs rounded-full 
-                            @if(Auth::user()->isAdmin()) bg-indigo-100 text-indigo-800
-                            @elseif(Auth::user()->isStudent()) bg-green-100 text-green-800
-                            @else bg-blue-100 text-blue-800 @endif">
-                            {{ ucfirst(Auth::user()->role) }}
-                        </span>
-                    </p>
-                    <p class="text-sm text-gray-600">{{ Auth::user()->email }}</p>
-                </div>
-
-                <div class="space-y-1">
-                    <x-responsive-nav-link :href="route('profile.edit')">
-                        <i class="bi bi-person me-2"></i>
+                <div class="pt-2 border-t border-gray-200">
+                    <p class="px-2 py-1 text-xs font-bold text-gray-500">{{ Auth::user()->name }}</p>
+                    <a href="{{ route('profile.edit') }}" class="block py-2 text-sm font-semibold text-gray-700 hover:text-orange-500">
                         Profile
-                    </x-responsive-nav-link>
-
+                    </a>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
-                        <x-responsive-nav-link :href="route('logout')"
-                                onclick="event.preventDefault(); this.closest('form').submit();"
-                                class="text-red-600">
-                            <i class="bi bi-box-arrow-right me-2"></i>
+                        <button type="submit" class="w-full text-left py-2 text-sm font-semibold text-red-600">
                             Log Out
-                        </x-responsive-nav-link>
+                        </button>
                     </form>
                 </div>
-            </div>
-        @endauth
+            @else
+                <a href="{{ route('login') }}" class="block py-2 text-base font-bold text-gray-700 hover:text-orange-500">
+                    Contact
+                </a>
+            @endauth
+        </div>
     </div>
 </nav>
