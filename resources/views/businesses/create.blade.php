@@ -57,6 +57,61 @@
                         @enderror
                     </div>
 
+                    {{-- Business Mode --}}
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Business Mode <span class="text-red-500">*</span>
+                        </label>
+                        <div class="grid grid-cols-2 gap-4">
+                            <label class="relative flex cursor-pointer rounded-lg border border-gray-300 bg-white p-4 shadow-sm focus:outline-none hover:border-orange-500 transition duration-150 @error('business_mode') border-red-500 @enderror">
+                                <input type="radio" 
+                                       name="business_mode" 
+                                       value="product" 
+                                       {{ old('business_mode', 'product') === 'product' ? 'checked' : '' }}
+                                       class="sr-only">
+                                <span class="flex flex-1">
+                                    <span class="flex flex-col">
+                                        <span class="flex items-center gap-2 text-sm font-medium text-gray-900">
+                                            <i class="bi bi-box-seam text-orange-600"></i>
+                                            Product-Based
+                                        </span>
+                                        <span class="mt-1 flex items-center text-xs text-gray-500">
+                                            Sell physical/digital products
+                                        </span>
+                                    </span>
+                                </span>
+                                <i class="bi bi-check-circle-fill text-orange-600 text-xl absolute top-3 right-3 opacity-0"></i>
+                            </label>
+
+                            <label class="relative flex cursor-pointer rounded-lg border border-gray-300 bg-white p-4 shadow-sm focus:outline-none hover:border-orange-500 transition duration-150 @error('business_mode') border-red-500 @enderror">
+                                <input type="radio" 
+                                       name="business_mode" 
+                                       value="service" 
+                                       {{ old('business_mode') === 'service' ? 'checked' : '' }}
+                                       class="sr-only">
+                                <span class="flex flex-1">
+                                    <span class="flex flex-col">
+                                        <span class="flex items-center gap-2 text-sm font-medium text-gray-900">
+                                            <i class="bi bi-wrench text-blue-600"></i>
+                                            Service-Based
+                                        </span>
+                                        <span class="mt-1 flex items-center text-xs text-gray-500">
+                                            Offer services/expertise
+                                        </span>
+                                    </span>
+                                </span>
+                                <i class="bi bi-check-circle-fill text-blue-600 text-xl absolute top-3 right-3 opacity-0"></i>
+                            </label>
+                        </div>
+                        @error('business_mode')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                        <p class="mt-2 text-xs text-gray-500">
+                            <i class="bi bi-info-circle me-1"></i>
+                            Choose whether your business sells products or provides services. You can only choose one.
+                        </p>
+                    </div>
+
                     {{-- Description --}}
                     <div>
                         <label for="description" class="block text-sm font-medium text-gray-700 mb-2">
@@ -111,4 +166,16 @@
             </div>
         </div>
     </div>
+
+    @push('styles')
+    <style>
+        input[type="radio"]:checked + span + i {
+            opacity: 1 !important;
+        }
+        label:has(input[type="radio"]:checked) {
+            border-color: rgb(249 115 22) !important;
+            background-color: rgb(255 247 237) !important;
+        }
+    </style>
+    @endpush
 </x-app-layout>

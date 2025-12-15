@@ -14,6 +14,7 @@ class Business extends Model
     protected $fillable = [
         'user_id',
         'business_type_id',
+        'business_mode',
         'name',
         'description',
     ];
@@ -51,5 +52,21 @@ class Business extends Model
     public function testimonies(): HasMany
     {
         return $this->hasMany(Testimony::class);
+    }
+
+    /**
+     * Check if business is in product mode
+     */
+    public function isProductMode(): bool
+    {
+        return $this->business_mode === 'product';
+    }
+
+    /**
+     * Check if business is in service mode
+     */
+    public function isServiceMode(): bool
+    {
+        return $this->business_mode === 'service';
     }
 }

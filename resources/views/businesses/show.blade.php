@@ -53,6 +53,10 @@
                                 <i class="bi bi-person"></i>
                                 {{ $business->user->name }}
                             </span>
+                            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium {{ $business->isProductMode() ? 'bg-orange-100 text-orange-800' : 'bg-blue-100 text-blue-800' }}">
+                                <i class="bi {{ $business->isProductMode() ? 'bi-box-seam' : 'bi-wrench' }}"></i>
+                                {{ $business->isProductMode() ? 'Product-Based' : 'Service-Based' }}
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -64,24 +68,28 @@
         </div>
 
         {{-- Tabs Navigation --}}
-        <div x-data="{ activeTab: '{{ session('activeTab', 'products') }}' }" class="bg-white shadow-sm sm:rounded-lg">
+        <div x-data="{ activeTab: '{{ session('activeTab', $business->isProductMode() ? 'products' : 'services') }}' }" class="bg-white shadow-sm sm:rounded-lg">
             <div class="border-b border-gray-200">
                 <nav class="flex -mb-px px-6 overflow-x-auto">
-                    <button @click="activeTab = 'products'" 
-                            :class="activeTab === 'products' ? 'border-orange-500 text-orange-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
-                            class="flex items-center gap-2 py-4 px-4 border-b-2 font-medium text-sm transition duration-150 whitespace-nowrap">
-                        <i class="bi bi-box-seam"></i>
-                        Products
-                        <span class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-xs">{{ $business->products->count() }}</span>
-                    </button>
+                    @if($business->isProductMode())
+                        <button @click="activeTab = 'products'" 
+                                :class="activeTab === 'products' ? 'border-orange-500 text-orange-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                                class="flex items-center gap-2 py-4 px-4 border-b-2 font-medium text-sm transition duration-150 whitespace-nowrap">
+                            <i class="bi bi-box-seam"></i>
+                            Products
+                            <span class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-xs">{{ $business->products->count() }}</span>
+                        </button>
+                    @endif
 
-                    <button @click="activeTab = 'services'" 
-                            :class="activeTab === 'services' ? 'border-orange-500 text-orange-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
-                            class="flex items-center gap-2 py-4 px-4 border-b-2 font-medium text-sm transition duration-150 whitespace-nowrap">
-                        <i class="bi bi-wrench"></i>
-                        Services
-                        <span class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-xs">{{ $business->services->count() }}</span>
-                    </button>
+                    @if($business->isServiceMode())
+                        <button @click="activeTab = 'services'" 
+                                :class="activeTab === 'services' ? 'border-orange-500 text-orange-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                                class="flex items-center gap-2 py-4 px-4 border-b-2 font-medium text-sm transition duration-150 whitespace-nowrap">
+                            <i class="bi bi-wrench"></i>
+                            Services
+                            <span class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-xs">{{ $business->services->count() }}</span>
+                        </button>
+                    @endif
 
                     <button @click="activeTab = 'photos'" 
                             :class="activeTab === 'photos' ? 'border-orange-500 text-orange-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
@@ -110,7 +118,8 @@
             </div>
 
             {{-- Tab: Products --}}
-            <div x-show="activeTab === 'products'" class="p-6">
+            @if($business->isProductMode())
+                <div x-show="activeTab === 'products'" class="p-6">
                 <div class="flex items-center justify-between mb-6">
                     <h3 class="text-lg font-semibold text-gray-900">Products</h3>
                     @auth
@@ -212,9 +221,11 @@
                     </div>
                 @endif
             </div>
+            @endif
 
             {{-- Tab: Services --}}
-            <div x-show="activeTab === 'services'" class="p-6" style="display: none;">
+            @if($business->isServiceMode())
+                <div x-show="activeTab === 'services'" class="p-6" style="display: none;">
                 <div class="flex items-center justify-between mb-6">
                     <h3 class="text-lg font-semibold text-gray-900">Services</h3>
                     @auth
@@ -287,6 +298,7 @@
                     </div>
                 @endif
             </div>
+            @endif
 
             {{-- Tab: Photos --}}
             <div x-show="activeTab === 'photos'" class="p-6" style="display: none;">

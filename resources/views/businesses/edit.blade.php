@@ -55,6 +55,85 @@
                         @enderror
                     </div>
 
+                    {{-- Business Mode --}}
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Business Mode <span class="text-red-500">*</span>
+                        </label>
+                        
+                        @php
+                            $hasProducts = $business->products->count() > 0;
+                            $hasServices = $business->services->count() > 0;
+                            $canChangeMode = !$hasProducts && !$hasServices;
+                        @endphp
+
+                        @if(!$canChangeMode)
+                            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-3">
+                                <div class="flex gap-3">
+                                    <i class="bi bi-exclamation-triangle text-yellow-600 text-xl flex-shrink-0"></i>
+                                    <div class="text-sm text-yellow-800">
+                                        <p class="font-semibold mb-1">Cannot Change Business Mode</p>
+                                        <p class="text-xs">
+                                            @if($hasProducts)
+                                                This business has {{ $business->products->count() }} product(s). Delete all products first to change mode.
+                                            @endif
+                                            @if($hasServices)
+                                                This business has {{ $business->services->count() }} service(s). Delete all services first to change mode.
+                                            @endif
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <label class="relative flex cursor-pointer rounded-lg border border-gray-300 bg-white p-4 shadow-sm focus:outline-none hover:border-orange-500 transition duration-150 {{ !$canChangeMode ? 'opacity-50 cursor-not-allowed' : '' }}">
+                                <input type="radio" 
+                                       name="business_mode" 
+                                       value="product" 
+                                       {{ old('business_mode', $business->business_mode) === 'product' ? 'checked' : '' }}
+                                       {{ !$canChangeMode ? 'disabled' : '' }}
+                                       class="sr-only">
+                                <span class="flex flex-1">
+                                    <span class="flex flex-col">
+                                        <span class="flex items-center gap-2 text-sm font-medium text-gray-900">
+                                            <i class="bi bi-box-seam text-orange-600"></i>
+                                            Product-Based
+                                        </span>
+                                        <span class="mt-1 flex items-center text-xs text-gray-500">
+                                            Sell physical/digital products
+                                        </span>
+                                    </span>
+                                </span>
+                                <i class="bi bi-check-circle-fill text-orange-600 text-xl absolute top-3 right-3 opacity-0"></i>
+                            </label>
+
+                            <label class="relative flex cursor-pointer rounded-lg border border-gray-300 bg-white p-4 shadow-sm focus:outline-none hover:border-orange-500 transition duration-150 {{ !$canChangeMode ? 'opacity-50 cursor-not-allowed' : '' }}">
+                                <input type="radio" 
+                                       name="business_mode" 
+                                       value="service" 
+                                       {{ old('business_mode', $business->business_mode) === 'service' ? 'checked' : '' }}
+                                       {{ !$canChangeMode ? 'disabled' : '' }}
+                                       class="sr-only">
+                                <span class="flex flex-1">
+                                    <span class="flex flex-col">
+                                        <span class="flex items-center gap-2 text-sm font-medium text-gray-900">
+                                            <i class="bi bi-wrench text-blue-600"></i>
+                                            Service-Based
+                                        </span>
+                                        <span class="mt-1 flex items-center text-xs text-gray-500">
+                                            Offer services/expertise
+                                        </span>
+                                    </span>
+                                </span>
+                                <i class="bi bi-check-circle-fill text-blue-600 text-xl absolute top-3 right-3 opacity-0"></i>
+                            </label>
+                        </div>
+                        @error('business_mode')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
                     {{-- Description --}}
                     <div>
                         <label for="description" class="block text-sm font-medium text-gray-700 mb-2">
@@ -123,4 +202,16 @@
             </div>
         </div>
     </div>
+
+    @push('styles')
+    <style>
+        input[type="radio"]:checked + span + i {
+            opacity: 1 !important;
+        }
+        label:has(input[type="radio"]:checked):not(:has(input[type="radio"]:disabled)) {
+            border-color: rgb(249 115 22) !important;
+            background-color: rgb(255 247 237) !important;
+        }
+    </style>
+    @endpush
 </x-app-layout>

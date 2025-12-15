@@ -53,6 +53,13 @@ class ProductController extends Controller
     {
         $this->authorizeBusinessAccess($business);
 
+        // Prevent creating products if service mode
+        if ($business->isServiceMode()) {
+            return redirect()
+                ->route('businesses.show', $business)
+                ->withErrors(['business_mode' => 'This business is in Service mode. Cannot add products.']);
+        }
+
         // Fetch product categories for this BUSINESS TYPE (not business)
         $categories = $business->businessType->productCategories;
 
