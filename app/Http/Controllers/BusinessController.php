@@ -77,6 +77,7 @@ class BusinessController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'required|string',
             'business_type_id' => 'required|exists:business_types,id',
+            'business_mode' => 'required|in:product,service',
             'user_id' => 'nullable|exists:users,id', // Only if admin wants to assign
         ]);
 
@@ -155,10 +156,23 @@ class BusinessController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'required|string',
             'business_type_id' => 'required|exists:business_types,id',
+            'business_mode' => 'required|in:product,service',
             'user_id' => 'nullable|exists:users,id', // Only admin can change owner
         ]);
 
         $user = $this->getAuthUser();
+
+        // Validate business mode change
+        $hasProducts = $business->products()->count() > 0;
+        $hasServices = $business->services()->count() > 0;
+        
+        if ($validated['business_mode'] !== $business->business_mode) {
+            if ($hasProducts || $hasServices) {
+                return back()->withErrors([
+                    'business_mode' => 'Cannot change business mode while products or services exist. Delete them first.'
+                ])->withInput();
+            }
+        }
 
         // Only admin can change user_id
         if (!$user->isAdmin()) {
