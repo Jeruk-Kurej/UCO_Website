@@ -19,12 +19,37 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
+        // Basic Auth
         'username',
         'name',
         'email',
         'password',
         'role',
         'is_active',
+        
+        // Core Personal Information
+        'birth_date',
+        'birth_city',
+        'religion',
+        
+        // Core Contact
+        'phone_number',
+        'mobile_number',
+        'whatsapp',
+        
+        // Core Student Info
+        'NIS',
+        'Student_Year',
+        'Major',
+        'Is_Graduate',
+        'CGPA',
+        
+        // JSON Fields for Extended Data
+        'personal_data',    // gender, addresses, citizenship, passport, line, facebook, twitter, instagram, etc.
+        'academic_data',    // Edu_Level, Previous_School_Name, School_City, Academic_Advisor, certificates, final projects
+        'father_data',      // All father information
+        'mother_data',      // All mother information
+        'graduation_data',  // Official_Email, Current_Status, Class_Semester, Form_No, Start_Date, End_Date, business info
     ];
 
     /**
@@ -48,6 +73,15 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_active' => 'boolean',
+            'Is_Graduate' => 'boolean',
+            'birth_date' => 'date',
+            'CGPA' => 'decimal:2',
+            // JSON fields - automatically encode/decode
+            'personal_data' => 'array',
+            'academic_data' => 'array',
+            'father_data' => 'array',
+            'mother_data' => 'array',
+            'graduation_data' => 'array',
         ];
     }
 

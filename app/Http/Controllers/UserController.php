@@ -3,10 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Imports\UsersImport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
+use Maatwebsite\Excel\Facades\Excel;
+use Maatwebsite\Excel\Excel as ExcelFormat;
 
 class UserController extends Controller
 {
@@ -164,5 +167,387 @@ class UserController extends Controller
         return redirect()
             ->route('users.index')
             ->with('success', 'User deleted successfully!');
+    }
+
+    /**
+     * Import users from Excel file.
+     */
+    public function import(Request $request)
+    {
+        if (!$this->getAuthUser()->isAdmin()) {
+            abort(403, 'Only administrators can import users.');
+        }
+
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls|max:10240', // Max 10MB
+        ]);
+
+        try {
+            $import = new UsersImport();
+            Excel::import($import, $request->file('file'));
+
+            return redirect()
+                ->route('users.index')
+                ->with('success', 'Users imported successfully!');
+        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
+            $failures = $e->failures();
+            $errorMessages = [];
+            
+            foreach ($failures as $failure) {
+                $errorMessages[] = "Row {$failure->row()}: " . implode(', ', $failure->errors());
+            }
+            
+            return redirect()
+                ->route('users.index')
+                ->with('error', 'Import failed: ' . implode(' | ', $errorMessages));
+        } catch (\Exception $e) {
+            return redirect()
+                ->route('users.index')
+                ->with('error', 'Import failed: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Download Excel template for user import.
+     */
+    public function downloadTemplate()
+    {
+        if (!$this->getAuthUser()->isAdmin()) {
+            abort(403, 'Only administrators can download template.');
+        }
+
+        $headers = [
+            // Core Fields
+            'name',
+            'email',
+            'username',
+            'password',
+            'role',
+            'is_active',
+            
+            // Student Info
+            'nis',
+            'nisn',
+            'prodi',
+            'sub_prodi',
+            'student_year',
+            'major',
+            'is_graduate',
+            'cgpa',
+            'edu_level',
+            
+            // Personal Data
+            'gender',
+            'birth_date',
+            'birth_city',
+            'religion',
+            'citizenship',
+            'citizenship_no',
+            
+            // Contact Info - Primary
+            'address',
+            'address_city',
+            'province',
+            'country',
+            'zip_code',
+            'phone_number',
+            'mobile_number',
+            
+            // Contact Info - Secondary
+            'address2',
+            'address_city2',
+            'province2',
+            'country2',
+            'zip_code2',
+            'phone_number2',
+            'mobile_number2',
+            
+            // Social Media
+            'whatsapp',
+            'bbm',
+            'line',
+            'facebook',
+            'twitter',
+            'instagram',
+            
+            // Academic History
+            'academic_advisor',
+            'previous_school_name',
+            'school_city',
+            'previous_edu_level',
+            'start_year',
+            'end_year',
+            'score',
+            
+            // Certificates
+            'certificate_no_1',
+            'certificate_date_1',
+            'certificate_no_2',
+            'certificate_date_2',
+            
+            // Father Data - Basic
+            'father_name',
+            'father_birth_city',
+            'father_birthday',
+            'father_citizenship',
+            'father_citizenship_no',
+            'father_passport_no',
+            'father_npwp_no',
+            'father_religion',
+            'father_bpjs_no',
+            
+            // Father Data - Contact
+            'father_address',
+            'father_address_city',
+            'father_phone',
+            'father_mobile',
+            'father_email',
+            'father_bbm',
+            
+            // Father Data - Education & Work
+            'father_education',
+            'father_education_major',
+            'father_profession',
+            'father_business_name',
+            'father_business_address',
+            'father_business_phone',
+            'father_business_line',
+            'father_business_title',
+            'father_business_revenue',
+            'father_special_need',
+            
+            // Mother Data - Basic
+            'mother_name',
+            'mother_birth_city',
+            'mother_birthday',
+            'mother_citizenship',
+            'mother_citizenship_no',
+            'mother_passport_no',
+            'mother_npwp_no',
+            'mother_religion',
+            'mother_bpjs_no',
+            
+            // Mother Data - Contact
+            'mother_address',
+            'mother_address_city',
+            'mother_phone',
+            'mother_mobile',
+            'mother_email',
+            'mother_bbm',
+            
+            // Mother Data - Education & Work
+            'mother_education',
+            'mother_education_major',
+            'mother_profession',
+            'mother_business_name',
+            'mother_business_address',
+            'mother_business_phone',
+            'mother_business_line',
+            'mother_business_title',
+            'mother_business_revenue',
+            'mother_special_need',
+            
+            // Graduation Data
+            'final_project_indonesia',
+            'final_project_english',
+            'cum_credits',
+            'predicate',
+            'judicium_date',
+            'document_no',
+            'document_date',
+            'graduate_period',
+            'class_semester',
+            'form_no',
+            'official_email',
+            'current_status',
+            'start_date',
+            'end_date',
+            'business_name',
+            'business_line',
+            'business_title',
+        ];
+
+        $sampleData = [
+            // Core Fields
+            'John Doe',                    // name
+            'john.doe@example.com',        // email
+            'johndoe',                     // username
+            'password123',                 // password
+            'student',                     // role
+            '1',                          // is_active
+            
+            // Student Info
+            '12345678',                    // nis
+            '1234567890',                  // nisn
+            'Computer Science',            // prodi
+            'Software Engineering',        // sub_prodi
+            '2023',                        // student_year
+            'Computer Science',            // major
+            '0',                          // is_graduate
+            '3.85',                        // cgpa
+            'Bachelor',                    // edu_level
+            
+            // Personal Data
+            'Male',                        // gender
+            '2000-01-01',                  // birth_date
+            'Jakarta',                     // birth_city
+            'Islam',                       // religion
+            'Indonesian',                  // citizenship
+            '3201010101000001',           // citizenship_no
+            
+            // Contact Info - Primary
+            'Jl. Example No. 123',        // address
+            'Jakarta',                     // address_city
+            'DKI Jakarta',                // province
+            'Indonesia',                   // country
+            '12345',                       // zip_code
+            '021-1234567',                // phone_number
+            '0812-3456-7890',             // mobile_number
+            
+            // Contact Info - Secondary
+            '',                           // address2
+            '',                           // address_city2
+            '',                           // province2
+            '',                           // country2
+            '',                           // zip_code2
+            '',                           // phone_number2
+            '',                           // mobile_number2
+            
+            // Social Media
+            '0812-3456-7890',             // whatsapp
+            '',                           // bbm
+            '',                           // line
+            '',                           // facebook
+            '',                           // twitter
+            '',                           // instagram
+            
+            // Academic History
+            'Dr. Jane Smith',             // academic_advisor
+            'SMA Example',                // previous_school_name
+            'Jakarta',                     // school_city
+            'High School',                // previous_edu_level
+            '2018',                        // start_year
+            '2021',                        // end_year
+            '85.5',                        // score
+            
+            // Certificates
+            '',                           // certificate_no_1
+            '',                           // certificate_date_1
+            '',                           // certificate_no_2
+            '',                           // certificate_date_2
+            
+            // Father Data - Basic
+            'John Doe Sr.',               // father_name
+            'Jakarta',                     // father_birth_city
+            '1970-01-01',                 // father_birthday
+            'Indonesian',                  // father_citizenship
+            '3201010170000001',           // father_citizenship_no
+            '',                           // father_passport_no
+            '',                           // father_npwp_no
+            'Islam',                       // father_religion
+            '',                           // father_bpjs_no
+            
+            // Father Data - Contact
+            'Jl. Example No. 123',        // father_address
+            'Jakarta',                     // father_address_city
+            '021-1111111',                // father_phone
+            '0811-1111-1111',             // father_mobile
+            'father@example.com',         // father_email
+            '',                           // father_bbm
+            
+            // Father Data - Education & Work
+            'Bachelor',                    // father_education
+            'Business',                    // father_education_major
+            'Entrepreneur',                // father_profession
+            'ABC Company',                 // father_business_name
+            'Jl. Business St.',           // father_business_address
+            '021-9999999',                // father_business_phone
+            'Trading',                     // father_business_line
+            'CEO',                         // father_business_title
+            '> 1B',                        // father_business_revenue
+            '',                           // father_special_need
+            
+            // Mother Data - Basic
+            'Jane Doe',                    // mother_name
+            'Jakarta',                     // mother_birth_city
+            '1972-01-01',                 // mother_birthday
+            'Indonesian',                  // mother_citizenship
+            '3201010172000002',           // mother_citizenship_no
+            '',                           // mother_passport_no
+            '',                           // mother_npwp_no
+            'Islam',                       // mother_religion
+            '',                           // mother_bpjs_no
+            
+            // Mother Data - Contact
+            'Jl. Example No. 123',        // mother_address
+            'Jakarta',                     // mother_address_city
+            '021-2222222',                // mother_phone
+            '0822-2222-2222',             // mother_mobile
+            'mother@example.com',         // mother_email
+            '',                           // mother_bbm
+            
+            // Mother Data - Education & Work
+            'Bachelor',                    // mother_education
+            'Education',                   // mother_education_major
+            'Teacher',                     // mother_profession
+            'XYZ School',                  // mother_business_name
+            'Jl. School St.',             // mother_business_address
+            '021-8888888',                // mother_business_phone
+            'Education',                   // mother_business_line
+            'Principal',                   // mother_business_title
+            '500M - 1B',                   // mother_business_revenue
+            '',                           // mother_special_need
+            
+            // Graduation Data
+            '',                           // final_project_indonesia
+            '',                           // final_project_english
+            '',                           // cum_credits
+            '',                           // predicate
+            '',                           // judicium_date
+            '',                           // document_no
+            '',                           // document_date
+            '',                           // graduate_period
+            'Semester 1',                  // class_semester
+            '',                           // form_no
+            'john.doe@student.university.edu', // official_email
+            'Active Student',              // current_status
+            '2023-09-01',                 // start_date
+            '2027-06-30',                 // end_date
+            '',                           // business_name
+            '',                           // business_line
+            '',                           // business_title
+        ];
+
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        // Add headers
+        $col = 'A';
+        foreach ($headers as $header) {
+            $sheet->setCellValue($col . '1', $header);
+            $sheet->getStyle($col . '1')->getFont()->setBold(true);
+            $col++;
+        }
+
+        // Add sample data
+        $col = 'A';
+        foreach ($sampleData as $value) {
+            $sheet->setCellValue($col . '2', $value);
+            $col++;
+        }
+
+        // Auto-size columns (using column index instead of range)
+        for ($i = 1; $i <= count($headers); $i++) {
+            $sheet->getColumnDimensionByColumn($i)->setAutoSize(true);
+        }
+
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+        
+        $fileName = 'users_import_template_' . date('Y-m-d') . '.xlsx';
+        $tempFile = tempnam(sys_get_temp_dir(), $fileName);
+        
+        $writer->save($tempFile);
+        
+        return response()->download($tempFile, $fileName)->deleteFileAfterSend(true);
     }
 }

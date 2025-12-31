@@ -1,7 +1,7 @@
 <x-app-layout>
     <div class="space-y-0">
         {{-- Hero Section --}}
-        <div class="bg-gradient-to-r from-orange-500 via-orange-400 to-yellow-500 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-20">
+        <div class="bg-gradient-to-r from-orange-500 via-orange-400 to-yellow-500 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-20 rounded-3xl">
             <div class="max-w-4xl mx-auto text-center text-white">
                 <h1 class="text-5xl font-bold mb-4">UCO Student & Alumni Platform</h1>
                 <p class="text-xl text-orange-50 mb-8">
@@ -37,78 +37,6 @@
             </div>
         </div>
 
-        {{-- Stats Banner --}}
-        <div class="bg-white -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-12 border-b border-gray-200">
-            <div class="max-w-6xl mx-auto">
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-                    <div>
-                        <div class="text-4xl font-bold text-orange-600 mb-2">{{ \App\Models\Business::count() }}+</div>
-                        <p class="text-sm text-gray-600 font-medium">Active Businesses</p>
-                    </div>
-                    <div>
-                        <div class="text-4xl font-bold text-orange-600 mb-2">{{ \App\Models\User::where('is_active', true)->count() }}+</div>
-                        <p class="text-sm text-gray-600 font-medium">Community Members</p>
-                    </div>
-                    <div>
-                        <div class="text-4xl font-bold text-orange-600 mb-2">{{ \App\Models\Product::count() }}+</div>
-                        <p class="text-sm text-gray-600 font-medium">Products & Services</p>
-                    </div>
-                    <div>
-                        <div class="text-4xl font-bold text-orange-600 mb-2">{{ \App\Models\BusinessType::count() }}+</div>
-                        <p class="text-sm text-gray-600 font-medium">Business Categories</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        {{-- About Section --}}
-        <div class="py-16 bg-gray-50">
-            <div class="max-w-6xl mx-auto">
-                <div class="text-center mb-12">
-                    <h2 class="text-3xl font-bold text-gray-900 mb-4">About UCO Platform</h2>
-                    <p class="text-lg text-gray-600 max-w-3xl mx-auto">
-                        Universitas Ciputra's dedicated platform for students and alumni to showcase their businesses, 
-                        connect with fellow entrepreneurs, and build a thriving community.
-                    </p>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    {{-- Feature 1 --}}
-                    <div class="bg-white rounded-2xl p-8 shadow-md hover:shadow-xl transition-shadow duration-300">
-                        <div class="w-16 h-16 bg-gradient-to-br from-orange-400 to-orange-600 rounded-xl flex items-center justify-center text-white mb-6">
-                            <i class="bi bi-briefcase text-3xl"></i>
-                        </div>
-                        <h3 class="text-xl font-bold text-gray-900 mb-3">Business Directory</h3>
-                        <p class="text-gray-600 leading-relaxed">
-                            Showcase your business with detailed profiles, product catalogs, photo galleries, and customer testimonials.
-                        </p>
-                    </div>
-
-                    {{-- Feature 2 --}}
-                    <div class="bg-white rounded-2xl p-8 shadow-md hover:shadow-xl transition-shadow duration-300">
-                        <div class="w-16 h-16 bg-gradient-to-br from-blue-400 to-blue-600 rounded-xl flex items-center justify-center text-white mb-6">
-                            <i class="bi bi-people text-3xl"></i>
-                        </div>
-                        <h3 class="text-xl font-bold text-gray-900 mb-3">Community Network</h3>
-                        <p class="text-gray-600 leading-relaxed">
-                            Connect with fellow UC entrepreneurs, share experiences, and collaborate on exciting business opportunities.
-                        </p>
-                    </div>
-
-                    {{-- Feature 3 --}}
-                    <div class="bg-white rounded-2xl p-8 shadow-md hover:shadow-xl transition-shadow duration-300">
-                        <div class="w-16 h-16 bg-gradient-to-br from-green-400 to-green-600 rounded-xl flex items-center justify-center text-white mb-6">
-                            <i class="bi bi-graph-up-arrow text-3xl"></i>
-                        </div>
-                        <h3 class="text-xl font-bold text-gray-900 mb-3">Growth Support</h3>
-                        <p class="text-gray-600 leading-relaxed">
-                            Access resources, mentorship, and visibility to help your business grow within the UC ecosystem.
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         {{-- Featured Businesses --}}
         @php
             $featuredBusinesses = \App\Models\Business::with(['businessType', 'photos', 'user'])
@@ -118,8 +46,8 @@
         @endphp
 
         @if($featuredBusinesses->count() > 0)
-            <div class="py-16 bg-white">
-                <div class="max-w-6xl mx-auto">
+            <div class="py-16">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div class="text-center mb-12">
                         <h2 class="text-3xl font-bold text-gray-900 mb-4">Featured Businesses</h2>
                         <p class="text-lg text-gray-600">
@@ -180,69 +108,8 @@
             </div>
         @endif
 
-        {{-- How It Works --}}
-        <div class="py-16 bg-gradient-to-br from-gray-50 to-orange-50">
-            <div class="max-w-6xl mx-auto">
-                <div class="text-center mb-12">
-                    <h2 class="text-3xl font-bold text-gray-900 mb-4">How It Works</h2>
-                    <p class="text-lg text-gray-600">
-                        Get started in three simple steps
-                    </p>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    {{-- Step 1 --}}
-                    <div class="relative">
-                        <div class="bg-white rounded-2xl p-8 shadow-md text-center">
-                            <div class="w-16 h-16 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-6">
-                                1
-                            </div>
-                            <h3 class="text-xl font-bold text-gray-900 mb-3">Create Account</h3>
-                            <p class="text-gray-600">
-                                Sign up with your UC email and join our entrepreneurial community
-                            </p>
-                        </div>
-                        {{-- Arrow --}}
-                        <div class="hidden md:block absolute top-1/2 -right-4 transform -translate-y-1/2 text-orange-400 text-3xl">
-                            <i class="bi bi-arrow-right"></i>
-                        </div>
-                    </div>
-
-                    {{-- Step 2 --}}
-                    <div class="relative">
-                        <div class="bg-white rounded-2xl p-8 shadow-md text-center">
-                            <div class="w-16 h-16 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-6">
-                                2
-                            </div>
-                            <h3 class="text-xl font-bold text-gray-900 mb-3">Setup Business</h3>
-                            <p class="text-gray-600">
-                                Create your business profile with photos, products, and contact details
-                            </p>
-                        </div>
-                        {{-- Arrow --}}
-                        <div class="hidden md:block absolute top-1/2 -right-4 transform -translate-y-1/2 text-blue-400 text-3xl">
-                            <i class="bi bi-arrow-right"></i>
-                        </div>
-                    </div>
-
-                    {{-- Step 3 --}}
-                    <div>
-                        <div class="bg-white rounded-2xl p-8 shadow-md text-center">
-                            <div class="w-16 h-16 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-6">
-                                3
-                            </div>
-                            <h3 class="text-xl font-bold text-gray-900 mb-3">Grow & Connect</h3>
-                            <p class="text-gray-600">
-                                Reach customers, network with peers, and grow your business
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         {{-- CTA Section --}}
-        <div class="py-20 bg-gradient-to-r from-orange-500 via-orange-400 to-yellow-500 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8">
+        <div class="py-20 bg-gradient-to-r from-orange-500 via-orange-400 to-yellow-500 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 rounded-3xl">
             <div class="max-w-4xl mx-auto text-center text-white">
                 <h2 class="text-4xl font-bold mb-4">Ready to Showcase Your Business?</h2>
                 <p class="text-xl text-orange-50 mb-8">
