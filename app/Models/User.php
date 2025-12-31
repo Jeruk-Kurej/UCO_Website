@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -26,6 +27,11 @@ class User extends Authenticatable
         'password',
         'role',
         'is_active',
+        
+        // Employment Status (NEW)
+        'current_employment_status',
+        'has_side_business',
+        'profile_photo_url',
         
         // Core Personal Information
         'birth_date',
@@ -76,6 +82,7 @@ class User extends Authenticatable
             'Is_Graduate' => 'boolean',
             'birth_date' => 'date',
             'CGPA' => 'decimal:2',
+            'has_side_business' => 'boolean',
             // JSON fields - automatically encode/decode
             'personal_data' => 'array',
             'academic_data' => 'array',
@@ -91,6 +98,67 @@ class User extends Authenticatable
     public function businesses(): HasMany
     {
         return $this->hasMany(Business::class);
+    }
+
+    /**
+     * Alias for ownedBusinesses
+     */
+    public function ownedBusinesses(): HasMany
+    {
+        return $this->businesses();
+    }
+
+    /**
+     * Get all businesses user is involved in (any role)
+     * Uses user_businesses_details pivot table
+     */
+    public function involvedBusinesses(): BelongsToMany
+    {
+        return $this->belongsToMany(Business::class, 'user_businesses_details')
+                    ->withPivot([
+                        'role_type',
+                        'Position_name',
+                        'Working_Date',
+                        'Company_Description',
+                        'Income',
+                        'end_date',
+                        'is_current'
+                    ])
+                    ->withTimestamps();
+    }
+
+    /**
+     * Get current active business roles
+     */
+    public function currentEmployments(): BelongsToMany
+    {
+        return $this->involvedBusinesses()->wherePivot('is_current', true);
+    }
+
+    /**
+     * Get businesses where user is employee
+     */
+    public function employments(): BelongsToMany
+    {
+        return $this->involvedBusinesses()
+                    ->wherePivot('role_type', 'employee')
+                    ->wherePivot('is_current', true);
+    }
+
+    /**
+     * Get user's employment details (direct pivot access)
+     */
+    public function employmentDetails(): HasMany
+    {
+        return $this->hasMany(User_Businesses_Detail::class);
+    }
+
+    /**
+     * Get current employment details
+     */
+    public function currentEmploymentDetails(): HasMany
+    {
+        return $this->employmentDetails()->where('is_current', true);
     }
 
     /**
@@ -115,6 +183,78 @@ class User extends Authenticatable
     public function isAlumni(): bool
     {
         return $this->role === 'alumni' || !$this->is_active;
+    }
+
+    /**
+     * Check if user is entrepreneur
+     */
+    public function isEntrepreneur(): bool
+    {
+        return $this->current_employment_status === 'entrepreneur';
+    }
+
+    /**
+     * Check if user has side business
+     */
+    public function hasSideBusiness(): bool
+    {
+        return $this->has_side_business === true;
+    }
+
+    /**
+     * Get total businesses count (owned + involved)
+     */
+    public function totalBusinessesCount(): int
+    {
+        return $this->ownedBusinesses()->count() + 
+               $this->currentEmployments()->count();
+    }
+
+    /**
+     * Check if user is intrapreneur (working but has side business)
+     */
+    public function isIntrapreneur(): bool
+    {
+        return $this->current_employment_status === 'employed_intrapreneur' && 
+               $this->has_side_business === true;
+    }
+
+    /**
+     * Check if user has any business
+     */
+    public function hasBusiness(): bool
+    {
+        return $this->businesses()->exists();
+    }
+
+    /**
+     * Get total businesses owned count
+     */
+    public function totalBusinesses(): int
+    {
+        return $this->businesses()->count();
+    }
+
+    /**
+     * Check if user has multiple businesses
+     */
+    public function hasMultipleBusinesses(): bool
+    {
+        return $this->totalBusinesses() > 1;
+    }
+
+    /**
+     * Get employment status label in Indonesian
+     */
+    public function getEmploymentStatusLabel(): string
+    {
+        return match($this->current_employment_status) {
+            'employed_intrapreneur' => 'Bekerja sebagai Profesional',
+            'entrepreneur' => 'Entrepreneur (Pemilik Bisnis)',
+            'job_seeking' => 'Mencari Pekerjaan',
+            'preparing_business' => 'Persiapan Entrepreneur',
+            default => 'Belum Diisi'
+        };
     }
 
     /**

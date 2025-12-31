@@ -74,11 +74,24 @@ class BusinessController extends Controller
         $this->authorize('create', Business::class);
 
         $validated = $request->validate([
+            // Basic fields
             'name' => 'required|string|max:255',
             'description' => 'required|string',
             'business_type_id' => 'required|exists:business_types,id',
             'business_mode' => 'required|in:product,service',
-            'user_id' => 'nullable|exists:users,id', // Only if admin wants to assign
+            'user_id' => 'nullable|exists:users,id',
+            
+            // Enhanced fields
+            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
+            'established_date' => 'nullable|date',
+            'address' => 'nullable|string',
+            'employee_count' => 'nullable|integer|min:0',
+            'revenue_range' => 'nullable|in:Mikro: <= Rp 300 Juta,Kecil: > Rp 300 Juta - Rp 2,5 Milyar,Menengah: > Rp 2,5 Milyar - Rp 50 Milyar,Besar: > Rp 50 Milyar',
+            'is_from_college_project' => 'nullable|boolean',
+            'is_continued_after_graduation' => 'nullable|boolean',
+            'legal_documents.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'product_certifications.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'business_challenges' => 'nullable|array',
         ]);
 
         $user = $this->getAuthUser();
@@ -87,6 +100,41 @@ class BusinessController extends Controller
         if (!isset($validated['user_id']) || !$user->isAdmin()) {
             $validated['user_id'] = $user->id;
         }
+
+        // Handle logo upload
+        if ($request->hasFile('logo')) {
+            $logoPath = $request->file('logo')->store('businesses/logos', 'public');
+            $validated['logo_url'] = $logoPath;
+        }
+        unset($validated['logo']);
+
+        // Handle legal documents upload
+        $legalDocs = [];
+        if ($request->hasFile('legal_documents')) {
+            foreach ($request->file('legal_documents') as $index => $file) {
+                $path = $file->store('businesses/legal-documents', 'public');
+                $legalDocs[] = [
+                    'file_path' => $path,
+                    'original_name' => $file->getClientOriginalName(),
+                    'uploaded_at' => now()->toDateTimeString(),
+                ];
+            }
+        }
+        $validated['legal_documents'] = !empty($legalDocs) ? $legalDocs : null;
+
+        // Handle product certifications upload
+        $certifications = [];
+        if ($request->hasFile('product_certifications')) {
+            foreach ($request->file('product_certifications') as $index => $file) {
+                $path = $file->store('businesses/certifications', 'public');
+                $certifications[] = [
+                    'file_path' => $path,
+                    'original_name' => $file->getClientOriginalName(),
+                    'uploaded_at' => now()->toDateTimeString(),
+                ];
+            }
+        }
+        $validated['product_certifications'] = !empty($certifications) ? $certifications : null;
 
         $business = Business::create($validated);
 
@@ -153,11 +201,26 @@ class BusinessController extends Controller
         $this->authorize('update', $business);
 
         $validated = $request->validate([
+            // Basic fields
             'name' => 'required|string|max:255',
             'description' => 'required|string',
             'business_type_id' => 'required|exists:business_types,id',
             'business_mode' => 'required|in:product,service',
-            'user_id' => 'nullable|exists:users,id', // Only admin can change owner
+            'user_id' => 'nullable|exists:users,id',
+            
+            // Enhanced fields
+            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
+            'established_date' => 'nullable|date',
+            'address' => 'nullable|string',
+            'employee_count' => 'nullable|integer|min:0',
+            'revenue_range' => 'nullable|in:Mikro: <= Rp 300 Juta,Kecil: > Rp 300 Juta - Rp 2,5 Milyar,Menengah: > Rp 2,5 Milyar - Rp 50 Milyar,Besar: > Rp 50 Milyar',
+            'is_from_college_project' => 'nullable|boolean',
+            'is_continued_after_graduation' => 'nullable|boolean',
+            'legal_documents.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'product_certifications.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'business_challenges' => 'nullable|array',
+            'remove_legal_docs' => 'nullable|array',
+            'remove_certifications' => 'nullable|array',
         ]);
 
         $user = $this->getAuthUser();
@@ -178,6 +241,74 @@ class BusinessController extends Controller
         if (!$user->isAdmin()) {
             unset($validated['user_id']);
         }
+
+        // Handle logo upload
+        if ($request->hasFile('logo')) {
+            // Delete old logo if exists
+            if ($business->logo_url && \Storage::disk('public')->exists($business->logo_url)) {
+                \Storage::disk('public')->delete($business->logo_url);
+            }
+            $logoPath = $request->file('logo')->store('businesses/logos', 'public');
+            $validated['logo_url'] = $logoPath;
+        }
+        unset($validated['logo']);
+
+        // Handle legal documents
+        $currentLegalDocs = $business->legal_documents ?? [];
+        
+        // Remove selected documents
+        if ($request->has('remove_legal_docs')) {
+            foreach ($request->remove_legal_docs as $index) {
+                if (isset($currentLegalDocs[$index]['file_path'])) {
+                    \Storage::disk('public')->delete($currentLegalDocs[$index]['file_path']);
+                    unset($currentLegalDocs[$index]);
+                }
+            }
+            $currentLegalDocs = array_values($currentLegalDocs); // Re-index array
+        }
+        
+        // Add new documents
+        if ($request->hasFile('legal_documents')) {
+            foreach ($request->file('legal_documents') as $file) {
+                $path = $file->store('businesses/legal-documents', 'public');
+                $currentLegalDocs[] = [
+                    'file_path' => $path,
+                    'original_name' => $file->getClientOriginalName(),
+                    'uploaded_at' => now()->toDateTimeString(),
+                ];
+            }
+        }
+        $validated['legal_documents'] = !empty($currentLegalDocs) ? $currentLegalDocs : null;
+
+        // Handle product certifications
+        $currentCertifications = $business->product_certifications ?? [];
+        
+        // Remove selected certifications
+        if ($request->has('remove_certifications')) {
+            foreach ($request->remove_certifications as $index) {
+                if (isset($currentCertifications[$index]['file_path'])) {
+                    \Storage::disk('public')->delete($currentCertifications[$index]['file_path']);
+                    unset($currentCertifications[$index]);
+                }
+            }
+            $currentCertifications = array_values($currentCertifications); // Re-index array
+        }
+        
+        // Add new certifications
+        if ($request->hasFile('product_certifications')) {
+            foreach ($request->file('product_certifications') as $file) {
+                $path = $file->store('businesses/certifications', 'public');
+                $currentCertifications[] = [
+                    'file_path' => $path,
+                    'original_name' => $file->getClientOriginalName(),
+                    'uploaded_at' => now()->toDateTimeString(),
+                ];
+            }
+        }
+        $validated['product_certifications'] = !empty($currentCertifications) ? $currentCertifications : null;
+
+        // Remove these from validated array
+        unset($validated['remove_legal_docs'], $validated['remove_certifications']);
 
         $business->update($validated);
 
