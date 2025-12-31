@@ -19,6 +19,7 @@
 
         @stack('styles')
     </head>
+    {{-- ✅ CHANGED: Soft white background (not harsh white) --}}
     <body class="font-sans antialiased bg-gray-50">
         <div class="min-h-screen flex flex-col">
             {{-- Navigation --}}
