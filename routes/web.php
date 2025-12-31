@@ -143,6 +143,10 @@ Route::middleware(['auth', 'verified', 'admin'])->group(function () {
     
     // User Management
     Route::resource('users', UserController::class);
+    
+    // User Import Routes
+    Route::post('users/import', [UserController::class, 'import'])->name('users.import');
+    Route::get('users/template/download', [UserController::class, 'downloadTemplate'])->name('users.template');
 
     /*
     |--------------------------------------------------------------------------
