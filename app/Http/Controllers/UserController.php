@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Business;
+use App\Models\User_Businesses_Detail;
 use App\Imports\UsersImport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -67,22 +69,104 @@ class UserController extends Controller
         }
 
         $validated = $request->validate([
+            // Basic Required
             'username' => 'required|string|max:255|unique:users',
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'role' => 'required|in:student,alumni,admin',
-            'is_active' => 'required|boolean',
+            'is_active' => 'nullable|boolean',
+            
+            // Core Personal
+            'birth_date' => 'nullable|date',
+            'birth_city' => 'nullable|string|max:255',
+            'religion' => 'nullable|string|max:255',
+            'phone_number' => 'nullable|string|max:50',
+            'mobile_number' => 'nullable|string|max:50',
+            'whatsapp' => 'nullable|string|max:50',
+            
+            // Core Student
+            'NIS' => 'nullable|string|max:255',
+            'Student_Year' => 'nullable|string|max:50',
+            'Major' => 'nullable|string|max:255',
+            'Is_Graduate' => 'nullable|boolean',
+            'CGPA' => 'nullable|numeric|min:0|max:4',
+            
+            // JSON Fields
+            'personal_data' => 'nullable|array',
+            'academic_data' => 'nullable|array',
+            'father_data' => 'nullable|array',
+            'mother_data' => 'nullable|array',
+            'graduation_data' => 'nullable|array',
+            
+            // Business Assignments
+            'owned_businesses' => 'nullable|array',
+            'owned_businesses.*' => 'exists:businesses,id',
+            'team_member' => 'nullable|array',
         ]);
 
-        $validated['password'] = Hash::make($validated['password']);
-        $validated['email_verified_at'] = now(); // Auto-verify admin-created users
+        // Prepare user data
+        $userData = [
+            'username' => $validated['username'],
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'role' => $validated['role'],
+            'is_active' => $request->has('is_active'),
+            'email_verified_at' => now(),
+            
+            // Core fields
+            'birth_date' => $validated['birth_date'] ?? null,
+            'birth_city' => $validated['birth_city'] ?? null,
+            'religion' => $validated['religion'] ?? null,
+            'phone_number' => $validated['phone_number'] ?? null,
+            'mobile_number' => $validated['mobile_number'] ?? null,
+            'whatsapp' => $validated['whatsapp'] ?? null,
+            'NIS' => $validated['NIS'] ?? null,
+            'Student_Year' => $validated['Student_Year'] ?? null,
+            'Major' => $validated['Major'] ?? null,
+            'Is_Graduate' => $request->has('Is_Graduate'),
+            'CGPA' => $validated['CGPA'] ?? null,
+            
+            // JSON fields
+            'personal_data' => !empty($validated['personal_data']) ? array_filter($validated['personal_data']) : null,
+            'academic_data' => !empty($validated['academic_data']) ? array_filter($validated['academic_data']) : null,
+            'father_data' => !empty($validated['father_data']) ? array_filter($validated['father_data']) : null,
+            'mother_data' => !empty($validated['mother_data']) ? array_filter($validated['mother_data']) : null,
+            'graduation_data' => !empty($validated['graduation_data']) ? array_filter($validated['graduation_data']) : null,
+        ];
 
-        $newUser = User::create($validated);
+        // Create the user
+        $newUser = User::create($userData);
+
+        // Transfer business ownership if selected
+        if ($request->has('owned_businesses') && !empty($request->owned_businesses)) {
+            Business::whereIn('id', $request->owned_businesses)
+                ->update(['user_id' => $newUser->id]);
+            
+            $businessCount = count($request->owned_businesses);
+            session()->flash('success', "User created successfully! {$businessCount} business(es) transferred to {$newUser->name}.");
+        }
+
+        // Add user as team member to businesses if selected
+        if ($request->has('team_member')) {
+            foreach ($request->team_member as $assignment) {
+                if (!empty($assignment['enabled']) && !empty($assignment['business_id'])) {
+                    User_Businesses_Detail::create([
+                        'user_id' => $newUser->id,
+                        'business_id' => $assignment['business_id'],
+                        'role_type' => $assignment['role_type'] ?? 'employee',
+                        'Position_name' => $assignment['Position_name'] ?? null,
+                        'Working_Date' => $assignment['Working_Date'] ?? now(),
+                        'is_current' => !empty($assignment['is_current']),
+                    ]);
+                }
+            }
+        }
 
         return redirect()
             ->route('users.index')
-            ->with('success', 'User created successfully!');
+            ->with('success', session('success') ?? 'User created successfully!');
     }
 
     /**
@@ -213,7 +297,7 @@ class UserController extends Controller
     public function downloadTemplate()
     {
         if (!$this->getAuthUser()->isAdmin()) {
-            abort(403, 'Only administrators can download template.');
+            abort(403, 'Only administrators can download import template.');
         }
 
         $headers = [

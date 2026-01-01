@@ -29,7 +29,7 @@
                     @if(auth()->user()->isAdmin())
                         {{-- Admin Dropdown (Hover) --}}
                         <div class="relative group">
-                            <button class="text-base font-bold {{ request()->routeIs('users.*') || request()->routeIs('business-types.*') || request()->routeIs('contact-types.*') ? 'text-orange-500' : 'text-gray-700 group-hover:text-orange-500' }} transition duration-150 flex items-center gap-1">
+                            <button class="text-base font-bold {{ request()->routeIs('users.*') || request()->routeIs('business-types.*') || request()->routeIs('contact-types.*') || request()->routeIs('ai-analyses.*') ? 'text-orange-500' : 'text-gray-700 group-hover:text-orange-500' }} transition duration-150 flex items-center gap-1">
                                 Admin Panel
                                 <svg class="w-4 h-4 group-hover:rotate-180 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
@@ -46,6 +46,12 @@
                                 </a>
                                 <a href="{{ route('contact-types.index') }}" class="block px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 hover:text-orange-500">
                                     Contact Types
+                                </a>
+                                <a href="{{ route('ai-analyses.index') }}" class="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 hover:text-purple-600">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                                    </svg>
+                                    AI Moderation
                                 </a>
                             </div>
                         </div>
@@ -135,6 +141,12 @@
                         </a>
                         <a href="{{ route('contact-types.index') }}" class="block py-2 text-sm font-semibold text-gray-700 hover:text-orange-500">
                             Contact Types
+                        </a>
+                        <a href="{{ route('ai-analyses.index') }}" class="flex items-center gap-2 py-2 text-sm font-semibold text-gray-700 hover:text-purple-600">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                            </svg>
+                            AI Moderation
                         </a>
                     </div>
                 @endif

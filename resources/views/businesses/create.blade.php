@@ -68,16 +68,16 @@
 
                         <div>
                             <label for="business_mode" class="block text-sm font-medium text-slate-700 mb-2">
-                                Mode Business <span class="text-red-500">*</span>
+                                Jenis Offering <span class="text-red-500">*</span>
                             </label>
                             <select name="business_mode" 
                                     id="business_mode"
                                     required
-                                    class="block w-full px-4 py-3 border border-slate-300 rounded-lg focus:border-blue-400 focus:ring-2 focus:ring-blue-100 @error('business_mode') border-red-300 @enderror transition">
-                                <option value="">Pilih Mode</option>
-                                <option value="online" {{ old('business_mode') == 'online' ? 'selected' : '' }}>Online</option>
-                                <option value="offline" {{ old('business_mode') == 'offline' ? 'selected' : '' }}>Offline</option>
-                                <option value="hybrid" {{ old('business_mode') == 'hybrid' ? 'selected' : '' }}>Hybrid</option>
+                                    class="block w-full px-4 py-3 border border-slate-300 rounded-lg focus:border-orange-400 focus:ring-2 focus:ring-orange-100 @error('business_mode') border-red-300 @enderror transition">
+                                <option value="">Pilih Jenis Offering</option>
+                                <option value="product" {{ old('business_mode') == 'product' ? 'selected' : '' }}>Product Only</option>
+                                <option value="service" {{ old('business_mode') == 'service' ? 'selected' : '' }}>Service Only</option>
+                                <option value="both" {{ old('business_mode') == 'both' ? 'selected' : '' }}>Product & Service</option>
                             </select>
                             @error('business_mode')
                                 <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
