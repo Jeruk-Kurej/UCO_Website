@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Business;
 use App\Models\Testimony;
 use App\Models\AiAnalysis;
+use App\Services\AiModerationService;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -83,35 +84,30 @@ class TestimonyController extends Controller
         // Create testimony
         $testimony = Testimony::create($validated);
 
-        // TODO: Integrate AI Service here to check score
-        // Example: $aiResult = AiModerationService::analyze($testimony->content);
-        
-        // Placeholder AI logic - Replace with actual AI service
-        $sentimentScore = $this->mockAiSentimentAnalysis($validated['content'], $validated['rating']);
-        $isApproved = $sentimentScore >= 60; // Threshold: 60%
-        $rejectionReason = null;
+        // Use AI moderation service with all available data
+        $aiService = app(AiModerationService::class);
+        $result = $aiService->analyze(
+            $validated['content'],
+            (int)$validated['rating'],
+            $validated['customer_name']
+        );
 
-        if (!$isApproved) {
-            $rejectionReason = 'Content flagged by AI moderation: Low sentiment score or inappropriate language detected.';
-        }
-
-        // Create AI Analysis record
         AiAnalysis::create([
             'testimony_id' => $testimony->id,
-            'sentiment_score' => $sentimentScore,
-            'rejection_reason' => $rejectionReason,
-            'is_approved' => $isApproved,
+            'sentiment_score' => $result['sentiment_score'],
+            'rejection_reason' => $result['rejection_reason'],
+            'is_approved' => $result['is_approved'],
         ]);
 
         // Return response based on approval
-        if ($isApproved) {
+        if ($result['is_approved']) {
             return redirect()
                 ->route('businesses.show', $business)
                 ->with('success', 'Thank you! Your testimony has been approved and published.');
         } else {
             return redirect()
                 ->route('businesses.show', $business)
-                ->with('warning', 'Your testimony has been received but is pending review. Reason: ' . $rejectionReason);
+                ->with('warning', 'Your testimony has been received but is pending review. Reason: ' . $result['rejection_reason']);
         }
     }
 
@@ -148,25 +144,16 @@ class TestimonyController extends Controller
      * MOCK AI Sentiment Analysis (Replace with real AI service)
      * Returns a score between 0-100.
      */
+    // Keep the mock helper for local testing if needed
     private function mockAiSentimentAnalysis(string $content, int $rating): float
     {
-        // Simple mock logic based on rating and content length
-        $baseScore = $rating * 20; // 1-5 rating → 20-100
-
-        // Check for negative keywords (placeholder)
+        $baseScore = $rating * 20;
         $negativeKeywords = ['bad', 'terrible', 'worst', 'horrible', 'awful', 'hate'];
         $negativeCount = 0;
-        
         foreach ($negativeKeywords as $keyword) {
-            if (stripos($content, $keyword) !== false) {
-                $negativeCount++;
-            }
+            if (stripos($content, $keyword) !== false) $negativeCount++;
         }
-
-        // Reduce score based on negative words
         $penalty = $negativeCount * 10;
-        $finalScore = max(0, $baseScore - $penalty);
-
-        return round($finalScore, 2);
+        return round(max(0, $baseScore - $penalty), 2);
     }
 }
