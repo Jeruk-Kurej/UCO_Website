@@ -13,6 +13,7 @@ class UcAiAnalysis extends Model
     protected $fillable = [
         'uc_testimony_id',
         'sentiment_score',
+        'sentiment_label',
         'rejection_reason',
         'is_approved',
     ];
@@ -20,7 +21,7 @@ class UcAiAnalysis extends Model
     protected function casts(): array
     {
         return [
-            'sentiment_score' => 'decimal:2',
+            'sentiment_score' => 'integer',
             'is_approved' => 'boolean',
         ];
     }

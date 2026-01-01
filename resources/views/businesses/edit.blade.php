@@ -94,31 +94,17 @@
 
                         <div>
                             <label for="business_mode" class="block text-sm font-medium text-slate-700 mb-2">
-                                Mode Business <span class="text-red-500">*</span>
+                                Jenis Offering <span class="text-red-500">*</span>
                             </label>
-                            
-                            @if(!$canChangeMode)
-                                <div class="mb-3 p-3 bg-amber-50 border border-amber-300 rounded-lg">
-                                    <div class="flex gap-2 items-start">
-                                        <svg class="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                                        </svg>
-                                        <p class="text-sm text-amber-800">
-                                            Tidak bisa ubah mode saat masih ada {{ $hasProducts ? 'produk' : 'layanan' }}. Hapus dulu untuk ubah mode.
-                                        </p>
-                                    </div>
-                                </div>
-                            @endif
 
                             <select name="business_mode" 
                                     id="business_mode"
                                     required
-                                    {{ !$canChangeMode ? 'disabled' : '' }}
-                                    class="block w-full px-4 py-3 border border-slate-300 rounded-lg focus:border-blue-400 focus:ring-2 focus:ring-blue-100 @error('business_mode') border-red-300 @enderror transition {{ !$canChangeMode ? 'opacity-50 cursor-not-allowed' : '' }}">
-                                <option value="">Pilih Mode</option>
-                                <option value="online" {{ old('business_mode', $business->business_mode) == 'online' ? 'selected' : '' }}>Online</option>
-                                <option value="offline" {{ old('business_mode', $business->business_mode) == 'offline' ? 'selected' : '' }}>Offline</option>
-                                <option value="hybrid" {{ old('business_mode', $business->business_mode) == 'hybrid' ? 'selected' : '' }}>Hybrid</option>
+                                    class="block w-full px-4 py-3 border border-slate-300 rounded-lg focus:border-orange-400 focus:ring-2 focus:ring-orange-100 @error('business_mode') border-red-300 @enderror transition">
+                                <option value="">Pilih Jenis Offering</option>
+                                <option value="product" {{ old('business_mode', $business->business_mode) == 'product' ? 'selected' : '' }}>Product Only</option>
+                                <option value="service" {{ old('business_mode', $business->business_mode) == 'service' ? 'selected' : '' }}>Service Only</option>
+                                <option value="both" {{ old('business_mode', $business->business_mode) == 'both' ? 'selected' : '' }}>Product & Service</option>
                             </select>
                             @error('business_mode')
                                 <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
