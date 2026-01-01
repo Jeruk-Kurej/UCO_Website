@@ -92,6 +92,11 @@ class UserController extends Controller
             'Is_Graduate' => 'nullable|boolean',
             'CGPA' => 'nullable|numeric|min:0|max:4',
             
+            // Employment & Extra (Virtual fields packed into JSON)
+            'current_employment_status' => 'nullable|string|max:100',
+            'has_side_business' => 'nullable|boolean',
+            'profile_photo_url' => 'nullable|string|max:2048',
+
             // JSON Fields
             'personal_data' => 'nullable|array',
             'academic_data' => 'nullable|array',
@@ -129,11 +134,20 @@ class UserController extends Controller
             'CGPA' => $validated['CGPA'] ?? null,
             
             // JSON fields
-            'personal_data' => !empty($validated['personal_data']) ? array_filter($validated['personal_data']) : null,
+            'personal_data' => (function() use ($validated) {
+                $data = !empty($validated['personal_data']) ? array_filter($validated['personal_data']) : [];
+                if (isset($validated['profile_photo_url'])) $data['profile_photo_url'] = $validated['profile_photo_url'];
+                return !empty($data) ? $data : null;
+            })(),
             'academic_data' => !empty($validated['academic_data']) ? array_filter($validated['academic_data']) : null,
             'father_data' => !empty($validated['father_data']) ? array_filter($validated['father_data']) : null,
             'mother_data' => !empty($validated['mother_data']) ? array_filter($validated['mother_data']) : null,
-            'graduation_data' => !empty($validated['graduation_data']) ? array_filter($validated['graduation_data']) : null,
+            'graduation_data' => (function() use ($validated, $request) {
+                $data = !empty($validated['graduation_data']) ? array_filter($validated['graduation_data']) : [];
+                if (isset($validated['current_employment_status'])) $data['current_employment_status'] = $validated['current_employment_status'];
+                if ($request->has('has_side_business')) $data['has_side_business'] = (bool)$request->has_side_business;
+                return !empty($data) ? $data : null;
+            })(),
         ];
 
         // Create the user

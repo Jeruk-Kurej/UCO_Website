@@ -112,35 +112,6 @@
             @endif
         </div>
 
-        {{-- Admin Actions (if needed) --}}
-        @if(Auth::user()->isAdmin() && !$analysis->is_approved)
-            <div class="bg-white shadow-sm rounded-lg p-6">
-                <h2 class="text-lg font-bold text-gray-900 mb-4">Admin Actions</h2>
-                <div class="flex items-center gap-3">
-                    <form action="{{ route('businesses.testimonies.destroy', [$testimony->business, $testimony]) }}" 
-                          method="POST" 
-                          onsubmit="return confirm('Delete this testimony permanently? This action cannot be undone.')">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" 
-                                class="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-semibold text-sm transition">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                            </svg>
-                            Delete Testimony
-                        </button>
-                    </form>
-
-                    <a href="{{ route('businesses.show', $testimony->business) }}" 
-                       class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold text-sm transition">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                        </svg>
-                        View on Business Page
-                    </a>
-                </div>
-            </div>
-        @endif
+        {{-- Business-level testimonies have been removed --}}
     </div>
 </x-app-layout>

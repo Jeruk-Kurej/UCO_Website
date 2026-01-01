@@ -28,10 +28,10 @@ class User extends Authenticatable
         'role',
         'is_active',
         
-        // Employment Status (NEW)
-        'current_employment_status',
-        'has_side_business',
-        'profile_photo_url',
+        // Employment Status (Stored in JSON)
+        // 'current_employment_status',
+        // 'has_side_business',
+        // 'profile_photo_url',
         
         // Core Personal Information
         'birth_date',
@@ -82,7 +82,7 @@ class User extends Authenticatable
             'Is_Graduate' => 'boolean',
             'birth_date' => 'date',
             'CGPA' => 'decimal:2',
-            'has_side_business' => 'boolean',
+            // 'has_side_business' => 'boolean',
             // JSON fields - automatically encode/decode
             'personal_data' => 'array',
             'academic_data' => 'array',

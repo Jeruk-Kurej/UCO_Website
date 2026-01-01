@@ -69,8 +69,7 @@
 
         {{-- Tabs Navigation --}}
         <div x-data="{ 
-            activeTab: '{{ session('activeTab', $business->isProductMode() ? 'products' : 'services') }}',
-            showTestimonyForm: false 
+            activeTab: '{{ session('activeTab', $business->isProductMode() ? 'products' : 'services') }}'
         }" class="bg-white shadow-sm sm:rounded-lg">
             <div class="border-b border-gray-200">
                 <nav class="flex -mb-px px-6 overflow-x-auto">
@@ -108,14 +107,6 @@
                         <i class="bi bi-telephone"></i>
                         Contacts
                         <span class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-xs">{{ $business->contacts->count() }}</span>
-                    </button>
-
-                    <button @click="activeTab = 'testimonies'" 
-                            :class="activeTab === 'testimonies' ? 'border-orange-500 text-orange-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
-                            class="flex items-center gap-2 py-4 px-4 border-b-2 font-medium text-sm transition duration-150 whitespace-nowrap">
-                        <i class="bi bi-star"></i>
-                        Testimonies
-                        <span class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-xs">{{ $approvedTestimonies->count() }}</span>
                     </button>
                 </nav>
             </div>
@@ -446,174 +437,6 @@
                 @endif
             </div>
 
-            {{-- Tab: Testimonies --}}
-            <div x-show="activeTab === 'testimonies'" class="p-6" style="display: none;">
-                <div class="flex items-center justify-between mb-6">
-                    <h3 class="text-lg font-semibold text-gray-900">Customer Testimonies</h3>
-                    
-                    @auth
-                        @unless(Auth::user()->isAdmin())
-                            <button @click="showTestimonyForm = !showTestimonyForm" 
-                                    class="inline-flex items-center px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 font-semibold text-sm transition">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                                </svg>
-                                <span x-text="showTestimonyForm ? 'Cancel' : 'Write Testimony'"></span>
-                            </button>
-                        @endunless
-                    @else
-                        <a href="{{ route('login') }}" 
-                           class="inline-flex items-center px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 font-semibold text-sm transition">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
-                            </svg>
-                            Login to Write Testimony
-                        </a>
-                    @endauth
-                </div>
-
-                {{-- Testimony Submission Form --}}
-                @auth
-                    @unless(Auth::user()->isAdmin())
-                        <div x-show="showTestimonyForm" 
-                             x-cloak 
-                             x-transition:enter="transition ease-out duration-200"
-                             x-transition:enter-start="opacity-0 transform scale-95"
-                             x-transition:enter-end="opacity-100 transform scale-100"
-                             x-transition:leave="transition ease-in duration-150"
-                             x-transition:leave-start="opacity-100 transform scale-100"
-                             x-transition:leave-end="opacity-0 transform scale-95"
-                             class="bg-gradient-to-br from-orange-50 to-yellow-50 border-2 border-orange-200 rounded-lg p-6 mb-6">
-                            <h4 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                                <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
-                                </svg>
-                                Share Your Experience
-                            </h4>
-                            
-                            <form action="{{ route('businesses.testimonies.store', $business) }}" method="POST">
-                                @csrf
-                                
-                                {{-- Customer Name --}}
-                                <div class="mb-4">
-                                    <label for="customer_name" class="block text-sm font-semibold text-gray-700 mb-2">
-                                        Your Name <span class="text-red-500">*</span>
-                                    </label>
-                                    <input type="text" 
-                                           id="customer_name" 
-                                           name="customer_name" 
-                                           value="{{ old('customer_name', Auth::user()->name) }}"
-                                           required
-                                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500">
-                                    @error('customer_name')
-                                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                                    @enderror
-                                </div>
-
-                                {{-- Rating --}}
-                                <div class="mb-4">
-                                    <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                        Rating <span class="text-red-500">*</span>
-                                    </label>
-                                    <div x-data="{ rating: {{ old('rating', 5) }} }" class="flex items-center gap-2">
-                                        <template x-for="star in 5" :key="star">
-                                            <button type="button"
-                                                    @click="rating = star"
-                                                    class="focus:outline-none transition-transform hover:scale-110">
-                                                <svg class="w-8 h-8 fill-current"
-                                                     :class="star <= rating ? 'text-yellow-400' : 'text-gray-300'"
-                                                     viewBox="0 0 20 20">
-                                                    <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/>
-                                                </svg>
-                                            </button>
-                                        </template>
-                                        <input type="hidden" name="rating" :value="rating">
-                                        <span class="ml-2 text-sm font-semibold text-gray-700" x-text="rating + ' / 5'"></span>
-                                    </div>
-                                    @error('rating')
-                                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                                    @enderror
-                                </div>
-
-                                {{-- Testimony Content --}}
-                                <div class="mb-4">
-                                    <label for="content" class="block text-sm font-semibold text-gray-700 mb-2">
-                                        Your Review <span class="text-red-500">*</span>
-                                    </label>
-                                    <textarea id="content" 
-                                              name="content" 
-                                              rows="4"
-                                              required
-                                              placeholder="Share your experience with this business..."
-                                              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500">{{ old('content') }}</textarea>
-                                    <p class="mt-1 text-xs text-gray-500">Minimum 10 characters. Your testimony will be reviewed by AI before publishing.</p>
-                                    @error('content')
-                                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                                    @enderror
-                                </div>
-
-                                {{-- Submit Button --}}
-                                <div class="flex items-center justify-end gap-3">
-                                    <button type="button" 
-                                            @click="showTestimonyForm = false"
-                                            class="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 font-semibold text-sm transition">
-                                        Cancel
-                                    </button>
-                                    <button type="submit" 
-                                            class="inline-flex items-center px-6 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 font-semibold text-sm transition">
-                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                        </svg>
-                                        Submit Testimony
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    @endunless
-                @endauth
-
-                {{-- Existing Testimonies --}}
-
-                @if($approvedTestimonies->count() > 0)
-                    <div class="space-y-4">
-                        @foreach($approvedTestimonies as $testimony)
-                            <div class="border border-gray-200 rounded-lg p-4 bg-white">
-                                <div class="flex items-start justify-between mb-3">
-                                    <div>
-                                        <h4 class="font-semibold text-gray-900">{{ $testimony->customer_name }}</h4>
-                                        <div class="flex items-center gap-1 mt-1">
-                                            @for($i = 1; $i <= 5; $i++)
-                                                <i class="bi bi-star{{ $i <= $testimony->rating ? '-fill' : '' }} text-yellow-500"></i>
-                                            @endfor
-                                        </div>
-                                    </div>
-                                    <span class="text-xs text-gray-500">{{ $testimony->date->format('d M Y') }}</span>
-                                </div>
-                                <p class="text-sm text-gray-700 leading-relaxed">{{ $testimony->content }}</p>
-                                
-                                @if($testimony->aiAnalysis)
-                                    <div class="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
-                                        <p class="text-xs font-semibold text-blue-900 mb-1">
-                                            <i class="bi bi-stars me-1"></i>
-                                            AI Analysis
-                                        </p>
-                                        <p class="text-xs text-blue-800">
-                                            <strong>Sentiment:</strong> {{ ucfirst($testimony->aiAnalysis->sentiment_label) }} 
-                                            ({{ round($testimony->aiAnalysis->sentiment_score * 100) }}%)
-                                        </p>
-                                    </div>
-                                @endif
-                            </div>
-                        @endforeach
-                    </div>
-                @else
-                    <div class="text-center py-12 bg-gray-50 rounded-lg">
-                        <i class="bi bi-star text-6xl text-gray-300 mb-3"></i>
-                        <p class="text-gray-500 text-lg font-medium">No testimonies yet</p>
-                        <p class="text-sm text-gray-400 mt-2">Customer reviews will appear here once submitted and approved</p>
-                    </div>
-                @endif
-            </div>
         </div>
     </div>
 </x-app-layout>

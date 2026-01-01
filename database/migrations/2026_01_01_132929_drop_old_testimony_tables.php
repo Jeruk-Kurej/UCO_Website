@@ -11,10 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // NOTE:
-        // The `users` table has hit MySQL's 65,535 row-size limit in this project.
-        // Adding more fixed-size columns will fail on many MySQL configurations.
-        // Employment + profile fields should be stored in existing JSON columns instead.
+        Schema::dropIfExists('ai_analyses');
+        Schema::dropIfExists('testimonies');
     }
 
     /**
@@ -22,6 +20,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // no-op
+        // We are not recreating the tables as this is a cleanup migration.
     }
 };
