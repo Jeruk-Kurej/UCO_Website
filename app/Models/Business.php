@@ -81,7 +81,7 @@ class Business extends Model
      */
     public function isProductMode(): bool
     {
-        return $this->business_mode === 'product';
+        return in_array($this->business_mode, ['product', 'both']);
     }
 
     /**
@@ -89,7 +89,15 @@ class Business extends Model
      */
     public function isServiceMode(): bool
     {
-        return $this->business_mode === 'service';
+        return in_array($this->business_mode, ['service', 'both']);
+    }
+
+    /**
+     * Check if business has both products and services
+     */
+    public function isBothMode(): bool
+    {
+        return $this->business_mode === 'both';
     }
 
     /**

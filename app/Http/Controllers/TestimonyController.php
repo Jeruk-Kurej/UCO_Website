@@ -5,13 +5,26 @@ namespace App\Http\Controllers;
 use App\Models\Business;
 use App\Models\Testimony;
 use App\Models\AiAnalysis;
-use App\Services\AiModerationService;
+use App\Services\GeminiModerationService;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class TestimonyController extends Controller
 {
+    /**
+     * Gemini Moderation Service
+     */
+    private GeminiModerationService $geminiService;
+
+    /**
+     * Constructor - Inject GeminiModerationService
+     */
+    public function __construct(GeminiModerationService $geminiService)
+    {
+        $this->geminiService = $geminiService;
+    }
     /**
      * Get authenticated user as User instance
      */
@@ -84,23 +97,22 @@ class TestimonyController extends Controller
         // Create testimony
         $testimony = Testimony::create($validated);
 
-        // Use AI moderation service with all available data
-        $aiService = app(AiModerationService::class);
-        $result = $aiService->analyze(
-            $validated['content'],
-            (int)$validated['rating'],
-            $validated['customer_name']
-        );
+        // Use Gemini AI moderation service
+        $result = $this->geminiService->analyze($validated['content']);
+
+        // Determine approval based on score (threshold: 50)
+        $isApproved = $result['score'] >= 50;
 
         AiAnalysis::create([
             'testimony_id' => $testimony->id,
-            'sentiment_score' => $result['sentiment_score'],
-            'rejection_reason' => $result['rejection_reason'],
-            'is_approved' => $result['is_approved'],
+            'sentiment_score' => $result['score'],
+            'sentiment_label' => $result['sentiment_label'],
+            'rejection_reason' => $result['reason'],
+            'is_approved' => $isApproved,
         ]);
 
         // Return response based on approval
-        if ($result['is_approved']) {
+        if ($isApproved) {
             return redirect()
                 ->route('businesses.show', $business)
                 ->with('success', 'Thank you! Your testimony has been approved and published.');

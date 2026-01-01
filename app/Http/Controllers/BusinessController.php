@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\BusinessType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class BusinessController extends Controller
 {
@@ -205,7 +206,7 @@ class BusinessController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'required|string',
             'business_type_id' => 'required|exists:business_types,id',
-            'business_mode' => 'required|in:product,service',
+            'business_mode' => 'required|in:product,service,both',
             'user_id' => 'nullable|exists:users,id',
             
             // Enhanced fields
@@ -225,14 +226,22 @@ class BusinessController extends Controller
 
         $user = $this->getAuthUser();
 
-        // Validate business mode change
+        // Validate business mode change - prevent breaking changes
         $hasProducts = $business->products()->count() > 0;
         $hasServices = $business->services()->count() > 0;
         
         if ($validated['business_mode'] !== $business->business_mode) {
-            if ($hasProducts || $hasServices) {
+            // Prevent changing to "service only" if products exist
+            if ($validated['business_mode'] === 'service' && $hasProducts) {
                 return back()->withErrors([
-                    'business_mode' => 'Cannot change business mode while products or services exist. Delete them first.'
+                    'business_mode' => 'Cannot change to Service Only while products exist. Delete products first or choose "Product & Service".'
+                ])->withInput();
+            }
+            
+            // Prevent changing to "product only" if services exist
+            if ($validated['business_mode'] === 'product' && $hasServices) {
+                return back()->withErrors([
+                    'business_mode' => 'Cannot change to Product Only while services exist. Delete services first or choose "Product & Service".'
                 ])->withInput();
             }
         }
@@ -245,8 +254,8 @@ class BusinessController extends Controller
         // Handle logo upload
         if ($request->hasFile('logo')) {
             // Delete old logo if exists
-            if ($business->logo_url && \Storage::disk('public')->exists($business->logo_url)) {
-                \Storage::disk('public')->delete($business->logo_url);
+            if ($business->logo_url && Storage::disk('public')->exists($business->logo_url)) {
+                Storage::disk('public')->delete($business->logo_url);
             }
             $logoPath = $request->file('logo')->store('businesses/logos', 'public');
             $validated['logo_url'] = $logoPath;
@@ -260,7 +269,7 @@ class BusinessController extends Controller
         if ($request->has('remove_legal_docs')) {
             foreach ($request->remove_legal_docs as $index) {
                 if (isset($currentLegalDocs[$index]['file_path'])) {
-                    \Storage::disk('public')->delete($currentLegalDocs[$index]['file_path']);
+                    Storage::disk('public')->delete($currentLegalDocs[$index]['file_path']);
                     unset($currentLegalDocs[$index]);
                 }
             }
@@ -287,7 +296,7 @@ class BusinessController extends Controller
         if ($request->has('remove_certifications')) {
             foreach ($request->remove_certifications as $index) {
                 if (isset($currentCertifications[$index]['file_path'])) {
-                    \Storage::disk('public')->delete($currentCertifications[$index]['file_path']);
+                    Storage::disk('public')->delete($currentCertifications[$index]['file_path']);
                     unset($currentCertifications[$index]);
                 }
             }

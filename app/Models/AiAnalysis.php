@@ -18,6 +18,7 @@ class AiAnalysis extends Model
     protected $fillable = [
         'testimony_id',
         'sentiment_score',
+        'sentiment_label',
         'rejection_reason',
         'is_approved',
     ];
@@ -30,7 +31,7 @@ class AiAnalysis extends Model
     protected function casts(): array
     {
         return [
-            'sentiment_score' => 'decimal:2',
+            'sentiment_score' => 'integer',
             'is_approved' => 'boolean',
         ];
     }

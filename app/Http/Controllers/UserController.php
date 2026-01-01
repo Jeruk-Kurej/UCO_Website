@@ -297,7 +297,7 @@ class UserController extends Controller
     public function downloadTemplate()
     {
         if (!$this->getAuthUser()->isAdmin()) {
-            abort(403, 'Only administrators can download template.');
+            abort(403, 'Only administrators can download import template.');
         }
 
         $headers = [
