@@ -24,6 +24,11 @@
                         Business
                     </a>
 
+                    <a href="{{ route('uc-testimonies.index') }}" 
+                       class="text-base font-bold {{ request()->routeIs('uc-testimonies.*') ? 'text-orange-500' : 'text-gray-700 hover:text-orange-500' }} transition duration-150">
+                        Testimonies
+                    </a>
+
                     @if(auth()->user()->isAdmin())
                         {{-- Admin Dropdown --}}
                         <div class="relative group">
@@ -119,6 +124,10 @@
                 <a href="/businesses" 
                    class="block py-2 text-sm font-medium {{ request()->routeIs('businesses.*') ? 'text-purple-600' : 'text-gray-700' }}">
                     Business
+                </a>
+                <a href="{{ route('uc-testimonies.index') }}" 
+                   class="block py-2 text-base font-bold {{ request()->routeIs('uc-testimonies.*') ? 'text-orange-500' : 'text-gray-700' }}">
+                    Testimonies
                 </a>
                 @if(auth()->user()->isAdmin())
                     <div class="pt-2 border-t border-gray-200">

@@ -165,19 +165,10 @@ class BusinessController extends Controller
             'businessType.productCategories.products.photos',
             'services',
             'photos',
-            'contacts.contactType',
-            'testimonies.aiAnalysis'
+            'contacts.contactType'
         ]);
 
-        // Only show approved testimonies to public
-        $approvedTestimonies = $business->testimonies()
-            ->whereHas('aiAnalysis', function ($query) {
-                $query->where('is_approved', true);
-            })
-            ->latest()
-            ->get();
-
-        return view('businesses.show', compact('business', 'approvedTestimonies'));
+        return view('businesses.show', compact('business'));
     }
 
     /**

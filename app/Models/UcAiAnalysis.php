@@ -6,28 +6,18 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class AiAnalysis extends Model
+class UcAiAnalysis extends Model
 {
     use HasFactory;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
-        'testimony_id',
+        'uc_testimony_id',
         'sentiment_score',
         'sentiment_label',
         'rejection_reason',
         'is_approved',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
@@ -36,11 +26,8 @@ class AiAnalysis extends Model
         ];
     }
 
-    /**
-     * Get the testimony that owns this AI analysis
-     */
-    public function testimony(): BelongsTo
+    public function ucTestimony(): BelongsTo
     {
-        return $this->belongsTo(Testimony::class);
+        return $this->belongsTo(UcTestimony::class);
     }
 }

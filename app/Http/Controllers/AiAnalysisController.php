@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Testimony;
-use App\Models\AiAnalysis;
+use App\Models\UcAiAnalysis;
+use App\Models\UcTestimony;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
@@ -25,40 +25,27 @@ class AiAnalysisController extends Controller
     }
 
     /**
-     * Check if user can view AI analysis
-     * Admin can view all, Business owner can view their own testimonies
+     * Display the AI analysis for a UC-wide testimony.
+     * Admin only.
      */
-    private function authorizeAnalysisAccess(Testimony $testimony): void
+    public function showUc(UcTestimony $ucTestimony)
     {
         $user = $this->getAuthUser();
-        
-        // Load business relationship
-        $testimony->load('business');
-        
-        // Allow if admin OR business owner
-        if (!$user->isAdmin() && $testimony->business->user_id !== $user->id) {
-            abort(403, 'Unauthorized action.');
+
+        if (!$user->isAdmin()) {
+            abort(403, 'Only administrators can view UC testimony AI analyses.');
         }
-    }
 
-    /**
-     * Display the AI analysis for a testimony.
-     * READ ONLY - No create/update because AI generates this automatically.
-     */
-    public function show(Testimony $testimony)
-    {
-        $this->authorizeAnalysisAccess($testimony);
-
-        // Load AI analysis
-        $analysis = $testimony->aiAnalysis;
+        $analysis = $ucTestimony->aiAnalysis;
 
         if (!$analysis) {
-            abort(404, 'AI Analysis not found for this testimony.');
+            abort(404, 'AI Analysis not found for this UC testimony.');
         }
 
-        $testimony->load('business');
-
-        return view('ai-analyses.show', compact('testimony', 'analysis'));
+        return view('uc-ai-analyses.show', [
+            'testimony' => $ucTestimony,
+            'analysis' => $analysis,
+        ]);
     }
 
     /**
@@ -72,9 +59,9 @@ class AiAnalysisController extends Controller
             abort(403, 'Only administrators can view all AI analyses.');
         }
 
-        $analyses = AiAnalysis::with(['testimony.business'])
+        $ucAnalyses = UcAiAnalysis::with(['ucTestimony'])
             ->latest()
-            ->paginate(20);
+            ->paginate(20, ['*'], 'uc_page');
 
         // Calculate stats
         $totalCount = $analyses->total();

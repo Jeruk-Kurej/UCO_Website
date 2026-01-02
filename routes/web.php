@@ -12,8 +12,8 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductPhotoController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ServiceController;
-use App\Http\Controllers\TestimonyController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\UcTestimonyController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -35,6 +35,9 @@ Route::get('/business-types', [BusinessTypeController::class, 'index'])->name('b
 
 // ✅ Public Contact Types Index (READ ONLY)
 Route::get('/contact-types', [ContactTypeController::class, 'index'])->name('contact-types.index');
+
+// ✅ UC-wide Testimonies (Public list)
+Route::get('/uc-testimonies', [UcTestimonyController::class, 'index'])->name('uc-testimonies.index');
 
 /*
 |--------------------------------------------------------------------------
@@ -120,12 +123,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
             'photo' => 'id'
         ]);
 
-    // Testimonies (nested under businesses)
-    Route::resource('businesses.testimonies', TestimonyController::class)
-        ->scoped([
-            'business' => 'id',
-            'testimony' => 'id'
-        ]);
+    // ✅ UC-wide Testimonies (submission)
+    Route::post('/uc-testimonies', [UcTestimonyController::class, 'store'])->name('uc-testimonies.store');
+
+    // ✅ UC-wide Testimonies (admin reject/delete)
+    Route::delete('/uc-testimonies/{ucTestimony}', [UcTestimonyController::class, 'destroy'])->name('uc-testimonies.destroy');
 
     /*
     |--------------------------------------------------------------------------
@@ -133,7 +135,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     |--------------------------------------------------------------------------
     */
     Route::get('/ai-analyses', [AiAnalysisController::class, 'index'])->name('ai-analyses.index');
-    Route::get('/testimonies/{testimony}/ai-analysis', [AiAnalysisController::class, 'show'])->name('ai-analyses.show');
+    Route::get('/uc-testimonies/{ucTestimony}/ai-analysis', [AiAnalysisController::class, 'showUc'])->name('uc-ai-analyses.show');
 });
 
 /*

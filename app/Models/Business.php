@@ -71,11 +71,6 @@ class Business extends Model
         return $this->hasMany(BusinessContact::class);
     }
 
-    public function testimonies(): HasMany
-    {
-        return $this->hasMany(Testimony::class);
-    }
-
     /**
      * Check if business is in product mode
      */
