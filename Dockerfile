@@ -63,9 +63,14 @@ RUN chmod -R 755 /app/storage /app/bootstrap/cache
 # Expose port
 EXPOSE 8000
 
-# Start with migrations and server
+# Start with migrations, cache clearing, and server
 CMD echo "=== RAILWAY STARTUP ===" && \
     echo "DB_HOST: $DB_HOST" && \
+    echo "Clearing caches..." && \
+    php artisan config:clear && \
+    php artisan route:clear && \
+    php artisan view:clear && \
+    php artisan cache:clear && \
     echo "Running migrations..." && \
     php artisan migrate --force || echo "Migration failed, continuing..." && \
     echo "Starting server on port 8000" && \
