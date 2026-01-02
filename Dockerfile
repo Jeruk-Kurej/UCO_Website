@@ -56,14 +56,26 @@ RUN php artisan package:discover --ansi
 RUN chmod -R 755 /app/storage /app/bootstrap/cache
 
 # Expose port (Railway will override with $PORT)
-EXPOSE 8000
+EXPOSE 8080
 
-# Start application - use Railway's runtime PORT variable
-CMD echo "=== RAILWAY STARTUP DEBUG ===" && \
-    echo "PORT variable: $PORT" && \
-    echo "APP_ENV: $APP_ENV" && \
-    echo "APP_DEBUG: $APP_DEBUG" && \
-    echo "Current time: $(date)" && \
-    echo "PHP version: $(php -v | head -n 1)" && \
-    echo "Starting Laravel server on 0.0.0.0:$PORT" && \
-    php artisan serve --host=0.0.0.0 --port=$PORT --verbose
+# Create startup script that waits for PORT
+RUN echo '#!/bin/sh\n\
+set -e\n\
+echo "=== RAILWAY STARTUP DEBUG ==="\n\
+echo "Waiting for PORT environment variable..."\n\
+while [ -z "$PORT" ]; do\n\
+  echo "PORT not set yet, waiting 1 second..."\n\
+  sleep 1\n\
+done\n\
+echo "PORT detected: $PORT"\n\
+echo "APP_ENV: $APP_ENV"\n\
+echo "APP_DEBUG: $APP_DEBUG"\n\
+echo "Current time: $(date)"\n\
+echo "PHP version: $(php -v | head -n 1)"\n\
+echo "Starting Laravel server on 0.0.0.0:$PORT"\n\
+php artisan config:cache || true\n\
+php artisan route:cache || true\n\
+exec php artisan serve --host=0.0.0.0 --port=$PORT --verbose\n\
+' > /start.sh && chmod +x /start.sh
+
+CMD ["/start.sh"]
