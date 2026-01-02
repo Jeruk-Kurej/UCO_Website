@@ -61,17 +61,17 @@ RUN chmod -R 755 /app/storage /app/bootstrap/cache
 # Expose port (will be overridden by Railway's PORT env var)
 EXPOSE 8000
 
-# Start with config optimization, migrations, and server - USE $PORT FROM RAILWAY
+# Start server without config caching (prevents DB connection errors during cache)
 CMD echo "=== RAILWAY STARTUP ===" && \
-    echo "PORT from Railway: ${PORT:-8000}" && \
+    echo "PORT: ${PORT:-8000}" && \
     echo "DB_HOST: $DB_HOST" && \
     echo "APP_URL: $APP_URL" && \
-    echo "=== Checking Vite build assets ===" && \
+    echo "=== Vite Build Assets ===" && \
     ls -la public/build/ && \
-    echo "Optimizing configuration with runtime env vars..." && \
-    php artisan config:cache && \
-    php artisan route:cache && \
-    echo "Running migrations..." && \
-    php artisan migrate --force || echo "Migration failed, continuing..." && \
-    echo "Starting server on 0.0.0.0:${PORT:-8000}" && \
+    echo "=== Manifest Content ===" && \
+    cat public/build/manifest.json && \
+    echo "" && \
+    echo "=== Running Migrations ===" && \
+    php artisan migrate --force --no-interaction && \
+    echo "=== Starting PHP Server ===" && \
     php -S 0.0.0.0:${PORT:-8000} -t public
