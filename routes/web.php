@@ -6,6 +6,7 @@ use App\Http\Controllers\BusinessController;
 use App\Http\Controllers\BusinessPhotoController;
 use App\Http\Controllers\BusinessTypeController;
 use App\Http\Controllers\ContactTypeController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProductCategoryController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductPhotoController;
@@ -44,9 +45,7 @@ Route::get('/contact-types', [ContactTypeController::class, 'index'])->name('con
 Route::middleware(['auth', 'verified'])->group(function () {
     
     // Dashboard
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // Profile Management
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -60,6 +59,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     |--------------------------------------------------------------------------
     */
     Route::resource('businesses', BusinessController::class)->except(['index', 'show']);
+    
+    // Toggle featured status (Admin only)
+    Route::post('/businesses/{business}/toggle-featured', [BusinessController::class, 'toggleFeatured'])
+        ->name('businesses.toggle-featured');
 
     /*
     |--------------------------------------------------------------------------
