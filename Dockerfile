@@ -63,9 +63,10 @@ RUN chmod -R 755 /app/storage /app/bootstrap/cache
 # Expose port
 EXPOSE 8000
 
-# Start with PHP built-in server - HARDCODED PORT 8000
+# Start with migrations and server
 CMD echo "=== RAILWAY STARTUP ===" && \
-    echo "Env PORT variable: $PORT" && \
     echo "DB_HOST: $DB_HOST" && \
-    echo "Forcing server to port 8000 (Railway networking config)" && \
+    echo "Running migrations..." && \
+    php artisan migrate --force || echo "Migration failed, continuing..." && \
+    echo "Starting server on port 8000" && \
     php -S 0.0.0.0:8000 -t public
