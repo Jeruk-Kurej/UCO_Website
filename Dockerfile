@@ -1,5 +1,8 @@
 FROM php:8.4-cli
 
+# Force rebuild - PHP 8.4 required
+RUN php -v
+
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     git \
