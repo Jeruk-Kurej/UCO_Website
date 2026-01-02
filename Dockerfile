@@ -58,5 +58,5 @@ RUN chmod -R 755 /app/storage /app/bootstrap/cache
 # Expose port
 EXPOSE 8000
 
-# Start application - simplified without migration
-CMD php artisan serve --host=0.0.0.0 --port=8000
+# Start application - use Railway's dynamic PORT
+CMD php artisan serve --host=0.0.0.0 --port=${PORT:-8000}
