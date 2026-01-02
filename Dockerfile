@@ -55,11 +55,20 @@ RUN php artisan package:discover --ansi
 # Set permissions
 RUN chmod -R 755 /app/storage /app/bootstrap/cache
 
-# Expose port
+# Expose port (Railway will override with $PORT)
 EXPOSE 8000
 
-# Start application with migration and error handling
-CMD php artisan migrate --force || echo "Migration failed, continuing..." && \
-    php artisan config:clear && \
-    php artisan cache:clear && \
-    php artisan serve --host=0.0.0.0 --port=${PORT:-8000}
+# Create startup script with debugging
+RUN echo '#!/bin/bash\n\
+set -e\n\
+echo "=== RAILWAY STARTUP DEBUG ==="\n\
+echo "PORT variable: ${PORT}"\n\
+echo "APP_ENV: ${APP_ENV}"\n\
+echo "APP_DEBUG: ${APP_DEBUG}"\n\
+echo "Current time: $(date)"\n\
+echo "PHP version: $(php -v | head -n 1)"\n\
+echo "Starting Laravel server on 0.0.0.0:${PORT}"\n\
+php artisan serve --host=0.0.0.0 --port=${PORT} --verbose\n\
+' > /start.sh && chmod +x /start.sh
+
+CMD ["/start.sh"]

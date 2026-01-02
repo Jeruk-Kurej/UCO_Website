@@ -16,6 +16,20 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\UcTestimonyController;
 use Illuminate\Support\Facades\Route;
 
+// Health check endpoints for debugging
+Route::get('/health', function () {
+    return response()->json([
+        'status' => 'ok',
+        'time' => now()->toIso8601String(),
+        'port' => env('PORT', 'not set'),
+        'app_env' => env('APP_ENV'),
+    ]);
+});
+
+Route::get('/ping', function () {
+    return 'pong at ' . now()->toDateTimeString();
+});
+
 /*
 |--------------------------------------------------------------------------
 | Public Routes 🌍
