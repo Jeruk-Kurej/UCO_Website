@@ -11,6 +11,10 @@
     
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     
+    {{-- Fallback: Direct asset links if @vite fails --}}
+    <link rel="stylesheet" href="/build/assets/app-G1CMEZfE.css">
+    <script type="module" src="/build/assets/app-CJy8ASEk.js"></script>
+    
     <style>
         body { font-family: 'Inter', system-ui, sans-serif; }
     </style>
