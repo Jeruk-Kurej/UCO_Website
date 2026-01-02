@@ -52,30 +52,19 @@ RUN composer dump-autoload --optimize
 # Run Laravel package discovery
 RUN php artisan package:discover --ansi
 
+# Cache configuration and routes at BUILD time
+RUN php artisan config:cache && \
+    php artisan route:cache && \
+    php artisan view:cache
+
 # Set permissions
 RUN chmod -R 755 /app/storage /app/bootstrap/cache
 
-# Expose port (Railway will override with $PORT)
+# Expose port
 EXPOSE 8080
 
-# Create startup script that waits for PORT
-RUN echo '#!/bin/sh\n\
-set -e\n\
-echo "=== RAILWAY STARTUP DEBUG ==="\n\
-echo "Waiting for PORT environment variable..."\n\
-while [ -z "$PORT" ]; do\n\
-  echo "PORT not set yet, waiting 1 second..."\n\
-  sleep 1\n\
-done\n\
-echo "PORT detected: $PORT"\n\
-echo "APP_ENV: $APP_ENV"\n\
-echo "APP_DEBUG: $APP_DEBUG"\n\
-echo "Current time: $(date)"\n\
-echo "PHP version: $(php -v | head -n 1)"\n\
-echo "Starting Laravel server on 0.0.0.0:$PORT"\n\
-php artisan config:cache || true\n\
-php artisan route:cache || true\n\
-exec php artisan serve --host=0.0.0.0 --port=$PORT --verbose\n\
-' > /start.sh && chmod +x /start.sh
-
-CMD ["/start.sh"]
+# Start with PHP built-in server using public/index.php
+CMD echo "=== RAILWAY STARTUP ===" && \
+    echo "PORT: $PORT" && \
+    echo "Starting server on 0.0.0.0:${PORT:-8080}" && \
+    php -S 0.0.0.0:${PORT:-8080} -t public
