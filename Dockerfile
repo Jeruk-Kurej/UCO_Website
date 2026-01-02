@@ -31,8 +31,8 @@ WORKDIR /app
 # Copy composer files
 COPY composer.json composer.lock ./
 
-# Install dependencies (production only)
-RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+# Install dependencies (production only) - skip scripts to avoid artisan errors
+RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist --no-scripts
 
 # Copy package files
 COPY package.json package-lock.json ./
@@ -46,8 +46,11 @@ COPY . .
 # Build assets
 RUN npm run build
 
-# Generate optimized autoload files
+# Now run composer scripts after files are copied
 RUN composer dump-autoload --optimize
+
+# Run Laravel package discovery
+RUN php artisan package:discover --ansi
 
 # Set permissions
 RUN chmod -R 755 /app/storage /app/bootstrap/cache
