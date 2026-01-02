@@ -52,21 +52,21 @@ RUN composer dump-autoload --optimize
 # Run Laravel package discovery
 RUN php artisan package:discover --ansi
 
-# Cache configuration and routes at BUILD time
-RUN php artisan config:cache && \
-    php artisan route:cache && \
-    php artisan view:cache
-
 # Set permissions
 RUN chmod -R 755 /app/storage /app/bootstrap/cache
 
 # Expose port (will be overridden by Railway's PORT env var)
 EXPOSE 8000
 
-# Start with migrations and server - USE $PORT FROM RAILWAY
+# Start with config optimization, migrations, and server - USE $PORT FROM RAILWAY
 CMD echo "=== RAILWAY STARTUP ===" && \
     echo "PORT from Railway: ${PORT:-8000}" && \
     echo "DB_HOST: $DB_HOST" && \
+    echo "APP_URL: $APP_URL" && \
+    echo "Optimizing configuration with runtime env vars..." && \
+    php artisan config:cache && \
+    php artisan route:cache && \
+    php artisan view:cache && \
     echo "Running migrations..." && \
     php artisan migrate --force || echo "Migration failed, continuing..." && \
     echo "Starting server on 0.0.0.0:${PORT:-8000}" && \
