@@ -50,10 +50,8 @@ RUN composer dump-autoload --optimize
 RUN chmod -R 755 /app/storage /app/bootstrap/cache
 
 # Expose port
-EXPOSE 8080
+EXPOSE 8000
 
 # Start application
-CMD php artisan config:cache && \
-    php artisan route:cache && \
-    php artisan view:cache && \
-    php artisan serve --host=0.0.0.0 --port=${PORT:-8080}
+CMD php artisan optimize && \
+    php artisan serve --host=0.0.0.0 --port=8000
