@@ -56,7 +56,10 @@ class UserController extends Controller
             abort(403, 'Only administrators can create users.');
         }
 
-        return view('users.create');
+        // Get available businesses for ownership transfer
+        $availableBusinesses = Business::with('user', 'businessType')->get();
+
+        return view('users.create', compact('availableBusinesses'));
     }
 
     /**

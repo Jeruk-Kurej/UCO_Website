@@ -63,6 +63,12 @@ class AiAnalysisController extends Controller
             ->latest()
             ->paginate(20, ['*'], 'uc_page');
 
-        return view('ai-analyses.index', compact('ucAnalyses'));
+        // Calculate stats
+        $totalCount = $analyses->total();
+        $approvedCount = AiAnalysis::where('is_approved', true)->count();
+        $rejectedCount = AiAnalysis::where('is_approved', false)->count();
+        $approvalRate = $totalCount > 0 ? round(($approvedCount / $totalCount) * 100, 1) : 0;
+
+        return view('ai-analyses.index', compact('analyses', 'totalCount', 'approvedCount', 'rejectedCount', 'approvalRate'));
     }
 }

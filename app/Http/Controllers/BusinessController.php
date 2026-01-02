@@ -42,7 +42,14 @@ class BusinessController extends Controller
         }
         
         $businesses = $query->latest()->paginate(15);
-        return view('businesses.index', compact('businesses'));
+        
+        // Prepare my businesses for current user
+        $myBusinesses = collect();
+        if (Auth::check()) {
+            $myBusinesses = $businesses->where('user_id', Auth::id());
+        }
+        
+        return view('businesses.index', compact('businesses', 'myBusinesses'));
     }
 
     /**
@@ -182,7 +189,30 @@ class BusinessController extends Controller
             $users = User::whereIn('role', ['student', 'alumni', 'admin'])->get();
         }
 
-        return view('businesses.edit', compact('business', 'businessTypes', 'users'));
+        // Decode JSON fields
+        $legalDocs = $business->legal_documents;
+        if (is_string($legalDocs)) {
+            $legalDocs = json_decode($legalDocs, true) ?? [];
+        }
+        $legalDocs = $legalDocs ?? [];
+
+        $certifications = $business->product_certifications;
+        if (is_string($certifications)) {
+            $certifications = json_decode($certifications, true) ?? [];
+        }
+        $certifications = $certifications ?? [];
+
+        $challenges = $business->business_challenges;
+        if (is_string($challenges)) {
+            $challenges = json_decode($challenges, true) ?? [];
+        }
+        $challenges = $challenges ?? [];
+
+        $hasProducts = $business->products()->count() > 0;
+        $hasServices = $business->services()->count() > 0;
+        $canChangeMode = !($hasProducts || $hasServices);
+
+        return view('businesses.edit', compact('business', 'businessTypes', 'users', 'legalDocs', 'certifications', 'challenges', 'hasProducts', 'hasServices', 'canChangeMode'));
     }
 
     /**
@@ -315,6 +345,29 @@ class BusinessController extends Controller
         return redirect()
             ->route('businesses.show', $business)
             ->with('success', 'Business updated successfully!');
+    }
+
+    /**
+     * Toggle featured status for a business (Admin only).
+     */
+    public function toggleFeatured(Business $business)
+    {
+        $user = $this->getAuthUser();
+        
+        if (!$user->isAdmin()) {
+            abort(403, 'Only administrators can feature businesses.');
+        }
+
+        $business->is_featured = !$business->is_featured;
+        $business->save();
+
+        $status = $business->is_featured ? 'featured' : 'unfeatured';
+        
+        return response()->json([
+            'success' => true,
+            'is_featured' => $business->is_featured,
+            'message' => "Business successfully {$status}!"
+        ]);
     }
 
     /**

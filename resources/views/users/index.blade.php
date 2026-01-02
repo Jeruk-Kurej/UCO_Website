@@ -4,17 +4,21 @@
         <div class="flex items-center justify-between">
             <div>
                 <h1 class="text-2xl font-bold text-gray-900">User Management</h1>
-                <p class="text-sm text-gray-600">Manage platform users and permissions</p>
+                <p class="text-sm text-gray-600 mt-1">Manage platform users and permissions</p>
             </div>
-            <div class="flex gap-2">
+            <div class="flex gap-3">
                 <button @click="showImportModal = true"
-                        class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white rounded-lg font-semibold text-sm shadow-sm transition duration-150">
-                    <i class="bi bi-file-earmark-excel me-2"></i>
+                        class="inline-flex items-center px-4 py-2.5 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                    </svg>
                     Import Excel
                 </button>
-                <a href="{{ route('users.create') }}" 
-                   class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white rounded-lg font-semibold text-sm shadow-sm transition duration-150">
-                    <i class="bi bi-person-plus me-2"></i>
+                <a href="/users/create" 
+                   class="inline-flex items-center px-4 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
                     Create User
                 </a>
             </div>
@@ -37,10 +41,9 @@
                      x-transition:leave-start="opacity-100"
                      x-transition:leave-end="opacity-0"
                      @click="showImportModal = false"
-                     class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" 
+                     class="fixed inset-0 transition-opacity bg-gray-900 bg-opacity-50" 
                      aria-hidden="true"></div>
 
-                {{-- Center modal --}}
                 <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
 
                 {{-- Modal panel --}}
@@ -51,31 +54,35 @@
                      x-transition:leave="ease-in duration-200"
                      x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
                      x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                     class="inline-block overflow-hidden text-left align-bottom transition-all transform bg-white rounded-lg shadow-xl sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                     class="inline-block overflow-hidden text-left align-bottom transition-all transform bg-white rounded-xl shadow-xl sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border border-gray-200">
                     
-                    <form action="{{ route('users.import') }}" method="POST" enctype="multipart/form-data">
+                    <form action="/users/import" method="POST" enctype="multipart/form-data">
                         @csrf
                         
-                        <div class="px-6 pt-5 pb-4 bg-white sm:p-6 sm:pb-4">
+                        <div class="px-6 pt-6 pb-4 bg-white">
                             {{-- Modal Header --}}
-                            <div class="flex items-start">
-                                <div class="flex items-center justify-center flex-shrink-0 w-12 h-12 mx-auto bg-green-100 rounded-full sm:mx-0 sm:h-10 sm:w-10">
-                                    <i class="bi bi-file-earmark-excel text-green-600 text-xl"></i>
-                                </div>
-                                <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left flex-1">
-                                    <h3 class="text-lg font-semibold leading-6 text-gray-900" id="modal-title">
-                                        Import Users from Excel
-                                    </h3>
-                                    <div class="mt-2">
-                                        <p class="text-sm text-gray-500">
-                                            Upload an Excel file (.xlsx) with user data to bulk import users into the system.
+                            <div class="flex items-start justify-between">
+                                <div class="flex items-start gap-3">
+                                    <div class="flex items-center justify-center flex-shrink-0 w-10 h-10 bg-purple-100 rounded-lg">
+                                        <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-lg font-bold text-gray-900" id="modal-title">
+                                            Import Users from Excel
+                                        </h3>
+                                        <p class="text-sm text-gray-600 mt-1">
+                                            Upload an Excel file (.xlsx) with user data to bulk import users.
                                         </p>
                                     </div>
                                 </div>
                                 <button type="button" 
                                         @click="showImportModal = false"
-                                        class="text-gray-400 hover:text-gray-500">
-                                    <i class="bi bi-x-lg text-xl"></i>
+                                        class="text-gray-400 hover:text-gray-600 transition-colors">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
                                 </button>
                             </div>
 
@@ -88,22 +95,26 @@
                                        name="file" 
                                        accept=".xlsx,.xls"
                                        required
-                                       class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500">
-                                <p class="mt-1 text-xs text-gray-500">
+                                       class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none focus:border-purple-600 focus:ring-2 focus:ring-purple-600">
+                                <p class="mt-2 text-xs text-gray-500">
                                     Accepted formats: .xlsx, .xls (Max: 10MB)
                                 </p>
                             </div>
 
                             {{-- Template Download --}}
-                            <div class="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                                <div class="flex items-start">
-                                    <i class="bi bi-info-circle text-blue-600 text-lg mt-0.5 mr-3"></i>
+                            <div class="mt-4 p-4 bg-purple-50 rounded-lg border border-purple-200">
+                                <div class="flex items-start gap-3">
+                                    <svg class="w-5 h-5 text-purple-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
                                     <div class="flex-1">
-                                        <p class="text-sm text-blue-800 font-medium">Need a template?</p>
-                                        <p class="text-xs text-blue-700 mt-1">Download our Excel template with all required columns and a sample row.</p>
-                                        <a href="{{ route('users.template') }}" 
-                                           class="inline-flex items-center mt-2 text-xs font-semibold text-blue-600 hover:text-blue-800">
-                                            <i class="bi bi-download mr-1"></i>
+                                        <p class="text-sm text-gray-900 font-medium">Need a template?</p>
+                                        <p class="text-xs text-gray-600 mt-1">Download our Excel template with required columns.</p>
+                                        <a href="/users/template/download" 
+                                           class="inline-flex items-center gap-1 mt-2 text-xs font-medium text-purple-600 hover:text-purple-800 transition-colors">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                                            </svg>
                                             Download Template
                                         </a>
                                     </div>
@@ -112,8 +123,8 @@
 
                             {{-- Import Notes --}}
                             <div class="mt-4 text-xs text-gray-600 space-y-1">
-                                <p><strong>Note:</strong></p>
-                                <ul class="list-disc list-inside pl-2 space-y-0.5">
+                                <p class="font-medium text-gray-700">Important Notes:</p>
+                                <ul class="list-disc list-inside pl-2 space-y-0.5 text-gray-600">
                                     <li>Users with existing emails will be skipped</li>
                                     <li>Missing passwords will default to "password123"</li>
                                     <li>Invalid data will cause import to fail</li>
@@ -122,16 +133,18 @@
                         </div>
 
                         {{-- Modal Footer --}}
-                        <div class="px-4 py-3 bg-gray-50 sm:px-6 sm:flex sm:flex-row-reverse gap-2">
-                            <button type="submit"
-                                    class="inline-flex justify-center w-full px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 border border-transparent rounded-lg shadow-sm sm:w-auto sm:text-sm">
-                                <i class="bi bi-upload mr-2"></i>
-                                Import Users
-                            </button>
+                        <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end gap-3">
                             <button type="button"
                                     @click="showImportModal = false"
-                                    class="inline-flex justify-center w-full px-4 py-2 mt-3 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 sm:mt-0 sm:w-auto">
+                                    class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
                                 Cancel
+                            </button>
+                            <button type="submit"
+                                    class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                </svg>
+                                Import Users
                             </button>
                         </div>
                     </form>
@@ -140,39 +153,39 @@
         </div>
 
         {{-- Users Table Card --}}
-        <div class="bg-white shadow-sm rounded-lg overflow-hidden">
+        <div class="bg-white border border-gray-200 rounded-xl overflow-hidden">
             {{-- Table Container --}}
             <div class="overflow-x-auto">
                 <table class="w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[15%]">
+                            <th scope="col" class="px-4 py-3.5 text-left text-xs font-medium text-gray-600 uppercase tracking-wider w-[15%]">
                                 User
                             </th>
-                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[20%]">
+                            <th scope="col" class="px-4 py-3.5 text-left text-xs font-medium text-gray-600 uppercase tracking-wider w-[20%]">
                                 Email
                             </th>
-                            <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-[12%]">
+                            <th scope="col" class="px-4 py-3.5 text-center text-xs font-medium text-gray-600 uppercase tracking-wider w-[12%]">
                                 Role
                             </th>
-                            <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-[12%]">
+                            <th scope="col" class="px-4 py-3.5 text-center text-xs font-medium text-gray-600 uppercase tracking-wider w-[12%]">
                                 Status
                             </th>
-                            <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-[12%]">
+                            <th scope="col" class="px-4 py-3.5 text-center text-xs font-medium text-gray-600 uppercase tracking-wider w-[12%]">
                                 Businesses
                             </th>
-                            <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-[15%]">
+                            <th scope="col" class="px-4 py-3.5 text-center text-xs font-medium text-gray-600 uppercase tracking-wider w-[15%]">
                                 Actions
                             </th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         @forelse($users as $user)
-                            <tr class="hover:bg-gray-50 transition duration-150">
-                                {{-- ✅ CHANGED: User Info WITHOUT Avatar Icon --}}
+                            <tr class="hover:bg-gray-50 transition">
+                                {{-- User Info --}}
                                 <td class="px-4 py-4">
                                     <div>
-                                        <p class="text-sm font-semibold text-gray-900">{{ $user->name }}</p>
+                                        <p class="text-sm font-medium text-gray-900">{{ $user->name }}</p>
                                         <p class="text-xs text-gray-500">@<!-- -->{{ $user->username }}</p>
                                     </div>
                                 </td>
@@ -185,18 +198,26 @@
                                 {{-- Role --}}
                                 <td class="px-4 py-4 text-center">
                                     @if($user->role === 'admin')
-                                        <span class="inline-flex items-center gap-1 px-3 py-1 text-xs font-semibold rounded-full bg-indigo-100 text-indigo-800 whitespace-nowrap">
-                                            <i class="bi bi-shield-check"></i>
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-md bg-purple-100 text-purple-800">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                                            </svg>
                                             Admin
                                         </span>
                                     @elseif($user->role === 'student')
-                                        <span class="inline-flex items-center gap-1 px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 whitespace-nowrap">
-                                            <i class="bi bi-mortarboard"></i>
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-md bg-blue-100 text-blue-800">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path d="M12 14l9-5-9-5-9 5 9 5z"></path>
+                                                <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222"></path>
+                                            </svg>
                                             Student
                                         </span>
                                     @else
-                                        <span class="inline-flex items-center gap-1 px-3 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 whitespace-nowrap">
-                                            <i class="bi bi-person-check"></i>
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-md bg-green-100 text-green-800">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                            </svg>
                                             Alumni
                                         </span>
                                     @endif
@@ -205,13 +226,13 @@
                                 {{-- Status --}}
                                 <td class="px-4 py-4 text-center">
                                     @if($user->is_active)
-                                        <span class="inline-flex items-center gap-1 px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 whitespace-nowrap">
-                                            <i class="bi bi-check-circle-fill"></i>
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-md bg-green-100 text-green-800">
+                                            <span class="w-1.5 h-1.5 bg-green-600 rounded-full"></span>
                                             Active
                                         </span>
                                     @else
-                                        <span class="inline-flex items-center gap-1 px-3 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800 whitespace-nowrap">
-                                            <i class="bi bi-x-circle-fill"></i>
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-md bg-gray-100 text-gray-800">
+                                            <span class="w-1.5 h-1.5 bg-gray-600 rounded-full"></span>
                                             Inactive
                                         </span>
                                     @endif
@@ -219,24 +240,26 @@
 
                                 {{-- Businesses Count --}}
                                 <td class="px-4 py-4 text-center">
-                                    <div class="flex items-center justify-center gap-1">
-                                        <i class="bi bi-briefcase text-gray-400 text-sm"></i>
-                                        <span class="text-sm text-gray-700 font-medium">{{ $user->businesses_count ?? 0 }}</span>
-                                    </div>
+                                    <span class="text-sm text-gray-700 font-medium">{{ $user->businesses_count ?? 0 }}</span>
                                 </td>
 
                                 {{-- Actions --}}
                                 <td class="px-4 py-4">
                                     <div class="flex items-center justify-center gap-2">
                                         <a href="{{ route('users.show', $user) }}" 
-                                           class="inline-flex items-center justify-center w-9 h-9 rounded-lg text-blue-600 hover:bg-blue-50 transition duration-150"
+                                           class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors"
                                            title="View Details">
-                                            <i class="bi bi-eye text-lg"></i>
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                            </svg>
                                         </a>
                                         <a href="{{ route('users.edit', $user) }}" 
-                                           class="inline-flex items-center justify-center w-9 h-9 rounded-lg text-orange-600 hover:bg-orange-50 transition duration-150"
+                                           class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors"
                                            title="Edit User">
-                                            <i class="bi bi-pencil text-lg"></i>
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                            </svg>
                                         </a>
                                         @if(auth()->id() !== $user->id)
                                             <form action="{{ route('users.destroy', $user) }}" 
@@ -246,15 +269,19 @@
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" 
-                                                        class="inline-flex items-center justify-center w-9 h-9 rounded-lg text-red-600 hover:bg-red-50 transition duration-150"
+                                                        class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-red-600 hover:bg-red-50 transition-colors"
                                                         title="Delete User">
-                                                    <i class="bi bi-trash text-lg"></i>
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                    </svg>
                                                 </button>
                                             </form>
                                         @else
-                                            <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg text-gray-300 cursor-not-allowed" 
+                                            <span class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-gray-300 cursor-not-allowed" 
                                                   title="Cannot delete yourself">
-                                                <i class="bi bi-trash text-lg"></i>
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                </svg>
                                             </span>
                                         @endif
                                     </div>
@@ -262,10 +289,12 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="px-6 py-12 text-center">
+                                <td colspan="6" class="px-6 py-16 text-center">
                                     <div class="flex flex-col items-center justify-center">
-                                        <i class="bi bi-people text-6xl text-gray-300 mb-3"></i>
-                                        <p class="text-gray-500 text-lg font-medium">No users found</p>
+                                        <svg class="w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                        </svg>
+                                        <p class="text-gray-500 text-base font-medium mb-1">No users found</p>
                                         <p class="text-gray-400 text-sm">Create your first user to get started</p>
                                     </div>
                                 </td>
@@ -285,43 +314,61 @@
 
         {{-- Stats Summary --}}
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div class="bg-white rounded-lg shadow-sm p-4 border-l-4 border-indigo-500">
+            <div class="bg-white border border-gray-200 rounded-xl p-5">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-xs font-medium text-gray-500 uppercase">Total Users</p>
-                        <p class="text-2xl font-bold text-gray-900">{{ $users->total() }}</p>
+                        <p class="text-xs font-medium text-gray-600 uppercase tracking-wide">Total Users</p>
+                        <p class="text-2xl font-bold text-gray-900 mt-1">{{ $users->total() }}</p>
                     </div>
-                    <i class="bi bi-people text-3xl text-indigo-200"></i>
+                    <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                        </svg>
+                    </div>
                 </div>
             </div>
 
-            <div class="bg-white rounded-lg shadow-sm p-4 border-l-4 border-indigo-500">
+            <div class="bg-white border border-gray-200 rounded-xl p-5">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-xs font-medium text-gray-500 uppercase">Admins</p>
-                        <p class="text-2xl font-bold text-gray-900">{{ $users->where('role', 'admin')->count() }}</p>
+                        <p class="text-xs font-medium text-gray-600 uppercase tracking-wide">Admins</p>
+                        <p class="text-2xl font-bold text-gray-900 mt-1">{{ $users->where('role', 'admin')->count() }}</p>
                     </div>
-                    <i class="bi bi-shield-check text-3xl text-indigo-200"></i>
+                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                        </svg>
+                    </div>
                 </div>
             </div>
 
-            <div class="bg-white rounded-lg shadow-sm p-4 border-l-4 border-green-500">
+            <div class="bg-white border border-gray-200 rounded-xl p-5">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-xs font-medium text-gray-500 uppercase">Students</p>
-                        <p class="text-2xl font-bold text-gray-900">{{ $users->where('role', 'student')->count() }}</p>
+                        <p class="text-xs font-medium text-gray-600 uppercase tracking-wide">Students</p>
+                        <p class="text-2xl font-bold text-gray-900 mt-1">{{ $users->where('role', 'student')->count() }}</p>
                     </div>
-                    <i class="bi bi-mortarboard text-3xl text-green-200"></i>
+                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 14l9-5-9-5-9 5 9 5z"></path>
+                            <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222"></path>
+                        </svg>
+                    </div>
                 </div>
             </div>
 
-            <div class="bg-white rounded-lg shadow-sm p-4 border-l-4 border-blue-500">
+            <div class="bg-white border border-gray-200 rounded-xl p-5">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-xs font-medium text-gray-500 uppercase">Alumni</p>
-                        <p class="text-2xl font-bold text-gray-900">{{ $users->where('role', 'alumni')->count() }}</p>
+                        <p class="text-xs font-medium text-gray-600 uppercase tracking-wide">Alumni</p>
+                        <p class="text-2xl font-bold text-gray-900 mt-1">{{ $users->where('role', 'alumni')->count() }}</p>
                     </div>
-                    <i class="bi bi-person-check text-3xl text-blue-200"></i>
+                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                    </div>
                 </div>
             </div>
         </div>
