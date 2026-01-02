@@ -4,7 +4,7 @@
         {{-- Page Header --}}
         <div class="bg-gradient-to-br from-slate-50 to-blue-50 border border-slate-200 rounded-xl shadow-sm px-8 py-10 mb-8">
             <div class="flex items-center gap-4">
-                <a href="{{ route('businesses.index') }}" 
+                <a href="/businesses" 
                    class="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-white border border-slate-300 hover:border-slate-400 text-slate-600 hover:text-slate-900 transition-all shadow-sm">
                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -17,7 +17,7 @@
             </div>
         </div>
 
-        <form method="POST" action="{{ route('businesses.store') }}" enctype="multipart/form-data" class="space-y-6">
+        <form method="POST" action="/businesses" enctype="multipart/form-data" class="space-y-6">
             @csrf
 
             {{-- SECTION 1: BASIC INFORMATION --}}
@@ -523,7 +523,7 @@
                 <button type="submit" class="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold py-4 px-6 rounded-lg shadow-md transition duration-200">
                     💾 Simpan Business
                 </button>
-                <a href="{{ route('businesses.index') }}" class="flex-1 bg-gradient-to-r from-slate-400 to-slate-500 hover:from-slate-500 hover:to-slate-600 text-white font-semibold py-4 px-6 rounded-lg shadow-md transition duration-200 text-center flex items-center justify-center">
+                <a href="/businesses" class="flex-1 bg-gradient-to-r from-slate-400 to-slate-500 hover:from-slate-500 hover:to-slate-600 text-white font-semibold py-4 px-6 rounded-lg shadow-md transition duration-200 text-center flex items-center justify-center">
                     ✖ Batal
                 </a>
             </div>

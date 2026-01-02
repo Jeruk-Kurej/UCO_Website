@@ -1,8 +1,3 @@
-@php
-    // Redirect to welcome page since login is now integrated there
-    header('Location: /');
-    exit;
-@endphp
                 
                 @if (session('status'))
                     <div class="mb-6 p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-800">
@@ -10,7 +5,7 @@
                     </div>
                 @endif
                 
-                <form method="POST" action="{{ route('login') }}" class="space-y-5">
+                <form method="POST" action="/login" class="space-y-5">
                     @csrf
                     
                     <div>
@@ -33,7 +28,7 @@
                         <div class="flex items-center justify-between mb-1.5">
                             <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
                             @if (Route::has('password.request'))
-                                <a href="{{ route('password.request') }}" class="text-xs font-medium text-gray-600 hover:text-gray-900 transition-colors">
+                                <a href="/forgot-password" class="text-xs font-medium text-gray-600 hover:text-gray-900 transition-colors">
                                     Forgot?
                                 </a>
                             @endif
@@ -67,7 +62,7 @@
                 <div class="mt-6 pt-6 border-t border-gray-200 text-center">
                     <p class="text-sm text-gray-600">
                         Don't have an account? 
-                        <a href="{{ route('register') }}" class="font-medium text-gray-900 hover:underline">Sign up</a>
+                        <a href="/register" class="font-medium text-gray-900 hover:underline">Sign up</a>
                     </p>
                 </div>
                 

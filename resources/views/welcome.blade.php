@@ -69,7 +69,7 @@
                             </div>
                         @endif
                         
-                        <form method="POST" action="{{ route('login') }}" class="space-y-4 relative z-10">
+                        <form method="POST" action="/login" class="space-y-4 relative z-10">
                             @csrf
                             
                             <div>
@@ -92,7 +92,7 @@
                                 <div class="flex items-center justify-between mb-1.5">
                                     <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
                                     @if (Route::has('password.request'))
-                                        <a href="{{ route('password.request') }}" class="text-xs font-medium text-gray-600 hover:text-gray-900 transition-colors">
+                                        <a href="/forgot-password" class="text-xs font-medium text-gray-600 hover:text-gray-900 transition-colors">
                                             Forgot?
                                         </a>
                                     @endif

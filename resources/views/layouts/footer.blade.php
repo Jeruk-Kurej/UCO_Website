@@ -22,23 +22,23 @@
                 <h4 class="font-medium text-sm text-gray-900 mb-4">Quick Links</h4>
                 <ul class="space-y-2">
                     <li>
-                        <a href="{{ route('dashboard') }}" class="text-sm text-gray-600 hover:text-gray-900 transition-colors">
+                        <a href="/dashboard" class="text-sm text-gray-600 hover:text-gray-900 transition-colors">
                             Dashboard
                         </a>
                     </li>
                     <li>
-                        <a href="{{ route('businesses.index') }}" class="text-sm text-gray-600 hover:text-gray-900 transition-colors">
+                        <a href="/businesses" class="text-sm text-gray-600 hover:text-gray-900 transition-colors">
                             Businesses Directory
                         </a>
                     </li>
                     <li>
-                        <a href="{{ route('business-types.index') }}" class="text-sm text-gray-600 hover:text-gray-900 transition-colors">
+                        <a href="/business-types" class="text-sm text-gray-600 hover:text-gray-900 transition-colors">
                             Business Categories
                         </a>
                     </li>
                     @auth
                         <li>
-                            <a href="{{ route('profile.edit') }}" class="text-sm text-gray-600 hover:text-gray-900 transition-colors">
+                            <a href="/profile" class="text-sm text-gray-600 hover:text-gray-900 transition-colors">
                                 My Profile
                             </a>
                         </li>

@@ -14,7 +14,7 @@
                     </svg>
                     Import Excel
                 </button>
-                <a href="{{ route('users.create') }}" 
+                <a href="/users/create" 
                    class="inline-flex items-center px-4 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
@@ -56,7 +56,7 @@
                      x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
                      class="inline-block overflow-hidden text-left align-bottom transition-all transform bg-white rounded-xl shadow-xl sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border border-gray-200">
                     
-                    <form action="{{ route('users.import') }}" method="POST" enctype="multipart/form-data">
+                    <form action="/users/import" method="POST" enctype="multipart/form-data">
                         @csrf
                         
                         <div class="px-6 pt-6 pb-4 bg-white">
@@ -110,7 +110,7 @@
                                     <div class="flex-1">
                                         <p class="text-sm text-gray-900 font-medium">Need a template?</p>
                                         <p class="text-xs text-gray-600 mt-1">Download our Excel template with required columns.</p>
-                                        <a href="{{ route('users.template') }}" 
+                                        <a href="/users/template/download" 
                                            class="inline-flex items-center gap-1 mt-2 text-xs font-medium text-purple-600 hover:text-purple-800 transition-colors">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
