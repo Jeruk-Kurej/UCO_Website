@@ -43,8 +43,11 @@ RUN npm ci
 # Copy application files
 COPY . .
 
-# Build assets
-RUN npm run build
+# Build assets with Vite (generates /public/build/)
+RUN npm run build && \
+    echo "=== Vite Build Complete ===" && \
+    ls -la public/build/ && \
+    cat public/build/manifest.json
 
 # Now run composer scripts after files are copied
 RUN composer dump-autoload --optimize
@@ -63,10 +66,11 @@ CMD echo "=== RAILWAY STARTUP ===" && \
     echo "PORT from Railway: ${PORT:-8000}" && \
     echo "DB_HOST: $DB_HOST" && \
     echo "APP_URL: $APP_URL" && \
+    echo "=== Checking Vite build assets ===" && \
+    ls -la public/build/ && \
     echo "Optimizing configuration with runtime env vars..." && \
     php artisan config:cache && \
     php artisan route:cache && \
-    php artisan view:cache && \
     echo "Running migrations..." && \
     php artisan migrate --force || echo "Migration failed, continuing..." && \
     echo "Starting server on 0.0.0.0:${PORT:-8000}" && \
