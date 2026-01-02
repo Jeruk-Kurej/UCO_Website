@@ -64,9 +64,11 @@ EXPOSE 8000
 # Start server - make migrations optional to prevent startup failure
 CMD echo "=== RAILWAY STARTUP ===" && \
     echo "PORT: ${PORT:-8000}" && \
-    echo "DB_HOST: ${DB_HOST:-not_set}" && \
-    echo "APP_URL: ${APP_URL:-not_set}" && \
-    echo "=== Vite Assets Check ===" && \
-    ls -la public/build/assets/ | head -20 && \
-    echo "=== Starting PHP Server (skipping migrations) ===" && \
+    echo "APP_ENV: ${APP_ENV:-not_set}" && \
+    echo "APP_DEBUG: ${APP_DEBUG:-not_set}" && \
+    echo "=== Checking Vite manifest ===" && \
+    test -f public/build/manifest.json && echo "Manifest exists" || echo "Manifest MISSING!" && \
+    cat public/build/manifest.json && \
+    echo "" && \
+    echo "=== Starting PHP Server ===" && \
     php -S 0.0.0.0:${PORT:-8000} -t public
