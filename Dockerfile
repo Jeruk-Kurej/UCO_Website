@@ -58,6 +58,8 @@ RUN chmod -R 755 /app/storage /app/bootstrap/cache
 # Expose port
 EXPOSE 8000
 
-# Start application
-CMD php artisan optimize && \
+# Start application with auto-migration
+CMD php artisan migrate --force && \
+    php artisan db:seed --force && \
+    php artisan optimize && \
     php artisan serve --host=0.0.0.0 --port=8000
