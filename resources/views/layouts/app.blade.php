@@ -24,7 +24,7 @@
         @stack('styles')
     </head>
     {{-- ✅ CHANGED: Soft white background (not harsh white) --}}
-    <body class="font-sans antialiased bg-gray-50">
+    <body class="font-sans antialiased bg-soft-white">
         <div class="min-h-screen flex flex-col">
             {{-- Navigation --}}
             @include('layouts.navigation')
