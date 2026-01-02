@@ -2,7 +2,7 @@
     <div class="max-w-3xl mx-auto">
         {{-- Page Header --}}
         <div class="mb-6 flex items-center gap-3">
-            <a href="{{ route('business-types.index') }}" 
+            <a href="/business-types" 
                class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-800 transition duration-150">
                 <i class="bi bi-arrow-left text-lg"></i>
             </a>
@@ -14,7 +14,7 @@
 
         <div class="bg-white shadow-sm sm:rounded-lg">
             <div class="p-6">
-                <form method="POST" action="{{ route('business-types.store') }}" class="space-y-6">
+                <form method="POST" action="/business-types" class="space-y-6">
                     @csrf
 
                     {{-- Business Type Name --}}
@@ -53,7 +53,7 @@
 
                     {{-- Submit Buttons --}}
                     <div class="flex items-center justify-between pt-6 border-t border-gray-200">
-                        <a href="{{ route('business-types.index') }}" 
+                        <a href="/business-types" 
                            class="inline-flex items-center px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition duration-150">
                             <i class="bi bi-x-lg me-2"></i>
                             Cancel

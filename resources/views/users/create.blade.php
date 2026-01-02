@@ -2,7 +2,7 @@
     <div class="max-w-6xl mx-auto" x-data="{ activeTab: 'basic' }">
         {{-- Page Header --}}
         <div class="mb-6 flex items-center gap-3">
-            <a href="{{ route('users.index') }}" 
+            <a href="/users" 
                class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-800 transition duration-150">
                 <i class="bi bi-arrow-left text-lg"></i>
             </a>
@@ -12,7 +12,7 @@
             </div>
         </div>
 
-        <form method="POST" action="{{ route('users.store') }}" class="space-y-6">
+        <form method="POST" action="/users" class="space-y-6">
             @csrf
 
             {{-- Tab Navigation --}}
@@ -651,7 +651,7 @@
 
             {{-- Action Buttons --}}
             <div class="flex items-center justify-between pb-6">
-                <a href="{{ route('users.index') }}" 
+                <a href="/users" 
                    class="inline-flex items-center px-6 py-2.5 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-medium transition duration-150">
                     <i class="bi bi-x-lg me-2"></i>
                     Cancel

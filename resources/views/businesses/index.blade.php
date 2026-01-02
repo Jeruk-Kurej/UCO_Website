@@ -39,7 +39,7 @@
                     @auth
                         @if(auth()->user()->isAdmin())
                             <div class="py-2">
-                                <a href="{{ route('businesses.create') }}"
+                                <a href="/businesses/create"
                                    class="inline-flex items-center px-4 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors">
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
@@ -141,7 +141,7 @@
                     <div x-show="activeTab === 'my'" class="p-6" style="display: none;">
                         <div class="mb-6 flex items-center justify-between">
                             <h3 class="text-lg font-semibold text-gray-900">My Businesses</h3>
-                            <a href="{{ route('businesses.create') }}" 
+                            <a href="/businesses/create" 
                                class="inline-flex items-center px-4 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
@@ -206,7 +206,7 @@
                             <div class="text-center py-12">
                                 <i class="bi bi-inbox text-6xl text-gray-300"></i>
                                 <p class="mt-4 text-gray-500 text-lg font-medium">You have no businesses yet.</p>
-                                <a href="{{ route('businesses.create') }}" 
+                                <a href="/businesses/create" 
                                    class="mt-4 inline-flex items-center px-6 py-3 bg-gray-900 text-white rounded-lg font-medium shadow-sm hover:bg-gray-800 transition-colors">
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>

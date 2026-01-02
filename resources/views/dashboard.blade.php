@@ -18,7 +18,7 @@
                 <div class="flex items-center gap-4">
                     @auth
                         @if(!auth()->user()->isAdmin())
-                            <a href="{{ route('businesses.create') }}" 
+                            <a href="/businesses/create" 
                                class="inline-flex items-center px-5 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
@@ -26,16 +26,16 @@
                                 Create Business
                             </a>
                         @endif
-                        <a href="{{ route('businesses.index') }}" 
+                        <a href="/businesses" 
                            class="inline-flex items-center px-5 py-2.5 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors">
                             Explore Directory
                         </a>
                     @else
-                        <a href="{{ route('register') }}" 
+                        <a href="/register" 
                            class="inline-flex items-center px-5 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors">
                             Join Now
                         </a>
-                        <a href="{{ route('login') }}" 
+                        <a href="/login" 
                            class="inline-flex items-center px-5 py-2.5 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors">
                             Login
                         </a>
@@ -104,7 +104,7 @@
 
                 {{-- View All Button --}}
                 <div class="text-center">
-                    <a href="{{ route('businesses.index') }}" 
+                    <a href="/businesses" 
                        class="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors">
                         <span>Explore All Businesses</span>
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
