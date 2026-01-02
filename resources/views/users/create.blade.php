@@ -569,10 +569,6 @@
                     Business Assignment
                 </h2>
 
-                @php
-                    $availableBusinesses = \App\Models\Business::with('user', 'businessType')->get();
-                @endphp
-
                 @if($availableBusinesses->count() > 0)
                     {{-- Business Ownership Transfer --}}
                     <div class="mb-8">

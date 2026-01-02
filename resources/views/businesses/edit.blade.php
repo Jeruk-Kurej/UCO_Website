@@ -1,28 +1,3 @@
-@php
-    // Decode JSON data at the start
-    $legalDocs = $business->legal_documents;
-    if (is_string($legalDocs)) {
-        $legalDocs = json_decode($legalDocs, true) ?? [];
-    }
-    $legalDocs = $legalDocs ?? [];
-
-    $certifications = $business->product_certifications;
-    if (is_string($certifications)) {
-        $certifications = json_decode($certifications, true) ?? [];
-    }
-    $certifications = $certifications ?? [];
-
-    $challenges = $business->business_challenges;
-    if (is_string($challenges)) {
-        $challenges = json_decode($challenges, true) ?? [];
-    }
-    $challenges = $challenges ?? [];
-
-    $hasProducts = $business->products()->count() > 0;
-    $hasServices = $business->services()->count() > 0;
-    $canChangeMode = !($hasProducts || $hasServices);
-@endphp
-
 <x-app-layout>
     <div class="max-w-5xl mx-auto py-12 px-4">
         

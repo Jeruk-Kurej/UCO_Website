@@ -9,13 +9,6 @@
         </div>
 
         {{-- Stats Cards --}}
-        @php
-            $totalCount = $analyses->total();
-            $approvedCount = \App\Models\AiAnalysis::where('is_approved', true)->count();
-            $rejectedCount = \App\Models\AiAnalysis::where('is_approved', false)->count();
-            $approvalRate = $totalCount > 0 ? round(($approvedCount / $totalCount) * 100, 1) : 0;
-        @endphp
-
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div class="bg-white rounded-lg shadow-sm p-4 border-l-4 border-blue-500">
                 <p class="text-xs font-medium text-gray-500 uppercase">Total Analyzed</p>
