@@ -191,4 +191,60 @@ Route::get('/businesses/{business}', [BusinessController::class, 'show'])->name(
 Route::get('/business-types/{businessType}', [BusinessTypeController::class, 'show'])->name('business-types.show');
 Route::get('/contact-types/{contactType}', [ContactTypeController::class, 'show'])->name('contact-types.show');
 
+/*
+|--------------------------------------------------------------------------
+| 🔥 TEMPORARY: Database Reset Route (DELETE AFTER USE!)
+|--------------------------------------------------------------------------
+*/
+Route::get('/admin/reset-database-confirm', function () {
+    // Only admin can access
+    if (!auth()->check() || !auth()->user()->isAdmin()) {
+        abort(403, 'Only administrators can reset database.');
+    }
+    
+    return view('admin.reset-database');
+})->middleware('auth')->name('admin.reset-database');
+
+Route::post('/admin/reset-database-execute', function () {
+    use App\Models\User;
+    use App\Models\Business;
+    use Illuminate\Support\Facades\Hash;
+    
+    // Only admin can access
+    if (!auth()->check() || !auth()->user()->isAdmin()) {
+        abort(403, 'Only administrators can reset database.');
+    }
+    
+    try {
+        // Delete all businesses
+        $businessCount = Business::count();
+        Business::query()->delete();
+        
+        // Delete ALL users
+        $userCount = User::count();
+        User::query()->delete();
+        
+        // Create ONE default admin
+        $admin = User::create([
+            'username' => 'admin',
+            'name' => 'Admin UCO',
+            'email' => 'admin@uco.com',
+            'password' => Hash::make('password'),
+            'role' => 'admin',
+            'is_active' => true,
+            'email_verified_at' => now(),
+        ]);
+        
+        // Logout current user (will be deleted)
+        auth()->logout();
+        request()->session()->invalidate();
+        request()->session()->regenerateToken();
+        
+        return redirect('/login')->with('success', "✅ Database reset! Deleted {$businessCount} businesses and {$userCount} users. Login as admin@uco.com / password");
+        
+    } catch (\Exception $e) {
+        return back()->with('error', 'Error: ' . $e->getMessage());
+    }
+})->middleware('auth')->name('admin.reset-database.execute');
+
 require __DIR__.'/auth.php';
