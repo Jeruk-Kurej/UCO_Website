@@ -33,16 +33,28 @@
                                         @enderror
                                     </div>
 
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700">Rating</label>
-                                        <select name="rating" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500">
-                                            <option value="">Select rating</option>
-                                            @for ($i = 5; $i >= 1; $i--)
-                                                <option value="{{ $i }}" @selected((int)old('rating') === $i)>
-                                                    {{ $i }} Star{{ $i > 1 ? 's' : '' }}
-                                                </option>
-                                            @endfor
-                                        </select>
+                                    <div x-data="{
+                                        rating: {{ old('rating', 0) }},
+                                        hoverRating: 0,
+                                        setRating(value) {
+                                            this.rating = value;
+                                        }
+                                    }">
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Rating</label>
+                                        <input type="hidden" name="rating" x-model="rating">
+                                        <div class="flex items-center gap-1">
+                                            <template x-for="star in 5" :key="star">
+                                                <button type="button" 
+                                                        @click="setRating(star)"
+                                                        @mouseenter="hoverRating = star"
+                                                        @mouseleave="hoverRating = 0"
+                                                        class="text-3xl transition-colors focus:outline-none"
+                                                        :class="(hoverRating >= star || (hoverRating === 0 && rating >= star)) ? 'text-yellow-400' : 'text-gray-300'">
+                                                    ★
+                                                </button>
+                                            </template>
+                                            <span class="ml-2 text-sm text-gray-600" x-show="rating > 0" x-text="rating + ' star' + (rating > 1 ? 's' : '')"></span>
+                                        </div>
                                         @error('rating')
                                             <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
                                         @enderror
