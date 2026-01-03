@@ -534,7 +534,15 @@
     <script>
         function previewLogo(event) {
             const file = event.target.files[0];
+            const maxSize = 2 * 1024 * 1024; // 2MB
+            
             if (file) {
+                if (file.size > maxSize) {
+                    alert('Logo must not be larger than 2MB. Please choose a smaller file.');
+                    event.target.value = '';
+                    return;
+                }
+                
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     const preview = document.getElementById('logoPreview');
@@ -547,8 +555,18 @@
 
         function previewLegalDocs(event) {
             const files = event.target.files;
+            const maxSize = 5 * 1024 * 1024; // 5MB per file
             const container = document.getElementById('legalDocsPreview');
             container.innerHTML = '';
+            
+            // Validate file sizes
+            for (let file of files) {
+                if (file.size > maxSize) {
+                    alert(`File "${file.name}" is too large. Each file must not exceed 5MB.`);
+                    event.target.value = '';
+                    return;
+                }
+            }
             
             Array.from(files).forEach((file, index) => {
                 const div = document.createElement('div');
@@ -582,8 +600,18 @@
 
         function previewCertifications(event) {
             const files = event.target.files;
+            const maxSize = 5 * 1024 * 1024; // 5MB per file
             const container = document.getElementById('certificationsPreview');
             container.innerHTML = '';
+            
+            // Validate file sizes
+            for (let file of files) {
+                if (file.size > maxSize) {
+                    alert(`File "${file.name}" is too large. Each file must not exceed 5MB.`);
+                    event.target.value = '';
+                    return;
+                }
+            }
             
             Array.from(files).forEach((file, index) => {
                 const div = document.createElement('div');

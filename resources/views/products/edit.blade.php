@@ -99,7 +99,7 @@
                         </a>
                         <div class="flex items-center gap-3">
                             <button type="button" 
-                                    onclick="if(confirm('Delete this product?')) document.getElementById('delete-form').submit();"
+                                    onclick="deleteProduct()"
                                     class="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition duration-150">
                                 <i class="bi bi-trash me-2"></i>
                                 Delete
@@ -121,4 +121,12 @@
             </div>
         </div>
     </div>
+
+    <script>
+    function deleteProduct() {
+        if(confirm('Are you sure you want to delete this product? This action cannot be undone.')) {
+            document.getElementById('delete-form').submit();
+        }
+    }
+    </script>
 </x-app-layout>

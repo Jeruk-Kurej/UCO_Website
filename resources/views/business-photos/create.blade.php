@@ -96,10 +96,19 @@
 
     @push('scripts')
     <script>
-        // Image preview
+        // Image preview with file size validation
         document.getElementById('photo').addEventListener('change', function(e) {
             const file = e.target.files[0];
+            const maxSize = 2 * 1024 * 1024; // 2MB
+            
             if (file) {
+                if (file.size > maxSize) {
+                    alert('Photo must not be larger than 2MB. Please choose a smaller file.');
+                    e.target.value = '';
+                    document.getElementById('preview-container').classList.add('hidden');
+                    return;
+                }
+                
                 const reader = new FileReader();
                 reader.onload = function(event) {
                     const preview = document.getElementById('preview-image');

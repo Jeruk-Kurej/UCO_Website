@@ -43,7 +43,7 @@
                         type="file" 
                         accept="image/*"
                         class="hidden"
-                        onchange="previewProfilePhoto(event)"
+                        onchange="validateAndPreviewPhoto(event)"
                     />
                     <p class="text-xs text-gray-500 mt-2">JPG, PNG or GIF (Max 2MB)</p>
                     <x-input-error class="mt-2" :messages="$errors->get('profile_photo')" />

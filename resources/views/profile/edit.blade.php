@@ -53,8 +53,19 @@
     </div>
 
     {{-- JavaScript for Profile Photo Preview --}}
-    <script>
-        function previewProfilePhoto(event) {
+    <script>    function validateAndPreviewPhoto(event) {
+        const file = event.target.files[0];
+        const maxSize = 2 * 1024 * 1024; // 2MB in bytes
+        
+        if (file && file.size > maxSize) {
+            alert('Profile photo must not be larger than 2MB. Please choose a smaller file.');
+            event.target.value = '';
+            return;
+        }
+        
+        previewProfilePhoto(event);
+    }
+            function previewProfilePhoto(event) {
             const file = event.target.files[0];
             if (file) {
                 const reader = new FileReader();
