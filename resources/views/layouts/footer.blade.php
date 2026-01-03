@@ -119,14 +119,10 @@
                 </div>
             </div>
         </div>
-    </div>
-
-    {{-- Bottom Bar --}}
-    <div class="border-t border-gray-200 bg-gray-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <div class="flex flex-col md:flex-row justify-between items-center gap-2 text-sm text-gray-600">
-                <p>&copy; {{ date('Y') }} UCO Student & Alumni Platform. All rights reserved.</p>
-            </div>
+        
+        {{-- Copyright - Center --}}
+        <div class="mt-8 pt-6 border-t border-gray-200 text-center">
+            <p class="text-sm text-gray-600">&copy; {{ date('Y') }} UCO Student & Alumni Platform. All rights reserved.</p>
         </div>
     </div>
 </footer>
