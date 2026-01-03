@@ -75,4 +75,4 @@ CMD echo "=== RAILWAY STARTUP ===" && \
     php artisan db:seed --class=ContactTypeSeeder --force && \
     php artisan db:seed --class=DummyBusinessSeeder --force && \
     echo "=== Starting PHP Server ===" && \
-    php -S 0.0.0.0:${PORT:-8000} -t public
+    php -S 0.0.0.0:${PORT:-8000} -t public public/server.php
