@@ -28,7 +28,7 @@
                     </div>
 
                     {{-- Business Cards - Clean Grid --}}
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     @foreach($featuredBusinesses as $business)
                         <a href="{{ route('businesses.show', $business) }}" 
                            class="group bg-white border border-soft-gray-200 rounded-xl overflow-hidden hover:shadow-xl hover:border-soft-gray-300 transition-all duration-300">
