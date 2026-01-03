@@ -4,14 +4,12 @@
             {{-- Column 1: About UCO --}}
             <div>
                 <div class="flex items-center gap-2.5 mb-4">
-                    <div class="w-8 h-8 bg-gray-900 rounded-lg flex items-center justify-center">
-                        <span class="text-white text-sm font-bold">UC</span>
-                    </div>
+                    <img src="{{ asset('images/Logo UCO.png') }}" alt="UCO Logo" class="w-10 h-10 object-contain">
                     <div>
                         <h3 class="font-bold text-base text-gray-900">UCO Platform</h3>
                         <p class="text-xs text-gray-600">Student & Alumni Community</p>
                     </div>
-                </div>
+                </img>
                 <p class="text-sm text-gray-600 leading-relaxed">
                     Connecting students and alumni to build a stronger entrepreneurial community and foster business collaboration.
                 </p>
