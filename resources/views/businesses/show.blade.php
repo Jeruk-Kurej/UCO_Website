@@ -1,449 +1,411 @@
 <x-app-layout>
-    {{-- Page Header --}}
-    <div class="mb-6">
-        <div class="flex items-center justify-between">
+    {{-- ======================================== PAGE HEADER ======================================== --}}
+    <div class="mb-4 sm:mb-6">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div class="flex items-center gap-3">
                 <a href="/businesses" 
-                   class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-800 transition duration-150">
+                   class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-800 transition flex-shrink-0">
                     <i class="bi bi-arrow-left text-lg"></i>
                 </a>
-                <div>
-                    <h1 class="text-2xl font-bold text-gray-900">{{ $business->name }}</h1>
-                    <p class="text-sm text-gray-600">
+                <div class="min-w-0">
+                    <h1 class="text-xl sm:text-2xl font-bold text-gray-900 truncate">{{ $business->name }}</h1>
+                    <p class="text-xs sm:text-sm text-gray-600">
                         <i class="bi bi-tag me-1"></i>
                         {{ $business->businessType->name }}
                     </p>
                 </div>
             </div>
 
-            @auth
-                @if(auth()->id() === $business->user_id || auth()->user()->isAdmin())
-                    <a href="{{ route('businesses.edit', $business) }}" 
-                       class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white rounded-lg font-semibold text-sm shadow-sm transition duration-150">
-                        <i class="bi bi-pencil me-2"></i>
-                        Edit Business
-                    </a>
-                @endif
-            @endauth
+            @if($canEdit)
+                <a href="{{ route('businesses.edit', $business) }}" 
+                   class="inline-flex items-center justify-center px-4 py-2 bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white rounded-lg font-semibold text-xs sm:text-sm shadow-sm transition">
+                    <i class="bi bi-pencil me-2"></i>
+                    <span class="hidden sm:inline">Edit Business</span>
+                    <span class="sm:hidden">Edit</span>
+                </a>
+            @endif
         </div>
     </div>
 
-    <div class="space-y-6">
-        {{-- Business Overview Card --}}
+    <div class="space-y-4 sm:space-y-6">
+        {{-- ======================================== BUSINESS OVERVIEW ======================================== --}}
         <div class="bg-white shadow-sm sm:rounded-lg overflow-hidden">
             @if($business->photos->first())
                 <img src="{{ asset('storage/' . $business->photos->first()->photo_url) }}" 
                      alt="{{ $business->name }}" 
-                     class="w-full h-64 object-cover">
+                     class="w-full h-48 sm:h-64 object-cover">
             @else
-                <div class="w-full h-64 bg-gradient-to-br from-orange-100 to-yellow-100 flex items-center justify-center">
-                    <i class="bi bi-briefcase text-8xl text-orange-300"></i>
+                <div class="w-full h-48 sm:h-64 bg-gradient-to-br from-orange-100 to-yellow-100 flex items-center justify-center">
+                    <i class="bi bi-briefcase text-6xl sm:text-8xl text-orange-300"></i>
                 </div>
             @endif
 
-            <div class="p-6">
-                <div class="flex items-start justify-between mb-4">
-                    <div>
-                        <div class="flex items-center gap-4 text-sm text-gray-600 mb-3">
-                            <span class="flex items-center gap-1">
-                                <i class="bi bi-tag"></i>
-                                {{ $business->businessType->name }}
-                            </span>
-                            <span class="flex items-center gap-1">
-                                <i class="bi bi-person"></i>
-                                {{ $business->user->name }}
-                            </span>
-                            @if($business->position)
-                            <span class="flex items-center gap-1">
-                                <i class="bi bi-briefcase"></i>
-                                {{ $business->position }}
-                            </span>
-                            @endif
-                            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium 
-                                {{ $business->isBothMode() ? 'bg-purple-100 text-purple-800' : ($business->isProductMode() ? 'bg-orange-100 text-orange-800' : 'bg-blue-100 text-blue-800') }}">
-                                <i class="bi {{ $business->isBothMode() ? 'bi-grid-3x3' : ($business->isProductMode() ? 'bi-box-seam' : 'bi-wrench') }}"></i>
-                                {{ $business->isBothMode() ? 'Product & Service' : ($business->isProductMode() ? 'Product-Based' : 'Service-Based') }}
-                            </span>
-                        </div>
-                    </div>
+            <div class="p-4 sm:p-6">
+                <div class="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">
+                    <span class="flex items-center gap-1">
+                        <i class="bi bi-tag"></i>
+                        {{ $business->businessType->name }}
+                    </span>
+                    <span class="flex items-center gap-1">
+                        <i class="bi bi-person"></i>
+                        {{ $business->user->name }}
+                    </span>
+                    @if($business->position)
+                        <span class="flex items-center gap-1">
+                            <i class="bi bi-briefcase"></i>
+                            {{ $business->position }}
+                        </span>
+                    @endif
+                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium {{ $businessModeClass }}">
+                        <i class="bi {{ $businessModeIcon }}"></i>
+                        {{ $businessModeText }}
+                    </span>
                 </div>
 
                 <div class="prose max-w-none">
-                    <p class="text-gray-700 leading-relaxed">{{ $business->description }}</p>
+                    <p class="text-sm sm:text-base text-gray-700 leading-relaxed">{{ $business->description }}</p>
                 </div>
             </div>
         </div>
 
-        {{-- Tabs Navigation --}}
-        <div x-data="{ 
-            activeTab: '{{ session('activeTab', $business->isProductMode() ? 'products' : 'services') }}'
-        }" class="bg-white shadow-sm sm:rounded-lg">
+        {{-- ======================================== TABS NAVIGATION ======================================== --}}
+        <div x-data="{ activeTab: '{{ $activeTab }}' }" class="bg-white shadow-sm sm:rounded-lg">
             <div class="border-b border-gray-200">
-                <nav class="flex -mb-px px-6 overflow-x-auto">
-                    @if($business->isProductMode())
+                <nav class="flex -mb-px px-4 sm:px-6 overflow-x-auto">
+                    @if($showProductsTab)
                         <button @click="activeTab = 'products'" 
                                 :class="activeTab === 'products' ? 'border-orange-500 text-orange-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
-                                class="flex items-center gap-2 py-4 px-4 border-b-2 font-medium text-sm transition duration-150 whitespace-nowrap">
+                                class="flex items-center gap-2 py-3 sm:py-4 px-3 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition whitespace-nowrap">
                             <i class="bi bi-box-seam"></i>
-                            Products
-                            <span class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-xs">{{ $business->products->count() }}</span>
+                            <span class="hidden sm:inline">Products</span>
+                            <span class="sm:hidden">Products</span>
+                            <span class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-xs">{{ $productsCount }}</span>
                         </button>
                     @endif
 
-                    @if($business->isServiceMode())
+                    @if($showServicesTab)
                         <button @click="activeTab = 'services'" 
                                 :class="activeTab === 'services' ? 'border-orange-500 text-orange-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
-                                class="flex items-center gap-2 py-4 px-4 border-b-2 font-medium text-sm transition duration-150 whitespace-nowrap">
+                                class="flex items-center gap-2 py-3 sm:py-4 px-3 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition whitespace-nowrap">
                             <i class="bi bi-wrench"></i>
-                            Services
-                            <span class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-xs">{{ $business->services->count() }}</span>
+                            <span class="hidden sm:inline">Services</span>
+                            <span class="sm:hidden">Services</span>
+                            <span class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-xs">{{ $servicesCount }}</span>
                         </button>
                     @endif
 
                     <button @click="activeTab = 'photos'" 
                             :class="activeTab === 'photos' ? 'border-orange-500 text-orange-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
-                            class="flex items-center gap-2 py-4 px-4 border-b-2 font-medium text-sm transition duration-150 whitespace-nowrap">
+                            class="flex items-center gap-2 py-3 sm:py-4 px-3 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition whitespace-nowrap">
                         <i class="bi bi-images"></i>
-                        Photos
-                        <span class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-xs">{{ $business->photos->count() }}</span>
+                        <span class="hidden sm:inline">Photos</span>
+                        <span class="sm:hidden">Photos</span>
+                        <span class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-xs">{{ $photosCount }}</span>
                     </button>
 
                     <button @click="activeTab = 'contacts'" 
                             :class="activeTab === 'contacts' ? 'border-orange-500 text-orange-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
-                            class="flex items-center gap-2 py-4 px-4 border-b-2 font-medium text-sm transition duration-150 whitespace-nowrap">
+                            class="flex items-center gap-2 py-3 sm:py-4 px-3 sm:px-4 border-b-2 font-medium text-xs sm:text-sm transition whitespace-nowrap">
                         <i class="bi bi-telephone"></i>
-                        Contacts
-                        <span class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-xs">{{ $business->contacts->count() }}</span>
+                        <span class="hidden sm:inline">Contacts</span>
+                        <span class="sm:hidden">Contacts</span>
+                        <span class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-xs">{{ $contactsCount }}</span>
                     </button>
                 </nav>
             </div>
 
-            {{-- Tab: Products --}}
-            @if($business->isProductMode())
-                <div x-show="activeTab === 'products'" class="p-6">
-                <div class="flex items-center justify-between mb-6">
-                    <h3 class="text-lg font-semibold text-gray-900">Products</h3>
-                    @auth
-                        @if(auth()->id() === $business->user_id || auth()->user()->isAdmin())
+            {{-- ======================================== PRODUCTS TAB ======================================== --}}
+            @if($showProductsTab)
+                <div x-show="activeTab === 'products'" class="p-4 sm:p-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+                        <h3 class="text-base sm:text-lg font-semibold text-gray-900">Products</h3>
+                        @if($canEdit)
                             <div class="flex items-center gap-2">
                                 <a href="{{ route('business-types.product-categories.index', $business->businessType) }}" 
-                                   class="inline-flex items-center px-3 py-2 bg-gray-100 text-gray-700 text-sm rounded-md hover:bg-gray-200 transition duration-150">
+                                   class="inline-flex items-center px-3 py-2 bg-gray-100 text-gray-700 text-xs sm:text-sm rounded-md hover:bg-gray-200 transition">
                                     <i class="bi bi-tags me-2"></i>
-                                    Manage Categories
+                                    <span class="hidden sm:inline">Manage Categories</span>
+                                    <span class="sm:hidden">Categories</span>
                                 </a>
                                 <a href="{{ route('businesses.products.create', $business) }}" 
-                                   class="inline-flex items-center px-3 py-2 bg-orange-600 text-white text-sm rounded-md hover:bg-orange-700 transition duration-150">
+                                   class="inline-flex items-center px-3 py-2 bg-orange-600 text-white text-xs sm:text-sm rounded-md hover:bg-orange-700 transition">
                                     <i class="bi bi-plus-lg me-2"></i>
-                                    Add Product
+                                    <span class="hidden sm:inline">Add Product</span>
+                                    <span class="sm:hidden">Add</span>
                                 </a>
                             </div>
                         @endif
-                    @endauth
-                </div>
+                    </div>
 
-                @if($business->products->count() > 0)
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        @foreach($business->products as $product)
-                            <div class="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition duration-150">
-                                {{-- Product Image --}}
-                                @if($product->photos->first())
-                                    <img src="{{ asset('storage/' . $product->photos->first()->photo_url) }}" 
-                                         alt="{{ $product->name }}" 
-                                         class="w-full h-40 object-cover">
-                                @else
-                                    <div class="w-full h-40 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
-                                        <i class="bi bi-image text-5xl text-gray-400"></i>
-                                    </div>
-                                @endif
-
-                                {{-- Product Info --}}
-                                <div class="p-4">
-                                    <div class="flex items-start justify-between mb-2">
-                                        <div class="flex-1">
-                                            <h4 class="font-semibold text-gray-900 mb-1">{{ $product->name }}</h4>
-                                            <p class="text-xs text-gray-500 mb-2">
-                                                <i class="bi bi-tag me-1"></i>
-                                                {{ $product->productCategory->name }}
-                                            </p>
+                    @if($business->products->count() > 0)
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            @foreach($business->products as $product)
+                                <div class="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition">
+                                    @if($product->photos->first())
+                                        <img src="{{ asset('storage/' . $product->photos->first()->photo_url) }}" 
+                                             alt="{{ $product->name }}" 
+                                             class="w-full h-32 sm:h-40 object-cover">
+                                    @else
+                                        <div class="w-full h-32 sm:h-40 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                                            <i class="bi bi-image text-4xl sm:text-5xl text-gray-400"></i>
                                         </div>
-                                        <span class="text-orange-600 font-bold text-lg">
-                                            Rp {{ number_format($product->price, 0, ',', '.') }}
-                                        </span>
-                                    </div>
-                                    <p class="text-sm text-gray-600 mb-3 line-clamp-2">{{ $product->description }}</p>
+                                    @endif
 
-                                    {{-- Action Buttons --}}
-                                    @auth
-                                        @if(auth()->id() === $business->user_id || auth()->user()->isAdmin())
+                                    <div class="p-3 sm:p-4">
+                                        <div class="flex items-start justify-between mb-2 gap-2">
+                                            <div class="flex-1 min-w-0">
+                                                <h4 class="font-semibold text-sm sm:text-base text-gray-900 mb-1 truncate">{{ $product->name }}</h4>
+                                                <p class="text-xs text-gray-500 mb-2">
+                                                    <i class="bi bi-tag me-1"></i>
+                                                    {{ $product->productCategory->name }}
+                                                </p>
+                                            </div>
+                                            <span class="text-orange-600 font-bold text-sm sm:text-lg flex-shrink-0">
+                                                Rp {{ number_format($product->price, 0, ',', '.') }}
+                                            </span>
+                                        </div>
+                                        <p class="text-xs sm:text-sm text-gray-600 mb-3 line-clamp-2">{{ $product->description }}</p>
+
+                                        @if($canEdit)
                                             <div class="flex items-center gap-2 pt-3 border-t border-gray-200">
                                                 <a href="{{ route('products.photos.index', $product) }}" 
-                                                   class="flex-1 inline-flex items-center justify-center px-3 py-1.5 bg-blue-50 text-blue-700 text-xs font-medium rounded hover:bg-blue-100 transition duration-150">
+                                                   class="flex-1 inline-flex items-center justify-center px-2 sm:px-3 py-1.5 bg-blue-50 text-blue-700 text-xs font-medium rounded hover:bg-blue-100 transition">
                                                     <i class="bi bi-images me-1"></i>
-                                                    Photos ({{ $product->photos->count() }})
+                                                    <span class="hidden sm:inline">Photos ({{ $product->photos->count() }})</span>
+                                                    <span class="sm:hidden">{{ $product->photos->count() }}</span>
                                                 </a>
                                                 <a href="{{ route('businesses.products.edit', [$business, $product]) }}" 
-                                                   class="inline-flex items-center justify-center w-8 h-8 bg-orange-50 text-orange-600 rounded hover:bg-orange-100 transition duration-150"
-                                                   title="Edit Product">
+                                                   class="inline-flex items-center justify-center w-8 h-8 bg-orange-50 text-orange-600 rounded hover:bg-orange-100 transition">
                                                     <i class="bi bi-pencil"></i>
                                                 </a>
                                                 <form action="{{ route('businesses.products.destroy', [$business, $product]) }}" 
                                                       method="POST" 
-                                                      onsubmit="return confirm('Delete {{ $product->name }}?');"
-                                                      class="inline">
+                                                      onsubmit="return confirm('Delete {{ $product->name }}?');">
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="submit" 
-                                                            class="inline-flex items-center justify-center w-8 h-8 bg-red-50 text-red-600 rounded hover:bg-red-100 transition duration-150"
-                                                            title="Delete Product">
+                                                            class="inline-flex items-center justify-center w-8 h-8 bg-red-50 text-red-600 rounded hover:bg-red-100 transition">
                                                         <i class="bi bi-trash"></i>
                                                     </button>
                                                 </form>
                                             </div>
                                         @endif
-                                    @endauth
+                                    </div>
                                 </div>
-                            </div>
-                        @endforeach
-                    </div>
-                @else
-                    <div class="text-center py-12 bg-gray-50 rounded-lg">
-                        <i class="bi bi-box-seam text-6xl text-gray-300 mb-3"></i>
-                        <p class="text-gray-500 text-lg font-medium mb-2">No products yet</p>
-                        @auth
-                            @if(auth()->id() === $business->user_id || auth()->user()->isAdmin())
-                                <p class="text-sm text-gray-400 mb-4">Start adding products to showcase your offerings</p>
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="text-center py-12 bg-gray-50 rounded-lg">
+                            <i class="bi bi-box-seam text-5xl sm:text-6xl text-gray-300 mb-3"></i>
+                            <p class="text-gray-500 text-sm sm:text-lg font-medium mb-2">No products yet</p>
+                            @if($canEdit)
+                                <p class="text-xs sm:text-sm text-gray-400 mb-4">Add products to showcase</p>
                                 <a href="{{ route('businesses.products.create', $business) }}" 
-                                   class="inline-flex items-center px-4 py-2 bg-orange-600 text-white text-sm rounded-md hover:bg-orange-700 transition duration-150">
+                                   class="inline-flex items-center px-4 py-2 bg-orange-600 text-white text-xs sm:text-sm rounded-md hover:bg-orange-700 transition">
                                     <i class="bi bi-plus-lg me-2"></i>
-                                    Add Your First Product
+                                    Add First Product
                                 </a>
                             @endif
-                        @endauth
-                    </div>
-                @endif
-            </div>
+                        </div>
+                    @endif
+                </div>
             @endif
 
-            {{-- Tab: Services --}}
-            @if($business->isServiceMode())
-                <div x-show="activeTab === 'services'" class="p-6" style="display: none;">
-                <div class="flex items-center justify-between mb-6">
-                    <h3 class="text-lg font-semibold text-gray-900">Services</h3>
-                    @auth
-                        @if(auth()->id() === $business->user_id || auth()->user()->isAdmin())
+            {{-- ======================================== SERVICES TAB ======================================== --}}
+            @if($showServicesTab)
+                <div x-show="activeTab === 'services'" class="p-4 sm:p-6" style="display: none;">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+                        <h3 class="text-base sm:text-lg font-semibold text-gray-900">Services</h3>
+                        @if($canEdit)
                             <a href="{{ route('businesses.services.create', $business) }}" 
-                               class="inline-flex items-center px-3 py-2 bg-orange-600 text-white text-sm rounded-md hover:bg-orange-700 transition duration-150">
+                               class="inline-flex items-center px-3 py-2 bg-orange-600 text-white text-xs sm:text-sm rounded-md hover:bg-orange-700 transition">
                                 <i class="bi bi-plus-lg me-2"></i>
-                                Add Service
+                                <span class="hidden sm:inline">Add Service</span>
+                                <span class="sm:hidden">Add</span>
                             </a>
                         @endif
-                    @endauth
-                </div>
+                    </div>
 
-                @if($business->services->count() > 0)
-                    <div class="space-y-3">
-                        @foreach($business->services as $service)
-                            <div class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition duration-150">
-                                <div class="flex items-start justify-between">
-                                    <div class="flex-1">
-                                        <h4 class="font-semibold text-gray-900 mb-1">{{ $service->name }}</h4>
-                                        <p class="text-sm text-gray-600 mb-3">{{ $service->description }}</p>
-                                        <div class="flex items-center gap-2">
-                                            <span class="text-orange-600 font-bold">Rp {{ number_format($service->price, 0, ',', '.') }}</span>
-                                            <span class="text-xs text-gray-500">/ {{ $service->price_type }}</span>
+                    @if($business->services->count() > 0)
+                        <div class="space-y-3">
+                            @foreach($business->services as $service)
+                                <div class="border border-gray-200 rounded-lg p-3 sm:p-4 hover:bg-gray-50 transition">
+                                    <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                                        <div class="flex-1 min-w-0">
+                                            <h4 class="font-semibold text-sm sm:text-base text-gray-900 mb-1">{{ $service->name }}</h4>
+                                            <p class="text-xs sm:text-sm text-gray-600 mb-3">{{ $service->description }}</p>
+                                            <div class="flex items-center gap-2 flex-wrap">
+                                                <span class="text-orange-600 font-bold text-sm sm:text-base">Rp {{ number_format($service->price, 0, ',', '.') }}</span>
+                                                <span class="text-xs text-gray-500">/ {{ $service->price_type }}</span>
+                                            </div>
                                         </div>
-                                    </div>
 
-                                    {{-- Action Buttons --}}
-                                    @auth
-                                        @if(auth()->id() === $business->user_id || auth()->user()->isAdmin())
-                                            <div class="flex items-center gap-2 ml-4">
+                                        @if($canEdit)
+                                            <div class="flex items-center gap-2">
                                                 <a href="{{ route('businesses.services.edit', [$business, $service]) }}" 
-                                                   class="inline-flex items-center justify-center w-8 h-8 bg-orange-50 text-orange-600 rounded hover:bg-orange-100 transition duration-150"
-                                                   title="Edit Service">
+                                                   class="inline-flex items-center justify-center w-8 h-8 bg-orange-50 text-orange-600 rounded hover:bg-orange-100 transition">
                                                     <i class="bi bi-pencil"></i>
                                                 </a>
                                                 <form action="{{ route('businesses.services.destroy', [$business, $service]) }}" 
                                                       method="POST" 
-                                                      onsubmit="return confirm('Delete {{ $service->name }}?');"
-                                                      class="inline">
+                                                      onsubmit="return confirm('Delete {{ $service->name }}?');">
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="submit" 
-                                                            class="inline-flex items-center justify-center w-8 h-8 bg-red-50 text-red-600 rounded hover:bg-red-100 transition duration-150"
-                                                            title="Delete Service">
+                                                            class="inline-flex items-center justify-center w-8 h-8 bg-red-50 text-red-600 rounded hover:bg-red-100 transition">
                                                         <i class="bi bi-trash"></i>
                                                     </button>
                                                 </form>
                                             </div>
                                         @endif
-                                    @endauth
+                                    </div>
                                 </div>
-                            </div>
-                        @endforeach
-                    </div>
-                @else
-                    <div class="text-center py-12 bg-gray-50 rounded-lg">
-                        <i class="bi bi-wrench text-6xl text-gray-300 mb-3"></i>
-                        <p class="text-gray-500 text-lg font-medium mb-2">No services yet</p>
-                        @auth
-                            @if(auth()->id() === $business->user_id || auth()->user()->isAdmin())
-                                <p class="text-sm text-gray-400 mb-4">Add services to showcase what you offer</p>
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="text-center py-12 bg-gray-50 rounded-lg">
+                            <i class="bi bi-wrench text-5xl sm:text-6xl text-gray-300 mb-3"></i>
+                            <p class="text-gray-500 text-sm sm:text-lg font-medium mb-2">No services yet</p>
+                            @if($canEdit)
+                                <p class="text-xs sm:text-sm text-gray-400 mb-4">Add services to showcase</p>
                                 <a href="{{ route('businesses.services.create', $business) }}" 
-                                   class="inline-flex items-center px-4 py-2 bg-orange-600 text-white text-sm rounded-md hover:bg-orange-700 transition duration-150">
+                                   class="inline-flex items-center px-4 py-2 bg-orange-600 text-white text-xs sm:text-sm rounded-md hover:bg-orange-700 transition">
                                     <i class="bi bi-plus-lg me-2"></i>
-                                    Add Your First Service
+                                    Add First Service
                                 </a>
                             @endif
-                        @endauth
-                    </div>
-                @endif
-            </div>
+                        </div>
+                    @endif
+                </div>
             @endif
 
-            {{-- Tab: Photos --}}
-            <div x-show="activeTab === 'photos'" class="p-6" style="display: none;">
-                <div class="flex items-center justify-between mb-6">
-                    <h3 class="text-lg font-semibold text-gray-900">Business Photo Gallery</h3>
-                    @auth
-                        @if(auth()->id() === $business->user_id || auth()->user()->isAdmin())
-                            <a href="{{ route('businesses.photos.create', $business) }}" 
-                               class="inline-flex items-center px-3 py-2 bg-orange-600 text-white text-sm rounded-md hover:bg-orange-700 transition duration-150">
-                                <i class="bi bi-upload me-2"></i>
-                                Upload Photo
-                            </a>
-                        @endif
-                    @endauth
+            {{-- ======================================== PHOTOS TAB ======================================== --}}
+            <div x-show="activeTab === 'photos'" class="p-4 sm:p-6" style="display: none;">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+                    <h3 class="text-base sm:text-lg font-semibold text-gray-900">Photo Gallery</h3>
+                    @if($canEdit)
+                        <a href="{{ route('businesses.photos.create', $business) }}" 
+                           class="inline-flex items-center px-3 py-2 bg-orange-600 text-white text-xs sm:text-sm rounded-md hover:bg-orange-700 transition">
+                            <i class="bi bi-upload me-2"></i>
+                            <span class="hidden sm:inline">Upload Photo</span>
+                            <span class="sm:hidden">Upload</span>
+                        </a>
+                    @endif
                 </div>
 
                 @if($business->photos->count() > 0)
-                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
                         @foreach($business->photos as $photo)
                             <div class="relative group">
                                 <img src="{{ asset('storage/' . $photo->photo_url) }}" 
                                      alt="{{ $photo->caption }}" 
-                                     class="w-full h-48 object-cover rounded-lg">
+                                     class="w-full h-32 sm:h-48 object-cover rounded-lg">
                                 @if($photo->caption)
                                     <div class="absolute bottom-0 left-0 right-0 bg-black bg-opacity-60 text-white text-xs p-2 rounded-b-lg">
                                         {{ $photo->caption }}
                                     </div>
                                 @endif
 
-                                {{-- Delete Button --}}
-                                @auth
-                                    @if(auth()->id() === $business->user_id || auth()->user()->isAdmin())
-                                        <form action="{{ route('businesses.photos.destroy', [$business, $photo]) }}" 
-                                              method="POST" 
-                                              onsubmit="return confirm('Delete this photo?');"
-                                              class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition duration-150">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" 
-                                                    class="inline-flex items-center justify-center w-8 h-8 bg-red-600 text-white rounded-full hover:bg-red-700 shadow-lg">
-                                                <i class="bi bi-trash text-sm"></i>
-                                            </button>
-                                        </form>
-                                    @endif
-                                @endauth
+                                @if($canEdit)
+                                    <form action="{{ route('businesses.photos.destroy', [$business, $photo]) }}" 
+                                          method="POST" 
+                                          onsubmit="return confirm('Delete photo?');"
+                                          class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" 
+                                                class="inline-flex items-center justify-center w-8 h-8 bg-red-600 text-white rounded-full hover:bg-red-700 shadow-lg">
+                                            <i class="bi bi-trash text-sm"></i>
+                                        </button>
+                                    </form>
+                                @endif
                             </div>
                         @endforeach
                     </div>
                 @else
                     <div class="text-center py-12 bg-gray-50 rounded-lg">
-                        <i class="bi bi-images text-6xl text-gray-300 mb-3"></i>
-                        <p class="text-gray-500 text-lg font-medium mb-2">No photos yet</p>
-                        @auth
-                            @if(auth()->id() === $business->user_id || auth()->user()->isAdmin())
-                                <p class="text-sm text-gray-400 mb-4">Upload photos to showcase your business</p>
-                                <a href="{{ route('businesses.photos.create', $business) }}" 
-                                   class="inline-flex items-center px-4 py-2 bg-orange-600 text-white text-sm rounded-md hover:bg-orange-700 transition duration-150">
-                                    <i class="bi bi-upload me-2"></i>
-                                    Upload Your First Photo
-                                </a>
-                            @endif
-                        @endauth
+                        <i class="bi bi-images text-5xl sm:text-6xl text-gray-300 mb-3"></i>
+                        <p class="text-gray-500 text-sm sm:text-lg font-medium mb-2">No photos yet</p>
+                        @if($canEdit)
+                            <p class="text-xs sm:text-sm text-gray-400 mb-4">Upload photos to showcase</p>
+                            <a href="{{ route('businesses.photos.create', $business) }}" 
+                               class="inline-flex items-center px-4 py-2 bg-orange-600 text-white text-xs sm:text-sm rounded-md hover:bg-orange-700 transition">
+                                <i class="bi bi-upload me-2"></i>
+                                Upload First Photo
+                            </a>
+                        @endif
                     </div>
                 @endif
             </div>
 
-            {{-- Tab: Contacts --}}
-            <div x-show="activeTab === 'contacts'" class="p-6" style="display: none;">
-                <div class="flex items-center justify-between mb-6">
-                    <h3 class="text-lg font-semibold text-gray-900">Contact Information</h3>
-                    @auth
-                        @if(auth()->id() === $business->user_id || auth()->user()->isAdmin())
-                            <a href="{{ route('businesses.contacts.create', $business) }}" 
-                               class="inline-flex items-center px-3 py-2 bg-orange-600 text-white text-sm rounded-md hover:bg-orange-700 transition duration-150">
-                                <i class="bi bi-plus-lg me-2"></i>
-                                Add Contact
-                            </a>
-                        @endif
-                    @endauth
+            {{-- ======================================== CONTACTS TAB ======================================== --}}
+            <div x-show="activeTab === 'contacts'" class="p-4 sm:p-6" style="display: none;">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+                    <h3 class="text-base sm:text-lg font-semibold text-gray-900">Contact Information</h3>
+                    @if($canEdit)
+                        <a href="{{ route('businesses.contacts.create', $business) }}" 
+                           class="inline-flex items-center px-3 py-2 bg-orange-600 text-white text-xs sm:text-sm rounded-md hover:bg-orange-700 transition">
+                            <i class="bi bi-plus-lg me-2"></i>
+                            <span class="hidden sm:inline">Add Contact</span>
+                            <span class="sm:hidden">Add</span>
+                        </a>
+                    @endif
                 </div>
 
                 @if($business->contacts->count() > 0)
                     <div class="space-y-3">
                         @foreach($business->contacts as $contact)
-                            <div class="flex items-center gap-3 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition duration-150">
-                                <div class="flex items-center justify-center w-12 h-12 rounded-full bg-orange-100 text-orange-600 flex-shrink-0">
-                                    <i class="bi {{ $contact->contactType->icon_class }} text-xl"></i>
+                            <div class="flex items-center gap-3 p-3 sm:p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition">
+                                <div class="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-orange-100 text-orange-600 flex-shrink-0">
+                                    <i class="{{ $contact->contactType->icon_class }} text-lg sm:text-xl"></i>
                                 </div>
                                 <div class="flex-1 min-w-0">
-                                    <p class="text-sm font-semibold text-gray-900">{{ $contact->contactType->platform_name }}</p>
-                                    <p class="text-sm text-gray-600 truncate">{{ $contact->contact_value }}</p>
+                                    <p class="text-xs sm:text-sm font-semibold text-gray-900">{{ $contact->contactType->platform_name }}</p>
+                                    <p class="text-xs sm:text-sm text-gray-600 truncate">{{ $contact->contact_value }}</p>
                                 </div>
                                 @if($contact->is_primary)
                                     <span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded whitespace-nowrap">
                                         <i class="bi bi-check-circle me-1"></i>
-                                        Primary
+                                        <span class="hidden sm:inline">Primary</span>
                                     </span>
                                 @endif
 
-                                {{-- Action Buttons --}}
-                                @auth
-                                    @if(auth()->id() === $business->user_id || auth()->user()->isAdmin())
-                                        <div class="flex items-center gap-2">
-                                            <a href="{{ route('businesses.contacts.edit', [$business, $contact]) }}" 
-                                               class="inline-flex items-center justify-center w-8 h-8 bg-orange-50 text-orange-600 rounded hover:bg-orange-100 transition duration-150"
-                                               title="Edit Contact">
-                                                <i class="bi bi-pencil"></i>
-                                            </a>
-                                            <form action="{{ route('businesses.contacts.destroy', [$business, $contact]) }}" 
-                                                  method="POST" 
-                                                  onsubmit="return confirm('Delete this contact?');"
-                                                  class="inline">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" 
-                                                        class="inline-flex items-center justify-center w-8 h-8 bg-red-50 text-red-600 rounded hover:bg-red-100 transition duration-150"
-                                                        title="Delete Contact">
-                                                    <i class="bi bi-trash"></i>
-                                                </button>
-                                            </form>
-                                        </div>
-                                    @endif
-                                @endauth
+                                @if($canEdit)
+                                    <div class="flex items-center gap-2">
+                                        <a href="{{ route('businesses.contacts.edit', [$business, $contact]) }}" 
+                                           class="inline-flex items-center justify-center w-8 h-8 bg-orange-50 text-orange-600 rounded hover:bg-orange-100 transition">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <form action="{{ route('businesses.contacts.destroy', [$business, $contact]) }}" 
+                                              method="POST" 
+                                              onsubmit="return confirm('Delete contact?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" 
+                                                    class="inline-flex items-center justify-center w-8 h-8 bg-red-50 text-red-600 rounded hover:bg-red-100 transition">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                @endif
                             </div>
                         @endforeach
                     </div>
                 @else
                     <div class="text-center py-12 bg-gray-50 rounded-lg">
-                        <i class="bi bi-telephone text-6xl text-gray-300 mb-3"></i>
-                        <p class="text-gray-500 text-lg font-medium mb-2">No contact information yet</p>
-                        @auth
-                            @if(auth()->id() === $business->user_id || auth()->user()->isAdmin())
-                                <p class="text-sm text-gray-400 mb-4">Add contact methods so customers can reach you</p>
-                                <a href="{{ route('businesses.contacts.create', $business) }}" 
-                                   class="inline-flex items-center px-4 py-2 bg-orange-600 text-white text-sm rounded-md hover:bg-orange-700 transition duration-150">
-                                    <i class="bi bi-plus-lg me-2"></i>
-                                    Add Your First Contact
-                                </a>
-                            @endif
-                        @endauth
+                        <i class="bi bi-telephone text-5xl sm:text-6xl text-gray-300 mb-3"></i>
+                        <p class="text-gray-500 text-sm sm:text-lg font-medium mb-2">No contacts yet</p>
+                        @if($canEdit)
+                            <p class="text-xs sm:text-sm text-gray-400 mb-4">Add contact info</p>
+                            <a href="{{ route('businesses.contacts.create', $business) }}" 
+                               class="inline-flex items-center px-4 py-2 bg-orange-600 text-white text-xs sm:text-sm rounded-md hover:bg-orange-700 transition">
+                                <i class="bi bi-plus-lg me-2"></i>
+                                Add First Contact
+                            </a>
+                        @endif
                     </div>
                 @endif
             </div>
-
         </div>
     </div>
 </x-app-layout>
