@@ -97,18 +97,7 @@
         </div>
 
         {{-- Search Bar --}}
-        <div class="bg-white border border-gray-200 rounded-xl p-4" 
-             x-data="{
-                searchQuery: '{{ request('search') }}',
-                performSearch() {
-                    const trimmed = this.searchQuery.trim();
-                    if (trimmed.length > 0) {
-                        window.location.href = '{{ route('users.index') }}?search=' + encodeURIComponent(trimmed);
-                    } else {
-                        window.location.href = '{{ route('users.index') }}';
-                    }
-                }
-             }">
+        <div class="bg-white border border-gray-200 rounded-xl p-4" x-data="setupUserSearch()">
             <div class="flex gap-3">
                 <div class="flex-1">
                     <div class="relative">
@@ -122,11 +111,14 @@
                                x-on:input.debounce.500ms="performSearch()"
                                x-on:keydown.enter="performSearch()"
                                placeholder="Search by name, email, username, or NIS..." 
-                               class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                               class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                               :disabled="isSearching"
+                               :class="{ 'opacity-50': isSearching }">
                     </div>
                 </div>
                 <button x-show="searchQuery.length > 0"
                         @click="searchQuery = ''; performSearch()"
+                        :disabled="isSearching"
                         class="inline-flex items-center px-4 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors">
                     Clear
                 </button>
@@ -482,4 +474,108 @@
             </div>
         </div>
     </div>
+
+    {{-- AJAX Search Script --}}
+    <script>
+        function setupUserSearch() {
+            return {
+                searchQuery: '{{ request("search") }}',
+                isSearching: false,
+                
+                async performSearch() {
+                    const trimmed = this.searchQuery.trim();
+                    
+                    // If empty, reload to show all users
+                    if (trimmed.length === 0) {
+                        window.location.href = '{{ route("users.index") }}';
+                        return;
+                    }
+                    
+                    this.isSearching = true;
+                    
+                    try {
+                        const response = await fetch('{{ route("users.index") }}?search=' + encodeURIComponent(trimmed), {
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'Accept': 'application/json'
+                            }
+                        });
+                        
+                        if (!response.ok) {
+                            throw new Error('Search failed');
+                        }
+                        
+                        const data = await response.json();
+                        
+                        // Update URL without reload
+                        history.pushState(null, '', '{{ route("users.index") }}?search=' + encodeURIComponent(trimmed));
+                        
+                        // Update table
+                        this.updateTable(data.users);
+                        
+                    } catch (error) {
+                        console.error('Search error:', error);
+                        // Fallback to regular navigation
+                        window.location.href = '{{ route("users.index") }}?search=' + encodeURIComponent(trimmed);
+                    } finally {
+                        this.isSearching = false;
+                    }
+                },
+                
+                updateTable(users) {
+                    const tbody = document.querySelector('table tbody');
+                    
+                    if (users.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="6" class="px-4 py-12 text-center text-gray-500">No users found matching your search.</td></tr>';
+                        return;
+                    }
+                    
+                    let html = '';
+                    users.forEach(user => {
+                        const roleClass = user.role === 'admin' ? 'bg-red-100 text-red-800' : 
+                                         user.role === 'student' ? 'bg-blue-100 text-blue-800' : 
+                                         'bg-green-100 text-green-800';
+                        const roleText = user.role.charAt(0).toUpperCase() + user.role.slice(1);
+                        
+                        html += '<tr class="hover:bg-gray-50 transition">';
+                        html += '<td class="px-4 py-4">';
+                        html += '<div class="flex items-center gap-3">';
+                        html += '<div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">';
+                        html += '<span class="text-sm font-semibold text-purple-600">' + user.name.charAt(0).toUpperCase() + '</span>';
+                        html += '</div>';
+                        html += '<div class="min-w-0 flex-1">';
+                        html += '<p class="text-sm font-medium text-gray-900 truncate">' + user.name + '</p>';
+                        html += '<p class="text-xs text-gray-500 truncate">@' + user.username + '</p>';
+                        html += '</div></div></td>';
+                        
+                        html += '<td class="px-4 py-4"><p class="text-sm text-gray-600 truncate">' + user.email + '</p></td>';
+                        
+                        html += '<td class="px-4 py-4 text-center">';
+                        html += '<span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium ' + roleClass + '">' + roleText + '</span>';
+                        html += '</td>';
+                        
+                        html += '<td class="px-4 py-4 text-center">';
+                        html += '<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-green-100 text-green-800">';
+                        html += '<span class="w-1.5 h-1.5 bg-green-600 rounded-full"></span>Active</span></td>';
+                        
+                        html += '<td class="px-4 py-4 text-center"><span class="text-sm font-medium text-gray-900">' + (user.businesses_count || 0) + '</span></td>';
+                        
+                        html += '<td class="px-4 py-4"><div class="flex items-center justify-center gap-2">';
+                        html += '<a href="/users/' + user.id + '" class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors" title="View Details">';
+                        html += '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg></a>';
+                        html += '<a href="/users/' + user.id + '/edit" class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors" title="Edit User">';
+                        html += '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg></a>';
+                        html += '<form action="/users/' + user.id + '" method="POST" class="inline" onsubmit="return confirm(\'Are you sure?\')">';
+                        html += '<input type="hidden" name="_token" value="{{ csrf_token() }}">';
+                        html += '<input type="hidden" name="_method" value="DELETE">';
+                        html += '<button type="submit" class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-red-600 hover:bg-red-50 transition-colors" title="Delete User">';
+                        html += '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>';
+                        html += '</button></form></div></td></tr>';
+                    });
+                    
+                    tbody.innerHTML = html;
+                }
+            };
+        }
+    </script>
 </x-app-layout>

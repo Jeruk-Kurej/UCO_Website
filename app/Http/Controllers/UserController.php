@@ -57,6 +57,13 @@ class UserController extends Controller
         
         $users = $query->latest()->paginate(20);
 
+        // Return JSON for AJAX requests
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'users' => $users->items()
+            ]);
+        }
+
         // Get accurate counts from database (not from paginated collection)
         $totalUsers = User::count();
         $totalAdmins = User::where('role', 'admin')->count();
