@@ -88,6 +88,7 @@ Route::get('/create-admin', function () {
     try {
         $user = \App\Models\User::create([
             'name' => 'Admin',
+            'username' => 'admin',
             'email' => 'admin@uco.com',
             'password' => bcrypt('password'),
             'role' => 'admin',
@@ -96,6 +97,7 @@ Route::get('/create-admin', function () {
         return response()->json([
             'status' => 'success',
             'message' => 'Admin user created',
+            'username' => $user->username,
             'email' => $user->email,
             'password' => 'password',
         ]);
