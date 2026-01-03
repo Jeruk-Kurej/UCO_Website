@@ -79,12 +79,12 @@
                                 </td>
                                 <td class="px-6 py-4 text-center">
                                     @if($analysis->is_approved)
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                            ✅ Approved
+                                        <span class="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                            Approved
                                         </span>
                                     @else
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                            ⚠️ Needs Review
+                                        <span class="inline-flex items-center px-3 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                            Rejected
                                         </span>
                                     @endif
                                 </td>

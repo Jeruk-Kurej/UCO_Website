@@ -95,8 +95,10 @@
                                             <p class="font-semibold">{{ $testimony->customer_name }}</p>
                                             <p class="text-xs text-gray-500">{{ optional($testimony->date)->format('M d, Y') }}</p>
                                         </div>
-                                        <div class="text-sm font-semibold text-gray-700">
-                                            {{ $testimony->rating }}/5
+                                        <div class="flex items-center gap-0.5 text-yellow-400 text-xl">
+                                            @for($i = 1; $i <= 5; $i++)
+                                                <span class="{{ $i <= $testimony->rating ? 'text-yellow-400' : 'text-gray-300' }}">★</span>
+                                            @endfor
                                         </div>
                                     </div>
                                     <p class="mt-3 text-gray-800">{{ $testimony->content }}</p>
