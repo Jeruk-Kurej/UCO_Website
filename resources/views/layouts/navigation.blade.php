@@ -25,11 +25,6 @@
                         Business
                     </a>
 
-                    <a href="{{ route('uc-testimonies.index') }}" 
-                       class="text-sm font-medium {{ request()->routeIs('uc-testimonies.*') ? 'text-soft-gray-900 font-semibold' : 'text-soft-gray-600 hover:text-soft-gray-900' }} transition duration-150">
-                        Testimonies
-                    </a>
-
                     @if(auth()->user()->isAdmin())
                         {{-- Admin Dropdown --}}
                         <div class="relative group">
@@ -52,7 +47,7 @@
                                         Contact Types
                                     </a>
                                     <a href="/ai-analyses" class="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-soft-gray-700 hover:bg-soft-gray-50 hover:text-soft-gray-900 transition">
-                                        AI Moderation
+                                        Testimony Review
                                     </a>
                                 </div>
                             </div>
@@ -125,10 +120,6 @@
                 <a href="/businesses" 
                    class="block py-2.5 px-3 text-sm font-medium rounded-lg {{ request()->routeIs('businesses.*') ? 'bg-soft-gray-100 text-soft-gray-900' : 'text-soft-gray-700 hover:bg-soft-gray-50' }}">
                     Business
-                </a>
-                <a href="{{ route('uc-testimonies.index') }}" 
-                   class="block py-2.5 px-3 text-sm font-medium rounded-lg {{ request()->routeIs('uc-testimonies.*') ? 'bg-soft-gray-100 text-soft-gray-900' : 'text-soft-gray-700 hover:bg-soft-gray-50' }}">
-                    Testimonies
                 </a>
                 @if(auth()->user()->isAdmin())
                     <div class="pt-2 border-t border-soft-gray-100">

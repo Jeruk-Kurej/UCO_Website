@@ -3,39 +3,11 @@
         {{-- Page Header --}}
         <div class="flex items-center justify-between">
             <div>
-                <h1 class="text-2xl font-bold text-gray-900">AI UC Testimony Moderation Dashboard</h1>
-                <p class="text-sm text-gray-600">Review and manage AI-moderated UC-wide testimonies powered by Google Gemini</p>
+                <h1 class="text-2xl font-bold text-gray-900">UCO Testimony Review</h1>
             </div>
         </div>
 
-        {{-- Stats Cards --}}
-        @php
-            $ucTotalCount = $ucAnalyses->total();
-            $ucApprovedCount = \App\Models\UcAiAnalysis::where('is_approved', true)->count();
-            $ucRejectedCount = \App\Models\UcAiAnalysis::where('is_approved', false)->count();
-            $ucApprovalRate = $ucTotalCount > 0 ? round(($ucApprovedCount / $ucTotalCount) * 100, 1) : 0;
-        @endphp
 
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div class="bg-white rounded-lg shadow-sm p-4 border-l-4 border-blue-500">
-                <p class="text-xs font-medium text-gray-500 uppercase">UC Total Analyzed</p>
-                <p class="text-2xl font-bold text-gray-900 mt-1">{{ $ucTotalCount }}</p>
-            </div>
-            <div class="bg-white rounded-lg shadow-sm p-4 border-l-4 border-green-500">
-                <p class="text-xs font-medium text-gray-500 uppercase">UC Auto-Approved</p>
-                <p class="text-2xl font-bold text-green-600 mt-1">{{ $ucApprovedCount }}</p>
-            </div>
-            <div class="bg-white rounded-lg shadow-sm p-4 border-l-4 border-red-500">
-                <p class="text-xs font-medium text-gray-500 uppercase">UC Needs Review</p>
-                <p class="text-2xl font-bold text-red-600 mt-1">{{ $ucRejectedCount }}</p>
-            </div>
-            <div class="bg-white rounded-lg shadow-sm p-4 border-l-4 border-purple-500">
-                <p class="text-xs font-medium text-gray-500 uppercase">UC Approval Rate</p>
-                <p class="text-2xl font-bold text-purple-600 mt-1">{{ $ucApprovalRate }}%</p>
-            </div>
-        </div>
-
-        {{-- UC Analyses Table --}}
 
         {{-- UC Analyses Table --}}
         <div class="bg-white shadow-sm rounded-lg overflow-hidden">
@@ -58,7 +30,6 @@
                                     <div class="max-w-xs">
                                         <p class="text-sm font-medium text-gray-900">{{ $analysis->ucTestimony?->customer_name ?? 'Unknown' }}</p>
                                         <p class="text-xs text-gray-600 line-clamp-2 mt-1">{{ $analysis->ucTestimony?->content ?? '' }}</p>
-                                        <p class="text-xs text-gray-500 mt-1">UC-wide</p>
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 text-center">

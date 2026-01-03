@@ -150,6 +150,72 @@
             </div>
         @endif
 
+        {{-- What They Say About UCO Section --}}
+        @if($testimonies->count() > 0)
+            <div class="relative">
+                {{-- Subtle Background Accent --}}
+                <div class="absolute top-0 left-0 w-96 h-96 bg-gradient-to-br from-uco-yellow-50 to-uco-orange-50 rounded-full blur-3xl opacity-40 -z-10"></div>
+                
+                <div class="space-y-8">
+                    {{-- Section Header --}}
+                    <div class="flex items-end justify-between border-b border-soft-gray-200 pb-6">
+                        <div>
+                            <h2 class="text-3xl font-bold text-soft-gray-900 tracking-tight">
+                                What They Say About UCO
+                            </h2>
+                            <p class="text-sm text-soft-gray-600 mt-2">
+                                Hear from our community of students and alumni
+                            </p>
+                        </div>
+                        <a href="{{ route('uc-testimonies.index') }}"
+                           class="hidden sm:inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-uco-orange-500 to-uco-yellow-500 hover:from-uco-orange-600 hover:to-uco-yellow-600 rounded-lg shadow-sm hover:shadow-md transition-all">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                            </svg>
+                            Write to Us
+                        </a>
+                    </div>
+
+                    {{-- Testimonies Grid --}}
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        @foreach($testimonies as $testimony)
+                            <div class="bg-white border border-soft-gray-200 rounded-xl p-6 hover:shadow-lg hover:border-soft-gray-300 transition-all">
+                                {{-- Rating Stars --}}
+                                <div class="flex items-center gap-1 mb-3">
+                                    @for($i = 1; $i <= 5; $i++)
+                                        <svg class="w-5 h-5 {{ $i <= $testimony->rating ? 'text-yellow-400' : 'text-gray-300' }} fill-current" viewBox="0 0 20 20">
+                                            <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/>
+                                        </svg>
+                                    @endfor
+                                </div>
+
+                                {{-- Testimony Content --}}
+                                <p class="text-soft-gray-700 text-sm leading-relaxed mb-4 line-clamp-4">
+                                    "{{ $testimony->content }}"
+                                </p>
+
+                                {{-- Author Info --}}
+                                <div class="pt-4 border-t border-soft-gray-100">
+                                    <p class="text-sm font-semibold text-soft-gray-900">{{ $testimony->customer_name }}</p>
+                                    <p class="text-xs text-soft-gray-500 mt-1">{{ optional($testimony->date)->format('F d, Y') }}</p>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+
+                    {{-- Mobile Write Button --}}
+                    <div class="sm:hidden flex justify-center">
+                        <a href="{{ route('uc-testimonies.index') }}"
+                           class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-uco-orange-500 to-uco-yellow-500 hover:from-uco-orange-600 hover:to-uco-yellow-600 rounded-lg shadow-sm hover:shadow-md transition-all">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                            </svg>
+                            Write to Us
+                        </a>
+                    </div>
+                </div>
+            </div>
+        @endif
         
     </div>
 </x-app-layout>
