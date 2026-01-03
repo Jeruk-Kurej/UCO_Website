@@ -20,8 +20,8 @@
         </div>
 
         {{-- Search Bar --}}
-        <div class="bg-white border border-gray-200 rounded-xl p-4">
-            <form action="{{ route('business-types.index') }}" method="GET" class="flex gap-3">
+        <div class="bg-white border border-gray-200 rounded-xl p-4" x-data="{ searchQuery: '{{ request('search') }}' }">
+            <form action="{{ route('business-types.index') }}" method="GET" class="flex gap-3" x-ref="searchForm">
                 <div class="flex-1">
                     <div class="relative">
                         <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
@@ -31,15 +31,12 @@
                         </div>
                         <input type="text" 
                                name="search" 
-                               value="{{ request('search') }}"
+                               x-model="searchQuery"
+                               x-on:input.debounce.400ms="$refs.searchForm.submit()"
                                placeholder="Search by category name or description..." 
                                class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent">
                     </div>
                 </div>
-                <button type="submit" 
-                        class="inline-flex items-center px-4 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors">
-                    Search
-                </button>
                 @if(request('search'))
                     <a href="{{ route('business-types.index') }}" 
                        class="inline-flex items-center px-4 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors">
