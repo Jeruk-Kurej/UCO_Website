@@ -17,21 +17,59 @@
         @endif
 
         @if(session('import_errors'))
-            <div class="bg-red-50 border-l-4 border-red-400 p-4 rounded-r-lg">
-                <div class="flex">
-                    <div class="flex-shrink-0">
-                        <svg class="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
-                        </svg>
-                    </div>
-                    <div class="ml-3">
-                        <p class="text-sm text-red-700 font-medium mb-2">Import Errors (showing first 5):</p>
-                        <ul class="list-disc list-inside text-xs text-red-600 space-y-1">
-                            @foreach(session('import_errors') as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                        <p class="text-xs text-red-500 mt-2 italic">Check Laravel logs for complete error details</p>
+            <div x-data="{ show: true }" 
+                 x-show="show" 
+                 x-transition:enter="ease-out duration-300"
+                 x-transition:enter-start="opacity-0 transform scale-95"
+                 x-transition:enter-end="opacity-100 transform scale-100"
+                 x-transition:leave="ease-in duration-200"
+                 x-transition:leave-start="opacity-100 transform scale-100"
+                 x-transition:leave-end="opacity-0 transform scale-95"
+                 class="fixed inset-0 z-50 overflow-y-auto" 
+                 style="display: none;"
+                 x-init="show = true">
+                <div class="flex items-center justify-center min-h-screen px-4 py-6">
+                    <div @click="show = false" class="fixed inset-0 bg-gray-900 bg-opacity-50 transition-opacity"></div>
+                    
+                    <div class="relative bg-white rounded-xl shadow-xl max-w-2xl w-full border border-gray-200">
+                        <div class="p-6">
+                            <div class="flex items-start justify-between mb-4">
+                                <div class="flex items-start gap-3">
+                                    <div class="flex-shrink-0 w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                                        <svg class="h-5 w-5 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-lg font-bold text-gray-900">Import Completed with Errors</h3>
+                                        <p class="text-sm text-gray-600 mt-1">Some rows were skipped during import</p>
+                                    </div>
+                                </div>
+                                <button @click="show = false" class="text-gray-400 hover:text-gray-600 transition-colors">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                            
+                            <div class="bg-red-50 border border-red-200 rounded-lg p-4 max-h-96 overflow-y-auto">
+                                <ul class="space-y-2 text-sm text-red-700">
+                                    @foreach(session('import_errors') as $error)
+                                        <li class="flex items-start gap-2">
+                                            <span class="text-red-500 mt-0.5">•</span>
+                                            <span>{{ $error }}</span>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                            
+                            <div class="mt-4 flex justify-end">
+                                <button @click="show = false" 
+                                        class="px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors">
+                                    Close
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
