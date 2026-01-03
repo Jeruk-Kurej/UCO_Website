@@ -66,4 +66,4 @@ CMD echo "=== RAILWAY STARTUP ===" && \
     echo "PORT: ${PORT:-8000}" && \
     echo "=== Starting PHP Server (migrations will run in background) ===" && \
     (php artisan migrate --force 2>&1 || echo "Migration skipped") & \
-    php -S 0.0.0.0:${PORT:-8000} -t public public/server.php
+    php artisan serve --host=0.0.0.0 --port=${PORT:-8000}
