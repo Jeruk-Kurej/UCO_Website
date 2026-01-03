@@ -5,12 +5,17 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Business extends Model
 {
     use HasFactory;
+
+    /*
+    |--------------------------------------------------------------------------
+    | Mass Assignment
+    |--------------------------------------------------------------------------
+    */
 
     protected $fillable = [
         'user_id',
@@ -18,9 +23,7 @@ class Business extends Model
         'business_mode',
         'name',
         'description',
-        'position', // User's position in this business
-        
-        // Enhanced Fields
+        'position',
         'logo_url',
         'established_date',
         'address',
@@ -41,6 +44,12 @@ class Business extends Model
         'product_certifications' => 'array',
         'business_challenges' => 'array',
     ];
+
+    /*
+    |--------------------------------------------------------------------------
+    | Relationships
+    |--------------------------------------------------------------------------
+    */
 
     public function user(): BelongsTo
     {
@@ -72,110 +81,47 @@ class Business extends Model
         return $this->hasMany(BusinessContact::class);
     }
 
-    /**
-     * Check if business is in product mode
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Helper Methods
+    |--------------------------------------------------------------------------
+    */
+
     public function isProductMode(): bool
     {
         return in_array($this->business_mode, ['product', 'both']);
     }
 
-    /**
-     * Check if business is in service mode
-     */
     public function isServiceMode(): bool
     {
         return in_array($this->business_mode, ['service', 'both']);
     }
 
-    /**
-     * Check if business has both products and services
-     */
     public function isBothMode(): bool
     {
         return $this->business_mode === 'both';
     }
 
-    /**
-     * Get all team members (many-to-many with pivot data)
-     * Uses user_businesses_details pivot table
-     */
-    public function teamMembers(): BelongsToMany
-    {
-        return $this->belongsToMany(User::class, 'user_businesses_details')
-                    ->withPivot([
-                        'role_type',
-                        'Position_name',
-                        'Working_Date',
-                        'Company_Description',
-                        'Income',
-                        'end_date',
-                        'is_current'
-                    ])
-                    ->withTimestamps();
-    }
-
-    /**
-     * Get current active team members only
-     */
-    public function currentTeam(): BelongsToMany
-    {
-        return $this->teamMembers()->wherePivot('is_current', true);
-    }
-
-    /**
-     * Get founders/owners
-     */
-    public function founders(): BelongsToMany
-    {
-        return $this->teamMembers()->wherePivot('role_type', 'owner');
-    }
-
-    /**
-     * Get employees
-     */
-    public function employees(): BelongsToMany
-    {
-        return $this->teamMembers()
-                    ->wherePivot('role_type', 'employee')
-                    ->wherePivot('is_current', true);
-    }
-
-    /**
-     * Get business employment details (direct access to pivot)
-     */
-    public function employmentDetails(): HasMany
-    {
-        return $this->hasMany(User_Businesses_Detail::class);
-    }
-
-    /**
-     * Check if business is from college project
-     */
     public function isCollegeProject(): bool
     {
         return $this->is_from_college_project === true;
     }
 
-    /**
-     * Get total team size
-     */
-    public function teamSize(): int
+    public function hasLegalDocuments(): bool
     {
-        return $this->currentTeam()->count();
+        return !empty($this->legal_documents);
     }
 
-    /**
-     * Check if user is part of this business
-     */
-    public function hasTeamMember(User $user): bool
+    public function hasCertifications(): bool
     {
-        return $this->teamMembers()->where('user_id', $user->id)->exists();
+        return !empty($this->product_certifications);
     }
 
-    /**
-     * Get business age in years
-     */
+    public function isActive(): bool
+    {
+        return $this->is_continued_after_graduation === true;
+    }
+
     public function getAgeInYears(): ?int
     {
         if (!$this->established_date) {
@@ -184,48 +130,5 @@ class Business extends Model
         
         return $this->established_date->diffInYears(now());
     }
-
-    /**
-     * Check if business has legal documents
-     */
-    public function hasLegalDocuments(): bool
-    {
-        return !empty($this->legal_documents);
-    }
-
-    /**
-     * Check if products have certifications
-     */
-    public function hasCertifications(): bool
-    {
-        return !empty($this->product_certifications);
-    }
-
-    /**
-     * Get formatted revenue range label
-     */
-    public function getRevenueLabel(): string
-    {
-        if (!$this->revenue_range) {
-            return 'Not specified';
-        }
-        
-        return $this->revenue_range;
-    }
-
-    /**
-     * Check if business is still operating
-     */
-    public function isActive(): bool
-    {
-        return $this->is_continued_after_graduation === true;
-    }
-
-    /**
-     * Get total challenges count
-     */
-    public function getChallengesCount(): int
-    {
-        return !empty($this->business_challenges) ? count($this->business_challenges) : 0;
-    }
 }
+

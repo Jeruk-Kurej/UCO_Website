@@ -7,32 +7,22 @@ use Illuminate\Support\Facades\Log;
 
 class AiModerationService
 {
-    /**
-     * Analyze testimony content using Google Gemini AI
-     * 
-     * @param string $content Testimony text
-     * @param int $rating Star rating (1-5)
-     * @param string $customerName Customer name
-     * @return array ['sentiment_score' => float, 'is_approved' => bool, 'rejection_reason' => string|null]
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Main Analysis Method
+    |--------------------------------------------------------------------------
+    */
+
     public function analyze(string $content, int $rating = 0, string $customerName = ''): array
     {
         try {
-            // Build analysis prompt
             $prompt = $this->buildPrompt($content, $rating, $customerName);
-
             $model = env('GEMINI_MODEL', 'gemini-2.5-flash');
 
-            // Call Gemini API with an explicit model name
             $response = Gemini::generativeModel(model: $model)->generateContent($prompt);
-
-            // Raw model output (often wrapped in ```json)
             $rawText = $response->text();
 
-            // DEBUG: print to terminal (artisan serve) + log file when enabled
             if (env('GEMINI_DEBUG', false) || config('app.debug')) {
-                $snippet = mb_substr($rawText, 0, 2000);
-                error_log("[Gemini debug] model={$model} rating={$rating} response_snippet=" . $snippet);
                 Log::debug('Gemini raw response', [
                     'model' => $model,
                     'rating' => $rating,
@@ -57,14 +47,16 @@ class AiModerationService
                 'content' => substr($content, 0, 100)
             ]);
             
-            // Fallback to simple heuristic if AI fails
             return $this->fallbackAnalysis($content, $rating);
         }
     }
 
-    /**
-     * Build prompt for Gemini AI
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Prompt Building
+    |--------------------------------------------------------------------------
+    */
+
     private function buildPrompt(string $content, int $rating, string $customerName): string
     {
         return <<<PROMPT
@@ -97,17 +89,17 @@ Respond with valid JSON only:
 PROMPT;
     }
 
-    /**
-     * Parse Gemini response into structured array
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Response Parsing
+    |--------------------------------------------------------------------------
+    */
+
     private function parseGeminiResponse(string $text, int $rating): array
     {
-        // Remove markdown code blocks if present
-        $text = str_replace('```json', '', $text);
-        $text = str_replace('```', '', $text);
+        $text = str_replace(['```json', '```'], '', $text);
         $text = trim($text);
         
-        // Try to decode JSON
         $json = json_decode($text, true);
         
         if (!is_array($json)) {
@@ -115,7 +107,6 @@ PROMPT;
             return $this->fallbackAnalysis('', $rating);
         }
         
-        // Validate and structure response
         $sentimentScore = isset($json['sentiment_score']) 
             ? (float) max(0, min(100, $json['sentiment_score'])) 
             : 0.0;
@@ -135,12 +126,14 @@ PROMPT;
         ];
     }
 
-    /**
-     * Fallback analysis using simple heuristics
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Fallback Analysis
+    |--------------------------------------------------------------------------
+    */
+
     private function fallbackAnalysis(string $content, int $rating): array
     {
-        // Simple keyword-based sentiment
         $negativeKeywords = ['buruk', 'jelek', 'mengecewakan', 'bad', 'terrible', 'worst', 'horrible', 'scam', 'palsu'];
         $positiveKeywords = ['bagus', 'baik', 'memuaskan', 'recommended', 'good', 'great', 'excellent', 'amazing'];
         
@@ -156,12 +149,10 @@ PROMPT;
             if (stripos($lowerContent, $word) !== false) $positiveCount++;
         }
         
-        // Calculate sentiment score
-        $baseScore = $rating * 20; // Convert 1-5 to 0-100
+        $baseScore = $rating * 20;
         $keywordAdjustment = ($positiveCount - $negativeCount) * 10;
         $sentimentScore = max(0, min(100, $baseScore + $keywordAdjustment));
         
-        // Auto-approve if sentiment >= 60%
         $isApproved = $sentimentScore >= 60;
         
         return [
@@ -171,3 +162,4 @@ PROMPT;
         ];
     }
 }
+

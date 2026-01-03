@@ -10,6 +10,12 @@ class BusinessContact extends Model
 {
     use HasFactory;
 
+    /*
+    |--------------------------------------------------------------------------
+    | Mass Assignment
+    |--------------------------------------------------------------------------
+    */
+
     protected $fillable = [
         'business_id',
         'contact_type_id',
@@ -21,17 +27,17 @@ class BusinessContact extends Model
         'is_primary' => 'boolean',
     ];
 
-    /**
-     * Get the business that owns this contact
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Relationships
+    |--------------------------------------------------------------------------
+    */
+
     public function business(): BelongsTo
     {
         return $this->belongsTo(Business::class);
     }
 
-    /**
-     * Get the contact type for this contact
-     */
     public function contactType(): BelongsTo
     {
         return $this->belongsTo(ContactType::class);

@@ -10,15 +10,24 @@ class ProductPhoto extends Model
 {
     use HasFactory;
 
+    /*
+    |--------------------------------------------------------------------------
+    | Mass Assignment
+    |--------------------------------------------------------------------------
+    */
+
     protected $fillable = [
         'product_id',
         'photo_url',
         'caption',
     ];
 
-    /**
-     * Get the product that owns this photo
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Relationships
+    |--------------------------------------------------------------------------
+    */
+
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);

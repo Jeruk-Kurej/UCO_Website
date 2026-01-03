@@ -10,6 +10,12 @@ class UcTestimony extends Model
 {
     use HasFactory;
 
+    /*
+    |--------------------------------------------------------------------------
+    | Mass Assignment
+    |--------------------------------------------------------------------------
+    */
+
     protected $fillable = [
         'customer_name',
         'content',
@@ -21,6 +27,12 @@ class UcTestimony extends Model
         'date' => 'date',
         'rating' => 'integer',
     ];
+
+    /*
+    |--------------------------------------------------------------------------
+    | Relationships
+    |--------------------------------------------------------------------------
+    */
 
     public function aiAnalysis(): HasOne
     {
