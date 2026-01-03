@@ -59,15 +59,27 @@ class BusinessesImport implements ToModel, WithHeadingRow, WithValidation
             }
 
             // Skip if no business name
-            if (empty($row['business_name']) && empty($row['nama_bisnis']) && empty($row['name'])) {
+            // Excel headers: "Nama bisnis/ventura" converts to "nama_bisnisventura" or similar
+            if (empty($row['nama_bisnisventura']) && empty($row['nama_bisnis_ventura']) && empty($row['business_name']) && empty($row['nama_bisnis'])) {
                 $this->skippedCount++;
                 $this->errors[] = "Row skipped: No business name found. Available columns: " . implode(', ', array_keys($row));
                 Log::warning("Business row skipped - no name. Columns: " . implode(', ', array_keys($row)));
                 return null;
             }
 
-            // Get business name (prioritize specific business name columns)
-            $businessName = $row['business_name'] ?? $row['nama_bisnis'] ?? $row['name'] ?? null;
+            // Get business name from Excel column "Nama bisnis/ventura"
+            // Priority: Excel specific columns first, then generic fallbacks
+            $businessName = $row['nama_bisnisventura'] 
+                ?? $row['nama_bisnis_ventura'] 
+                ?? $row['business_name'] 
+                ?? $row['nama_bisnis'] 
+                ?? null;
+            
+            // IMPORTANT: Do NOT use 'name' column as it contains OWNER name, not business name!
+            // Log the actual business name found
+            if ($businessName) {
+                Log::info("Found business name: '{$businessName}' from Excel");
+            }
             
             // Check if business already exists
             $existingBusiness = Business::where('name', $businessName)->first();
@@ -145,7 +157,13 @@ class BusinessesImport implements ToModel, WithHeadingRow, WithValidation
                 'user_id' => $user->id,
                 'business_type_id' => $businessType->id,
                 'name' => $businessName,
-                'description' => $description ?: ($row['deskripsi'] ?? $row['description'] ?? $row['business_description'] ?? 'No description provided'),
+                'description' => $description ?: (
+                    $row['deskripsi_bisnis'] ?? 
+                    $row['deskripsi'] ?? 
+                    $row['description'] ?? 
+                    $row['business_description'] ?? 
+                    'No description provided'
+                ),
                 'business_mode' => $businessMode,
                 
                 // Additional fields with proper column mapping
