@@ -119,6 +119,37 @@
                 </div>
             </div>
 
+            {{-- Search Bar --}}
+            <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                <form action="{{ route('businesses.index') }}" method="GET" class="flex gap-3">
+                    <input type="hidden" name="my" value="{{ request('my') }}">
+                    <div class="flex-1">
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                </svg>
+                            </div>
+                            <input type="text" 
+                                   name="search" 
+                                   value="{{ request('search') }}"
+                                   placeholder="Search by business name, description, owner, or category..." 
+                                   class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                        </div>
+                    </div>
+                    <button type="submit" 
+                            class="inline-flex items-center px-4 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors">
+                        Search
+                    </button>
+                    @if(request('search'))
+                        <a href="{{ route('businesses.index') }}{{ request('my') ? '?my=1' : '' }}" 
+                           class="inline-flex items-center px-4 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors">
+                            Clear
+                        </a>
+                    @endif
+                </form>
+            </div>
+
             {{-- Tab Content: Browse All Businesses --}}
             <div x-show="activeTab === 'browse'" class="p-6">
                 @if($businesses->count() > 0)

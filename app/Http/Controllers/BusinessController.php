@@ -35,7 +35,22 @@ class BusinessController extends Controller
      */
     public function index(Request $request)
     {
+        $search = $request->get('search');
         $query = Business::with(['user', 'businessType', 'products', 'photos']);
+        
+        // Apply search filter
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'LIKE', "%{$search}%")
+                  ->orWhere('description', 'LIKE', "%{$search}%")
+                  ->orWhereHas('user', function($userQuery) use ($search) {
+                      $userQuery->where('name', 'LIKE', "%{$search}%");
+                  })
+                  ->orWhereHas('businessType', function($typeQuery) use ($search) {
+                      $typeQuery->where('name', 'LIKE', "%{$search}%");
+                  });
+            });
+        }
         
         // Filter for "My Businesses" if query param present
         if ($request->get('my') && Auth::check()) {
@@ -44,7 +59,7 @@ class BusinessController extends Controller
             $query->where('user_id', $user->id);
         }
         
-        $businesses = $query->latest()->paginate(15);
+        $businesses = $query->latest()->paginate(15)->appends(['search' => $search, 'my' => $request->get('my')]);
         
         // Prepare my businesses for current user
         $myBusinesses = collect();

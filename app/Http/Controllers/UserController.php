@@ -34,16 +34,28 @@ class UserController extends Controller
     /**
      * Display a listing of users.
      */
-    public function index()
+    public function index(Request $request)
     {
         // ✅ CHANGED: Use Gate instead of authorize for better error handling
         if (!$this->getAuthUser()->isAdmin()) {
             abort(403, 'Only administrators can view user list.');
         }
 
-        $users = User::withCount('businesses')
-            ->latest()
-            ->paginate(20);
+        $search = $request->get('search');
+        
+        // Build query with search filter
+        $query = User::withCount('businesses');
+        
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'LIKE', "%{$search}%")
+                  ->orWhere('email', 'LIKE', "%{$search}%")
+                  ->orWhere('username', 'LIKE', "%{$search}%")
+                  ->orWhere('extended_data->nis', 'LIKE', "%{$search}%");
+            });
+        }
+        
+        $users = $query->latest()->paginate(20)->appends(['search' => $search]);
 
         // Get accurate counts from database (not from paginated collection)
         $totalUsers = User::count();
