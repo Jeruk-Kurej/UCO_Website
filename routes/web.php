@@ -19,7 +19,6 @@ use App\Models\BusinessType;
 use App\Models\ContactType;
 use App\Models\ProductCategory;
 use App\Models\User;
-use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
@@ -156,7 +155,7 @@ Route::post('/admin/reset-database-execute', function () {
         
         return redirect('/login')->with('success', "✅ Database reset! Deleted {$businessCount} businesses and {$userCount} users. Login as admin@uco.com / password");
         
-    } catch (Exception $e) {
+    } catch (\Exception $e) {
         return back()->with('error', 'Error: ' . $e->getMessage());
     }
 })->middleware('auth')->name('admin.reset-database.execute');
