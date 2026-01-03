@@ -63,21 +63,6 @@ class UserController extends Controller
         $totalStudents = User::where('role', 'student')->count();
         $totalAlumni = User::where('role', 'alumni')->count();
 
-        // Return JSON for AJAX requests
-        if ($request->ajax() || $request->wantsJson()) {
-            return response()->json([
-                'users' => $users->items(),
-                'pagination' => [
-                    'total' => $users->total(),
-                    'per_page' => $users->perPage(),
-                    'current_page' => $users->currentPage(),
-                    'last_page' => $users->lastPage(),
-                    'from' => $users->firstItem(),
-                    'to' => $users->lastItem(),
-                ]
-            ]);
-        }
-
         return view('users.index', compact(
             'users',
             'totalUsers',
