@@ -206,10 +206,6 @@ Route::get('/admin/reset-database-confirm', function () {
 })->middleware('auth')->name('admin.reset-database');
 
 Route::post('/admin/reset-database-execute', function () {
-    use App\Models\User;
-    use App\Models\Business;
-    use Illuminate\Support\Facades\Hash;
-    
     // Only admin can access
     if (!auth()->check() || !auth()->user()->isAdmin()) {
         abort(403, 'Only administrators can reset database.');
@@ -217,19 +213,19 @@ Route::post('/admin/reset-database-execute', function () {
     
     try {
         // Delete all businesses
-        $businessCount = Business::count();
-        Business::query()->delete();
+        $businessCount = \App\Models\Business::count();
+        \App\Models\Business::query()->delete();
         
         // Delete ALL users
-        $userCount = User::count();
-        User::query()->delete();
+        $userCount = \App\Models\User::count();
+        \App\Models\User::query()->delete();
         
         // Create ONE default admin
-        $admin = User::create([
+        $admin = \App\Models\User::create([
             'username' => 'admin',
             'name' => 'Admin UCO',
             'email' => 'admin@uco.com',
-            'password' => Hash::make('password'),
+            'password' => \Illuminate\Support\Facades\Hash::make('password'),
             'role' => 'admin',
             'is_active' => true,
             'email_verified_at' => now(),
