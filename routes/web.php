@@ -113,14 +113,14 @@ Route::get('/contact-types/{contactType}', [ContactTypeController::class, 'show'
 */
 
 Route::get('/admin/reset-database-confirm', function () {
-    if (!auth()->check() || !auth()->user()->isAdmin()) {
+    if (!Auth::check() || !Auth::user()->isAdmin()) {
         abort(403, 'Only administrators can reset database.');
     }
     return view('admin.reset-database');
 })->middleware('auth')->name('admin.reset-database');
 
 Route::post('/admin/reset-database-execute', function () {
-    if (!auth()->check() || !auth()->user()->isAdmin()) {
+    if (!Auth::check() || !Auth::user()->isAdmin()) {
         abort(403, 'Only administrators can reset database.');
     }
     
@@ -138,13 +138,13 @@ Route::post('/admin/reset-database-execute', function () {
             'username' => 'admin',
             'name' => 'Admin UCO',
             'email' => 'admin@uco.com',
-            'password' => \Illuminate\Support\Facades\Hash::make('password'),
+            'password' => Hash::make('password'),
             'role' => 'admin',
             'is_active' => true,
             'email_verified_at' => now(),
         ]);
         
-        auth()->logout();
+        Auth::logout();
         request()->session()->invalidate();
         request()->session()->regenerateToken();
         
