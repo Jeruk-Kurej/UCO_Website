@@ -57,10 +57,11 @@ class UserController extends Controller
         
         $users = $query->latest()->paginate(20);
 
-        // Return JSON for AJAX requests
-        if ($request->ajax() || $request->wantsJson()) {
+        // Return JSON for AJAX requests (check explicit parameter for reliability)
+        if ($request->get('ajax') == '1' || $request->ajax() || $request->wantsJson()) {
             return response()->json([
-                'users' => $users->items()
+                'users' => $users->items(),
+                'success' => true
             ]);
         }
 

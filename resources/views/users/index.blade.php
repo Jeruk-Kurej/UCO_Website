@@ -494,18 +494,27 @@
                     this.isSearching = true;
                     
                     try {
-                        const response = await fetch('{{ route("users.index") }}?search=' + encodeURIComponent(trimmed), {
+                        const response = await fetch('{{ route("users.index") }}?search=' + encodeURIComponent(trimmed) + '&ajax=1', {
                             headers: {
                                 'X-Requested-With': 'XMLHttpRequest',
-                                'Accept': 'application/json'
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/json'
                             }
                         });
                         
                         if (!response.ok) {
-                            throw new Error('Search failed');
+                            console.error('Response not OK:', response.status, response.statusText);
+                            throw new Error('Search failed: ' + response.status);
+                        }
+                        
+                        const contentType = response.headers.get('content-type');
+                        if (!contentType || !contentType.includes('application/json')) {
+                            console.error('Not JSON response:', contentType);
+                            throw new Error('Expected JSON response');
                         }
                         
                         const data = await response.json();
+                        console.log('Search results:', data);
                         
                         // Update URL without reload
                         history.pushState(null, '', '{{ route("users.index") }}?search=' + encodeURIComponent(trimmed));
