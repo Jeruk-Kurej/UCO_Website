@@ -4,6 +4,7 @@ namespace App\Imports;
 
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
@@ -11,6 +12,10 @@ use Illuminate\Support\Str;
 
 class UsersImport implements ToModel, WithHeadingRow, WithValidation
 {
+    protected $errors = [];
+    protected $successCount = 0;
+    protected $skippedCount = 0;
+
     /**
      * @param array $row
      *
@@ -18,46 +23,78 @@ class UsersImport implements ToModel, WithHeadingRow, WithValidation
      */
     public function model(array $row)
     {
-        // Check if user already exists
-        $existingUser = User::where('email', $row['email'])->first();
-        
-        if ($existingUser) {
-            return null; // Skip existing users
-        }
+        try {
+            // Check required fields
+            if (empty($row['name'])) {
+                $this->skippedCount++;
+                $errorMsg = "Row skipped: 'name' field is required. Available columns: " . implode(', ', array_keys($row));
+                $this->errors[] = $errorMsg;
+                Log::warning("User import: " . $errorMsg);
+                return null;
+            }
 
-        return new User([
-            'username' => $row['username'] ?? strtolower(str_replace(' ', '_', $row['name'])),
-            'name' => $row['name'],
-            'email' => $row['email'],
-            'password' => isset($row['password']) ? Hash::make($row['password']) : Hash::make('password123'),
-            'role' => $row['role'] ?? 'student',
-            'is_active' => isset($row['is_active']) ? (bool)$row['is_active'] : true,
-            'email_verified_at' => now(),
+            if (empty($row['email'])) {
+                $this->skippedCount++;
+                $errorMsg = "User '{$row['name']}': 'email' field is required";
+                $this->errors[] = $errorMsg;
+                Log::warning("User import: " . $errorMsg);
+                return null;
+            }
+
+            // Check if user already exists
+            $existingUser = User::where('email', $row['email'])->first();
             
-            // Personal Information
-            'birth_date' => $row['birth_date'] ?? $row['tanggal_lahir'] ?? null,
-            'birth_city' => $row['birth_city'] ?? $row['tempat_lahir'] ?? null,
-            'religion' => $row['religion'] ?? $row['agama'] ?? null,
+            if ($existingUser) {
+                $this->skippedCount++;
+                Log::info("User '{$row['name']}' with email '{$row['email']}' already exists, skipping...");
+                return null; // Skip existing users
+            }
+
+            $user = new User([
+                'username' => $row['username'] ?? strtolower(str_replace(' ', '_', $row['name'])),
+                'name' => $row['name'],
+                'email' => $row['email'],
+                'password' => isset($row['password']) ? Hash::make($row['password']) : Hash::make('password123'),
+                'role' => $row['role'] ?? 'student',
+                'is_active' => isset($row['is_active']) ? (bool)$row['is_active'] : true,
+                'email_verified_at' => now(),
+                
+                // Personal Information
+                'birth_date' => $row['birth_date'] ?? $row['tanggal_lahir'] ?? null,
+                'birth_city' => $row['birth_city'] ?? $row['tempat_lahir'] ?? null,
+                'religion' => $row['religion'] ?? $row['agama'] ?? null,
+                
+                // Contact Information
+                'phone_number' => $row['phone_number'] ?? $row['phone'] ?? $row['telp'] ?? null,
+                'mobile_number' => $row['mobile_number'] ?? $row['mobile'] ?? $row['hp'] ?? null,
+                'whatsapp' => $row['whatsapp'] ?? $row['wa'] ?? null,
+                
+                // Student/Academic Information - MATCH DATABASE FIELD NAMES (PascalCase)
+                'NIS' => $row['nis'] ?? null,
+                'Student_Year' => $row['student_year'] ?? $row['angkatan'] ?? null,
+                'Major' => $row['major'] ?? $row['prodi'] ?? $row['jurusan'] ?? null,
+                'Is_Graduate' => isset($row['is_graduate']) ? (bool)$row['is_graduate'] : false,
+                'CGPA' => $row['cgpa'] ?? $row['ipk'] ?? null,
+                
+                // JSON fields - store additional data
+                'personal_data' => $this->buildPersonalData($row),
+                'academic_data' => $this->buildAcademicData($row),
+                'father_data' => $this->buildFatherData($row),
+                'mother_data' => $this->buildMotherData($row),
+                'graduation_data' => $this->buildGraduationData($row),
+            ]);
+
+            $this->successCount++;
+            Log::info("User '{$row['name']}' imported successfully");
             
-            // Contact Information
-            'phone_number' => $row['phone_number'] ?? $row['phone'] ?? $row['telp'] ?? null,
-            'mobile_number' => $row['mobile_number'] ?? $row['mobile'] ?? $row['hp'] ?? null,
-            'whatsapp' => $row['whatsapp'] ?? $row['wa'] ?? null,
-            
-            // Student/Academic Information - MATCH DATABASE FIELD NAMES (PascalCase)
-            'NIS' => $row['nis'] ?? null,
-            'Student_Year' => $row['student_year'] ?? $row['angkatan'] ?? null,
-            'Major' => $row['major'] ?? $row['prodi'] ?? $row['jurusan'] ?? null,
-            'Is_Graduate' => isset($row['is_graduate']) ? (bool)$row['is_graduate'] : false,
-            'CGPA' => $row['cgpa'] ?? $row['ipk'] ?? null,
-            
-            // JSON fields - store additional data
-            'personal_data' => $this->buildPersonalData($row),
-            'academic_data' => $this->buildAcademicData($row),
-            'father_data' => $this->buildFatherData($row),
-            'mother_data' => $this->buildMotherData($row),
-            'graduation_data' => $this->buildGraduationData($row),
-        ]);
+            return $user;
+
+        } catch (\Exception $e) {
+            $this->errors[] = "Error importing user: {$e->getMessage()} - Data: " . json_encode($row);
+            Log::error("User import error: " . $e->getMessage());
+            $this->skippedCount++;
+            return null;
+        }
     }
 
     /**
@@ -257,6 +294,18 @@ class UsersImport implements ToModel, WithHeadingRow, WithValidation
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'role' => 'nullable|in:student,alumni,admin',
+        ];
+    }
+
+    /**
+     * Get import results
+     */
+    public function getResults(): array
+    {
+        return [
+            'success' => $this->successCount,
+            'skipped' => $this->skippedCount,
+            'errors' => $this->errors,
         ];
     }
 }

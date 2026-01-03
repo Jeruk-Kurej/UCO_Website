@@ -9,6 +9,7 @@ use App\Imports\UsersImport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rules;
 use Maatwebsite\Excel\Facades\Excel;
 use Maatwebsite\Excel\Excel as ExcelFormat;
@@ -299,21 +300,45 @@ class UserController extends Controller
             $import = new UsersImport();
             Excel::import($import, $request->file('file'));
 
+            $results = $import->getResults();
+
+            $message = "Import completed! Success: {$results['success']}, Skipped: {$results['skipped']}";
+            
+            if (!empty($results['errors'])) {
+                $message .= ". Errors: " . count($results['errors']);
+                
+                // Log detailed errors for debugging
+                foreach ($results['errors'] as $error) {
+                    Log::error("User import error: " . $error);
+                }
+                
+                // Show first few errors to user
+                $errorMessages = array_slice($results['errors'], 0, 5);
+                return redirect()
+                    ->route('users.index')
+                    ->with('success', $message)
+                    ->with('import_errors', $errorMessages);
+            }
+
             return redirect()
                 ->route('users.index')
-                ->with('success', 'Users imported successfully!');
+                ->with('success', $message);
         } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
             $failures = $e->failures();
             $errorMessages = [];
             
             foreach ($failures as $failure) {
-                $errorMessages[] = "Row {$failure->row()}: " . implode(', ', $failure->errors());
+                $errorMsg = "Row {$failure->row()}: " . implode(', ', $failure->errors());
+                $errorMessages[] = $errorMsg;
+                Log::error("User import validation error: " . $errorMsg);
             }
             
             return redirect()
                 ->route('users.index')
-                ->with('error', 'Import failed: ' . implode(' | ', $errorMessages));
+                ->with('error', 'Import validation failed')
+                ->with('import_errors', array_slice($errorMessages, 0, 5));
         } catch (\Exception $e) {
+            Log::error('User import exception: ' . $e->getMessage());
             return redirect()
                 ->route('users.index')
                 ->with('error', 'Import failed: ' . $e->getMessage());
