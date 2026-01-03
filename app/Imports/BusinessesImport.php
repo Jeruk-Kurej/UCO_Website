@@ -19,6 +19,29 @@ class BusinessesImport implements ToModel, WithHeadingRow, WithValidation
     protected $skippedCount = 0;
 
     /**
+     * Detect if the Excel data is student/user data instead of business data
+     */
+    private function isStudentData(array $row): bool
+    {
+        // Check for student-specific columns
+        $studentColumns = ['nis', 'nisn', 'prodi', 'angkatan', 'student_year', 'major', 'jurusan', 'ipk', 'cgpa'];
+        
+        $studentColumnCount = 0;
+        foreach ($studentColumns as $column) {
+            if (array_key_exists($column, $row)) {
+                $studentColumnCount++;
+            }
+        }
+        
+        // If 3 or more student columns exist, this is likely student data
+        if ($studentColumnCount >= 3) {
+            return true;
+        }
+        
+        return false;
+    }
+
+    /**
      * @param array $row
      *
      * @return \Illuminate\Database\Eloquent\Model|null
@@ -26,6 +49,15 @@ class BusinessesImport implements ToModel, WithHeadingRow, WithValidation
     public function model(array $row)
     {
         try {
+            // CRITICAL: Detect if this is student data instead of business data
+            if ($this->isStudentData($row)) {
+                $this->skippedCount++;
+                $errorMsg = "Row skipped: This appears to be STUDENT/USER data, not BUSINESS data. Found student columns: " . implode(', ', array_keys($row)) . ". Please use User Import instead.";
+                $this->errors[] = $errorMsg;
+                Log::error("Business import: " . $errorMsg);
+                return null;
+            }
+
             // Skip if no business name
             if (empty($row['nama']) && empty($row['name']) && empty($row['business_name'])) {
                 $this->skippedCount++;

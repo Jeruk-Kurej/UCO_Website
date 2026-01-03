@@ -17,6 +17,29 @@ class UsersImport implements ToModel, WithHeadingRow, WithValidation
     protected $skippedCount = 0;
 
     /**
+     * Detect if the Excel data is business data instead of user data
+     */
+    private function isBusinessData(array $row): bool
+    {
+        // Check for business-specific columns
+        $businessColumns = ['business_name', 'business_type', 'business_line', 'business_mode', 'established_date', 'employee_count', 'revenue_range'];
+        
+        $businessColumnCount = 0;
+        foreach ($businessColumns as $column) {
+            if (array_key_exists($column, $row)) {
+                $businessColumnCount++;
+            }
+        }
+        
+        // If 2 or more business columns exist, this is likely business data
+        if ($businessColumnCount >= 2) {
+            return true;
+        }
+        
+        return false;
+    }
+
+    /**
      * @param array $row
      *
      * @return \Illuminate\Database\Eloquent\Model|null
@@ -24,6 +47,15 @@ class UsersImport implements ToModel, WithHeadingRow, WithValidation
     public function model(array $row)
     {
         try {
+            // CRITICAL: Detect if this is business data instead of user data
+            if ($this->isBusinessData($row)) {
+                $this->skippedCount++;
+                $errorMsg = "Row skipped: This appears to be BUSINESS data, not USER data. Found business columns: " . implode(', ', array_keys($row)) . ". Please use Business Import instead.";
+                $this->errors[] = $errorMsg;
+                Log::error("User import: " . $errorMsg);
+                return null;
+            }
+
             // Check required fields
             if (empty($row['name'])) {
                 $this->skippedCount++;
