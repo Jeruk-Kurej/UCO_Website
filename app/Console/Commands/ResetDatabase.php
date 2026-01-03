@@ -41,30 +41,24 @@ class ResetDatabase extends Command
         Business::query()->delete();
         $this->info("✅ Deleted {$businessCount} businesses");
 
-        // Delete non-admin users
-        $this->info('Deleting non-admin users...');
-        $userCount = User::where('role', '!=', 'admin')->count();
-        User::where('role', '!=', 'admin')->delete();
-        $this->info("✅ Deleted {$userCount} non-admin users");
+        // Delete ALL users
+        $this->info('Deleting all users...');
+        $userCount = User::count();
+        User::query()->delete();
+        $this->info("✅ Deleted {$userCount} users");
 
-        // Ensure at least one admin exists
-        $adminCount = User::where('role', 'admin')->count();
-        
-        if ($adminCount === 0) {
-            $this->warn('No admin found, creating default admin...');
-            $admin = User::create([
-                'username' => 'admin',
-                'name' => 'Admin UCO',
-                'email' => 'admin@uco.com',
-                'password' => Hash::make('password'),
-                'role' => 'admin',
-                'is_active' => true,
-                'email_verified_at' => now(),
-            ]);
-            $this->info("✅ Created admin: {$admin->email}");
-        } else {
-            $this->info("✅ Found {$adminCount} admin user(s)");
-        }
+        // Create ONE default admin
+        $this->info('Creating default admin...');
+        $admin = User::create([
+            'username' => 'admin',
+            'name' => 'Admin UCO',
+            'email' => 'admin@uco.com',
+            'password' => Hash::make('password'),
+            'role' => 'admin',
+            'is_active' => true,
+            'email_verified_at' => now(),
+        ]);
+        $this->info("✅ Created admin: {$admin->email}");
 
         $this->newLine();
         $this->info('✅ Database reset complete!');
