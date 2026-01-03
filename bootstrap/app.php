@@ -15,8 +15,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin' => \App\Http\Middleware\IsAdmin::class,
         ]);
         
-        // Redirect unauthenticated users to /welcome instead of /login
-        $middleware->redirectGuestsTo('/welcome');
+        // Redirect unauthenticated users to / (homepage)
+        $middleware->redirectGuestsTo('/');
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

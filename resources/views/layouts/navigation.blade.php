@@ -94,7 +94,7 @@
                         </div>
                     </div>
                 @else
-                    <a href="/welcome" 
+                    <a href="/" 
                        class="px-4 py-2 text-sm font-medium text-white bg-soft-gray-900 rounded-lg hover:bg-soft-gray-800 hover:shadow-lg transition-all">
                         Login
                     </a>
@@ -171,7 +171,7 @@
                     </form>
                 </div>
             @else
-                <a href="/welcome" class="block py-2.5 px-3 text-sm font-medium text-white bg-soft-gray-900 rounded-lg text-center hover:bg-soft-gray-800">
+                <a href="/" class="block py-2.5 px-3 text-sm font-medium text-white bg-soft-gray-900 rounded-lg text-center hover:bg-soft-gray-800">
                     Login
                 </a>
             @endauth
