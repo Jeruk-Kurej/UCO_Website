@@ -9,7 +9,7 @@
                         <h3 class="font-bold text-base text-gray-900">UCO Platform</h3>
                         <p class="text-xs text-gray-600">Student & Alumni Community</p>
                     </div>
-                </img>
+                </div>
                 <p class="text-sm text-gray-600 leading-relaxed">
                     Connecting students and alumni to build a stronger entrepreneurial community and foster business collaboration.
                 </p>
