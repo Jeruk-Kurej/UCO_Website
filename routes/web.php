@@ -31,6 +31,17 @@ Route::get('/ping', function () {
     return 'pong at ' . now()->toDateTimeString();
 });
 
+Route::get('/db-config', function () {
+    return response()->json([
+        'DB_CONNECTION' => env('DB_CONNECTION'),
+        'DB_HOST' => env('DB_HOST') ?: '❌ EMPTY',
+        'DB_PORT' => env('DB_PORT') ?: '❌ EMPTY',
+        'DB_DATABASE' => env('DB_DATABASE') ?: '❌ EMPTY',
+        'DB_USERNAME' => env('DB_USERNAME') ?: '❌ EMPTY',
+        'DB_PASSWORD' => env('DB_PASSWORD') ? '✅ SET' : '❌ EMPTY',
+    ]);
+});
+
 Route::get('/db-test', function () {
     set_time_limit(5); // Max 5 seconds
     try {
