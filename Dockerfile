@@ -55,6 +55,11 @@ RUN composer dump-autoload --optimize
 # Run Laravel package discovery
 RUN php artisan package:discover --ansi
 
+# Clear and cache Laravel config
+RUN php artisan config:clear && \
+    php artisan route:clear && \
+    php artisan view:clear
+
 # Set permissions
 RUN chmod -R 755 /app/storage /app/bootstrap/cache
 
@@ -66,15 +71,13 @@ CMD echo "=== RAILWAY STARTUP ===" && \
     echo "PORT: ${PORT:-8000}" && \
     echo "DB_HOST: ${DB_HOST:-NOT_SET}" && \
     echo "DB_DATABASE: ${DB_DATABASE:-NOT_SET}" && \
-    echo "=== Starting PHP Server First ===" && \
-    (php -S 0.0.0.0:${PORT:-8000} -t public &) && \
-    sleep 2 && \
-    echo "=== Server Started, Now Running Migrations ===" && \
-    (php artisan migrate --force || echo "Migration failed, continuing...") && \
-    (php artisan db:seed --class=UserSeeder --force || echo "UserSeeder failed, continuing...") && \
-    (php artisan db:seed --class=BusinessTypeSeeder --force || echo "BusinessTypeSeeder failed, continuing...") && \
-    (php artisan db:seed --class=ProductCategorySeeder --force || echo "ProductCategorySeeder failed, continuing...") && \
-    (php artisan db:seed --class=ContactTypeSeeder --force || echo "ContactTypeSeeder failed, continuing...") && \
-    (php artisan db:seed --class=DummyBusinessSeeder --force || echo "DummyBusinessSeeder failed, continuing...") && \
-    echo "=== Keeping Server Running ===" && \
-    wait
+    echo "=== Running Migrations ===" && \
+    php artisan migrate --force && \
+    echo "=== Running Seeders ===" && \
+    php artisan db:seed --class=UserSeeder --force && \
+    php artisan db:seed --class=BusinessTypeSeeder --force && \
+    php artisan db:seed --class=ProductCategorySeeder --force && \
+    php artisan db:seed --class=ContactTypeSeeder --force && \
+    php artisan db:seed --class=DummyBusinessSeeder --force && \
+    echo "=== Starting PHP Server ===" && \
+    php -S 0.0.0.0:${PORT:-8000} -t public
