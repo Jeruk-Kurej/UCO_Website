@@ -39,7 +39,9 @@ Route::get('/db-test', function () {
             'host' => env('DB_HOST'),
             'database_name' => env('DB_DATABASE'),
             'tables_count' => count($tables),
-            'tables' => array_map(fn($t) => array_values((array)$t)[0], $tables),
+            'tables' => array_map(function($t) { 
+                return array_values((array)$t)[0]; 
+            }, $tables),
         ]);
     } catch (\Exception $e) {
         return response()->json([
@@ -48,6 +50,9 @@ Route::get('/db-test', function () {
             'host' => env('DB_HOST'),
             'port' => env('DB_PORT'),
             'database' => env('DB_DATABASE'),
+        ], 500);
+    }
+});
         ], 500);
     }
 });
