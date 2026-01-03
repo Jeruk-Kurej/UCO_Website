@@ -1,116 +1,91 @@
 <x-app-layout>
     <div class="space-y-12">
-        {{-- Hero Section --}}
-        <div class="bg-white border border-gray-200 rounded-2xl p-12">
-            <div class="max-w-4xl mx-auto">
-                <div class="inline-flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-full mb-6">
-                    <span class="w-1.5 h-1.5 bg-purple-600 rounded-full"></span>
-                    <span class="text-xs font-medium text-gray-700">Welcome to UCO Platform</span>
-                </div>
-                
-                <h1 class="text-4xl font-bold text-gray-900 mb-4">
-                    Student & Alumni <span class="text-purple-600">Business Directory</span>
-                </h1>
-                <p class="text-lg text-gray-600 mb-8 leading-relaxed">
-                    Connect with Universitas Ciputra's entrepreneurial community. Discover businesses, showcase your products, and grow your network.
-                </p>
-                
-                <div class="flex items-center gap-4">
-                    @auth
-                        @if(!auth()->user()->isAdmin())
-                            <a href="/businesses/create" 
-                               class="inline-flex items-center px-5 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                                </svg>
-                                Create Business
-                            </a>
-                        @endif
-                        <a href="/businesses" 
-                           class="inline-flex items-center px-5 py-2.5 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors">
-                            Explore Directory
-                        </a>
-                    @else
-                        <a href="/register" 
-                           class="inline-flex items-center px-5 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors">
-                            Join Now
-                        </a>
-                        <a href="/login" 
-                           class="inline-flex items-center px-5 py-2.5 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors">
-                            Login
-                        </a>
-                    @endauth
-                </div>
-            </div>
-        </div>
 
-        {{-- Featured Businesses --}}
+        {{-- Featured Businesses - Professional & Elegant --}}
         @if($featuredBusinesses->count() > 0)
-            <div class="space-y-8">
-                <div class="text-center">
-                    <h2 class="text-2xl font-bold text-gray-900 mb-2">Featured Businesses</h2>
-                    <p class="text-sm text-gray-600">
-                        Discover amazing businesses from our community
-                    </p>
-                </div>
+            <div class="relative">
+                {{-- Subtle Background Accent --}}
+                <div class="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-uco-orange-50 to-uco-yellow-50 rounded-full blur-3xl opacity-40 -z-10"></div>
+                
+                <div class="space-y-8">
+                    {{-- Section Header - Elegant --}}
+                    <div class="flex items-end justify-between border-b border-soft-gray-200 pb-6">
+                        <div>
+                            <div class="inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-uco-orange-100 to-uco-yellow-100 rounded-full mb-3">
+                                <svg class="w-4 h-4 text-uco-orange-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                </svg>
+                                <span class="text-xs font-semibold text-uco-orange-700">Featured</span>
+                            </div>
+                            <h2 class="text-3xl font-bold text-soft-gray-900 tracking-tight">
+                                Highlighted Businesses
+                            </h2>
+                            <p class="text-sm text-soft-gray-600 mt-2">
+                                Showcasing excellence from our community of entrepreneurs
+                            </p>
+                        </div>
+                        <a href="{{ route('businesses.index') }}" 
+                           class="hidden sm:inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-soft-gray-700 hover:text-soft-gray-900 border border-soft-gray-200 rounded-lg hover:border-soft-gray-300 hover:shadow-sm transition-all">
+                            View All
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                            </svg>
+                        </a>
+                    </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {{-- Business Cards - Modern Grid --}}
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     @foreach($featuredBusinesses as $business)
                         <a href="{{ route('businesses.show', $business) }}" 
-                           class="group bg-white border border-gray-200 rounded-xl overflow-hidden hover:border-purple-600 hover:shadow-lg transition-all duration-300">
-                            {{-- Photo --}}
+                           class="group bg-white border border-soft-gray-200 rounded-2xl overflow-hidden hover:border-uco-orange-300 hover:shadow-xl transition-all duration-300">
+                            {{-- Photo with Overlay --}}
                             @if($business->photos->first())
-                                <div class="relative overflow-hidden h-48">
+                                <div class="relative overflow-hidden h-52">
                                     <img src="{{ asset('storage/' . $business->photos->first()->photo_url) }}" 
                                          alt="{{ $business->name }}" 
-                                         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                                         class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                                    <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                                 </div>
                             @else
-                                <div class="h-48 bg-gray-100 flex items-center justify-center">
-                                    <svg class="w-16 h-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <div class="h-52 bg-gradient-to-br from-soft-gray-50 to-soft-gray-100 flex items-center justify-center">
+                                    <svg class="w-20 h-20 text-soft-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
                                     </svg>
                                 </div>
                             @endif
 
-                            {{-- Info --}}
-                            <div class="p-5">
-                                <div class="flex items-start justify-between mb-2">
-                                    <h3 class="text-base font-bold text-gray-900 group-hover:text-purple-600 transition-colors flex-1">
+                            {{-- Info with Better Spacing --}}
+                            <div class="p-6">
+                                <div class="flex items-start justify-between mb-3">
+                                    <h3 class="text-lg font-bold text-soft-gray-900 group-hover:text-uco-orange-600 transition-colors flex-1 leading-tight">
                                         {{ $business->name }}
                                     </h3>
                                     @if($business->is_featured)
-                                        <span class="ml-2 inline-flex items-center gap-1 text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded font-medium flex-shrink-0">
-                                            <i class="bi bi-star-fill"></i>
+                                        <span class="ml-3 inline-flex items-center gap-1.5 text-xs bg-gradient-to-r from-uco-orange-100 to-uco-yellow-100 text-uco-orange-700 px-3 py-1.5 rounded-full font-semibold flex-shrink-0 shadow-sm">
+                                            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                            </svg>
                                             Featured
                                         </span>
                                     @endif
                                 </div>
-                                <p class="text-sm text-gray-600 mb-4 line-clamp-2 leading-relaxed">
+                                <p class="text-sm text-soft-gray-600 mb-5 line-clamp-2 leading-relaxed">
                                     {{ $business->description }}
                                 </p>
-                                <div class="flex items-center justify-between">
-                                    <span class="inline-flex items-center gap-1.5 text-xs bg-gray-50 text-gray-700 px-3 py-1.5 rounded-lg font-medium border border-gray-200">
+                                <div class="flex items-center justify-between pt-4 border-t border-soft-gray-100">
+                                    <span class="inline-flex items-center gap-2 text-xs bg-soft-gray-50 text-soft-gray-700 px-3 py-2 rounded-lg font-medium border border-soft-gray-200">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                                        </svg>
                                         {{ $business->businessType->name }}
                                     </span>
-                                    <span class="text-xs text-gray-500">
-                                        {{ Str::limit($business->user->name, 15) }}
+                                    <span class="text-xs text-soft-gray-500 font-medium">
+                                        by {{ Str::limit($business->user->name, 15) }}
                                     </span>
                                 </div>
                             </div>
                         </a>
                     @endforeach
-                </div>
-
-                {{-- View All Button --}}
-                <div class="text-center">
-                    <a href="/businesses" 
-                       class="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors">
-                        <span>Explore All Businesses</span>
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                        </svg>
-                    </a>
                 </div>
             </div>
         @endif
