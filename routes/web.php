@@ -84,6 +84,29 @@ Route::get('/run-migrations', function () {
     }
 });
 
+Route::get('/create-admin', function () {
+    try {
+        $user = \App\Models\User::create([
+            'name' => 'Admin',
+            'email' => 'admin@uco.com',
+            'password' => bcrypt('password'),
+            'role' => 'admin',
+            'email_verified_at' => now(),
+        ]);
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Admin user created',
+            'email' => $user->email,
+            'password' => 'password',
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'failed',
+            'error' => $e->getMessage(),
+        ], 500);
+    }
+});
+
 /*
 |--------------------------------------------------------------------------
 | Public Routes
