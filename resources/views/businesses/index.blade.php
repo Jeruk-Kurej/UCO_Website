@@ -120,11 +120,21 @@
             </div>
 
             {{-- Search Bar --}}
-            <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
-                <form action="{{ route('businesses.index') }}" method="GET" class="flex gap-3">
-                    @if(request('my'))
-                        <input type="hidden" name="my" value="1">
-                    @endif
+            <div class="px-6 py-4 bg-gray-50 border-b border-gray-200"
+                 x-data="{
+                    search: '{{ request('search') }}',
+                    doSearch() {
+                        const trimmed = this.search.trim();
+                        const myParam = '{{ request('my') }}';
+                        let url = '{{ route('businesses.index') }}';
+                        if (myParam) url += '?my=1';
+                        if (trimmed.length > 0) {
+                            url += (myParam ? '&' : '?') + 'search=' + encodeURIComponent(trimmed);
+                        }
+                        window.location.href = url;
+                    }
+                 }">
+                <div class="flex gap-3">
                     <div class="flex-1">
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
@@ -133,19 +143,27 @@
                                 </svg>
                             </div>
                             <input type="text" 
-                                   name="search"
-                                   value="{{ request('search') }}"
+                                   x-model="search"
+                                   @keydown.enter="doSearch()"
                                    placeholder="Search by business name, description, owner, or category..." 
                                    class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 focus:border-transparent">
                         </div>
                     </div>
+                    <button type="button"
+                            @click="doSearch()"
+                            class="inline-flex items-center px-4 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                        Search
+                    </button>
                     @if(request('search'))
                         <a href="{{ route('businesses.index') }}{{ request('my') ? '?my=1' : '' }}" 
                            class="inline-flex items-center px-4 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors">
                             Clear
                         </a>
                     @endif
-                </form>
+                </div>
             </div>
 
             {{-- Tab Content: Browse All Businesses --}}

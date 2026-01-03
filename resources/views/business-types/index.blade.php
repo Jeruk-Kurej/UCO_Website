@@ -20,7 +20,18 @@
         </div>
 
         {{-- Search Bar --}}
-        <form action="{{ route('business-types.index') }}" method="GET" class="bg-white border border-gray-200 rounded-xl p-4">
+        <div class="bg-white border border-gray-200 rounded-xl p-4"
+             x-data="{
+                search: '{{ request('search') }}',
+                doSearch() {
+                    const trimmed = this.search.trim();
+                    if (trimmed.length > 0) {
+                        window.location.href = '{{ route('business-types.index') }}?search=' + encodeURIComponent(trimmed);
+                    } else {
+                        window.location.href = '{{ route('business-types.index') }}';
+                    }
+                }
+             }">
             <div class="flex gap-3">
                 <div class="flex-1">
                     <div class="relative">
@@ -30,12 +41,20 @@
                             </svg>
                         </div>
                         <input type="text" 
-                               name="search"
-                               value="{{ request('search') }}"
+                               x-model="search"
+                               @keydown.enter="doSearch()"
                                placeholder="Search by category name or description..." 
                                class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent">
                     </div>
                 </div>
+                <button type="button"
+                        @click="doSearch()"
+                        class="inline-flex items-center px-4 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                    Search
+                </button>
                 @if(request('search'))
                     <a href="{{ route('business-types.index') }}" 
                        class="inline-flex items-center px-4 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors">
@@ -43,7 +62,7 @@
                     </a>
                 @endif
             </div>
-        </form>
+        </div>
 
         {{-- Business Types Table Card --}}
         <div class="bg-white border border-gray-200 rounded-xl overflow-hidden">
