@@ -42,7 +42,22 @@ class BusinessTypeController extends Controller
             });
         }
         
-        $businessTypes = $query->latest()->paginate(15)->appends(['search' => $search]);
+        $businessTypes = $query->latest()->paginate(15);
+
+        // Return JSON for AJAX requests
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'business_types' => $businessTypes->items(),
+                'pagination' => [
+                    'total' => $businessTypes->total(),
+                    'per_page' => $businessTypes->perPage(),
+                    'current_page' => $businessTypes->currentPage(),
+                    'last_page' => $businessTypes->lastPage(),
+                    'from' => $businessTypes->firstItem(),
+                    'to' => $businessTypes->lastItem(),
+                ]
+            ]);
+        }
 
         return view('business-types.index', compact('businessTypes'));
     }

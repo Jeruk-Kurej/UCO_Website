@@ -120,8 +120,20 @@
             </div>
 
             {{-- Search Bar --}}
-            <div class="px-6 py-4 bg-gray-50 border-b border-gray-200" x-data="{ searchQuery: '{{ request('search') }}' }">
-                <form action="{{ route('businesses.index') }}" method="GET" class="flex gap-3" x-ref="searchForm">
+            <div class="px-6 py-4 bg-gray-50 border-b border-gray-200" 
+                 x-data="{
+                    searchQuery: '{{ request('search') }}',
+                    performSearch() {
+                        const url = new URL(window.location);
+                        if (this.searchQuery.length > 0) {
+                            url.searchParams.set('search', this.searchQuery);
+                        } else {
+                            url.searchParams.delete('search');
+                        }
+                        window.location.href = url.toString();
+                    }
+                 }">
+                <div class="flex gap-3">
                     <input type="hidden" name="my" value="{{ request('my') }}">
                     <div class="flex-1">
                         <div class="relative">
@@ -131,20 +143,19 @@
                                 </svg>
                             </div>
                             <input type="text" 
-                                   name="search" 
                                    x-model="searchQuery"
-                                   x-on:input.debounce.400ms="$refs.searchForm.submit()"
+                                   x-on:input.debounce.500ms="performSearch()"
+                                   x-on:keydown.enter="performSearch()"
                                    placeholder="Search by business name, description, owner, or category..." 
                                    class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 focus:border-transparent">
                         </div>
                     </div>
-                    @if(request('search'))
-                        <a href="{{ route('businesses.index') }}{{ request('my') ? '?my=1' : '' }}" 
-                           class="inline-flex items-center px-4 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors">
-                            Clear
-                        </a>
-                    @endif
-                </form>
+                    <button x-show="searchQuery.length > 0"
+                            @click="searchQuery = ''; performSearch()"
+                            class="inline-flex items-center px-4 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors">
+                        Clear
+                    </button>
+                </div>
             </div>
 
             {{-- Tab Content: Browse All Businesses --}}

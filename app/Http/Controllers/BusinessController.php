@@ -59,7 +59,22 @@ class BusinessController extends Controller
             $query->where('user_id', $user->id);
         }
         
-        $businesses = $query->latest()->paginate(15)->appends(['search' => $search, 'my' => $request->get('my')]);
+        $businesses = $query->latest()->paginate(15);
+        
+        // Return JSON for AJAX requests
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'businesses' => $businesses->items(),
+                'pagination' => [
+                    'total' => $businesses->total(),
+                    'per_page' => $businesses->perPage(),
+                    'current_page' => $businesses->currentPage(),
+                    'last_page' => $businesses->lastPage(),
+                    'from' => $businesses->firstItem(),
+                    'to' => $businesses->lastItem(),
+                ]
+            ]);
+        }
         
         // Prepare my businesses for current user
         $myBusinesses = collect();
