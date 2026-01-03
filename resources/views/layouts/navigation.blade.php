@@ -7,9 +7,7 @@
             {{-- Logo & Brand --}}
             <div class="flex items-center">
                 <a href="/dashboard" class="flex items-center gap-3">
-                    <div class="w-9 h-9 bg-gradient-to-br from-uco-orange-500 to-uco-yellow-500 rounded-xl flex items-center justify-center shadow-md">
-                        <span class="text-white text-sm font-bold">UCO</span>
-                    </div>
+                    <img src="{{ asset('images/Logo UCO.png') }}" alt="UCO Logo" class="w-9 h-9 object-contain">
                     <span class="text-lg font-bold text-soft-gray-900">UCO Platform</span>
                 </a>
             </div>

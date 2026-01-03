@@ -40,9 +40,7 @@
             
             <div>
                 <a href="/" class="flex flex-col items-center gap-3">
-                    <div class="w-16 h-16 bg-gradient-to-br from-uco-orange-500 to-uco-yellow-500 rounded-2xl shadow-lg flex items-center justify-center">
-                        <span class="text-2xl font-bold text-white">UCO</span>
-                    </div>
+                    <img src="{{ asset('images/Logo UCO.png') }}" alt="UCO Logo" class="w-20 h-20 object-contain shadow-lg">
                     <h1 class="text-2xl font-bold text-soft-gray-900">UCO Platform</h1>
                     <p class="text-sm text-soft-gray-600">Student & Alumni Community</p>
                 </a>

@@ -128,10 +128,6 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <div class="flex flex-col md:flex-row justify-between items-center gap-2 text-sm text-gray-600">
                 <p>&copy; {{ date('Y') }} UCO Student & Alumni Platform. All rights reserved.</p>
-                <div class="flex items-center gap-1">
-                    <span>Powered by</span>
-                    <span class="font-medium text-gray-900">Universitas Ciputra</span>
-                </div>
             </div>
         </div>
     </div>
