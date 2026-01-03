@@ -71,6 +71,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Toggle featured status (Admin only)
     Route::post('/businesses/{business}/toggle-featured', [BusinessController::class, 'toggleFeatured'])
         ->name('businesses.toggle-featured');
+    
+    // Import businesses from Excel (Admin only)
+    Route::post('/businesses/import', [BusinessController::class, 'import'])
+        ->name('businesses.import');
 
     /*
     |--------------------------------------------------------------------------

@@ -35,10 +35,20 @@
                         </button>
                     </nav>
 
-                    {{-- Right: Admin "Add Business" Button --}}
+                    {{-- Right: Admin Buttons --}}
                     @auth
                         @if(auth()->user()->isAdmin())
-                            <div class="py-2">
+                            <div class="py-2 flex gap-2">
+                                {{-- Import Button --}}
+                                <button onclick="document.getElementById('importModal').classList.remove('hidden')"
+                                   class="inline-flex items-center px-4 py-2.5 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                    </svg>
+                                    Import Excel
+                                </button>
+                                
+                                {{-- Add Business Button --}}
                                 <a href="/businesses/create"
                                    class="inline-flex items-center px-4 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors">
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -302,6 +312,101 @@
                         item.classList.add('opacity-0', 'transition', 'duration-300');
                         setTimeout(() => item.remove(), 300);
                     }, 2500);
+                }
+            </script>
+        @endif
+    @endauth
+
+    {{-- Import Modal --}}
+    @auth
+        @if(auth()->user()->isAdmin())
+            <div id="importModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+                <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-medium text-gray-900">Import Businesses from Excel</h3>
+                        <button onclick="document.getElementById('importModal').classList.add('hidden')" 
+                                class="text-gray-400 hover:text-gray-600">
+                            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <form action="{{ route('businesses.import') }}" method="POST" enctype="multipart/form-data" onsubmit="return validateImportFile()">
+                        @csrf
+                        
+                        <div class="mb-4">
+                            <label for="import_file" class="block text-sm font-medium text-gray-700 mb-2">
+                                Select Excel File (.xlsx, .xls, .csv)
+                            </label>
+                            <input type="file" 
+                                   name="file" 
+                                   id="import_file" 
+                                   accept=".xlsx,.xls,.csv"
+                                   required
+                                   class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none">
+                            <p class="mt-1 text-xs text-gray-500">Maximum file size: 10 MB</p>
+                        </div>
+
+                        <div class="bg-blue-50 border-l-4 border-blue-400 p-3 mb-4">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <svg class="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                                    </svg>
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-xs text-blue-700">
+                                        Make sure your Excel file has the following columns:<br>
+                                        <span class="font-mono text-xs">Nama, Status dan Major, Email, Phone, Mobile, etc.</span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-2">
+                            <button type="submit"
+                                    class="flex-1 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                                Import
+                            </button>
+                            <button type="button"
+                                    onclick="document.getElementById('importModal').classList.add('hidden')"
+                                    class="flex-1 bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400 transition-colors">
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <script>
+                function validateImportFile() {
+                    const fileInput = document.getElementById('import_file');
+                    const file = fileInput.files[0];
+                    
+                    if (!file) {
+                        alert('Please select a file to import');
+                        return false;
+                    }
+                    
+                    // Check file size (10 MB = 10 * 1024 * 1024 bytes)
+                    const maxSize = 10 * 1024 * 1024;
+                    if (file.size > maxSize) {
+                        alert('File size exceeds 10 MB. Please select a smaller file.');
+                        return false;
+                    }
+                    
+                    // Check file extension
+                    const fileName = file.name.toLowerCase();
+                    const validExtensions = ['.xlsx', '.xls', '.csv'];
+                    const isValidExtension = validExtensions.some(ext => fileName.endsWith(ext));
+                    
+                    if (!isValidExtension) {
+                        alert('Please select a valid Excel file (.xlsx, .xls, or .csv)');
+                        return false;
+                    }
+                    
+                    return true;
                 }
             </script>
         @endif

@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\Business;
 use App\Models\User;
 use App\Models\BusinessType;
+use App\Imports\BusinessesImport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Maatwebsite\Excel\Facades\Excel;
 
 class BusinessController extends Controller
 {
@@ -411,5 +413,40 @@ class BusinessController extends Controller
         return redirect()
             ->route('businesses.index')
             ->with('success', 'Business deleted successfully!');
+    }
+
+    /**
+     * Import businesses from Excel file
+     */
+    public function import(Request $request)
+    {
+        $user = $this->getAuthUser();
+
+        // Only admins can import businesses
+        if (!$user->isAdmin()) {
+            return back()->withErrors(['error' => 'Only administrators can import businesses.']);
+        }
+
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls,csv|max:10240', // Max 10MB
+        ]);
+
+        try {
+            $import = new BusinessesImport();
+            Excel::import($import, $request->file('file'));
+
+            $results = $import->getResults();
+
+            $message = "Import completed! Success: {$results['success']}, Skipped: {$results['skipped']}";
+            
+            if (!empty($results['errors'])) {
+                $message .= ". Errors: " . count($results['errors']);
+            }
+
+            return back()->with('success', $message);
+
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => 'Error importing file: ' . $e->getMessage()]);
+        }
     }
 }
