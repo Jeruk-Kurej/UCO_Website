@@ -6,7 +6,7 @@
                 <div class="flex items-center gap-2.5 mb-4">
                     <img src="{{ asset('images/Logo UCO.png') }}" alt="UCO Logo" class="w-10 h-10 object-contain">
                     <div>
-                        <h3 class="font-bold text-base text-gray-900">UCO Platform</h3>
+                        <h3 class="font-bold text-base text-gray-900">UC Online</h3>
                         <p class="text-xs text-gray-600">Student & Alumni Community</p>
                     </div>
                 </div>
