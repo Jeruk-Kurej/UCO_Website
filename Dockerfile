@@ -66,6 +66,13 @@ CMD echo "=== RAILWAY STARTUP ===" && \
     echo "PORT: ${PORT:-8000}" && \
     echo "DB_HOST: ${DB_HOST:-NOT_SET}" && \
     echo "DB_DATABASE: ${DB_DATABASE:-NOT_SET}" && \
-    echo "Skipping migrations - will run manually after DB connection verified" && \
+    echo "=== Running Migrations ===" && \
+    php artisan migrate --force && \
+    echo "=== Running Seeders ===" && \
+    php artisan db:seed --class=UserSeeder --force && \
+    php artisan db:seed --class=BusinessTypeSeeder --force && \
+    php artisan db:seed --class=ProductCategorySeeder --force && \
+    php artisan db:seed --class=ContactTypeSeeder --force && \
+    php artisan db:seed --class=DummyBusinessSeeder --force && \
     echo "=== Starting PHP Server ===" && \
     php -S 0.0.0.0:${PORT:-8000} -t public
