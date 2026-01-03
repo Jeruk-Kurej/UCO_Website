@@ -55,6 +55,11 @@ RUN composer dump-autoload --optimize
 # Run Laravel package discovery
 RUN php artisan package:discover --ansi
 
+# Clear and cache Laravel config
+RUN php artisan config:clear && \
+    php artisan route:clear && \
+    php artisan view:clear
+
 # Set permissions
 RUN chmod -R 755 /app/storage /app/bootstrap/cache
 
@@ -64,6 +69,11 @@ EXPOSE 8000
 # Start server - migrations optional, won't crash if DB unavailable
 CMD echo "=== RAILWAY STARTUP ===" && \
     echo "PORT: ${PORT:-8000}" && \
-    echo "=== Starting PHP Server (migrations will run in background) ===" && \
+    echo "APP_ENV: ${APP_ENV:-production}" && \
+    echo "APP_DEBUG: ${APP_DEBUG:-false}" && \
+    php artisan config:clear && \
+    php artisan route:clear && \
+    echo "=== Starting migrations in background ===" && \
     (php artisan migrate --force 2>&1 || echo "Migration skipped") & \
-    php artisan serve --host=0.0.0.0 --port=${PORT:-8000}
+    echo "=== Starting Laravel Server ===" && \
+    php artisan serve --host=0.0.0.0 --port=${PORT:-8000} --no-reload
