@@ -109,6 +109,36 @@ Route::get('/create-admin', function () {
     }
 });
 
+Route::get('/fix-session', function () {
+    return response()->json([
+        'message' => 'For now, use SESSION_DRIVER=cookie in Railway variables',
+        'instructions' => [
+            '1. Go to Railway dashboard',
+            '2. UCO_Website service -> Variables',
+            '3. Change SESSION_DRIVER=cookie',
+            '4. Wait for redeploy',
+        ],
+    ]);
+});
+
+Route::get('/check-features', function () {
+    return response()->json([
+        'excel_upload' => [
+            'package_installed' => class_exists('Maatwebsite\Excel\Facades\Excel'),
+            'status' => class_exists('Maatwebsite\Excel\Facades\Excel') ? 'READY' : 'NOT INSTALLED',
+        ],
+        'ai_integration' => [
+            'gemini_api_key' => env('GEMINI_API_KEY') ? 'SET' : 'MISSING',
+            'service_exists' => class_exists('App\Services\AiModerationService'),
+            'status' => (env('GEMINI_API_KEY') && class_exists('App\Services\AiModerationService')) ? 'READY' : 'NEEDS GEMINI_API_KEY',
+        ],
+        'storage' => [
+            'temp_writable' => is_writable(storage_path('app')),
+            'public_writable' => is_writable(storage_path('app/public')),
+        ],
+    ]);
+});
+
 /*
 |--------------------------------------------------------------------------
 | Public Routes

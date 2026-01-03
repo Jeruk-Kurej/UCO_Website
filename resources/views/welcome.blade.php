@@ -143,13 +143,6 @@
                                 Sign in to Dashboard
                             </button>
                         </form>
-                        
-                        <div class="mt-6 pt-6 border-t border-soft-gray-100 text-center relative z-10">
-                            <p class="text-sm text-soft-gray-600">
-                                Don't have an account? 
-                                <a href="/register" class="font-semibold text-soft-gray-900 hover:text-soft-gray-700 transition-colors">Sign up</a>
-                            </p>
-                        </div>
                     </div>
                 </div>
             </div>
