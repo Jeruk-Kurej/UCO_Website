@@ -47,13 +47,13 @@ Route::get('/db-test', function () {
     try {
         DB::connection()->getPdo();
         return response()->json([
-            'status' => 'connected ✅',
+            'status' => 'connected',
             'host' => env('DB_HOST'),
             'database' => env('DB_DATABASE'),
         ]);
     } catch (\Exception $e) {
         return response()->json([
-            'status' => 'failed ❌',
+            'status' => 'failed',
             'error' => $e->getMessage(),
             'config' => [
                 'DB_CONNECTION' => env('DB_CONNECTION'),
@@ -69,7 +69,7 @@ Route::get('/db-test', function () {
 
 /*
 |--------------------------------------------------------------------------
-| Public Routes 🌍
+| Public Routes
 |--------------------------------------------------------------------------
 */
 
