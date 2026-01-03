@@ -81,73 +81,87 @@ class BusinessController extends Controller
     {
         $this->authorize('create', Business::class);
 
-        $validated = $request->validate([
-            // Basic fields
-            'name' => 'required|string|max:255',
-            'description' => 'required|string',
-            'business_type_id' => 'required|exists:business_types,id',
-            'business_mode' => 'required|in:product,service',
-            'user_id' => 'nullable|exists:users,id',
-            
-            // Enhanced fields
-            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
-            'established_date' => 'nullable|date',
-            'address' => 'nullable|string',
-            'employee_count' => 'nullable|integer|min:0',
-            'revenue_range' => 'nullable|in:Mikro: <= Rp 300 Juta,Kecil: > Rp 300 Juta - Rp 2,5 Milyar,Menengah: > Rp 2,5 Milyar - Rp 50 Milyar,Besar: > Rp 50 Milyar',
-            'is_from_college_project' => 'nullable|boolean',
-            'is_continued_after_graduation' => 'nullable|boolean',
-            'legal_documents.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
-            'product_certifications.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
-            'business_challenges' => 'nullable|array',
-        ]);
+        try {
+            $validated = $request->validate([
+                // Basic fields
+                'name' => 'required|string|max:255',
+                'description' => 'required|string',
+                'business_type_id' => 'required|exists:business_types,id',
+                'business_mode' => 'required|in:product,service',
+                'user_id' => 'nullable|exists:users,id',
+                
+                // Enhanced fields
+                'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
+                'established_date' => 'nullable|date',
+                'address' => 'nullable|string',
+                'employee_count' => 'nullable|integer|min:0',
+                'revenue_range' => 'nullable|in:Mikro: <= Rp 300 Juta,Kecil: > Rp 300 Juta - Rp 2,5 Milyar,Menengah: > Rp 2,5 Milyar - Rp 50 Milyar,Besar: > Rp 50 Milyar',
+                'is_from_college_project' => 'nullable|boolean',
+                'is_continued_after_graduation' => 'nullable|boolean',
+                'legal_documents.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+                'product_certifications.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+                'business_challenges' => 'nullable|array',
+            ]);
 
-        $user = $this->getAuthUser();
+            $user = $this->getAuthUser();
 
-        // Automatically set user_id to current user unless admin specifies
-        if (!isset($validated['user_id']) || !$user->isAdmin()) {
-            $validated['user_id'] = $user->id;
-        }
-
-        // Handle logo upload
-        if ($request->hasFile('logo')) {
-            $logoPath = $request->file('logo')->store('businesses/logos', 'public');
-            $validated['logo_url'] = $logoPath;
-        }
-        unset($validated['logo']);
-
-        // Handle legal documents upload
-        $legalDocs = [];
-        if ($request->hasFile('legal_documents')) {
-            foreach ($request->file('legal_documents') as $index => $file) {
-                $path = $file->store('businesses/legal-documents', 'public');
-                $legalDocs[] = [
-                    'file_path' => $path,
-                    'original_name' => $file->getClientOriginalName(),
-                    'uploaded_at' => now()->toDateTimeString(),
-                ];
+            // Automatically set user_id to current user unless admin specifies
+            if (!isset($validated['user_id']) || !$user->isAdmin()) {
+                $validated['user_id'] = $user->id;
             }
-        }
-        $validated['legal_documents'] = !empty($legalDocs) ? $legalDocs : null;
 
-        // Handle product certifications upload
-        $certifications = [];
-        if ($request->hasFile('product_certifications')) {
-            foreach ($request->file('product_certifications') as $index => $file) {
-                $path = $file->store('businesses/certifications', 'public');
-                $certifications[] = [
-                    'file_path' => $path,
-                    'original_name' => $file->getClientOriginalName(),
-                    'uploaded_at' => now()->toDateTimeString(),
-                ];
+            // Handle logo upload
+            if ($request->hasFile('logo')) {
+                $logoPath = $request->file('logo')->store('businesses/logos', 'public');
+                $validated['logo_url'] = $logoPath;
             }
+            unset($validated['logo']);
+
+            // Handle legal documents upload
+            $legalDocs = [];
+            if ($request->hasFile('legal_documents')) {
+                foreach ($request->file('legal_documents') as $index => $file) {
+                    if ($file->getSize() > 5120 * 1024) {
+                        return back()->withErrors(['legal_documents' => 'Each legal document must not be larger than 5MB.'])->withInput();
+                    }
+                    $path = $file->store('businesses/legal-documents', 'public');
+                    $legalDocs[] = [
+                        'file_path' => $path,
+                        'original_name' => $file->getClientOriginalName(),
+                        'uploaded_at' => now()->toDateTimeString(),
+                    ];
+                }
+            }
+            $validated['legal_documents'] = !empty($legalDocs) ? $legalDocs : null;
+
+            // Handle product certifications upload
+            $certifications = [];
+            if ($request->hasFile('product_certifications')) {
+                foreach ($request->file('product_certifications') as $index => $file) {
+                    if ($file->getSize() > 5120 * 1024) {
+                        return back()->withErrors(['product_certifications' => 'Each certification file must not be larger than 5MB.'])->withInput();
+                    }
+                    $path = $file->store('businesses/certifications', 'public');
+                    $certifications[] = [
+                        'file_path' => $path,
+                        'original_name' => $file->getClientOriginalName(),
+                        'uploaded_at' => now()->toDateTimeString(),
+                    ];
+                }
+            }
+            $validated['product_certifications'] = !empty($certifications) ? $certifications : null;
+
+            $business = Business::create($validated);
+
+            return redirect()
+                ->route('businesses.show', $business)
+                ->with('success', 'Business created successfully!');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return back()->withErrors($e->errors())->withInput();
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => 'An error occurred while creating the business. Please try again.'])->withInput();
         }
-        $validated['product_certifications'] = !empty($certifications) ? $certifications : null;
-
-        $business = Business::create($validated);
-
-        return redirect()
-            ->route('businesses.show', $business)
+    }
             ->with('success', 'Business created successfully!');
     }
 
@@ -222,128 +236,147 @@ class BusinessController extends Controller
     {
         $this->authorize('update', $business);
 
-        $validated = $request->validate([
-            // Basic fields
-            'name' => 'required|string|max:255',
-            'description' => 'required|string',
-            'business_type_id' => 'required|exists:business_types,id',
-            'business_mode' => 'required|in:product,service,both',
-            'user_id' => 'nullable|exists:users,id',
+        try {
+            $validated = $request->validate([
+                // Basic fields
+                'name' => 'required|string|max:255',
+                'description' => 'required|string',
+                'business_type_id' => 'required|exists:business_types,id',
+                'business_mode' => 'required|in:product,service,both',
+                'user_id' => 'nullable|exists:users,id',
+                
+                // Enhanced fields
+                'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
+                'established_date' => 'nullable|date',
+                'address' => 'nullable|string',
+                'employee_count' => 'nullable|integer|min:0',
+                'revenue_range' => 'nullable|in:Mikro: <= Rp 300 Juta,Kecil: > Rp 300 Juta - Rp 2,5 Milyar,Menengah: > Rp 2,5 Milyar - Rp 50 Milyar,Besar: > Rp 50 Milyar',
+                'is_from_college_project' => 'nullable|boolean',
+                'is_continued_after_graduation' => 'nullable|boolean',
+                'legal_documents.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+                'product_certifications.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+                'business_challenges' => 'nullable|array',
+                'remove_legal_docs' => 'nullable|array',
+                'remove_certifications' => 'nullable|array',
+            ]);
+
+            $user = $this->getAuthUser();
+
+            // Validate business mode change - prevent breaking changes
+            $hasProducts = $business->products()->count() > 0;
+            $hasServices = $business->services()->count() > 0;
             
-            // Enhanced fields
-            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
-            'established_date' => 'nullable|date',
-            'address' => 'nullable|string',
-            'employee_count' => 'nullable|integer|min:0',
-            'revenue_range' => 'nullable|in:Mikro: <= Rp 300 Juta,Kecil: > Rp 300 Juta - Rp 2,5 Milyar,Menengah: > Rp 2,5 Milyar - Rp 50 Milyar,Besar: > Rp 50 Milyar',
-            'is_from_college_project' => 'nullable|boolean',
-            'is_continued_after_graduation' => 'nullable|boolean',
-            'legal_documents.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
-            'product_certifications.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
-            'business_challenges' => 'nullable|array',
-            'remove_legal_docs' => 'nullable|array',
-            'remove_certifications' => 'nullable|array',
-        ]);
-
-        $user = $this->getAuthUser();
-
-        // Validate business mode change - prevent breaking changes
-        $hasProducts = $business->products()->count() > 0;
-        $hasServices = $business->services()->count() > 0;
-        
-        if ($validated['business_mode'] !== $business->business_mode) {
-            // Prevent changing to "service only" if products exist
-            if ($validated['business_mode'] === 'service' && $hasProducts) {
-                return back()->withErrors([
-                    'business_mode' => 'Cannot change to Service Only while products exist. Delete products first or choose "Product & Service".'
-                ])->withInput();
-            }
-            
-            // Prevent changing to "product only" if services exist
-            if ($validated['business_mode'] === 'product' && $hasServices) {
-                return back()->withErrors([
-                    'business_mode' => 'Cannot change to Product Only while services exist. Delete services first or choose "Product & Service".'
-                ])->withInput();
-            }
-        }
-
-        // Only admin can change user_id
-        if (!$user->isAdmin()) {
-            unset($validated['user_id']);
-        }
-
-        // Handle logo upload
-        if ($request->hasFile('logo')) {
-            // Delete old logo if exists
-            if ($business->logo_url && Storage::disk('public')->exists($business->logo_url)) {
-                Storage::disk('public')->delete($business->logo_url);
-            }
-            $logoPath = $request->file('logo')->store('businesses/logos', 'public');
-            $validated['logo_url'] = $logoPath;
-        }
-        unset($validated['logo']);
-
-        // Handle legal documents
-        $currentLegalDocs = $business->legal_documents ?? [];
-        
-        // Remove selected documents
-        if ($request->has('remove_legal_docs')) {
-            foreach ($request->remove_legal_docs as $index) {
-                if (isset($currentLegalDocs[$index]['file_path'])) {
-                    Storage::disk('public')->delete($currentLegalDocs[$index]['file_path']);
-                    unset($currentLegalDocs[$index]);
+            if ($validated['business_mode'] !== $business->business_mode) {
+                // Prevent changing to "service only" if products exist
+                if ($validated['business_mode'] === 'service' && $hasProducts) {
+                    return back()->withErrors([
+                        'business_mode' => 'Cannot change to Service Only while products exist. Delete products first or choose "Product & Service".'
+                    ])->withInput();
+                }
+                
+                // Prevent changing to "product only" if services exist
+                if ($validated['business_mode'] === 'product' && $hasServices) {
+                    return back()->withErrors([
+                        'business_mode' => 'Cannot change to Product Only while services exist. Delete services first or choose "Product & Service".'
+                    ])->withInput();
                 }
             }
-            $currentLegalDocs = array_values($currentLegalDocs); // Re-index array
-        }
-        
-        // Add new documents
-        if ($request->hasFile('legal_documents')) {
-            foreach ($request->file('legal_documents') as $file) {
-                $path = $file->store('businesses/legal-documents', 'public');
-                $currentLegalDocs[] = [
-                    'file_path' => $path,
-                    'original_name' => $file->getClientOriginalName(),
-                    'uploaded_at' => now()->toDateTimeString(),
-                ];
-            }
-        }
-        $validated['legal_documents'] = !empty($currentLegalDocs) ? $currentLegalDocs : null;
 
-        // Handle product certifications
-        $currentCertifications = $business->product_certifications ?? [];
-        
-        // Remove selected certifications
-        if ($request->has('remove_certifications')) {
-            foreach ($request->remove_certifications as $index) {
-                if (isset($currentCertifications[$index]['file_path'])) {
-                    Storage::disk('public')->delete($currentCertifications[$index]['file_path']);
-                    unset($currentCertifications[$index]);
+            // Only admin can change user_id
+            if (!$user->isAdmin()) {
+                unset($validated['user_id']);
+            }
+
+            // Handle logo upload
+            if ($request->hasFile('logo')) {
+                $logoFile = $request->file('logo');
+                if ($logoFile->getSize() > 2048 * 1024) {
+                    return back()->withErrors(['logo' => 'Logo must not be larger than 2MB.'])->withInput();
+                }
+                
+                // Delete old logo if exists
+                if ($business->logo_url && Storage::disk('public')->exists($business->logo_url)) {
+                    Storage::disk('public')->delete($business->logo_url);
+                }
+                $logoPath = $logoFile->store('businesses/logos', 'public');
+                $validated['logo_url'] = $logoPath;
+            }
+            unset($validated['logo']);
+
+            // Handle legal documents
+            $currentLegalDocs = $business->legal_documents ?? [];
+            
+            // Remove selected documents
+            if ($request->has('remove_legal_docs')) {
+                foreach ($request->remove_legal_docs as $index) {
+                    if (isset($currentLegalDocs[$index]['file_path'])) {
+                        Storage::disk('public')->delete($currentLegalDocs[$index]['file_path']);
+                        unset($currentLegalDocs[$index]);
+                    }
+                }
+                $currentLegalDocs = array_values($currentLegalDocs); // Re-index array
+            }
+            
+            // Add new documents
+            if ($request->hasFile('legal_documents')) {
+                foreach ($request->file('legal_documents') as $file) {
+                    if ($file->getSize() > 5120 * 1024) {
+                        return back()->withErrors(['legal_documents' => 'Each legal document must not be larger than 5MB.'])->withInput();
+                    }
+                    $path = $file->store('businesses/legal-documents', 'public');
+                    $currentLegalDocs[] = [
+                        'file_path' => $path,
+                        'original_name' => $file->getClientOriginalName(),
+                        'uploaded_at' => now()->toDateTimeString(),
+                    ];
                 }
             }
-            $currentCertifications = array_values($currentCertifications); // Re-index array
-        }
-        
-        // Add new certifications
-        if ($request->hasFile('product_certifications')) {
-            foreach ($request->file('product_certifications') as $file) {
-                $path = $file->store('businesses/certifications', 'public');
-                $currentCertifications[] = [
-                    'file_path' => $path,
-                    'original_name' => $file->getClientOriginalName(),
-                    'uploaded_at' => now()->toDateTimeString(),
-                ];
+            $validated['legal_documents'] = !empty($currentLegalDocs) ? $currentLegalDocs : null;
+
+            // Handle product certifications
+            $currentCertifications = $business->product_certifications ?? [];
+            
+            // Remove selected certifications
+            if ($request->has('remove_certifications')) {
+                foreach ($request->remove_certifications as $index) {
+                    if (isset($currentCertifications[$index]['file_path'])) {
+                        Storage::disk('public')->delete($currentCertifications[$index]['file_path']);
+                        unset($currentCertifications[$index]);
+                    }
+                }
+                $currentCertifications = array_values($currentCertifications); // Re-index array
             }
+            
+            // Add new certifications
+            if ($request->hasFile('product_certifications')) {
+                foreach ($request->file('product_certifications') as $file) {
+                    if ($file->getSize() > 5120 * 1024) {
+                        return back()->withErrors(['product_certifications' => 'Each certification file must not be larger than 5MB.'])->withInput();
+                    }
+                    $path = $file->store('businesses/certifications', 'public');
+                    $currentCertifications[] = [
+                        'file_path' => $path,
+                        'original_name' => $file->getClientOriginalName(),
+                        'uploaded_at' => now()->toDateTimeString(),
+                    ];
+                }
+            }
+            $validated['product_certifications'] = !empty($currentCertifications) ? $currentCertifications : null;
+
+            // Remove these from validated array
+            unset($validated['remove_legal_docs'], $validated['remove_certifications']);
+
+            $business->update($validated);
+
+            return redirect()
+                ->route('businesses.show', $business)
+                ->with('success', 'Business updated successfully!');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return back()->withErrors($e->errors())->withInput();
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => 'An error occurred while updating the business. Please try again.'])->withInput();
         }
-        $validated['product_certifications'] = !empty($currentCertifications) ? $currentCertifications : null;
-
-        // Remove these from validated array
-        unset($validated['remove_legal_docs'], $validated['remove_certifications']);
-
-        $business->update($validated);
-
-        return redirect()
-            ->route('businesses.show', $business)
+    }
             ->with('success', 'Business updated successfully!');
     }
 

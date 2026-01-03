@@ -64,34 +64,46 @@ class BusinessPhotoController extends Controller
     {
         $this->authorizeBusinessAccess($business);
 
-        $validated = $request->validate([
-            'photo' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-            'caption' => 'nullable|string|max:255',
-        ]);
+        try {
+            $validated = $request->validate([
+                'photo' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+                'caption' => 'nullable|string|max:255',
+            ]);
 
-        // Handle file upload
-        if ($request->hasFile('photo')) {
-            $file = $request->file('photo');
-            $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-            
-            $path = $file->storeAs(
-                "businesses/{$business->id}/photos",
-                $filename,
-                'public'
-            );
-            
-            $validated['photo_url'] = $path;
+            // Handle file upload
+            if ($request->hasFile('photo')) {
+                $file = $request->file('photo');
+                
+                // Additional file size check
+                if ($file->getSize() > 2048 * 1024) {
+                    return back()->withErrors(['photo' => 'Photo must not be larger than 2MB.'])->withInput();
+                }
+                
+                $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                
+                $path = $file->storeAs(
+                    "businesses/{$business->id}/photos",
+                    $filename,
+                    'public'
+                );
+                
+                $validated['photo_url'] = $path;
+            }
+
+            $validated['business_id'] = $business->id;
+
+            $photo = BusinessPhoto::create($validated);
+
+            // ✅ FIXED: Redirect to business show page
+            return redirect()
+                ->route('businesses.show', $business)
+                ->with('success', 'Photo uploaded successfully!')
+                ->with('activeTab', 'photos');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return back()->withErrors($e->errors())->withInput();
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => 'An error occurred while uploading the photo. Please try again.'])->withInput();
         }
-
-        $validated['business_id'] = $business->id;
-
-        $photo = BusinessPhoto::create($validated);
-
-        // ✅ FIXED: Redirect to business show page
-        return redirect()
-            ->route('businesses.show', $business)
-            ->with('success', 'Photo uploaded successfully!')
-            ->with('activeTab', 'photos');
     }
 
     /**

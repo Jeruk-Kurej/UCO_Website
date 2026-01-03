@@ -43,35 +43,41 @@ class UcTestimonyController extends Controller
             abort(403, 'Administrators cannot create testimonies. Only students and alumni can.');
         }
 
-        $validated = $request->validate([
-            'customer_name' => 'required|string|max:255',
-            'content' => 'required|string|min:10',
-            'rating' => 'required|integer|min:1|max:5',
-        ]);
+        try {
+            $validated = $request->validate([
+                'customer_name' => 'required|string|max:255',
+                'content' => 'required|string|min:10',
+                'rating' => 'required|integer|min:1|max:5',
+            ]);
 
-        $validated['date'] = now()->toDateString();
+            $validated['date'] = now()->toDateString();
 
-        $testimony = UcTestimony::create($validated);
+            $testimony = UcTestimony::create($validated);
 
-        $aiService = app(AiModerationService::class);
-        $result = $aiService->analyze(
-            $validated['content'],
-            (int) $validated['rating'],
-            $validated['customer_name']
-        );
+            $aiService = app(AiModerationService::class);
+            $result = $aiService->analyze(
+                $validated['content'],
+                (int) $validated['rating'],
+                $validated['customer_name']
+            );
 
-        UcAiAnalysis::create([
-            'uc_testimony_id' => $testimony->id,
-            'sentiment_score' => $result['sentiment_score'],
-            'rejection_reason' => $result['rejection_reason'],
-            'is_approved' => $result['is_approved'],
-        ]);
+            UcAiAnalysis::create([
+                'uc_testimony_id' => $testimony->id,
+                'sentiment_score' => $result['sentiment_score'],
+                'rejection_reason' => $result['rejection_reason'],
+                'is_approved' => $result['is_approved'],
+            ]);
 
-        // Always show a generic message to the submitter.
-        // Non-approved items simply won't appear in the public list.
-        return redirect()
-            ->route('uc-testimonies.index')
-            ->with('success', 'Your testimony has been submitted.');
+            // Always show a generic message to the submitter.
+            // Non-approved items simply won't appear in the public list.
+            return redirect()
+                ->route('uc-testimonies.index')
+                ->with('success', 'Your testimony has been submitted.');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return back()->withErrors($e->errors())->withInput();
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => 'An error occurred while submitting your testimony. Please try again.'])->withInput();
+        }
     }
 
     public function destroy(UcTestimony $ucTestimony)

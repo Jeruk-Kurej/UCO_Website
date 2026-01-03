@@ -26,28 +26,43 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $user = $request->user();
-        $user->fill($request->validated());
+        try {
+            $user = $request->user();
+            $user->fill($request->validated());
 
-        // Handle profile photo upload
-        if ($request->hasFile('profile_photo')) {
-            // Delete old photo if exists
-            if ($user->profile_photo_url && \Storage::disk('public')->exists($user->profile_photo_url)) {
-                \Storage::disk('public')->delete($user->profile_photo_url);
+            // Handle profile photo upload
+            if ($request->hasFile('profile_photo')) {
+                // Additional validation for file size
+                $file = $request->file('profile_photo');
+                
+                if ($file->getSize() > 2048 * 1024) { // 2MB in bytes
+                    return Redirect::route('profile.edit')
+                        ->withErrors(['profile_photo' => 'Profile photo must not be larger than 2MB.'])
+                        ->withInput();
+                }
+                
+                // Delete old photo if exists
+                if ($user->profile_photo_url && \Storage::disk('public')->exists($user->profile_photo_url)) {
+                    \Storage::disk('public')->delete($user->profile_photo_url);
+                }
+                
+                // Store new photo
+                $path = $file->store('profile-photos', 'public');
+                $user->profile_photo_url = $path;
             }
-            
-            // Store new photo
-            $path = $request->file('profile_photo')->store('profile-photos', 'public');
-            $user->profile_photo_url = $path;
+
+            if ($user->isDirty('email')) {
+                $user->email_verified_at = null;
+            }
+
+            $user->save();
+
+            return Redirect::route('profile.edit')->with('status', 'profile-updated');
+        } catch (\Exception $e) {
+            return Redirect::route('profile.edit')
+                ->withErrors(['error' => 'An error occurred while updating your profile. Please try again.'])
+                ->withInput();
         }
-
-        if ($user->isDirty('email')) {
-            $user->email_verified_at = null;
-        }
-
-        $user->save();
-
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
 
     /**
