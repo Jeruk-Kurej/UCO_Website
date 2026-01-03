@@ -53,6 +53,12 @@
                                 <i class="bi bi-person"></i>
                                 {{ $business->user->name }}
                             </span>
+                            @if($business->position)
+                            <span class="flex items-center gap-1">
+                                <i class="bi bi-briefcase"></i>
+                                {{ $business->position }}
+                            </span>
+                            @endif
                             <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium 
                                 {{ $business->isBothMode() ? 'bg-purple-100 text-purple-800' : ($business->isProductMode() ? 'bg-orange-100 text-orange-800' : 'bg-blue-100 text-blue-800') }}">
                                 <i class="bi {{ $business->isBothMode() ? 'bi-grid-3x3' : ($business->isProductMode() ? 'bi-box-seam' : 'bi-wrench') }}"></i>

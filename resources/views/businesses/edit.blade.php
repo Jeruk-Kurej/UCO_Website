@@ -45,6 +45,22 @@
                         @enderror
                     </div>
 
+                    {{-- Position --}}
+                    <div>
+                        <label for="position" class="block text-sm font-medium text-slate-700 mb-2">
+                            Posisi Anda
+                        </label>
+                        <input type="text" 
+                               name="position" 
+                               id="position" 
+                               value="{{ old('position', $business->position) }}"
+                               class="block w-full px-4 py-3 border border-slate-300 rounded-lg focus:border-blue-400 focus:ring-2 focus:ring-blue-100 @error('position') border-red-300 @enderror transition"
+                               placeholder="e.g., CEO, Co-Founder, Marketing Manager, Staff">
+                        @error('position')
+                            <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
                     {{-- Business Type & Mode --}}
                     <div class="grid md:grid-cols-2 gap-5">
                         <div>

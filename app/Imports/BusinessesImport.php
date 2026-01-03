@@ -174,11 +174,21 @@ class BusinessesImport implements ToModel, WithHeadingRow, WithValidation
             // Parse challenges
             $challenges = $this->parseChallenges($row);
 
+            // Get user position in this business
+            // Excel headers: "Posisi saat ini (jika intraprenuer)" or "Posisi saat ini"
+            $position = $row['posisi_saat_ini_jika_intraprenuer'] 
+                ?? $row['posisi_saat_ini'] 
+                ?? $row['position'] 
+                ?? $row['posisi'] 
+                ?? $row['jabatan']
+                ?? null;
+
             // Create business
             $business = new Business([
                 'user_id' => $user->id,
                 'business_type_id' => $businessType->id,
                 'name' => $businessName,
+                'position' => $position,
                 'description' => $description ?: (
                     $row['deskripsi_bisnis'] ?? 
                     $row['deskripsi'] ?? 

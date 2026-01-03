@@ -18,6 +18,7 @@ class Business extends Model
         'business_mode',
         'name',
         'description',
+        'position', // User's position in this business
         
         // Enhanced Fields
         'logo_url',

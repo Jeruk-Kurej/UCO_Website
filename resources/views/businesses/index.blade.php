@@ -228,6 +228,9 @@
                                                 <span class="text-xs text-gray-500">
                                                     <i class="bi bi-person"></i>
                                                     {{ $business->user->name }}
+                                                    @if($business->position)
+                                                        <span class="ml-1 text-purple-600">• {{ $business->position }}</span>
+                                                    @endif
                                                 </span>
                                             </div>
                                         </div>

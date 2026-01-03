@@ -107,6 +107,7 @@ class BusinessController extends Controller
                 'business_type_id' => 'required|exists:business_types,id',
                 'business_mode' => 'required|in:product,service',
                 'user_id' => 'nullable|exists:users,id',
+                'position' => 'nullable|string|max:255',
                 
                 // Enhanced fields
                 'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
@@ -260,6 +261,7 @@ class BusinessController extends Controller
                 'business_type_id' => 'required|exists:business_types,id',
                 'business_mode' => 'required|in:product,service,both',
                 'user_id' => 'nullable|exists:users,id',
+                'position' => 'nullable|string|max:255',
                 
                 // Enhanced fields
                 'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
