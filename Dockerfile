@@ -66,7 +66,6 @@ CMD echo "=== RAILWAY STARTUP ===" && \
     echo "PORT: ${PORT:-8000}" && \
     echo "DB_HOST: ${DB_HOST:-NOT_SET}" && \
     echo "DB_DATABASE: ${DB_DATABASE:-NOT_SET}" && \
-    echo "=== Attempting Database Connection ===" && \
-    (php artisan migrate --force && echo "Migrations successful!") || echo "Migrations skipped - database not ready" && \
+    echo "Skipping migrations - will run manually after DB connection verified" && \
     echo "=== Starting PHP Server ===" && \
     php -S 0.0.0.0:${PORT:-8000} -t public
