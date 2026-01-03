@@ -5,6 +5,8 @@ namespace App\Imports;
 use App\Models\Business;
 use App\Models\User;
 use App\Models\BusinessType;
+use App\Models\BusinessContact;
+use App\Models\ContactType;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
@@ -31,7 +33,7 @@ class BusinessesImport implements ToModel, WithHeadingRow, WithValidation
             }
 
             // Get business name
-            $businessName = $row['nama'] ?? $row['name'] ?? null;
+            $businessName = $row['nama'] ?? $row['name'] ?? $row['business_name'] ?? null;
             
             // Check if business already exists
             $existingBusiness = Business::where('name', $businessName)->first();
@@ -41,33 +43,39 @@ class BusinessesImport implements ToModel, WithHeadingRow, WithValidation
                 return null;
             }
 
-            // Find owner by name (from Excel)
-            $ownerName = $row['status_dan_major'] ?? $row['owner'] ?? null;
+            // Find owner by name OR email
+            // Priority: 1) Email exact match, 2) Name partial match
             $user = null;
             
-            if ($ownerName) {
-                // Try to find user by name
-                $user = User::where('name', 'like', '%' . $ownerName . '%')->first();
-                
-                // If not found, try by email
-                if (!$user && isset($row['email'])) {
-                    $user = User::where('email', $row['email'])->first();
-                }
+            // Try email first (most reliable)
+            if (!empty($row['email'])) {
+                $user = User::where('email', $row['email'])->first();
             }
             
-            // If no user found, skip or assign to first admin
+            // If not found by email, try by name
+            if (!$user && !empty($row['nama'])) {
+                $user = User::where('name', 'like', '%' . $row['nama'] . '%')->first();
+            }
+            
+            // Also try 'owner' field if exists
+            if (!$user && !empty($row['owner'])) {
+                $user = User::where('name', 'like', '%' . $row['owner'] . '%')
+                    ->orWhere('email', $row['owner'])
+                    ->first();
+            }
+            
+            // If still no user found, log warning and skip
             if (!$user) {
-                $user = User::where('role', 'admin')->first();
-                if (!$user) {
-                    Log::warning("No owner found for business '{$businessName}', skipping...");
-                    $this->skippedCount++;
-                    return null;
-                }
+                Log::warning("No owner found for business '{$businessName}'. Email: {$row['email']}, Name: {$row['nama']}");
+                $this->skippedCount++;
+                return null;
             }
 
             // Get or create business type
-            $businessTypeName = $row['ptrbn_for_apakah_an_having_post_paste_saat_mengikat_ke_bankrapot_pendidikan_kategori'] 
-                ?? $row['business_type'] 
+            $businessTypeName = $row['business_type'] 
+                ?? $row['business_line'] 
+                ?? $row['kategori'] 
+                ?? $row['jenis_bisnis']
                 ?? 'Other';
             
             $businessType = BusinessType::firstOrCreate(
@@ -92,23 +100,26 @@ class BusinessesImport implements ToModel, WithHeadingRow, WithValidation
                 'user_id' => $user->id,
                 'business_type_id' => $businessType->id,
                 'name' => $businessName,
-                'description' => $description ?: 'No description provided',
+                'description' => $description ?: ($row['deskripsi'] ?? 'No description provided'),
                 'business_mode' => $businessMode,
                 
-                // Additional fields
-                'address' => $row['phone'] ?? $row['mobile'] ?? null,
-                'established_date' => $this->parseDate($row['tiadak_sedik_1_belanciontors'] ?? null),
+                // Additional fields with proper column mapping
+                'address' => $row['address'] ?? $row['alamat'] ?? null,
+                'established_date' => $this->parseDate($row['established_date'] ?? $row['tanggal_berdiri'] ?? null),
                 'employee_count' => $this->parseEmployeeCount($row),
                 'revenue_range' => $this->parseRevenueRange($row),
-                'is_from_college_project' => $this->parseBoolean($row['ya'] ?? null),
-                'is_continued_after_graduation' => $this->parseBoolean($row['tiadak_sedik_1_belanciontors'] ?? null),
+                'is_from_college_project' => $this->parseBoolean($row['from_college_project'] ?? $row['dari_kuliah'] ?? null),
+                'is_continued_after_graduation' => $this->parseBoolean($row['continued_after_grad'] ?? $row['lanjut_setelah_lulus'] ?? null),
                 'business_challenges' => $challenges,
             ]);
 
             $business->save();
             
+            // Import contacts (phone, email, whatsapp, etc.)
+            $this->importContacts($business, $row);
+            
             $this->successCount++;
-            Log::info("Business '{$businessName}' imported successfully for user '{$user->name}'");
+            Log::info("Business '{$businessName}' imported successfully for user '{$user->name}' with contacts");
             
             return $business;
 
@@ -165,6 +176,75 @@ class BusinessesImport implements ToModel, WithHeadingRow, WithValidation
         }
 
         return !empty($challenges) ? $challenges : null;
+    }
+
+    /**
+     * Import contacts for the business with auto-create ContactType
+     */
+    private function importContacts(Business $business, array $row): void
+    {
+        // Define contact mappings: Excel column => [ContactType platform_name, icon_class]
+        $contactMappings = [
+            // Phone contacts
+            'phone' => ['Phone', 'fas fa-phone'],
+            'mobile' => ['Mobile', 'fas fa-mobile-alt'],
+            'telepon' => ['Phone', 'fas fa-phone'],
+            'hp' => ['Mobile', 'fas fa-mobile-alt'],
+            
+            // Email
+            'email' => ['Email', 'fas fa-envelope'],
+            'email_bisnis' => ['Email', 'fas fa-envelope'],
+            'business_email' => ['Email', 'fas fa-envelope'],
+            
+            // Social Media & Messaging
+            'whatsapp' => ['WhatsApp', 'fab fa-whatsapp'],
+            'wa' => ['WhatsApp', 'fab fa-whatsapp'],
+            'line' => ['LINE', 'fab fa-line'],
+            'telegram' => ['Telegram', 'fab fa-telegram'],
+            
+            // Social Media
+            'facebook' => ['Facebook', 'fab fa-facebook'],
+            'instagram' => ['Instagram', 'fab fa-instagram'],
+            'twitter' => ['Twitter', 'fab fa-twitter'],
+            'tiktok' => ['TikTok', 'fab fa-tiktok'],
+            'linkedin' => ['LinkedIn', 'fab fa-linkedin'],
+            
+            // Website
+            'website' => ['Website', 'fas fa-globe'],
+            'web' => ['Website', 'fas fa-globe'],
+        ];
+
+        $isPrimary = true; // First contact will be primary
+
+        foreach ($contactMappings as $excelColumn => $contactInfo) {
+            $contactValue = $row[$excelColumn] ?? null;
+            
+            // Skip if no value
+            if (empty($contactValue)) {
+                continue;
+            }
+
+            [$platformName, $iconClass] = $contactInfo;
+
+            // Get or create contact type (auto-create if not exists)
+            $contactType = ContactType::firstOrCreate(
+                ['platform_name' => $platformName],
+                ['icon_class' => $iconClass]
+            );
+
+            // Create business contact
+            BusinessContact::create([
+                'business_id' => $business->id,
+                'contact_type_id' => $contactType->id,
+                'contact_value' => $contactValue,
+                'is_primary' => $isPrimary,
+            ]);
+
+            // Only first contact is primary
+            $isPrimary = false;
+
+            Log::info("Contact '{$platformName}' added for business '{$business->name}': {$contactValue}");
+        }
     }
 
     /**

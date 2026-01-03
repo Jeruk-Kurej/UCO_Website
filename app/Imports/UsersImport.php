@@ -35,21 +35,21 @@ class UsersImport implements ToModel, WithHeadingRow, WithValidation
             'email_verified_at' => now(),
             
             // Personal Information
-            'birth_date' => $row['birth_date'] ?? null,
-            'birth_city' => $row['birth_city'] ?? null,
-            'religion' => $row['religion'] ?? null,
+            'birth_date' => $row['birth_date'] ?? $row['tanggal_lahir'] ?? null,
+            'birth_city' => $row['birth_city'] ?? $row['tempat_lahir'] ?? null,
+            'religion' => $row['religion'] ?? $row['agama'] ?? null,
             
             // Contact Information
-            'phone_number' => $row['phone_number'] ?? null,
-            'mobile_number' => $row['mobile_number'] ?? null,
-            'whatsapp' => $row['whatsapp'] ?? null,
+            'phone_number' => $row['phone_number'] ?? $row['phone'] ?? $row['telp'] ?? null,
+            'mobile_number' => $row['mobile_number'] ?? $row['mobile'] ?? $row['hp'] ?? null,
+            'whatsapp' => $row['whatsapp'] ?? $row['wa'] ?? null,
             
-            // Student/Academic Information
-            'nis' => $row['nis'] ?? null,
-            'student_year' => $row['student_year'] ?? null,
-            'major' => $row['major'] ?? null,
-            'is_graduate' => isset($row['is_graduate']) ? (bool)$row['is_graduate'] : false,
-            'cgpa' => $row['cgpa'] ?? null,
+            // Student/Academic Information - MATCH DATABASE FIELD NAMES (PascalCase)
+            'NIS' => $row['nis'] ?? null,
+            'Student_Year' => $row['student_year'] ?? $row['angkatan'] ?? null,
+            'Major' => $row['major'] ?? $row['prodi'] ?? $row['jurusan'] ?? null,
+            'Is_Graduate' => isset($row['is_graduate']) ? (bool)$row['is_graduate'] : false,
+            'CGPA' => $row['cgpa'] ?? $row['ipk'] ?? null,
             
             // JSON fields - store additional data
             'personal_data' => $this->buildPersonalData($row),
