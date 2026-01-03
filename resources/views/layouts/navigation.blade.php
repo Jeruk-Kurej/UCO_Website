@@ -8,7 +8,7 @@
             <div class="flex items-center">
                 <a href="/dashboard" class="flex items-center gap-3">
                     <img src="{{ asset('images/Logo UCO.png') }}" alt="UCO Logo" class="w-9 h-9 object-contain">
-                    <span class="text-lg font-bold text-soft-gray-900">UCO Platform</span>
+                    <span class="text-lg font-bold text-soft-gray-900">UC Online</span>
                 </a>
             </div>
 
@@ -52,9 +52,6 @@
                                         Contact Types
                                     </a>
                                     <a href="/ai-analyses" class="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-soft-gray-700 hover:bg-soft-gray-50 hover:text-soft-gray-900 transition">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                                        </svg>
                                         AI Moderation
                                     </a>
                                 </div>
@@ -87,7 +84,7 @@
                                 <a href="/profile" class="block px-4 py-2.5 text-sm font-medium text-soft-gray-700 hover:bg-soft-gray-50 hover:text-soft-gray-900 transition">
                                     My Profile
                                 </a>
-                                <form method="POST" action="/logout">
+                                <form method="POST" action="{{ route('logout') }}">
                                     @csrf
                                     <button type="submit" class="w-full text-left px-4 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 transition">
                                         Log Out
@@ -166,7 +163,7 @@
                     <a href="/profile" class="block py-2.5 px-3 text-sm font-medium text-soft-gray-700 hover:bg-soft-gray-50 hover:text-soft-gray-900 rounded-lg">
                         Profile
                     </a>
-                    <form method="POST" action="/logout">
+                    <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button type="submit" class="w-full text-left py-2.5 px-3 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg">
                             Log Out
