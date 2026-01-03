@@ -35,13 +35,22 @@ Route::get('/db-test', function () {
     try {
         DB::connection()->getPdo();
         return response()->json([
-            'status' => 'connected',
+            'status' => 'connected ✅',
             'host' => env('DB_HOST'),
+            'database' => env('DB_DATABASE'),
         ]);
     } catch (\Exception $e) {
         return response()->json([
-            'status' => 'failed',
+            'status' => 'failed ❌',
             'error' => $e->getMessage(),
+            'config' => [
+                'DB_CONNECTION' => env('DB_CONNECTION'),
+                'DB_HOST' => env('DB_HOST') ?: 'EMPTY',
+                'DB_PORT' => env('DB_PORT'),
+                'DB_DATABASE' => env('DB_DATABASE'),
+                'DB_USERNAME' => env('DB_USERNAME'),
+                'DB_PASSWORD' => env('DB_PASSWORD') ? 'SET (hidden)' : 'EMPTY',
+            ],
         ], 500);
     }
 });
