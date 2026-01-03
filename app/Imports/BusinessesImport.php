@@ -59,23 +59,35 @@ class BusinessesImport implements ToModel, WithHeadingRow, WithValidation
             }
 
             // Skip if no business name
-            // Excel headers: "Nama bisnis/ventura" converts to "nama_bisnisventura" or similar
-            if (empty($row['nama_bisnisventura']) && empty($row['nama_bisnis_ventura']) && empty($row['business_name']) && empty($row['nama_bisnis'])) {
+            // TWO TYPES:
+            // 1. ENTREPRENEUR: "Nama bisnis/ventura" → nama_bisnisventura
+            // 2. INTRAPRENEUR: "Nama Perusahaan Tempat Bekerja (jika intraprenuer)" → nama_perusahaan_tempat_bekerja_jika_intraprenuer
+            if (empty($row['nama_bisnisventura']) && 
+                empty($row['nama_bisnis_ventura']) && 
+                empty($row['nama_perusahaan_tempat_bekerja_jika_intraprenuer']) && 
+                empty($row['nama_perusahaan_tempat_bekerja']) && 
+                empty($row['business_name']) && 
+                empty($row['nama_bisnis'])) {
                 $this->skippedCount++;
-                $this->errors[] = "Row skipped: No business name found. Available columns: " . implode(', ', array_keys($row));
+                $this->errors[] = "Row skipped: No business name found (entrepreneur or intrapreneur). Available columns: " . implode(', ', array_keys($row));
                 Log::warning("Business row skipped - no name. Columns: " . implode(', ', array_keys($row)));
                 return null;
             }
 
-            // Get business name from Excel column "Nama bisnis/ventura"
-            // Priority: Excel specific columns first, then generic fallbacks
+            // Get business name from Excel
+            // TWO TYPES OF BUSINESSES:
+            // 1. ENTREPRENEUR: "Nama bisnis/ventura" → nama_bisnisventura
+            // 2. INTRAPRENEUR: "Nama Perusahaan Tempat Bekerja (jika intraprenuer)" → nama_perusahaan_tempat_bekerja_jika_intraprenuer
+            //
+            // Priority: entrepreneur column first, then intrapreneur column, then generic fallbacks
+            // IMPORTANT: Do NOT use 'name' column as it contains OWNER name, not business name!
             $businessName = $row['nama_bisnisventura'] 
                 ?? $row['nama_bisnis_ventura'] 
+                ?? $row['nama_perusahaan_tempat_bekerja_jika_intraprenuer'] 
+                ?? $row['nama_perusahaan_tempat_bekerja'] 
                 ?? $row['business_name'] 
                 ?? $row['nama_bisnis'] 
                 ?? null;
-            
-            // IMPORTANT: Do NOT use 'name' column as it contains OWNER name, not business name!
             // Log the actual business name found
             if ($businessName) {
                 Log::info("Found business name: '{$businessName}' from Excel");
