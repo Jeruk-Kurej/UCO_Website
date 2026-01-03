@@ -14,11 +14,6 @@
 
             {{-- Navigation Links (Desktop) --}}
             <div class="hidden md:flex items-center space-x-8">
-                <a href="/dashboard" 
-                   class="text-sm font-medium {{ request()->routeIs('dashboard') ? 'text-soft-gray-900 font-semibold' : 'text-soft-gray-600 hover:text-soft-gray-900' }} transition">
-                    Home
-                </a>
-
                 @auth
                     <a href="/businesses" 
                        class="text-sm font-medium {{ request()->routeIs('businesses.*') ? 'text-soft-gray-900 font-semibold' : 'text-soft-gray-600 hover:text-soft-gray-900' }} transition">
@@ -117,10 +112,6 @@
     {{-- Mobile Menu --}}
     <div x-data="{ open: false }" :class="{'block': open, 'hidden': ! open}" class="hidden md:hidden border-t border-soft-gray-100 bg-white">
         <div class="px-4 py-3 space-y-1">
-            <a href="/dashboard" 
-               class="block py-2.5 px-3 text-sm font-medium rounded-lg {{ request()->routeIs('dashboard') ? 'bg-soft-gray-100 text-soft-gray-900' : 'text-soft-gray-700 hover:bg-soft-gray-50' }}">
-                Home
-            </a>
             @auth
                 <a href="/businesses" 
                    class="block py-2.5 px-3 text-sm font-medium rounded-lg {{ request()->routeIs('businesses.*') ? 'bg-soft-gray-100 text-soft-gray-900' : 'text-soft-gray-700 hover:bg-soft-gray-50' }}">
