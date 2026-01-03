@@ -69,15 +69,11 @@ EXPOSE 8000
 # Start server - migrations optional, won't crash if DB unavailable
 CMD echo "=== RAILWAY STARTUP ===" && \
     echo "PORT: ${PORT:-8000}" && \
-    echo "DB_HOST: ${DB_HOST:-NOT_SET}" && \
-    echo "DB_DATABASE: ${DB_DATABASE:-NOT_SET}" && \
-    echo "=== Running Migrations ===" && \
-    php artisan migrate --force && \
-    echo "=== Running Seeders ===" && \
-    php artisan db:seed --class=UserSeeder --force && \
-    php artisan db:seed --class=BusinessTypeSeeder --force && \
-    php artisan db:seed --class=ProductCategorySeeder --force && \
-    php artisan db:seed --class=ContactTypeSeeder --force && \
-    php artisan db:seed --class=DummyBusinessSeeder --force && \
-    echo "=== Starting PHP Server ===" && \
-    php -S 0.0.0.0:${PORT:-8000} -t public
+    echo "APP_ENV: ${APP_ENV:-production}" && \
+    echo "APP_DEBUG: ${APP_DEBUG:-false}" && \
+    php artisan config:clear && \
+    php artisan route:clear && \
+    echo "=== Starting migrations in background ===" && \
+    (php artisan migrate --force 2>&1 || echo "Migration skipped") & \
+    echo "=== Starting Laravel Server ===" && \
+    php artisan serve --host=0.0.0.0 --port=${PORT:-8000} --no-reload
