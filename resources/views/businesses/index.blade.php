@@ -120,26 +120,11 @@
             </div>
 
             {{-- Search Bar --}}
-            <div class="px-6 py-4 bg-gray-50 border-b border-gray-200" 
-                 x-data="{
-                    searchQuery: '{{ request('search') }}',
-                    performSearch() {
-                        const trimmed = this.searchQuery.trim();
-                        const myParam = '{{ request('my') }}';
-                        let url = '{{ route('businesses.index') }}';
-                        const params = [];
-                        
-                        if (myParam) params.push('my=' + myParam);
-                        if (trimmed.length > 0) params.push('search=' + encodeURIComponent(trimmed));
-                        
-                        if (params.length > 0) {
-                            url += '?' + params.join('&');
-                        }
-                        
-                        window.location.href = url;
-                    }
-                 }">
-                <div class="flex gap-3">
+            <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                <form action="{{ route('businesses.index') }}" method="GET" class="flex gap-3">
+                    @if(request('my'))
+                        <input type="hidden" name="my" value="1">
+                    @endif
                     <div class="flex-1">
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
@@ -148,19 +133,19 @@
                                 </svg>
                             </div>
                             <input type="text" 
-                                   x-model="searchQuery"
-                                   x-on:input.debounce.500ms="performSearch()"
-                                   x-on:keydown.enter="performSearch()"
+                                   name="search"
+                                   value="{{ request('search') }}"
                                    placeholder="Search by business name, description, owner, or category..." 
                                    class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 focus:border-transparent">
                         </div>
                     </div>
-                    <button x-show="searchQuery.length > 0"
-                            @click="searchQuery = ''; performSearch()"
-                            class="inline-flex items-center px-4 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors">
-                        Clear
-                    </button>
-                </div>
+                    @if(request('search'))
+                        <a href="{{ route('businesses.index') }}{{ request('my') ? '?my=1' : '' }}" 
+                           class="inline-flex items-center px-4 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors">
+                            Clear
+                        </a>
+                    @endif
+                </form>
             </div>
 
             {{-- Tab Content: Browse All Businesses --}}
