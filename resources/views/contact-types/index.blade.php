@@ -28,18 +28,15 @@
                             <th scope="col" class="px-4 py-3.5 text-center text-xs font-medium text-gray-600 uppercase tracking-wider w-[15%]">
                                 Icon Preview
                             </th>
-                            <th scope="col" class="px-4 py-3.5 text-left text-xs font-medium text-gray-600 uppercase tracking-wider w-[25%]">
+                            <th scope="col" class="px-4 py-3.5 text-left text-xs font-medium text-gray-600 uppercase tracking-wider w-[40%]">
                                 Platform Name
                             </th>
-                            <th scope="col" class="px-4 py-3.5 text-left text-xs font-medium text-gray-600 uppercase tracking-wider w-[25%]">
-                                Icon Class
-                            </th>
-                            <th scope="col" class="px-4 py-3.5 text-center text-xs font-medium text-gray-600 uppercase tracking-wider w-[15%]">
+                            <th scope="col" class="px-4 py-3.5 text-center text-xs font-medium text-gray-600 uppercase tracking-wider w-[20%]">
                                 Usage Count
                             </th>
                             @auth
                                 @if(auth()->user()->isAdmin())
-                                    <th scope="col" class="px-4 py-3.5 text-center text-xs font-medium text-gray-600 uppercase tracking-wider w-[20%]">
+                                    <th scope="col" class="px-4 py-3.5 text-center text-xs font-medium text-gray-600 uppercase tracking-wider w-[25%]">
                                         Actions
                                     </th>
                                 @endif
@@ -61,11 +58,6 @@
                                 {{-- Platform Name --}}
                                 <td class="px-4 py-4">
                                     <div class="text-sm font-medium text-gray-900">{{ $type->platform_name }}</div>
-                                </td>
-
-                                {{-- Icon Class --}}
-                                <td class="px-4 py-4">
-                                    <code class="text-xs bg-gray-100 px-3 py-1.5 rounded-md text-gray-800 font-mono">{{ $type->icon_class }}</code>
                                 </td>
 
                                 {{-- Usage Count --}}
@@ -122,7 +114,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="px-6 py-12 text-center">
+                                <td colspan="4" class="px-6 py-12 text-center">
                                     <div class="flex flex-col items-center justify-center">
                                         <i class="bi bi-telephone text-6xl text-gray-300 mb-3"></i>
                                         <p class="text-gray-500 text-lg font-medium">No contact types found</p>
