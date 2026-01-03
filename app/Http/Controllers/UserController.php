@@ -44,7 +44,19 @@ class UserController extends Controller
             ->latest()
             ->paginate(20);
 
-        return view('users.index', compact('users'));
+        // Get accurate counts from database (not from paginated collection)
+        $totalUsers = User::count();
+        $totalAdmins = User::where('role', 'admin')->count();
+        $totalStudents = User::where('role', 'student')->count();
+        $totalAlumni = User::where('role', 'alumni')->count();
+
+        return view('users.index', compact(
+            'users',
+            'totalUsers',
+            'totalAdmins',
+            'totalStudents',
+            'totalAlumni'
+        ));
     }
 
     /**

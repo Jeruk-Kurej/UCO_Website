@@ -318,7 +318,7 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-xs font-medium text-gray-600 uppercase tracking-wide">Total Users</p>
-                        <p class="text-2xl font-bold text-gray-900 mt-1">{{ $users->total() }}</p>
+                        <p class="text-2xl font-bold text-gray-900 mt-1">{{ $totalUsers }}</p>
                     </div>
                     <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
                         <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -332,7 +332,7 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-xs font-medium text-gray-600 uppercase tracking-wide">Admins</p>
-                        <p class="text-2xl font-bold text-gray-900 mt-1">{{ $users->where('role', 'admin')->count() }}</p>
+                        <p class="text-2xl font-bold text-gray-900 mt-1">{{ $totalAdmins }}</p>
                     </div>
                     <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
                         <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -346,7 +346,7 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-xs font-medium text-gray-600 uppercase tracking-wide">Students</p>
-                        <p class="text-2xl font-bold text-gray-900 mt-1">{{ $users->where('role', 'student')->count() }}</p>
+                        <p class="text-2xl font-bold text-gray-900 mt-1">{{ $totalStudents }}</p>
                     </div>
                     <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
                         <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -362,7 +362,7 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-xs font-medium text-gray-600 uppercase tracking-wide">Alumni</p>
-                        <p class="text-2xl font-bold text-gray-900 mt-1">{{ $users->where('role', 'alumni')->count() }}</p>
+                        <p class="text-2xl font-bold text-gray-900 mt-1">{{ $totalAlumni }}</p>
                     </div>
                     <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
                         <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
