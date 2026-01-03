@@ -14,6 +14,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UcTestimonyController;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
 // Health check endpoints for debugging
@@ -32,27 +33,15 @@ Route::get('/ping', function () {
 
 Route::get('/db-test', function () {
     try {
-        \DB::connection()->getPdo();
-        $tables = \DB::select('SHOW TABLES');
+        DB::connection()->getPdo();
         return response()->json([
-            'database' => 'connected ✅',
+            'status' => 'connected',
             'host' => env('DB_HOST'),
-            'database_name' => env('DB_DATABASE'),
-            'tables_count' => count($tables),
-            'tables' => array_map(function($t) { 
-                return array_values((array)$t)[0]; 
-            }, $tables),
         ]);
     } catch (\Exception $e) {
         return response()->json([
-            'database' => 'failed ❌',
+            'status' => 'failed',
             'error' => $e->getMessage(),
-            'host' => env('DB_HOST'),
-            'port' => env('DB_PORT'),
-            'database' => env('DB_DATABASE'),
-        ], 500);
-    }
-});
         ], 500);
     }
 });
