@@ -61,15 +61,12 @@ RUN chmod -R 755 /app/storage /app/bootstrap/cache
 # Expose port
 EXPOSE 8000
 
-# Start server with database migrations
+# Start server - migrations optional, won't crash if DB unavailable
 CMD echo "=== RAILWAY STARTUP ===" && \
     echo "PORT: ${PORT:-8000}" && \
-    echo "DB_HOST: ${DB_HOST}" && \
-    echo "DB_DATABASE: ${DB_DATABASE}" && \
-    echo "=== Testing Database Connection ===" && \
-    php artisan db:show || echo "Database not connected yet" && \
-    echo "=== Running Migrations ===" && \
-    php artisan migrate --force && \
-    echo "=== Migrations Complete ===" && \
+    echo "DB_HOST: ${DB_HOST:-NOT_SET}" && \
+    echo "DB_DATABASE: ${DB_DATABASE:-NOT_SET}" && \
+    echo "=== Attempting Database Connection ===" && \
+    (php artisan migrate --force && echo "Migrations successful!") || echo "Migrations skipped - database not ready" && \
     echo "=== Starting PHP Server ===" && \
     php -S 0.0.0.0:${PORT:-8000} -t public
