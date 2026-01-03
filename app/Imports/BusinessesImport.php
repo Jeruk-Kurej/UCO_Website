@@ -135,9 +135,10 @@ class BusinessesImport implements ToModel, WithHeadingRow, WithValidation
             }
 
             // Get or create business type (category)
-            // Excel header "Jenis Bisnis/Ventura" becomes "jenis_bisnisventura"
-            // Excel header "Kategori Bisnis" becomes "kategori_bisnis"
-            $businessTypeName = $row['jenis_bisnisventura'] 
+            // Excel header: "Jenis usaha dari perusahaan tempat Anda bekerja saat ini (jika intraprenuer) atau Jenis bisnis/ventura yang Anda jalankan saat ini"
+            // Becomes: "jenis_usaha_dari_perusahaan_tempat_anda_bekerja_saat_ini_jika_intraprenuer_atau_jenis_bisnisventura_yang_anda_jalankan_saat_ini"
+            $businessTypeName = $row['jenis_usaha_dari_perusahaan_tempat_anda_bekerja_saat_ini_jika_intraprenuer_atau_jenis_bisnisventura_yang_anda_jalankan_saat_ini'] 
+                ?? $row['jenis_bisnisventura'] 
                 ?? $row['jenis_bisnis_ventura'] 
                 ?? $row['kategori_bisnis'] 
                 ?? $row['jenis_bisnis'] 
