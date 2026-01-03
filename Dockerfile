@@ -58,17 +58,18 @@ RUN php artisan package:discover --ansi
 # Set permissions
 RUN chmod -R 755 /app/storage /app/bootstrap/cache
 
-# Expose port (will be overridden by Railway's PORT env var)
+# Expose port
 EXPOSE 8000
 
-# Start server - make migrations optional to prevent startup failure
+# Start server with database migrations
 CMD echo "=== RAILWAY STARTUP ===" && \
     echo "PORT: ${PORT:-8000}" && \
-    echo "APP_ENV: ${APP_ENV:-not_set}" && \
-    echo "APP_DEBUG: ${APP_DEBUG:-not_set}" && \
-    echo "=== Checking Vite manifest ===" && \
-    test -f public/build/manifest.json && echo "Manifest exists" || echo "Manifest MISSING!" && \
-    cat public/build/manifest.json && \
-    echo "" && \
+    echo "DB_HOST: ${DB_HOST}" && \
+    echo "DB_DATABASE: ${DB_DATABASE}" && \
+    echo "=== Testing Database Connection ===" && \
+    php artisan db:show || echo "Database not connected yet" && \
+    echo "=== Running Migrations ===" && \
+    php artisan migrate --force && \
+    echo "=== Migrations Complete ===" && \
     echo "=== Starting PHP Server ===" && \
     php -S 0.0.0.0:${PORT:-8000} -t public
