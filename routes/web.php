@@ -30,6 +30,28 @@ Route::get('/ping', function () {
     return 'pong at ' . now()->toDateTimeString();
 });
 
+Route::get('/db-test', function () {
+    try {
+        \DB::connection()->getPdo();
+        $tables = \DB::select('SHOW TABLES');
+        return response()->json([
+            'database' => 'connected ✅',
+            'host' => env('DB_HOST'),
+            'database_name' => env('DB_DATABASE'),
+            'tables_count' => count($tables),
+            'tables' => array_map(fn($t) => array_values((array)$t)[0], $tables),
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'database' => 'failed ❌',
+            'error' => $e->getMessage(),
+            'host' => env('DB_HOST'),
+            'port' => env('DB_PORT'),
+            'database' => env('DB_DATABASE'),
+        ], 500);
+    }
+});
+
 /*
 |--------------------------------------------------------------------------
 | Public Routes 🌍
