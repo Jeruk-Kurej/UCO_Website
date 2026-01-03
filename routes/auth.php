@@ -17,8 +17,10 @@ Route::middleware('guest')->group(function () {
 
     Route::post('register', [RegisteredUserController::class, 'store']);
 
-    Route::get('login', [AuthenticatedSessionController::class, 'create'])
-        ->name('login');
+    // Redirect /login to /welcome since login form is on welcome page
+    Route::get('login', function () {
+        return redirect('/welcome');
+    })->name('login');
 
     Route::post('login', [AuthenticatedSessionController::class, 'store']);
 
