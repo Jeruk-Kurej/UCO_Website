@@ -67,6 +67,22 @@ Route::get('/db-test', function () {
     }
 });
 
+Route::get('/run-migrations', function () {
+    try {
+        set_time_limit(120);
+        \Artisan::call('migrate', ['--force' => true]);
+        return response()->json([
+            'status' => 'success',
+            'output' => \Artisan::output(),
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'failed',
+            'error' => $e->getMessage(),
+        ], 500);
+    }
+});
+
 /*
 |--------------------------------------------------------------------------
 | Public Routes
