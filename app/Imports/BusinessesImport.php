@@ -134,16 +134,27 @@ class BusinessesImport implements ToModel, WithHeadingRow, WithValidation
                 return null;
             }
 
-            // Get or create business type
+            // Get or create business type (category)
             // Excel header "Jenis Bisnis/Ventura" becomes "jenis_bisnisventura"
+            // Excel header "Kategori Bisnis" becomes "kategori_bisnis"
             $businessTypeName = $row['jenis_bisnisventura'] 
                 ?? $row['jenis_bisnis_ventura'] 
+                ?? $row['kategori_bisnis'] 
                 ?? $row['jenis_bisnis'] 
                 ?? $row['business_type'] 
                 ?? $row['business_line'] 
                 ?? $row['kategori'] 
                 ?? $row['category']
-                ?? 'Other';
+                ?? $row['sektor']
+                ?? $row['bidang']
+                ?? $row['industri']
+                ?? null;
+            
+            // Log for debugging if no business type found
+            if (!$businessTypeName) {
+                Log::warning("No business type found for '{$businessName}'. Available columns: " . implode(', ', array_keys($row)));
+                $businessTypeName = 'Other';
+            }
             
             $businessType = BusinessType::firstOrCreate(
                 ['name' => $businessTypeName],
