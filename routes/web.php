@@ -216,6 +216,15 @@ Route::post('/admin/reset-database-execute', function () {
         $businessCount = \App\Models\Business::count();
         \App\Models\Business::query()->delete();
         
+        // Delete business types (clean HTML tags)
+        \App\Models\BusinessType::query()->delete();
+        
+        // Delete product categories
+        \App\Models\ProductCategory::query()->delete();
+        
+        // Delete contact types
+        \App\Models\ContactType::query()->delete();
+        
         // Delete ALL users
         $userCount = \App\Models\User::count();
         \App\Models\User::query()->delete();

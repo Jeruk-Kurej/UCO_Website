@@ -4,8 +4,12 @@ namespace App\Console\Commands;
 
 use App\Models\User;
 use App\Models\Business;
+use App\Models\BusinessType;
+use App\Models\ProductCategory;
+use App\Models\ContactType;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 
 class ResetDatabase extends Command
 {
@@ -40,6 +44,24 @@ class ResetDatabase extends Command
         $businessCount = Business::count();
         Business::query()->delete();
         $this->info("✅ Deleted {$businessCount} businesses");
+
+        // Delete business types
+        $this->info('Deleting all business types...');
+        $typeCount = BusinessType::count();
+        BusinessType::query()->delete();
+        $this->info("✅ Deleted {$typeCount} business types");
+
+        // Delete product categories
+        $this->info('Deleting all product categories...');
+        $catCount = ProductCategory::count();
+        ProductCategory::query()->delete();
+        $this->info("✅ Deleted {$catCount} product categories");
+
+        // Delete contact types
+        $this->info('Deleting all contact types...');
+        $contactCount = ContactType::count();
+        ContactType::query()->delete();
+        $this->info("✅ Deleted {$contactCount} contact types");
 
         // Delete ALL users
         $this->info('Deleting all users...');
