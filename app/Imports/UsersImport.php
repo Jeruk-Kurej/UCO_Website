@@ -59,17 +59,13 @@ class UsersImport implements ToModel, WithHeadingRow, WithValidation
             // Check required fields
             if (empty($row['name'])) {
                 $this->skippedCount++;
-                $errorMsg = "Row skipped: 'name' field is required. Available columns: " . implode(', ', array_keys($row));
-                $this->errors[] = $errorMsg;
-                Log::warning("User import: " . $errorMsg);
+                $this->errors[] = "❌ Missing name - row skipped";
                 return null;
             }
 
             if (empty($row['email'])) {
                 $this->skippedCount++;
-                $errorMsg = "User '{$row['name']}': 'email' field is required";
-                $this->errors[] = $errorMsg;
-                Log::warning("User import: " . $errorMsg);
+                $this->errors[] = "❌ Missing email for '{$row['name']}' - row skipped";
                 return null;
             }
 
@@ -78,8 +74,8 @@ class UsersImport implements ToModel, WithHeadingRow, WithValidation
             
             if ($existingUser) {
                 $this->skippedCount++;
-                Log::info("User '{$row['name']}' with email '{$row['email']}' already exists, skipping...");
-                return null; // Skip existing users
+                $this->errors[] = "⚠️ Duplicate: '{$row['name']}' ({$row['email']}) already exists, skipped";
+                return null;
             }
 
             $user = new User([
@@ -117,7 +113,6 @@ class UsersImport implements ToModel, WithHeadingRow, WithValidation
             ]);
 
             $this->successCount++;
-            Log::info("User '{$row['name']}' imported successfully");
             
             return $user;
 

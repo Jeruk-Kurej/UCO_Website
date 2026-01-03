@@ -59,9 +59,7 @@ class BusinessesImport implements ToModel, WithHeadingRow, WithValidation
             }
 
             // Skip if no business name
-            // TWO TYPES:
-            // 1. ENTREPRENEUR: "Nama bisnis/ventura" → nama_bisnisventura
-            // 2. INTRAPRENEUR: "Nama Perusahaan Tempat Bekerja (jika intraprenuer)" → nama_perusahaan_tempat_bekerja_jika_intraprenuer
+            // Business name from: "Nama bisnis/ventura" OR "Nama Perusahaan Tempat Bekerja (jika intraprenuer)"
             if (empty($row['nama_bisnisventura']) && 
                 empty($row['nama_bisnis_ventura']) && 
                 empty($row['nama_perusahaan_tempat_bekerja_jika_intraprenuer']) && 
@@ -69,8 +67,7 @@ class BusinessesImport implements ToModel, WithHeadingRow, WithValidation
                 empty($row['business_name']) && 
                 empty($row['nama_bisnis'])) {
                 $this->skippedCount++;
-                $this->errors[] = "Row skipped: No business name found (entrepreneur or intrapreneur). Available columns: " . implode(', ', array_keys($row));
-                Log::warning("Business row skipped - no name. Columns: " . implode(', ', array_keys($row)));
+                $this->errors[] = "❌ Missing business name - row skipped";
                 return null;
             }
 
@@ -93,6 +90,7 @@ class BusinessesImport implements ToModel, WithHeadingRow, WithValidation
             $existingBusiness = Business::where('name', $businessName)->first();
             if ($existingBusiness) {
                 $this->skippedCount++;
+                $this->errors[] = "⚠️ Duplicate: '{$businessName}' already exists, skipped";
                 return null;
             }
 
@@ -128,9 +126,10 @@ class BusinessesImport implements ToModel, WithHeadingRow, WithValidation
             
             // If still no user found, log warning and skip
             if (!$user) {
-                $errorMsg = "Business '{$businessName}': No owner found. Email: " . ($row['email'] ?? 'N/A') . ", Nama: " . ($row['nama'] ?? 'N/A');
-                Log::warning($errorMsg);
-                $this->errors[] = $errorMsg . " - Please ensure users are imported first and emails match.";
+                $emailAttempt = $row['email'] ?? $row['owner_email'] ?? $row['email_owner'] ?? 'N/A';
+                $nameAttempt = $row['owner'] ?? $row['owner_name'] ?? $row['nama_owner'] ?? $row['nama'] ?? 'N/A';
+                $errorMsg = "❌ Owner not found for '{$businessName}' - Tried email: '{$emailAttempt}', name: '{$nameAttempt}' - Import users first!";
+                $this->errors[] = $errorMsg;
                 $this->skippedCount++;
                 return null;
             }
