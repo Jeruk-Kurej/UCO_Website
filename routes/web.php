@@ -14,6 +14,12 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UcTestimonyController;
+use App\Models\Business;
+use App\Models\BusinessType;
+use App\Models\ContactType;
+use App\Models\ProductCategory;
+use App\Models\User;
+use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
@@ -125,16 +131,16 @@ Route::post('/admin/reset-database-execute', function () {
     }
     
     try {
-        $businessCount = \App\Models\Business::count();
-        \App\Models\Business::query()->delete();
-        \App\Models\BusinessType::query()->delete();
-        \App\Models\ProductCategory::query()->delete();
-        \App\Models\ContactType::query()->delete();
+        $businessCount = Business::count();
+        Business::query()->delete();
+        BusinessType::query()->delete();
+        ProductCategory::query()->delete();
+        ContactType::query()->delete();
         
-        $userCount = \App\Models\User::count();
-        \App\Models\User::query()->delete();
+        $userCount = User::count();
+        User::query()->delete();
         
-        $admin = \App\Models\User::create([
+        $admin = User::create([
             'username' => 'admin',
             'name' => 'Admin UCO',
             'email' => 'admin@uco.com',
@@ -150,7 +156,7 @@ Route::post('/admin/reset-database-execute', function () {
         
         return redirect('/login')->with('success', "✅ Database reset! Deleted {$businessCount} businesses and {$userCount} users. Login as admin@uco.com / password");
         
-    } catch (\Exception $e) {
+    } catch (Exception $e) {
         return back()->with('error', 'Error: ' . $e->getMessage());
     }
 })->middleware('auth')->name('admin.reset-database.execute');
