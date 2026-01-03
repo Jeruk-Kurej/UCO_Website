@@ -22,6 +22,11 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 
+// Health check endpoint for Railway
+Route::get('/ping', function () {
+    return response()->json(['status' => 'ok'], 200);
+});
+
 // Welcome Page
 Route::get('/', function () {
     return view('welcome');
