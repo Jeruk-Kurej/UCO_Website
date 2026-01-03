@@ -59,15 +59,15 @@ class BusinessesImport implements ToModel, WithHeadingRow, WithValidation
             }
 
             // Skip if no business name
-            if (empty($row['nama']) && empty($row['name']) && empty($row['business_name'])) {
+            if (empty($row['business_name']) && empty($row['nama_bisnis']) && empty($row['name'])) {
                 $this->skippedCount++;
                 $this->errors[] = "Row skipped: No business name found. Available columns: " . implode(', ', array_keys($row));
                 Log::warning("Business row skipped - no name. Columns: " . implode(', ', array_keys($row)));
                 return null;
             }
 
-            // Get business name
-            $businessName = $row['nama'] ?? $row['name'] ?? $row['business_name'] ?? null;
+            // Get business name (prioritize specific business name columns)
+            $businessName = $row['business_name'] ?? $row['nama_bisnis'] ?? $row['name'] ?? null;
             
             // Check if business already exists
             $existingBusiness = Business::where('name', $businessName)->first();
@@ -78,32 +78,32 @@ class BusinessesImport implements ToModel, WithHeadingRow, WithValidation
             }
 
             // Find owner by name OR email
-            // Priority: 1) Email exact match, 2) Name partial match
+            // Priority: 1) Email exact match, 2) Owner name field, 3) Nama field (student name)
             $user = null;
             
             // Try email first (most reliable)
-            if (!empty($row['email'])) {
-                $user = User::where('email', $row['email'])->first();
+            if (!empty($row['email']) || !empty($row['owner_email']) || !empty($row['email_owner'])) {
+                $email = $row['email'] ?? $row['owner_email'] ?? $row['email_owner'];
+                $user = User::where('email', $email)->first();
                 if (!$user) {
-                    Log::warning("Business '{$businessName}': User with email '{$row['email']}' not found");
+                    Log::warning("Business '{$businessName}': User with email '{$email}' not found");
                 }
             }
             
-            // If not found by email, try by name
+            // Try 'owner' or 'owner_name' field (business owner name)
+            if (!$user && (!empty($row['owner']) || !empty($row['owner_name']) || !empty($row['nama_owner']))) {
+                $ownerName = $row['owner'] ?? $row['owner_name'] ?? $row['nama_owner'];
+                $user = User::where('name', 'like', '%' . $ownerName . '%')->first();
+                if (!$user) {
+                    Log::warning("Business '{$businessName}': User with owner name like '{$ownerName}' not found");
+                }
+            }
+            
+            // Last resort: try 'nama' field (student name)
             if (!$user && !empty($row['nama'])) {
                 $user = User::where('name', 'like', '%' . $row['nama'] . '%')->first();
                 if (!$user) {
                     Log::warning("Business '{$businessName}': User with name like '{$row['nama']}' not found");
-                }
-            }
-            
-            // Also try 'owner' field if exists
-            if (!$user && !empty($row['owner'])) {
-                $user = User::where('name', 'like', '%' . $row['owner'] . '%')
-                    ->orWhere('email', $row['owner'])
-                    ->first();
-                if (!$user) {
-                    Log::warning("Business '{$businessName}': User with owner field '{$row['owner']}' not found");
                 }
             }
             
@@ -145,7 +145,7 @@ class BusinessesImport implements ToModel, WithHeadingRow, WithValidation
                 'user_id' => $user->id,
                 'business_type_id' => $businessType->id,
                 'name' => $businessName,
-                'description' => $description ?: ($row['deskripsi'] ?? 'No description provided'),
+                'description' => $description ?: ($row['deskripsi'] ?? $row['description'] ?? $row['business_description'] ?? 'No description provided'),
                 'business_mode' => $businessMode,
                 
                 // Additional fields with proper column mapping
@@ -183,7 +183,18 @@ class BusinessesImport implements ToModel, WithHeadingRow, WithValidation
     {
         $parts = [];
         
-        // Add various description fields
+        // Priority 1: Explicit description fields
+        if (!empty($row['description'])) {
+            $parts[] = $row['description'];
+        }
+        if (!empty($row['deskripsi'])) {
+            $parts[] = $row['deskripsi'];
+        }
+        if (!empty($row['business_description'])) {
+            $parts[] = $row['business_description'];
+        }
+        
+        // Priority 2: Long text fields that might contain descriptions
         if (!empty($row['pt_smk_jiteram_114_2024_10_pt_74_jk'])) {
             $parts[] = $row['pt_smk_jiteram_114_2024_10_pt_74_jk'];
         }
@@ -194,6 +205,14 @@ class BusinessesImport implements ToModel, WithHeadingRow, WithValidation
         
         if (!empty($row['netserviceinya_others_pen_rumot_tunggo'])) {
             $parts[] = $row['netserviceinya_others_pen_rumot_tunggo'];
+        }
+        
+        // Priority 3: Business details
+        if (!empty($row['about'])) {
+            $parts[] = $row['about'];
+        }
+        if (!empty($row['tentang'])) {
+            $parts[] = $row['tentang'];
         }
 
         return !empty($parts) ? implode("\n\n", $parts) : null;
