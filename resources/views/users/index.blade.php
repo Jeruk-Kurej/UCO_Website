@@ -101,13 +101,12 @@
              x-data="{
                 searchQuery: '{{ request('search') }}',
                 performSearch() {
-                    const url = new URL(window.location);
-                    if (this.searchQuery.length > 0) {
-                        url.searchParams.set('search', this.searchQuery);
+                    const trimmed = this.searchQuery.trim();
+                    if (trimmed.length > 0) {
+                        window.location.href = '{{ route('users.index') }}?search=' + encodeURIComponent(trimmed);
                     } else {
-                        url.searchParams.delete('search');
+                        window.location.href = '{{ route('users.index') }}';
                     }
-                    window.location.href = url.toString();
                 }
              }">
             <div class="flex gap-3">

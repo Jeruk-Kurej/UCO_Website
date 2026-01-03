@@ -124,17 +124,22 @@
                  x-data="{
                     searchQuery: '{{ request('search') }}',
                     performSearch() {
-                        const url = new URL(window.location);
-                        if (this.searchQuery.length > 0) {
-                            url.searchParams.set('search', this.searchQuery);
-                        } else {
-                            url.searchParams.delete('search');
+                        const trimmed = this.searchQuery.trim();
+                        const myParam = '{{ request('my') }}';
+                        let url = '{{ route('businesses.index') }}';
+                        const params = [];
+                        
+                        if (myParam) params.push('my=' + myParam);
+                        if (trimmed.length > 0) params.push('search=' + encodeURIComponent(trimmed));
+                        
+                        if (params.length > 0) {
+                            url += '?' + params.join('&');
                         }
-                        window.location.href = url.toString();
+                        
+                        window.location.href = url;
                     }
                  }">
                 <div class="flex gap-3">
-                    <input type="hidden" name="my" value="{{ request('my') }}">
                     <div class="flex-1">
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
