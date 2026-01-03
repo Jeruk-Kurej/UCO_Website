@@ -88,16 +88,11 @@ class BusinessesImport implements ToModel, WithHeadingRow, WithValidation
                 ?? $row['business_name'] 
                 ?? $row['nama_bisnis'] 
                 ?? null;
-            // Log the actual business name found
-            if ($businessName) {
-                Log::info("Found business name: '{$businessName}' from Excel");
-            }
             
             // Check if business already exists
             $existingBusiness = Business::where('name', $businessName)->first();
             if ($existingBusiness) {
                 $this->skippedCount++;
-                Log::info("Business '{$businessName}' already exists, skipping...");
                 return null;
             }
 
@@ -141,10 +136,14 @@ class BusinessesImport implements ToModel, WithHeadingRow, WithValidation
             }
 
             // Get or create business type
-            $businessTypeName = $row['business_type'] 
+            // Excel header "Jenis Bisnis/Ventura" becomes "jenis_bisnisventura"
+            $businessTypeName = $row['jenis_bisnisventura'] 
+                ?? $row['jenis_bisnis_ventura'] 
+                ?? $row['jenis_bisnis'] 
+                ?? $row['business_type'] 
                 ?? $row['business_line'] 
                 ?? $row['kategori'] 
-                ?? $row['jenis_bisnis']
+                ?? $row['category']
                 ?? 'Other';
             
             $businessType = BusinessType::firstOrCreate(
@@ -194,7 +193,6 @@ class BusinessesImport implements ToModel, WithHeadingRow, WithValidation
             $this->importContacts($business, $row);
             
             $this->successCount++;
-            Log::info("Business '{$businessName}' imported successfully for user '{$user->name}' with contacts");
             
             return $business;
 
