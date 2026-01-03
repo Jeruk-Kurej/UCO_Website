@@ -94,15 +94,6 @@ class ServiceController extends Controller
         }
     }
 
-        $service = Service::create($validated);
-
-        // ✅ FIXED: Redirect to business show page
-        return redirect()
-            ->route('businesses.show', $business)
-            ->with('success', 'Service created successfully!')
-            ->with('activeTab', 'services');
-    }
-
     /**
      * Display the specified service.
      */

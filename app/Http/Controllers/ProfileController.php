@@ -7,6 +7,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class ProfileController extends Controller
@@ -42,8 +43,8 @@ class ProfileController extends Controller
                 }
                 
                 // Delete old photo if exists
-                if ($user->profile_photo_url && \Storage::disk('public')->exists($user->profile_photo_url)) {
-                    \Storage::disk('public')->delete($user->profile_photo_url);
+                if ($user->profile_photo_url && Storage::disk('public')->exists($user->profile_photo_url)) {
+                    Storage::disk('public')->delete($user->profile_photo_url);
                 }
                 
                 // Store new photo

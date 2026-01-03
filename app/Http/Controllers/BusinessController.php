@@ -162,8 +162,6 @@ class BusinessController extends Controller
             return back()->withErrors(['error' => 'An error occurred while creating the business. Please try again.'])->withInput();
         }
     }
-            ->with('success', 'Business created successfully!');
-    }
 
     /**
      * Display the specified business.
@@ -376,8 +374,6 @@ class BusinessController extends Controller
         } catch (\Exception $e) {
             return back()->withErrors(['error' => 'An error occurred while updating the business. Please try again.'])->withInput();
         }
-    }
-            ->with('success', 'Business updated successfully!');
     }
 
     /**
