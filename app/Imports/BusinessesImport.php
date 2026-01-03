@@ -27,8 +27,10 @@ class BusinessesImport implements ToModel, WithHeadingRow, WithValidation
     {
         try {
             // Skip if no business name
-            if (empty($row['nama']) && empty($row['name'])) {
+            if (empty($row['nama']) && empty($row['name']) && empty($row['business_name'])) {
                 $this->skippedCount++;
+                $this->errors[] = "Row skipped: No business name found. Available columns: " . implode(', ', array_keys($row));
+                Log::warning("Business row skipped - no name. Columns: " . implode(', ', array_keys($row)));
                 return null;
             }
 
@@ -50,11 +52,17 @@ class BusinessesImport implements ToModel, WithHeadingRow, WithValidation
             // Try email first (most reliable)
             if (!empty($row['email'])) {
                 $user = User::where('email', $row['email'])->first();
+                if (!$user) {
+                    Log::warning("Business '{$businessName}': User with email '{$row['email']}' not found");
+                }
             }
             
             // If not found by email, try by name
             if (!$user && !empty($row['nama'])) {
                 $user = User::where('name', 'like', '%' . $row['nama'] . '%')->first();
+                if (!$user) {
+                    Log::warning("Business '{$businessName}': User with name like '{$row['nama']}' not found");
+                }
             }
             
             // Also try 'owner' field if exists
@@ -62,11 +70,16 @@ class BusinessesImport implements ToModel, WithHeadingRow, WithValidation
                 $user = User::where('name', 'like', '%' . $row['owner'] . '%')
                     ->orWhere('email', $row['owner'])
                     ->first();
+                if (!$user) {
+                    Log::warning("Business '{$businessName}': User with owner field '{$row['owner']}' not found");
+                }
             }
             
             // If still no user found, log warning and skip
             if (!$user) {
-                Log::warning("No owner found for business '{$businessName}'. Email: {$row['email']}, Name: {$row['nama']}");
+                $errorMsg = "Business '{$businessName}': No owner found. Email: " . ($row['email'] ?? 'N/A') . ", Nama: " . ($row['nama'] ?? 'N/A');
+                Log::warning($errorMsg);
+                $this->errors[] = $errorMsg . " - Please ensure users are imported first and emails match.";
                 $this->skippedCount++;
                 return null;
             }

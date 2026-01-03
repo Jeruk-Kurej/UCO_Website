@@ -8,6 +8,7 @@ use App\Models\BusinessType;
 use App\Imports\BusinessesImport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -441,11 +442,22 @@ class BusinessController extends Controller
             
             if (!empty($results['errors'])) {
                 $message .= ". Errors: " . count($results['errors']);
+                
+                // Log detailed errors for debugging
+                foreach ($results['errors'] as $error) {
+                    Log::error("Business import error: " . $error);
+                }
+                
+                // Show first few errors to user
+                $errorMessages = array_slice($results['errors'], 0, 5);
+                return back()->with('success', $message)
+                    ->with('import_errors', $errorMessages);
             }
 
             return back()->with('success', $message);
 
         } catch (\Exception $e) {
+            Log::error('Business import exception: ' . $e->getMessage());
             return back()->withErrors(['error' => 'Error importing file: ' . $e->getMessage()]);
         }
     }
