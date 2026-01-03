@@ -113,14 +113,14 @@ Route::get('/contact-types/{contactType}', [ContactTypeController::class, 'show'
 */
 
 Route::get('/admin/reset-database-confirm', function () {
-    if (!Auth::check() || !Auth::user()->isAdmin()) {
+    if (!Auth::check() || Auth::user()->role !== 'admin') {
         abort(403, 'Only administrators can reset database.');
     }
     return view('admin.reset-database');
 })->middleware('auth')->name('admin.reset-database');
 
 Route::post('/admin/reset-database-execute', function () {
-    if (!Auth::check() || !Auth::user()->isAdmin()) {
+    if (!Auth::check() || Auth::user()->role !== 'admin') {
         abort(403, 'Only administrators can reset database.');
     }
     
