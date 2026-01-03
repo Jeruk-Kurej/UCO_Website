@@ -13,23 +13,45 @@
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+        
+        {{-- Manual fallback: Read manifest and inject assets --}}
+        @php
+            $manifestPath = public_path('build/manifest.json');
+            if (file_exists($manifestPath)) {
+                $manifest = json_decode(file_get_contents($manifestPath), true);
+                $cssFile = $manifest['resources/css/app.css']['file'] ?? null;
+                $jsFile = $manifest['resources/js/app.js']['file'] ?? null;
+            }
+        @endphp
+        
+        @if(isset($cssFile))
+            <link rel="stylesheet" href="/build/{{ $cssFile }}">
+        @endif
+        
+        @if(isset($jsFile))
+            <script type="module" src="/build/{{ $jsFile }}"></script>
+        @endif
     </head>
-    <body class="font-sans text-gray-900 antialiased">
-        <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
+    <body class="font-sans antialiased bg-soft-white">
+        <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 relative overflow-hidden">
+            <!-- Elegant Background Accent -->
+            <div class="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-uco-orange-100 to-uco-yellow-100 rounded-full blur-3xl opacity-30 -z-10"></div>
+            <div class="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-uco-yellow-100 to-uco-orange-100 rounded-full blur-3xl opacity-20 -z-10"></div>
+            
             <div>
-                <a href="/" class="flex flex-col items-center gap-2">
-                    <x-application-logo class="w-20 h-20 fill-current text-indigo-600 dark:text-indigo-400" />
-                    <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-200">UCO Platform</h1>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">Student & Alumni Community</p>
+                <a href="/" class="flex flex-col items-center gap-3">
+                    <img src="{{ asset('images/Logo UCO.png') }}" alt="UCO Logo" class="w-20 h-20 object-contain shadow-lg">
+                    <h1 class="text-2xl font-bold text-soft-gray-900">UCO Platform</h1>
+                    <p class="text-sm text-soft-gray-600">Student & Alumni Community</p>
                 </a>
             </div>
 
-            <div class="w-full sm:max-w-md mt-6 px-6 py-4 bg-white dark:bg-gray-800 shadow-md overflow-hidden sm:rounded-lg">
+            <div class="w-full sm:max-w-md mt-6 px-6 py-8 bg-white shadow-xl rounded-2xl border border-soft-gray-100">
                 {{ $slot }}
             </div>
 
             <!-- Footer -->
-            <div class="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
+            <div class="mt-6 text-center text-sm text-soft-gray-500">
                 <p>&copy; {{ date('Y') }} UCO. All rights reserved.</p>
             </div>
         </div>

@@ -69,6 +69,5 @@ class AiAnalysisController extends Controller
         $rejectedCount = UcAiAnalysis::where('is_approved', false)->count();
         $approvalRate = $totalCount > 0 ? round(($approvedCount / $totalCount) * 100, 1) : 0;
 
-        return view('ai-analyses.index', compact('ucAnalyses', 'totalCount', 'approvedCount', 'rejectedCount', 'approvalRate'));
-    }
+return view('ai-analyses.index', compact('ucAnalyses', 'totalCount', 'approvedCount', 'rejectedCount', 'approvalRate'));    }
 }
