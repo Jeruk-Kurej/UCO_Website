@@ -100,13 +100,36 @@
         <div class="bg-white border border-gray-200 rounded-xl p-4" 
              x-data="{
                 search: '{{ request('search') }}',
-                doSearch() {
+                isSearching: false,
+                performSearch() {
+                    this.isSearching = true;
                     const trimmed = this.search.trim();
-                    if (trimmed.length > 0) {
-                        window.location.href = '{{ route('users.index') }}?search=' + encodeURIComponent(trimmed);
-                    } else {
-                        window.location.href = '{{ route('users.index') }}';
-                    }
+                    const url = trimmed.length > 0 
+                        ? '{{ route('users.index') }}?search=' + encodeURIComponent(trimmed)
+                        : '{{ route('users.index') }}';
+                    
+                    fetch(url, {
+                        method: 'GET',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'text/html'
+                        }
+                    })
+                    .then(response => response.text())
+                    .then(html => {
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(html, 'text/html');
+                        const newContent = doc.querySelector('.space-y-6');
+                        if (newContent) {
+                            document.querySelector('.space-y-6').innerHTML = newContent.innerHTML;
+                            window.history.pushState({}, '', url);
+                        }
+                        this.isSearching = false;
+                    })
+                    .catch(error => {
+                        console.error('Search error:', error);
+                        window.location.href = url;
+                    });
                 }
              }">
             <div class="flex gap-3">
@@ -119,24 +142,24 @@
                         </div>
                         <input type="text" 
                                x-model="search"
-                               @keydown.enter="doSearch()"
-                               placeholder="Search by name, email, username, or NIS..." 
+                               @input.debounce.500ms="performSearch()"
+                               @keydown.enter="performSearch()"
+                               placeholder="Search by name, email, username..." 
                                class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        <div x-show="isSearching" class="absolute inset-y-0 right-0 flex items-center pr-3">
+                            <svg class="animate-spin h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        </div>
                     </div>
                 </div>
-                <button type="button"
-                        @click="doSearch()"
-                        class="inline-flex items-center px-4 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors">
-                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                    </svg>
-                    Search
-                </button>
                 @if(request('search'))
-                    <a href="{{ route('users.index') }}" 
-                       class="inline-flex items-center px-4 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors">
+                    <button type="button"
+                            @click="search = ''; performSearch()"
+                            class="inline-flex items-center px-4 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors">
                         Clear
-                    </a>
+                    </button>
                 @endif
             </div>
         </div>
