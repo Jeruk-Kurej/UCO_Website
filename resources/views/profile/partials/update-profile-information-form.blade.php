@@ -3,9 +3,53 @@
         @csrf
     </form>
 
-    <form method="post" action="{{ route('profile.update') }}" class="space-y-6">
+    <form method="post" action="{{ route('profile.update') }}" enctype="multipart/form-data" class="space-y-6">
         @csrf
         @method('patch')
+
+        <!-- Profile Photo Upload -->
+        <div class="space-y-3">
+            <label class="block text-sm font-semibold text-gray-700">
+                Profile Photo
+            </label>
+            <div class="flex items-center gap-6">
+                <!-- Current Photo Preview -->
+                <div class="relative">
+                    @if($user->profile_photo_url)
+                        <img 
+                            id="profile-photo-preview" 
+                            src="{{ asset('storage/' . $user->profile_photo_url) }}" 
+                            alt="Profile Photo" 
+                            class="w-24 h-24 rounded-full object-cover border-4 border-gray-200 shadow-md"
+                        />
+                    @else
+                        <div id="profile-photo-preview" class="w-24 h-24 rounded-full bg-gradient-to-br from-uco-orange to-uco-yellow flex items-center justify-center border-4 border-gray-200 shadow-md">
+                            <span class="text-white text-3xl font-bold">{{ strtoupper(substr($user->name, 0, 1)) }}</span>
+                        </div>
+                    @endif
+                </div>
+
+                <!-- Upload Button -->
+                <div class="flex-1">
+                    <label for="profile_photo" class="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                        </svg>
+                        Choose Photo
+                    </label>
+                    <input 
+                        id="profile_photo" 
+                        name="profile_photo" 
+                        type="file" 
+                        accept="image/*"
+                        class="hidden"
+                        onchange="previewProfilePhoto(event)"
+                    />
+                    <p class="text-xs text-gray-500 mt-2">JPG, PNG or GIF (Max 2MB)</p>
+                    <x-input-error class="mt-2" :messages="$errors->get('profile_photo')" />
+                </div>
+            </div>
+        </div>
 
         <!-- Name Field -->
         <div class="space-y-2">

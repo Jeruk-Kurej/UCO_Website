@@ -51,4 +51,19 @@
             </div>
         </div>
     </div>
+
+    {{-- JavaScript for Profile Photo Preview --}}
+    <script>
+        function previewProfilePhoto(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById('profile-photo-preview');
+                    preview.innerHTML = `<img src="${e.target.result}" alt="Profile Photo" class="w-24 h-24 rounded-full object-cover border-4 border-gray-200 shadow-md">`;
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+    </script>
 </x-app-layout>
