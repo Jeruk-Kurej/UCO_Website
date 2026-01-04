@@ -53,10 +53,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::resource('businesses', BusinessController::class)->except(['index', 'show']);
-    Route::post('/businesses/{business}/toggle-featured', [BusinessController::class, 'toggleFeatured'])
-        ->name('businesses.toggle-featured');
-    Route::post('/businesses/import', [BusinessController::class, 'import'])
-        ->name('businesses.import');
 
     Route::resource('business-types.product-categories', ProductCategoryController::class)
         ->scoped(['businessType' => 'id', 'productCategory' => 'id']);
@@ -103,6 +99,10 @@ Route::middleware(['auth', 'verified', 'admin'])->group(function () {
 
     Route::resource('business-types', BusinessTypeController::class)->except(['index', 'show']);
     Route::resource('contact-types', ContactTypeController::class)->except(['index', 'show']);
+    
+    Route::post('/businesses/import', [BusinessController::class, 'import'])->name('businesses.import');
+    Route::post('/businesses/{business}/toggle-featured', [BusinessController::class, 'toggleFeatured'])
+        ->name('businesses.toggle-featured');
 });
 
 // ============================================================
