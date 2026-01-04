@@ -56,9 +56,9 @@
                                     
                                     {{-- Logo & Featured Badge Overlay --}}
                                     <div class="absolute bottom-4 left-4 flex items-end gap-4">
-                                        @if($business->logo)
+                                        @if($business->logo_url)
                                             <div class="w-20 h-20 rounded-xl bg-white shadow-lg border-2 border-white overflow-hidden flex-shrink-0">
-                                                <img src="{{ asset('storage/' . $business->logo) }}" 
+                                                <img src="{{ asset('storage/' . $business->logo_url) }}" 
                                                      alt="{{ $business->name }} logo" 
                                                      class="w-full h-full object-cover">
                                             </div>

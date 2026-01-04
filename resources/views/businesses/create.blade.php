@@ -73,7 +73,7 @@
             </div>
         </div>
 
-        <form method="POST" action="/businesses" enctype="multipart/form-data">
+        <form method="POST" action="{{ route('businesses.store') }}" enctype="multipart/form-data">
             @csrf
 
             {{-- TAB 1: BASIC INFORMATION --}}
