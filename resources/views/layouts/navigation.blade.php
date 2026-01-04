@@ -1,4 +1,4 @@
-<nav x-data="{ open: false }" class="bg-white border-b border-soft-gray-100 shadow-sm sticky top-0 z-50">
+<nav class="bg-white border-b border-soft-gray-100 shadow-sm sticky top-0 z-50">
     <!-- Subtle Orange Accent Line -->
     <div class="h-1 bg-gradient-to-r from-uco-orange-500 via-uco-yellow-500 to-uco-orange-500"></div>
     
@@ -13,31 +13,42 @@
             </div>
 
             {{-- Navigation Links (Desktop) --}}
-            <div class="hidden md:flex items-center space-x-6">
+            <div class="hidden md:flex items-center space-x-8">
+                <a href="/dashboard" 
+                   class="text-sm font-medium {{ request()->routeIs('dashboard') ? 'text-soft-gray-900 font-semibold' : 'text-soft-gray-600 hover:text-soft-gray-900' }} transition">
+                    Home
+                </a>
+
                 @auth
                     <a href="/businesses" 
                        class="text-sm font-medium {{ request()->routeIs('businesses.*') ? 'text-soft-gray-900 font-semibold' : 'text-soft-gray-600 hover:text-soft-gray-900' }} transition">
                         Business
                     </a>
 
-                    <a href="{{ route('uc-testimonies.index') }}" 
-                       class="text-sm font-medium {{ request()->routeIs('uc-testimonies.*') ? 'text-soft-gray-900 font-semibold' : 'text-soft-gray-600 hover:text-soft-gray-900' }} transition duration-150">
-                        Testimonies
-                    </a>
-
                     @if(auth()->user()->isAdmin())
+                        {{-- Admin Dropdown --}}
                         <div class="relative group">
-                            <button class="text-sm font-medium {{ request()->routeIs('users.*') || request()->routeIs('business-types.*') || request()->routeIs('contact-types.*') || request()->routeIs('ai-analyses.*') ? 'text-soft-gray-900 font-semibold' : 'text-soft-gray-600 group-hover:text-soft-gray-900' }} transition flex items-center gap-2">
-                                Admin
-                                <i class="fa-solid fa-caret-down text-xs"></i>
+                            <button class="text-sm font-medium {{ request()->routeIs('users.*') || request()->routeIs('business-types.*') || request()->routeIs('contact-types.*') || request()->routeIs('ai-analyses.*') ? 'text-soft-gray-900 font-semibold' : 'text-soft-gray-600 group-hover:text-soft-gray-900' }} transition flex items-center gap-1">
+                                Admin Panel
+                                <svg class="w-4 h-4 group-hover:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                </svg>
                             </button>
 
-                            <div class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow border border-soft-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
-                                <div class="py-1">
-                                    <a href="/users" class="block px-4 py-2 text-sm text-soft-gray-700 hover:bg-soft-gray-50">Manage Users</a>
-                                    <a href="/business-types" class="block px-4 py-2 text-sm text-soft-gray-700 hover:bg-soft-gray-50">Business Types</a>
-                                    <a href="/contact-types" class="block px-4 py-2 text-sm text-soft-gray-700 hover:bg-soft-gray-50">Contact Types</a>
-                                    <a href="/ai-analyses" class="block px-4 py-2 text-sm text-soft-gray-700 hover:bg-soft-gray-50">AI Moderation</a>
+                            <div class="absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-xl border border-soft-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
+                                <div class="py-2">
+                                    <a href="/users" class="block px-4 py-2.5 text-sm font-medium text-soft-gray-700 hover:bg-soft-gray-50 hover:text-soft-gray-900 transition">
+                                        Manage Users
+                                    </a>
+                                    <a href="/business-types" class="block px-4 py-2.5 text-sm font-medium text-soft-gray-700 hover:bg-soft-gray-50 hover:text-soft-gray-900 transition">
+                                        Business Types
+                                    </a>
+                                    <a href="/contact-types" class="block px-4 py-2.5 text-sm font-medium text-soft-gray-700 hover:bg-soft-gray-50 hover:text-soft-gray-900 transition">
+                                        Contact Types
+                                    </a>
+                                    <a href="/ai-analyses" class="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-soft-gray-700 hover:bg-soft-gray-50 hover:text-soft-gray-900 transition">
+                                        Testimony Review
+                                    </a>
                                 </div>
                             </div>
                         </div>
@@ -45,29 +56,40 @@
 
                     {{-- Profile Dropdown --}}
                     <div class="relative group">
-                        <button class="flex items-center gap-3 px-3 py-1 rounded text-sm text-soft-gray-700 group-hover:bg-soft-gray-50">
-                            <div class="w-7 h-7 bg-gradient-to-br from-uco-orange-500 to-uco-yellow-500 rounded flex items-center justify-center text-white text-xs font-bold">{{ substr(Auth::user()->name, 0, 1) }}</div>
-                            <span class="hidden sm:inline">{{ Auth::user()->name }}</span>
-                            <i class="fa-solid fa-caret-down text-xs"></i>
+                        <button class="text-sm font-medium text-soft-gray-700 group-hover:text-soft-gray-900 transition flex items-center gap-2 px-3 py-2 rounded-lg group-hover:bg-soft-gray-50">
+                            <div class="w-7 h-7 bg-gradient-to-br from-uco-orange-500 to-uco-yellow-500 rounded-lg flex items-center justify-center text-white text-xs font-bold">
+                                {{ substr(Auth::user()->name, 0, 1) }}
+                            </div>
+                            {{ Auth::user()->name }}
+                            <svg class="w-4 h-4 group-hover:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
                         </button>
 
-                        <div class="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow border border-soft-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
+                        <div class="absolute right-0 mt-2 w-60 bg-white rounded-xl shadow-xl border border-soft-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
                             <div class="px-4 py-3 border-b border-soft-gray-100">
                                 <p class="text-sm font-semibold text-soft-gray-900">{{ Auth::user()->name }}</p>
                                 <p class="text-xs text-soft-gray-600 mt-0.5">{{ Auth::user()->email }}</p>
-                                <span class="inline-block mt-2 px-2.5 py-1 text-xs font-medium rounded {{ Auth::user()->isAdmin() ? 'bg-soft-gray-100 text-soft-gray-800' : (Auth::user()->isStudent() ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800') }}">{{ ucfirst(Auth::user()->role) }}</span>
+                                <span class="inline-block mt-2 px-2.5 py-1 text-xs font-medium rounded-lg 
+                                    {{ Auth::user()->isAdmin() ? 'bg-soft-gray-100 text-soft-gray-800' : (Auth::user()->isStudent() ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800') }}">
+                                    {{ ucfirst(Auth::user()->role) }}
+                                </span>
                             </div>
-                            <div class="py-1">
-                                <a href="/profile" class="block px-4 py-2 text-sm text-soft-gray-700 hover:bg-soft-gray-50">My Profile</a>
+                            <div class="py-2">
+                                <a href="/profile" class="block px-4 py-2.5 text-sm font-medium text-soft-gray-700 hover:bg-soft-gray-50 hover:text-soft-gray-900 transition">
+                                    My Profile
+                                </a>
                                 <form method="POST" action="{{ route('logout') }}">
                                     @csrf
-                                    <button type="submit" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">Log Out</button>
+                                    <button type="submit" class="w-full text-left px-4 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 transition">
+                                        Log Out
+                                    </button>
                                 </form>
                             </div>
                         </div>
                     </div>
                 @else
-                    <a href="/" 
+                    <a href="/welcome" 
                        class="px-4 py-2 text-sm font-medium text-white bg-soft-gray-900 rounded-lg hover:bg-soft-gray-800 hover:shadow-lg transition-all">
                         Login
                     </a>
@@ -76,24 +98,28 @@
 
             {{-- Mobile Menu Button --}}
             <div class="flex md:hidden">
-                <button @click="open = !open" class="p-2 rounded-lg text-soft-gray-700 hover:text-soft-gray-900 hover:bg-soft-gray-50">
-                    <i :class="open ? 'fa-solid fa-xmark' : 'fa-solid fa-bars'" class="h-5 w-5"></i>
+                <button @click="open = ! open" 
+                        class="p-2 rounded-lg text-soft-gray-700 hover:text-soft-gray-900 hover:bg-soft-gray-50">
+                    <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                        <path :class="{'hidden': open, 'inline-flex': ! open }" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        <path :class="{'hidden': ! open, 'inline-flex': open }" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
                 </button>
             </div>
         </div>
     </div>
 
     {{-- Mobile Menu --}}
-    <div :class="{'block': open, 'hidden': !open}" class="hidden md:hidden border-t border-soft-gray-100 bg-white">
+    <div x-data="{ open: false }" :class="{'block': open, 'hidden': ! open}" class="hidden md:hidden border-t border-soft-gray-100 bg-white">
         <div class="px-4 py-3 space-y-1">
+            <a href="/dashboard" 
+               class="block py-2.5 px-3 text-sm font-medium rounded-lg {{ request()->routeIs('dashboard') ? 'bg-soft-gray-100 text-soft-gray-900' : 'text-soft-gray-700 hover:bg-soft-gray-50' }}">
+                Home
+            </a>
             @auth
                 <a href="/businesses" 
                    class="block py-2.5 px-3 text-sm font-medium rounded-lg {{ request()->routeIs('businesses.*') ? 'bg-soft-gray-100 text-soft-gray-900' : 'text-soft-gray-700 hover:bg-soft-gray-50' }}">
                     Business
-                </a>
-                <a href="{{ route('uc-testimonies.index') }}" 
-                   class="block py-2.5 px-3 text-sm font-medium rounded-lg {{ request()->routeIs('uc-testimonies.*') ? 'bg-soft-gray-100 text-soft-gray-900' : 'text-soft-gray-700 hover:bg-soft-gray-50' }}">
-                    Testimonies
                 </a>
                 @if(auth()->user()->isAdmin())
                     <div class="pt-2 border-t border-soft-gray-100">
@@ -136,7 +162,7 @@
                     </form>
                 </div>
             @else
-                <a href="/" class="block py-2.5 px-3 text-sm font-medium text-white bg-soft-gray-900 rounded-lg text-center hover:bg-soft-gray-800">
+                <a href="/welcome" class="block py-2.5 px-3 text-sm font-medium text-white bg-soft-gray-900 rounded-lg text-center hover:bg-soft-gray-800">
                     Login
                 </a>
             @endauth
