@@ -59,7 +59,7 @@ class BusinessController extends Controller
             $query->where('user_id', $user->id);
         }
         
-        $businesses = $query->latest()->paginate(15);
+        $businesses = $query->latest()->paginate(10);
         
         // Prepare my businesses for current user
         $myBusinesses = collect();

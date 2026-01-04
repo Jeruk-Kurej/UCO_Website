@@ -4,6 +4,7 @@ namespace App\Exceptions;
 
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
@@ -75,7 +76,7 @@ class Handler extends ExceptionHandler
             }
             
             // If session expired during admin check, redirect to login
-            if (!auth()->check()) {
+            if (!Auth::check()) {
                 return redirect()->guest(route('login'))
                     ->with('error', 'Sesi login Anda telah berakhir. Silakan login kembali.');
             }
