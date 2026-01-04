@@ -50,9 +50,10 @@ class ProfileUpdateRequest extends FormRequest
             'CGPA' => ['nullable', 'numeric', 'min:0', 'max:4'],
             'Is_Graduate' => ['nullable', 'boolean'],
             
-            // Password Change (optional)
+            // Password Change (ALL fields required if changing password)
             'current_password' => ['nullable', 'required_with:password', 'string'],
-            'password' => ['nullable', 'confirmed', 'min:8'],
+            'password' => ['nullable', 'required_with:current_password', 'confirmed', 'min:8'],
+            'password_confirmation' => ['nullable', 'required_with:password'],
         ];
     }
 }

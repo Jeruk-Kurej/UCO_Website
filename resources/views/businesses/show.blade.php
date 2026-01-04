@@ -69,9 +69,15 @@
             <div class="p-8">
                 {{-- Owner Info - PROMINENT with Avatar --}}
                 <div class="flex items-start gap-4 mb-6 pb-6 border-b-2 border-soft-gray-100">
-                    <div class="flex-shrink-0 w-16 h-16 rounded-2xl bg-gradient-to-br from-uco-orange-500 to-uco-yellow-500 flex items-center justify-center text-white text-2xl font-bold shadow-lg">
-                        {{ substr($business->user->name, 0, 1) }}
-                    </div>
+                    @if($business->user->profile_photo_url)
+                        <img src="{{ asset('storage/' . $business->user->profile_photo_url) }}" 
+                             alt="{{ $business->user->name }}" 
+                             class="flex-shrink-0 w-16 h-16 rounded-2xl object-cover shadow-lg">
+                    @else
+                        <div class="flex-shrink-0 w-16 h-16 rounded-2xl bg-gradient-to-br from-uco-orange-500 to-uco-yellow-500 flex items-center justify-center text-white text-2xl font-bold shadow-lg">
+                            {{ strtoupper(substr($business->user->name, 0, 1)) }}
+                        </div>
+                    @endif
                     <div class="flex-1">
                         <p class="text-xs font-semibold text-soft-gray-500 uppercase tracking-wider mb-1">Business Owner</p>
                         <h3 class="text-xl font-bold text-soft-gray-900 mb-1">{{ $business->user->name }}</h3>

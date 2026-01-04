@@ -322,7 +322,7 @@
                                             <div class="flex items-center gap-3">
                                                 {{-- Owner Avatar --}}
                                                 @if($business->user->profile_photo_url ?? false)
-                                                    <img src="{{ $business->user->profile_photo_url }}" 
+                                                    <img src="{{ asset('storage/' . $business->user->profile_photo_url) }}" 
                                                          alt="{{ $business->user->name }}" 
                                                          class="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm">
                                                 @else
@@ -476,7 +476,7 @@
                                                     <div class="flex items-center gap-3">
                                                         {{-- Owner Avatar --}}
                                                         @if($business->user->profile_photo_url ?? false)
-                                                            <img src="{{ $business->user->profile_photo_url }}" 
+                                                            <img src="{{ asset('storage/' . $business->user->profile_photo_url) }}" 
                                                                  alt="{{ $business->user->name }}" 
                                                                  class="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm">
                                                         @else
@@ -627,11 +627,13 @@
     {{-- Import Modal - Elegant Professional Design --}}
     @auth
         @if(auth()->user()->isAdmin())
-            <div id="importModal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+            <div id="importModal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 overflow-y-auto h-full w-full z-50"
+                 x-data="{ uploading: false }">
                 <div class="flex items-center justify-center min-h-screen px-4 py-20">
                     <div class="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-soft-gray-200">
                         
-                        <form action="{{ route('businesses.import') }}" method="POST" enctype="multipart/form-data">
+                        <form action="{{ route('businesses.import') }}" method="POST" enctype="multipart/form-data"
+                              @submit="uploading = true">
                             @csrf
                             
                             {{-- Modal Header --}}
@@ -653,8 +655,9 @@
                                         </div>
                                     </div>
                                     <button type="button" 
-                                            onclick="document.getElementById('importModal').classList.add('hidden')"
-                                            class="text-soft-gray-400 hover:text-soft-gray-600 transition-colors ml-4">
+                                            @click="!uploading && document.getElementById('importModal').classList.add('hidden')"
+                                            :disabled="uploading"
+                                            class="text-soft-gray-400 hover:text-soft-gray-600 transition-colors ml-4 disabled:opacity-50 disabled:cursor-not-allowed">
                                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                                         </svg>
@@ -674,6 +677,7 @@
                                                name="file" 
                                                accept=".xlsx,.xls"
                                                required
+                                               :disabled="uploading"
                                                class="block w-full text-sm text-soft-gray-900 file:mr-4 file:py-3 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-soft-gray-900 file:text-white hover:file:bg-soft-gray-800 file:cursor-pointer border border-soft-gray-300 rounded-xl cursor-pointer bg-soft-gray-50 focus:outline-none focus:border-soft-gray-900 focus:ring-2 focus:ring-soft-gray-900 focus:ring-opacity-20 transition-all">
                                     </div>
                                     <p class="mt-2 text-xs text-soft-gray-500">
@@ -728,21 +732,93 @@
                             {{-- Modal Footer --}}
                             <div class="px-8 py-5 bg-soft-gray-50 border-t border-soft-gray-100 flex justify-end gap-3">
                                 <button type="button"
-                                        onclick="document.getElementById('importModal').classList.add('hidden')"
-                                        class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-soft-gray-700 bg-white border border-soft-gray-300 rounded-xl hover:bg-soft-gray-50 hover:border-soft-gray-400 transition-all duration-200">
+                                        @click="!uploading && document.getElementById('importModal').classList.add('hidden')"
+                                        :disabled="uploading"
+                                        class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-soft-gray-700 bg-white border border-soft-gray-300 rounded-xl hover:bg-soft-gray-50 hover:border-soft-gray-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200">
                                     Cancel
                                 </button>
                                 <button type="submit"
-                                        class="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-semibold text-white bg-soft-gray-900 rounded-xl hover:bg-soft-gray-800 shadow-md hover:shadow-lg transition-all duration-200">
+                                        :disabled="uploading"
+                                        class="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-semibold text-white bg-soft-gray-900 rounded-xl hover:bg-soft-gray-800 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
                                     </svg>
                                     Import Businesses
                                 </button>
                             </div>
+                                <button type="submit"
+                                        :disabled="uploading"
+                                        class="px-4 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 disabled:opacity-50">
+                                    Import
+                                </button>
+                            </div>
                         </form>
                     </div>
                 </div>
+            </div>
+
+            {{-- Professional Full-Screen Loading Overlay --}}
+            <div x-show="uploading" 
+                 x-cloak
+                 class="fixed inset-0 z-[60] flex items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 bg-opacity-95 backdrop-blur-sm">
+                <div class="text-center space-y-6 px-6">
+                    {{-- Animated Upload Icon --}}
+                    <div class="relative inline-block">
+                        <div class="absolute inset-0 rounded-full bg-white opacity-20 animate-ping"></div>
+                        <div class="relative flex items-center justify-center w-24 h-24 bg-white rounded-full shadow-2xl">
+                            <svg class="w-12 h-12 text-gray-900 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                            </svg>
+                        </div>
+                    </div>
+
+                    {{-- Loading Text --}}
+                    <div class="space-y-3">
+                        <h2 class="text-3xl font-bold text-white tracking-tight">
+                            Importing Businesses...
+                        </h2>
+                        <p class="text-lg text-gray-300">
+                            Please wait while we process your Excel file
+                        </p>
+                        <p class="text-sm text-gray-400">
+                            This may take a few moments for large files
+                        </p>
+                    </div>
+
+                    {{-- Animated Progress Bar --}}
+                    <div class="max-w-md mx-auto">
+                        <div class="h-2 bg-gray-700 rounded-full overflow-hidden shadow-inner">
+                            <div class="h-full bg-gradient-to-r from-green-400 via-green-500 to-green-600 rounded-full animate-pulse"
+                                 style="width: 100%; animation: indeterminate 2s ease-in-out infinite;">
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Warning Message --}}
+                    <div class="inline-flex items-center gap-3 px-6 py-3 bg-amber-500 bg-opacity-20 border border-amber-500 border-opacity-30 rounded-xl">
+                        <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                        </svg>
+                        <span class="text-sm font-medium text-amber-300">
+                            Please do not close or refresh this page
+                        </span>
+                    </div>
+
+                    {{-- Loading Spinner Dots --}}
+                    <div class="flex justify-center gap-2 pt-4">
+                        <div class="w-3 h-3 bg-green-400 rounded-full animate-bounce" style="animation-delay: 0s;"></div>
+                        <div class="w-3 h-3 bg-green-400 rounded-full animate-bounce" style="animation-delay: 0.2s;"></div>
+                        <div class="w-3 h-3 bg-green-400 rounded-full animate-bounce" style="animation-delay: 0.4s;"></div>
+                    </div>
+                </div>
+                
+                <style>
+                    @keyframes indeterminate {
+                        0% { transform: translateX(-100%); }
+                        50% { transform: translateX(0%); }
+                        100% { transform: translateX(100%); }
+                    }
+                </style>
             </div>
         @endif
     @endauth

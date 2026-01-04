@@ -95,7 +95,7 @@
                                         <div class="flex items-center gap-3">
                                             {{-- Owner Avatar --}}
                                             @if($business->user->profile_photo_url ?? false)
-                                                <img src="{{ $business->user->profile_photo_url }}" 
+                                                <img src="{{ asset('storage/' . $business->user->profile_photo_url) }}" 
                                                      alt="{{ $business->user->name }}" 
                                                      class="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm">
                                             @else
