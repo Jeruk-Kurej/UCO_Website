@@ -163,12 +163,12 @@
                         @if(auth()->id() === $business->user_id || auth()->user()->isAdmin())
                             <div class="flex items-center gap-2">
                                 <a href="{{ route('business-types.product-categories.index', $business->businessType) }}" 
-                                   class="inline-flex items-center px-3 py-2 bg-gray-100 text-gray-700 text-sm rounded-md hover:bg-gray-200 transition duration-150">
+                                   class="inline-flex items-center px-3 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition duration-150">
                                     <i class="bi bi-tags me-2"></i>
                                     Manage Categories
                                 </a>
                                 <a href="{{ route('businesses.products.create', $business) }}" 
-                                   class="inline-flex items-center px-3 py-2 bg-orange-600 text-white text-sm rounded-md hover:bg-orange-700 transition duration-150">
+                                   class="inline-flex items-center px-3 py-2 bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium rounded-lg shadow-sm transition duration-150">
                                     <i class="bi bi-plus-lg me-2"></i>
                                     Add Product
                                 </a>
@@ -249,7 +249,7 @@
                             @if(auth()->id() === $business->user_id || auth()->user()->isAdmin())
                                 <p class="text-sm text-gray-400 mb-4">Start adding products to showcase your offerings</p>
                                 <a href="{{ route('businesses.products.create', $business) }}" 
-                                   class="inline-flex items-center px-4 py-2 bg-orange-600 text-white text-sm rounded-md hover:bg-orange-700 transition duration-150">
+                                   class="inline-flex items-center px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium rounded-lg shadow-sm transition duration-150">
                                     <i class="bi bi-plus-lg me-2"></i>
                                     Add Your First Product
                                 </a>
@@ -268,7 +268,7 @@
                     @auth
                         @if(auth()->id() === $business->user_id || auth()->user()->isAdmin())
                             <a href="{{ route('businesses.services.create', $business) }}" 
-                               class="inline-flex items-center px-3 py-2 bg-orange-600 text-white text-sm rounded-md hover:bg-orange-700 transition duration-150">
+                               class="inline-flex items-center px-3 py-2 bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium rounded-lg shadow-sm transition duration-150">
                                 <i class="bi bi-plus-lg me-2"></i>
                                 Add Service
                             </a>
@@ -326,7 +326,7 @@
                             @if(auth()->id() === $business->user_id || auth()->user()->isAdmin())
                                 <p class="text-sm text-gray-400 mb-4">Add services to showcase what you offer</p>
                                 <a href="{{ route('businesses.services.create', $business) }}" 
-                                   class="inline-flex items-center px-4 py-2 bg-orange-600 text-white text-sm rounded-md hover:bg-orange-700 transition duration-150">
+                                   class="inline-flex items-center px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium rounded-lg shadow-sm transition duration-150">
                                     <i class="bi bi-plus-lg me-2"></i>
                                     Add Your First Service
                                 </a>
@@ -344,7 +344,7 @@
                     @auth
                         @if(auth()->id() === $business->user_id || auth()->user()->isAdmin())
                             <a href="{{ route('businesses.photos.create', $business) }}" 
-                               class="inline-flex items-center px-3 py-2 bg-orange-600 text-white text-sm rounded-md hover:bg-orange-700 transition duration-150">
+                               class="inline-flex items-center px-3 py-2 bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium rounded-lg shadow-sm transition duration-150">
                                 <i class="bi bi-upload me-2"></i>
                                 Upload Photo
                             </a>
@@ -392,7 +392,7 @@
                             @if(auth()->id() === $business->user_id || auth()->user()->isAdmin())
                                 <p class="text-sm text-gray-400 mb-4">Upload photos to showcase your business</p>
                                 <a href="{{ route('businesses.photos.create', $business) }}" 
-                                   class="inline-flex items-center px-4 py-2 bg-orange-600 text-white text-sm rounded-md hover:bg-orange-700 transition duration-150">
+                                   class="inline-flex items-center px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium rounded-lg shadow-sm transition duration-150">
                                     <i class="bi bi-upload me-2"></i>
                                     Upload Your First Photo
                                 </a>

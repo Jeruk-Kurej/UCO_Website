@@ -70,7 +70,7 @@
                                     </div>
 
                                     <div class="flex items-center gap-3">
-                                        <button type="submit" class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-md font-semibold">
+                                        <button type="submit" class="px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-lg font-semibold shadow-sm transition duration-150">
                                             Submit
                                         </button>
                                         <p class="text-xs text-gray-500">Submissions are AI-moderated.</p>

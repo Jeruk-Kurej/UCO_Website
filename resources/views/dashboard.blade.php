@@ -67,13 +67,6 @@
                                                 <i class="bi bi-building text-3xl text-slate-400"></i>
                                             </div>
                                         @endif
-                                        
-                                        <div class="mb-1">
-                                            <span class="inline-flex items-center gap-1.5 text-xs bg-yellow-400 text-yellow-900 px-2.5 py-1.5 rounded-lg font-bold shadow-sm">
-                                                <i class="bi bi-star-fill"></i>
-                                                Featured
-                                            </span>
-                                        </div>
                                     </div>
                                 </div>
 
