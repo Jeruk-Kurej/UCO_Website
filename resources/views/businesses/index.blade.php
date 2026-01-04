@@ -97,14 +97,15 @@
     @endif
 
     <div x-data="{ activeTab: @auth @if(!auth()->user()->isAdmin()) 'my' @else 'browse' @endif @else 'browse' @endauth }" class="space-y-6">
-        {{-- Tabs Navigation with Admin Button --}}
+        {{-- Tabs Navigation with Admin Button (Hidden for Admin) --}}
         <div class="bg-white shadow-sm sm:rounded-lg">
-            <div class="border-b border-gray-200">
-                <div class="flex justify-between items-center px-6">
-                    {{-- Left: Tabs --}}
-                    <nav class="flex -mb-px">
-                        @auth
-                            @if(!auth()->user()->isAdmin())
+            @auth
+                @if(!auth()->user()->isAdmin())
+                    {{-- Show tabs only for non-admin users --}}
+                    <div class="border-b border-gray-200">
+                        <div class="flex justify-between items-center px-6">
+                            {{-- Left: Tabs --}}
+                            <nav class="flex -mb-px">
                                 {{-- My Businesses Tab FIRST for non-admin --}}
                                 <button @click="activeTab = 'my'" 
                                         :class="activeTab === 'my' ? 'border-gray-900 text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
@@ -115,47 +116,63 @@
                                         {{ $businesses->where('user_id', auth()->id())->count() }}
                                     </span>
                                 </button>
-                            @endif
-                        @endauth
 
-                        {{-- Browse All Tab --}}
-                        <button @click="activeTab = 'browse'" 
-                                :class="activeTab === 'browse' ? 'border-gray-900 text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
-                                class="flex items-center gap-2 py-4 px-4 border-b-2 font-medium text-sm transition duration-150">
-                            <i class="bi bi-shop"></i>
-                            Browse All Businesses
-                            <span :class="activeTab === 'browse' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-600'" class="px-2 py-0.5 rounded-full text-xs transition-colors">
-                                {{ $businesses->total() }}
-                            </span>
-                        </button>
-                    </nav>
-
-                    {{-- Right: Admin Buttons --}}
-                    @auth
-                        @if(auth()->user()->isAdmin())
-                            <div class="py-2 flex gap-2">
-                                {{-- Import Button --}}
-                                <button onclick="document.getElementById('importModal').classList.remove('hidden')"
-                                   class="inline-flex items-center px-4 py-2.5 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors">
-                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
-                                    </svg>
-                                    Import Excel
+                                {{-- Browse All Tab --}}
+                                <button @click="activeTab = 'browse'" 
+                                        :class="activeTab === 'browse' ? 'border-gray-900 text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                                        class="flex items-center gap-2 py-4 px-4 border-b-2 font-medium text-sm transition duration-150">
+                                    <i class="bi bi-shop"></i>
+                                    Browse All Businesses
+                                    <span :class="activeTab === 'browse' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-600'" class="px-2 py-0.5 rounded-full text-xs transition-colors">
+                                        {{ $businesses->total() }}
+                                    </span>
                                 </button>
-                                
-                                {{-- Add Business Button --}}
-                                <a href="/businesses/create"
-                                   class="inline-flex items-center px-4 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors">
-                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                                    </svg>
-                                    Add Business
-                                </a>
-                            </div>
-                        @endif
-                    @endauth
+                            </nav>
+                        </div>
+                    </div>
+                @else
+                    {{-- Admin: Just header with buttons, no tabs --}}
+                    <div class="px-6 py-4 flex justify-between items-center">
+                        <h2 class="text-xl font-bold text-gray-900">All Businesses</h2>
+                        <div class="flex gap-2">
+                            {{-- Import Button --}}
+                            <button onclick="document.getElementById('importModal').classList.remove('hidden')"
+                               class="inline-flex items-center px-4 py-2.5 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                </svg>
+                                Import Excel
+                            </button>
+                            
+                            {{-- Add Business Button --}}
+                            <a href="/businesses/create"
+                               class="inline-flex items-center px-4 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                </svg>
+                                Add Business
+                            </a>
+                        </div>
+                    </div>
+                @endif
+            @else
+                {{-- Guest: Just Browse All tab --}}
+                <div class="border-b border-gray-200">
+                    <div class="px-6">
+                        <nav class="flex -mb-px">
+                            <button @click="activeTab = 'browse'" 
+                                    :class="activeTab === 'browse' ? 'border-gray-900 text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                                    class="flex items-center gap-2 py-4 px-4 border-b-2 font-medium text-sm transition duration-150">
+                                <i class="bi bi-shop"></i>
+                                Browse All Businesses
+                                <span :class="activeTab === 'browse' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-600'" class="px-2 py-0.5 rounded-full text-xs transition-colors">
+                                    {{ $businesses->total() }}
+                                </span>
+                            </button>
+                        </nav>
+                    </div>
                 </div>
-            </div>
+            @endauth
 
             {{-- Search Bar --}}
             <div class="px-6 py-4 bg-gray-50 border-b border-gray-200"
@@ -236,10 +253,18 @@
                 @if($businesses->count() > 0)
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         @foreach($businesses as $business)
-                            <div class="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden group">
+                            <a href="{{ route('businesses.show', $business) }}" class="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden group block">
                                 <div class="flex flex-col h-full">
                                     {{-- Header with Photo & Logo --}}
                                     <div class="relative h-56">
+                                        {{-- Category Badge - Top Left --}}
+                                        <div class="absolute top-3 left-3 z-10">
+                                            <span class="inline-block text-xs bg-white/95 backdrop-blur-sm text-slate-800 px-3 py-1.5 rounded-full font-semibold shadow-md" 
+                                                  title="{{ $business->businessType->name }}">
+                                                {{ $business->businessType->name }}
+                                            </span>
+                                        </div>
+                                        
                                         {{-- Business Photo Background --}}
                                         @if($business->photos->first())
                                             <img src="{{ asset('storage/' . $business->photos->first()->photo_url) }}" 
@@ -281,16 +306,12 @@
 
                                     {{-- Content --}}
                                     <div class="p-5 flex-1 flex flex-col">
-                                        {{-- Business Name & Category --}}
+                                        {{-- Business Name --}}
                                         <div class="mb-3">
                                             <h3 class="text-xl font-bold text-gray-900 mb-2 line-clamp-1 group-hover:text-gray-700 transition" 
                                                 title="{{ $business->name }}">
                                                 {{ $business->name }}
                                             </h3>
-                                            <span class="inline-block text-xs bg-slate-100 text-slate-700 px-3 py-1 rounded-full font-medium" 
-                                                  title="{{ $business->businessType->name }}">
-                                                {{ $business->businessType->name }}
-                                            </span>
                                         </div>
                                         
                                         {{-- Description --}}
@@ -326,36 +347,29 @@
                                         </div>
                                         
                                         {{-- Actions --}}
-                                        <div class="flex items-center justify-between pt-3 border-t border-gray-100 mt-auto">
-                                            <a href="{{ route('businesses.show', $business) }}" 
-                                               class="inline-flex items-center gap-1.5 text-sm font-semibold text-gray-900 hover:text-gray-700 transition">
-                                                View Details
-                                                <i class="bi bi-arrow-right"></i>
-                                            </a>
-
-                                            <div class="flex items-center gap-2">
-                                                @auth
-                                                    @if(auth()->user()->isAdmin())
-                                                        <button 
-                                                            onclick="toggleFeatured({{ $business->id }}, this)"
-                                                            class="inline-flex items-center justify-center w-8 h-8 rounded-lg transition-colors {{ $business->is_featured ? 'text-yellow-600 hover:bg-yellow-50' : 'text-gray-400 hover:bg-gray-100' }}"
-                                                            title="{{ $business->is_featured ? 'Remove from Featured' : 'Add to Featured' }}"
-                                                            data-featured="{{ $business->is_featured ? 'true' : 'false' }}">
-                                                            <i class="bi {{ $business->is_featured ? 'bi-star-fill' : 'bi-star' }} text-lg"></i>
-                                                        </button>
-                                                    @endif
-                                                    @if(auth()->id() === $business->user_id || auth()->user()->isAdmin())
-                                                        <a href="{{ route('businesses.edit', $business) }}" 
-                                                           class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition">
-                                                            <i class="bi bi-pencil"></i>
-                                                        </a>
-                                                    @endif
-                                                @endauth
-                                            </div>
+                                        <div class="flex items-center justify-end gap-2 pt-3 border-t border-gray-100 mt-auto">
+                                            @auth
+                                                @if(auth()->user()->isAdmin())
+                                                    <button 
+                                                        onclick="event.preventDefault(); event.stopPropagation(); toggleFeatured({{ $business->id }}, this)"
+                                                        class="inline-flex items-center justify-center w-8 h-8 rounded-lg transition-colors {{ $business->is_featured ? 'text-yellow-600 hover:bg-yellow-50' : 'text-gray-400 hover:bg-gray-100' }}"
+                                                        title="{{ $business->is_featured ? 'Remove from Featured' : 'Add to Featured' }}"
+                                                        data-featured="{{ $business->is_featured ? 'true' : 'false' }}">
+                                                        <i class="bi {{ $business->is_featured ? 'bi-star-fill' : 'bi-star' }} text-lg"></i>
+                                                    </button>
+                                                @endif
+                                                @if(auth()->id() === $business->user_id || auth()->user()->isAdmin())
+                                                    <button onclick="event.preventDefault(); event.stopPropagation(); window.location.href='{{ route('businesses.edit', $business) }}'" 
+                                                       class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 transition">
+                                                        <i class="bi bi-pencil"></i>
+                                                        Edit
+                                                    </button>
+                                                @endif
+                                            @endauth
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+                            </a>
                         @endforeach
                     </div>
 
@@ -389,10 +403,18 @@
                         @if($myBusinesses->count() > 0)
                             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                 @foreach($myBusinesses as $business)
-                                    <div class="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden group">
+                                    <a href="{{ route('businesses.show', $business) }}" class="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden group block">
                                         <div class="flex flex-col h-full">
                                             {{-- Header with Photo & Logo --}}
                                             <div class="relative h-56">
+                                                {{-- Category Badge - Top Left --}}
+                                                <div class="absolute top-3 left-3 z-10">
+                                                    <span class="inline-block text-xs bg-white/95 backdrop-blur-sm text-slate-800 px-3 py-1.5 rounded-full font-semibold shadow-md" 
+                                                          title="{{ $business->businessType->name }}">
+                                                        {{ $business->businessType->name }}
+                                                    </span>
+                                                </div>
+                                                
                                                 {{-- Business Photo Background --}}
                                                 @if($business->photos->first())
                                                     <img src="{{ asset('storage/' . $business->photos->first()->photo_url) }}" 
@@ -438,16 +460,12 @@
 
                                             {{-- Content --}}
                                             <div class="p-5 flex-1 flex flex-col">
-                                                {{-- Business Name & Category --}}
+                                                {{-- Business Name --}}
                                                 <div class="mb-3">
                                                     <h3 class="text-xl font-bold text-gray-900 mb-2 line-clamp-1 group-hover:text-gray-700 transition" 
                                                         title="{{ $business->name }}">
                                                         {{ $business->name }}
                                                     </h3>
-                                                    <span class="inline-block text-xs bg-slate-100 text-slate-700 px-3 py-1 rounded-full font-medium" 
-                                                          title="{{ $business->businessType->name }}">
-                                                        {{ $business->businessType->name }}
-                                                    </span>
                                                 </div>
                                                 
                                                 {{-- Description --}}
@@ -484,20 +502,21 @@
                                                 
                                                 {{-- Actions --}}
                                                 <div class="flex items-center justify-between pt-3 border-t border-gray-100 mt-auto">
-                                                    <a href="{{ route('businesses.show', $business) }}" 
-                                                       class="inline-flex items-center gap-1.5 text-sm font-semibold text-gray-900 hover:text-gray-700 transition">
-                                                        View Details
-                                                        <i class="bi bi-arrow-right"></i>
-                                                    </a>
-                                                    <a href="{{ route('businesses.edit', $business) }}" 
-                                                       class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-900 hover:bg-gray-800 text-white rounded-lg text-sm font-medium transition">
+                                                    <button onclick="event.preventDefault(); event.stopPropagation(); window.location.href='{{ route('businesses.edit', $business) }}'" 
+                                                       class="inline-flex items-center gap-1.5 px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white text-sm font-semibold rounded-lg transition">
                                                         <i class="bi bi-pencil"></i>
-                                                        Edit
-                                                    </a>
+                                                        Edit Business
+                                                    </button>
+                                                    
+                                                    @if($business->is_featured)
+                                                        <span class="text-xs text-yellow-600 font-medium">
+                                                            <i class="bi bi-star-fill"></i> Featured
+                                                        </span>
+                                                    @endif
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
+                                    </a>
                                 @endforeach
                             </div>
                         @else

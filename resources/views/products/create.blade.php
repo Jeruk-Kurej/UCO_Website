@@ -3,10 +3,8 @@
         {{-- Page Header - Elegant Design --}}
         <div class="mb-8 flex items-center gap-4">
             <a href="{{ route('businesses.show', $business) }}" 
-               class="group inline-flex items-center gap-2.5 px-4 py-3 bg-white hover:bg-soft-gray-900 border border-soft-gray-200 hover:border-soft-gray-900 text-soft-gray-700 hover:text-white rounded-xl font-semibold text-sm shadow-sm hover:shadow-lg transition-all duration-300">
-                <svg class="w-5 h-5 group-hover:-translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-                </svg>
+               class="group inline-flex items-center gap-2.5 px-4 py-2.5 bg-white hover:bg-gray-900 border border-gray-200 hover:border-gray-900 text-gray-700 hover:text-white rounded-xl font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200">
+                <i class="bi bi-arrow-left text-base group-hover:-translate-x-0.5 transition-transform duration-200"></i>
                 <span>Back</span>
             </a>
             <div class="flex-1">

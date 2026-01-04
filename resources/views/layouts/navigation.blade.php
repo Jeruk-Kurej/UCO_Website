@@ -17,7 +17,7 @@
                 @auth
                     <a href="/dashboard" 
                        class="text-sm font-medium {{ request()->routeIs('dashboard') ? 'text-soft-gray-900 font-semibold' : 'text-soft-gray-600 hover:text-soft-gray-900' }} transition">
-                        Home
+                        Featured
                     </a>
 
                     <a href="/businesses" 
@@ -129,7 +129,7 @@
             @auth
                 <a href="/dashboard" 
                    class="block py-2.5 px-3 text-sm font-medium rounded-lg {{ request()->routeIs('dashboard') ? 'bg-soft-gray-100 text-soft-gray-900' : 'text-soft-gray-700 hover:bg-soft-gray-50' }}">
-                    Home
+                    Featured
                 </a>
                 <a href="/businesses" 
                    class="block py-2.5 px-3 text-sm font-medium rounded-lg {{ request()->routeIs('businesses.*') ? 'bg-soft-gray-100 text-soft-gray-900' : 'text-soft-gray-700 hover:bg-soft-gray-50' }}">
