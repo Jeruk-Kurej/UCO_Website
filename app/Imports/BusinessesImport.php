@@ -10,13 +10,22 @@ use App\Models\ContactType;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
+use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Illuminate\Support\Facades\Log;
 
-class BusinessesImport implements ToModel, WithHeadingRow, WithValidation
+class BusinessesImport implements ToModel, WithHeadingRow, WithValidation, WithChunkReading
 {
     protected $errors = [];
     protected $successCount = 0;
     protected $skippedCount = 0;
+
+    /**
+     * Chunk size for reading (memory efficient)
+     */
+    public function chunkSize(): int
+    {
+        return 100;
+    }
 
     /**
      * Detect if the Excel data is student/user data instead of business data
@@ -49,6 +58,10 @@ class BusinessesImport implements ToModel, WithHeadingRow, WithValidation
     public function model(array $row)
     {
         try {
+            // CRITICAL: Remove 'id' column if exists to prevent duplicate key errors
+            // ID should be auto-incremented by database, not set from Excel
+            unset($row['id']);
+            
             // CRITICAL: Detect if this is student data instead of business data
             if ($this->isStudentData($row)) {
                 $this->skippedCount++;
@@ -179,21 +192,14 @@ class BusinessesImport implements ToModel, WithHeadingRow, WithValidation
             // Parse challenges
             $challenges = $this->parseChallenges($row);
 
-            // Get user position in this business
-            // Excel headers: "Posisi saat ini (jika intraprenuer)" or "Posisi saat ini"
-            $position = $row['posisi_saat_ini_jika_intraprenuer'] 
-                ?? $row['posisi_saat_ini'] 
-                ?? $row['position'] 
-                ?? $row['posisi'] 
-                ?? $row['jabatan']
-                ?? null;
+            // Note: Position/jabatan is user's role in the company, not a business attribute
+            // It should be stored in user data or user_businesses_detail, not in businesses table
 
             // Create business
             $business = new Business([
                 'user_id' => $user->id,
                 'business_type_id' => $businessType->id,
                 'name' => $businessName,
-                'position' => $position,
                 'description' => $description ?: (
                     $row['deskripsi_bisnis'] ?? 
                     $row['deskripsi'] ?? 

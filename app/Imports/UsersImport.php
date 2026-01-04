@@ -8,26 +8,17 @@ use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
-use Maatwebsite\Excel\Concerns\WithBatchInserts;
 use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Illuminate\Support\Str;
 
-class UsersImport implements ToModel, WithHeadingRow, WithValidation, WithBatchInserts, WithChunkReading
+class UsersImport implements ToModel, WithHeadingRow, WithValidation, WithChunkReading
 {
     protected $errors = [];
     protected $successCount = 0;
     protected $skippedCount = 0;
 
     /**
-     * Batch size for bulk inserts
-     */
-    public function batchSize(): int
-    {
-        return 100;
-    }
-
-    /**
-     * Chunk size for reading
+     * Chunk size for reading (memory efficient)
      */
     public function chunkSize(): int
     {
@@ -76,6 +67,10 @@ class UsersImport implements ToModel, WithHeadingRow, WithValidation, WithBatchI
     public function model(array $row)
     {
         try {
+            // CRITICAL: Remove 'id' column if exists to prevent duplicate key errors
+            // ID should be auto-incremented by database, not set from Excel
+            unset($row['id']);
+            
             // CRITICAL: Detect if this is business data instead of user data
             if ($this->isBusinessData($row)) {
                 $this->skippedCount++;

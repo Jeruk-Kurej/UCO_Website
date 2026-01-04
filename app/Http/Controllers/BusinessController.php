@@ -449,6 +449,10 @@ class BusinessController extends Controller
             'file' => 'required|mimes:xlsx,xls,csv|max:10240', // Max 10MB
         ]);
 
+        // Increase execution time and memory limit for large imports
+        set_time_limit(300); // 5 minutes
+        ini_set('memory_limit', '512M');
+
         try {
             $import = new BusinessesImport();
             Excel::import($import, $request->file('file'));
