@@ -249,31 +249,46 @@
                                     @endif
 
                                 <div class="p-5">
-                                    <h3 class="text-lg font-bold text-gray-900 mb-2">{{ $business->name }}</h3>
-                                    <p class="text-sm text-gray-600 mb-3 line-clamp-2">{{ $business->description }}</p>
+                                    <h3 class="text-lg font-bold text-gray-900 mb-2 line-clamp-1" title="{{ $business->name }}">
+                                        {{ $business->name }}
+                                    </h3>
+                                    <p class="text-sm text-gray-600 mb-4 line-clamp-2">{{ $business->description }}</p>
                                     
-                                        <div class="flex items-center justify-between mb-3">
-                                            <span class="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">
-                                                {{ $business->businessType->name }}
+                                    {{-- Business Type --}}
+                                    <div class="mb-3">
+                                        <span class="inline-block text-xs bg-purple-100 text-purple-800 px-3 py-1.5 rounded-lg font-medium max-w-full truncate" 
+                                              title="{{ $business->businessType->name }}">
+                                            {{ $business->businessType->name }}
+                                        </span>
+                                    </div>
+
+                                    {{-- Owner & Position --}}
+                                    <div class="mb-4 space-y-1.5">
+                                        <div class="flex items-center gap-2 text-xs text-gray-600">
+                                            <i class="bi bi-person flex-shrink-0"></i>
+                                            <span class="font-medium truncate" title="{{ $business->user->name }}">
+                                                {{ $business->user->name }}
                                             </span>
-                                            <div class="flex items-center gap-2">
-                                                @if($business->is_featured)
-                                                    <span class="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded flex items-center gap-1">
-                                                        <i class="bi bi-star-fill"></i>
-                                                        Featured
-                                                    </span>
-                                                @endif
-                                                <span class="text-xs text-gray-500">
-                                                    <i class="bi bi-person"></i>
-                                                    {{ $business->user->name }}
-                                                    @if($business->position)
-                                                        <span class="ml-1 text-purple-600">• {{ $business->position }}</span>
-                                                    @endif
+                                        </div>
+                                        @if($business->position)
+                                            <div class="flex items-center gap-2 text-xs text-purple-600">
+                                                <i class="bi bi-briefcase flex-shrink-0"></i>
+                                                <span class="truncate" title="{{ $business->position }}">
+                                                    {{ $business->position }}
                                                 </span>
                                             </div>
-                                        </div>
+                                        @endif
+                                        @if($business->is_featured)
+                                            <div class="pt-1">
+                                                <span class="inline-flex items-center gap-1 text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-lg font-medium">
+                                                    <i class="bi bi-star-fill"></i>
+                                                    Featured
+                                                </span>
+                                            </div>
+                                        @endif
+                                    </div>
 
-                                        <div class="flex items-center justify-between pt-3 border-t border-gray-200">
+                                    <div class="flex items-center justify-between pt-3 border-t border-gray-200">
                                             <a href="{{ route('businesses.show', $business) }}" 
                                                class="text-purple-600 hover:text-purple-700 text-sm font-medium flex items-center gap-1">
                                                 View Details
@@ -347,22 +362,40 @@
                                         @endif
 
                                         <div class="p-5">
-                                            <h3 class="text-lg font-bold text-gray-900 mb-2">{{ $business->name }}</h3>
-                                            <p class="text-sm text-gray-600 mb-3 line-clamp-2">{{ $business->description }}</p>
+                                            <h3 class="text-lg font-bold text-gray-900 mb-2 line-clamp-1" title="{{ $business->name }}">
+                                                {{ $business->name }}
+                                            </h3>
+                                            <p class="text-sm text-gray-600 mb-4 line-clamp-2">{{ $business->description }}</p>
                                             
-                                            <div class="flex items-center justify-between mb-3">
-                                                <span class="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">
+                                            {{-- Business Type --}}
+                                            <div class="mb-3">
+                                                <span class="inline-block text-xs bg-purple-100 text-purple-800 px-3 py-1.5 rounded-lg font-medium max-w-full truncate" 
+                                                      title="{{ $business->businessType->name }}">
                                                     {{ $business->businessType->name }}
                                                 </span>
-                                                <div class="flex items-center gap-2">
-                                                    @if($business->is_featured)
-                                                        <span class="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded flex items-center gap-1">
+                                            </div>
+
+                                            {{-- Owner & Position --}}
+                                            <div class="mb-4 space-y-1.5">
+                                                @if($business->position)
+                                                    <div class="flex items-center gap-2 text-xs text-purple-600">
+                                                        <i class="bi bi-briefcase flex-shrink-0"></i>
+                                                        <span class="truncate" title="{{ $business->position }}">
+                                                            {{ $business->position }}
+                                                        </span>
+                                                    </div>
+                                                @endif
+                                                @if($business->is_featured)
+                                                    <div class="pt-1">
+                                                        <span class="inline-flex items-center gap-1 text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-lg font-medium">
                                                             <i class="bi bi-star-fill"></i>
                                                             Featured
                                                         </span>
-                                                    @endif
-                                                    <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
-                                                        <i class="bi bi-check-circle me-1"></i>
+                                                    </div>
+                                                @endif
+                                                <div>
+                                                    <span class="inline-flex items-center gap-1.5 text-xs bg-green-100 text-green-800 px-2 py-1 rounded-lg font-medium">
+                                                        <i class="bi bi-check-circle"></i>
                                                         My Business
                                                     </span>
                                                 </div>
