@@ -47,7 +47,7 @@ $graduationData = $userToEdit->graduation_data ?? [];
                             class="flex-1 py-4 px-4 text-sm text-center transition-all duration-200">
                         Parents
                     </button>
-                    <button type="button" @click="activeTab = 'business'" 
+                </nav> 
                             :class="activeTab === 'business' ? 'border-b-2 border-gray-900 text-gray-900 font-semibold' : 'text-gray-500 hover:text-gray-700'"
                             class="flex-1 py-4 px-4 text-sm text-center transition-all duration-200">
                         Business
@@ -563,92 +563,6 @@ $graduationData = $userToEdit->graduation_data ?? [];
                         </div>
                     </div>
                 </div>
-            </div>
-
-            {{-- Business Assignment Tab --}}
-            <div x-show="activeTab === 'business'" class="bg-white shadow-sm rounded-lg p-6">
-                <h2 class="text-lg font-bold text-gray-900 mb-6 pb-3 border-b-2 border-gray-100">
-                    Business Assignment
-                </h2>
-
-                @if($availableBusinesses->count() > 0)
-                    {{-- Business Ownership Transfer --}}
-                    <div class="mb-8">
-                        <h3 class="text-md font-semibold text-gray-800 mb-4">Transfer Business Ownership</h3>
-                        <p class="text-sm text-gray-600 mb-4">Select businesses to transfer ownership to this user. This changes the <code class="bg-gray-100 px-1 rounded">user_id</code> of the business.</p>
-                        
-                        <div class="space-y-2 max-h-64 overflow-y-auto border border-gray-200 rounded-lg p-4">
-                            @foreach($availableBusinesses as $business)
-                                <label class="flex items-start gap-3 p-3 hover:bg-gray-50 rounded-lg cursor-pointer transition">
-                                    <input type="checkbox" name="owned_businesses[]" value="{{ $business->id }}" {{ in_array($business->id, $ownedBusinesses) ? 'checked' : '' }}
-                                           class="mt-1 w-4 h-4 text-soft-gray-900 border-gray-300 rounded focus:ring-soft-gray-900">
-                                    <div class="flex-1 min-w-0">
-                                        <p class="text-sm font-semibold text-gray-900">{{ $business->name }}</p>
-                                        <p class="text-xs text-gray-500">Owner: {{ $business->user->name }} • Type: {{ $business->businessType->name ?? 'N/A' }}</p>
-                                    </div>
-                                </label>
-                            @endforeach
-                        </div>
-                    </div>
-
-                    {{-- Team Member Assignment --}}
-                    <div>
-                        <h3 class="text-md font-semibold text-gray-800 mb-4">Add as Team Member</h3>
-                        <p class="text-sm text-gray-600 mb-4">Add this user to businesses as employee/partner without changing ownership (uses <code class="bg-gray-100 px-1 rounded">user_businesses_details</code>).</p>
-                        
-                        <div class="space-y-3" id="team-assignments">
-                            @foreach($availableBusinesses->take(5) as $index => $business)
-                                <div class="border border-gray-200 rounded-lg p-4">
-                                    <div class="flex items-center gap-3 mb-3">
-                                        <input type="checkbox" name="team_member[{{ $index }}][enabled]" value="1"
-                                               class="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
-                                               onchange="document.getElementById('team-details-{{ $index }}').classList.toggle('hidden')">
-                                        <label class="text-sm font-semibold text-gray-900">{{ $business->name }}</label>
-                                    </div>
-
-                                    <div id="team-details-{{ $index }}" class="hidden grid grid-cols-2 gap-3 ml-7">
-                                        <input type="hidden" name="team_member[{{ $index }}][business_id]" value="{{ $business->id }}">
-                                        
-                                        <div>
-                                            <label class="block text-xs font-medium text-gray-700 mb-1">Role</label>
-                                            <select name="team_member[{{ $index }}][role_type]" 
-                                                    class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-lg">
-                                                <option value="employee">Employee</option>
-                                                <option value="co_founder">Co-Founder</option>
-                                                <option value="partner">Partner</option>
-                                            </select>
-                                        </div>
-
-                                        <div>
-                                            <label class="block text-xs font-medium text-gray-700 mb-1">Position</label>
-                                            <input type="text" name="team_member[{{ $index }}][Position_name]" 
-                                                   class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-lg">
-                                        </div>
-
-                                        <div>
-                                            <label class="block text-xs font-medium text-gray-700 mb-1">Start Date</label>
-                                            <input type="date" name="team_member[{{ $index }}][Working_Date]" 
-                                                   class="block w-full px-3 py-2 text-sm border border-gray-300 rounded-lg">
-                                        </div>
-
-                                        <div class="flex items-end">
-                                            <label class="flex items-center gap-2 cursor-pointer">
-                                                <input type="checkbox" name="team_member[{{ $index }}][is_current]" value="1" checked
-                                                       class="w-4 h-4 text-green-600 border-gray-300 rounded">
-                                                <span class="text-xs font-medium text-gray-700">Currently Active</span>
-                                            </label>
-                                        </div>
-                                    </div>
-                                </div>
-                            @endforeach
-                        </div>
-                    </div>
-                @else
-                    <div class="text-center py-12">
-                        <i class="bi bi-briefcase text-gray-300 text-5xl mb-3"></i>
-                        <p class="text-gray-500">No businesses available for assignment</p>
-                    </div>
-                @endif
             </div>
 
             {{-- Action Buttons --}}

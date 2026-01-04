@@ -234,85 +234,124 @@
             {{-- Tab Content: Browse All Businesses --}}
             <div x-show="activeTab === 'browse'" class="p-6">
                 @if($businesses->count() > 0)
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         @foreach($businesses as $business)
-                            <div class="bg-white border border-gray-200 rounded-lg shadow hover:shadow-lg transition duration-150">
-                                {{-- Business Photo --}}
-                                    @if($business->photos->first())
+                            <div class="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden group">
+                                <div class="flex flex-col h-full">
+                                    {{-- Header with Photo & Logo --}}
+                                    <div class="relative h-56">
+                                        {{-- Business Photo Background --}}
+                                        @if($business->photos->first())
                                             <img src="{{ asset('storage/' . $business->photos->first()->photo_url) }}" 
                                                  alt="{{ $business->name }}" 
-                                                 class="w-full h-48 object-cover rounded-t-lg">
-                                    @else
-                                        <div class="w-full h-48 bg-purple-100 rounded-t-lg flex items-center justify-center">
-                                            <i class="bi bi-briefcase text-6xl text-purple-600"></i>
+                                                 class="w-full h-full object-cover">
+                                            <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
+                                        @else
+                                            <div class="w-full h-full bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center">
+                                                <i class="bi bi-briefcase text-6xl text-slate-400"></i>
+                                            </div>
+                                            <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent"></div>
+                                        @endif
+                                        
+                                        {{-- Logo Overlay --}}
+                                        <div class="absolute bottom-4 left-4 flex items-end gap-4">
+                                            @if($business->logo)
+                                                <div class="w-20 h-20 rounded-xl bg-white shadow-lg border-2 border-white overflow-hidden flex-shrink-0">
+                                                    <img src="{{ asset('storage/' . $business->logo) }}" 
+                                                         alt="{{ $business->name }} logo" 
+                                                         class="w-full h-full object-cover">
+                                                </div>
+                                            @else
+                                                <div class="w-20 h-20 rounded-xl bg-white shadow-lg border-2 border-white flex items-center justify-center flex-shrink-0">
+                                                    <i class="bi bi-building text-3xl text-slate-400"></i>
+                                                </div>
+                                            @endif
+                                            
+                                            {{-- Featured Badge --}}
+                                            @if($business->is_featured)
+                                                <div class="mb-1">
+                                                    <span class="inline-flex items-center gap-1.5 text-xs bg-yellow-400 text-yellow-900 px-2.5 py-1.5 rounded-lg font-bold shadow-sm">
+                                                        <i class="bi bi-star-fill"></i>
+                                                        Featured
+                                                    </span>
+                                                </div>
+                                            @endif
                                         </div>
-                                    @endif
-
-                                <div class="p-5">
-                                    <h3 class="text-lg font-bold text-gray-900 mb-2 line-clamp-1" title="{{ $business->name }}">
-                                        {{ $business->name }}
-                                    </h3>
-                                    <p class="text-sm text-gray-600 mb-4 line-clamp-2">{{ $business->description }}</p>
-                                    
-                                    {{-- Business Type --}}
-                                    <div class="mb-3">
-                                        <span class="inline-block text-xs bg-purple-100 text-purple-800 px-3 py-1.5 rounded-lg font-medium max-w-full truncate" 
-                                              title="{{ $business->businessType->name }}">
-                                            {{ $business->businessType->name }}
-                                        </span>
                                     </div>
 
-                                    {{-- Owner & Position --}}
-                                    <div class="mb-4 space-y-1.5">
-                                        <div class="flex items-center gap-2 text-xs text-gray-600">
-                                            <i class="bi bi-person flex-shrink-0"></i>
-                                            <span class="font-medium truncate" title="{{ $business->user->name }}">
-                                                {{ $business->user->name }}
+                                    {{-- Content --}}
+                                    <div class="p-5 flex-1 flex flex-col">
+                                        {{-- Business Name & Category --}}
+                                        <div class="mb-3">
+                                            <h3 class="text-xl font-bold text-gray-900 mb-2 line-clamp-1 group-hover:text-gray-700 transition" 
+                                                title="{{ $business->name }}">
+                                                {{ $business->name }}
+                                            </h3>
+                                            <span class="inline-block text-xs bg-slate-100 text-slate-700 px-3 py-1 rounded-full font-medium" 
+                                                  title="{{ $business->businessType->name }}">
+                                                {{ $business->businessType->name }}
                                             </span>
                                         </div>
-                                        @if($business->position)
-                                            <div class="flex items-center gap-2 text-xs text-purple-600">
-                                                <i class="bi bi-briefcase flex-shrink-0"></i>
-                                                <span class="truncate" title="{{ $business->position }}">
-                                                    {{ $business->position }}
-                                                </span>
+                                        
+                                        {{-- Description --}}
+                                        <p class="text-sm text-gray-600 mb-4 line-clamp-2">{{ $business->description }}</p>
+                                        
+                                        {{-- Owner Info Card --}}
+                                        <div class="bg-slate-50 border border-slate-100 rounded-lg p-3 mb-4">
+                                            <div class="flex items-center gap-3">
+                                                {{-- Owner Avatar --}}
+                                                @if($business->user->profile_photo_url ?? false)
+                                                    <img src="{{ $business->user->profile_photo_url }}" 
+                                                         alt="{{ $business->user->name }}" 
+                                                         class="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm">
+                                                @else
+                                                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-slate-400 to-slate-600 flex items-center justify-center text-white font-bold text-sm border-2 border-white shadow-sm">
+                                                        {{ strtoupper(substr($business->user->name, 0, 1)) }}
+                                                    </div>
+                                                @endif
+                                                
+                                                <div class="flex-1 min-w-0">
+                                                    <p class="text-sm font-semibold text-gray-900 truncate" title="{{ $business->user->name }}">
+                                                        {{ $business->user->name }}
+                                                    </p>
+                                                    @if($business->position)
+                                                        <p class="text-xs text-slate-600 truncate" title="{{ $business->position }}">
+                                                            {{ $business->position }}
+                                                        </p>
+                                                    @else
+                                                        <p class="text-xs text-slate-500">Owner</p>
+                                                    @endif
+                                                </div>
                                             </div>
-                                        @endif
-                                        @if($business->is_featured)
-                                            <div class="pt-1">
-                                                <span class="inline-flex items-center gap-1 text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-lg font-medium">
-                                                    <i class="bi bi-star-fill"></i>
-                                                    Featured
-                                                </span>
-                                            </div>
-                                        @endif
-                                    </div>
-
-                                    <div class="flex items-center justify-between pt-3 border-t border-gray-200">
+                                        </div>
+                                        
+                                        {{-- Actions --}}
+                                        <div class="flex items-center justify-between pt-3 border-t border-gray-100 mt-auto">
                                             <a href="{{ route('businesses.show', $business) }}" 
-                                               class="text-purple-600 hover:text-purple-700 text-sm font-medium flex items-center gap-1">
+                                               class="inline-flex items-center gap-1.5 text-sm font-semibold text-gray-900 hover:text-gray-700 transition">
                                                 View Details
                                                 <i class="bi bi-arrow-right"></i>
                                             </a>
 
-                                        <div class="flex items-center gap-2">
-                                            @auth
-                                                @if(auth()->user()->isAdmin())
-                                                    <button 
-                                                        onclick="toggleFeatured({{ $business->id }}, this)"
-                                                        class="inline-flex items-center justify-center w-8 h-8 rounded-lg transition-colors {{ $business->is_featured ? 'text-yellow-600 hover:bg-yellow-50' : 'text-gray-400 hover:bg-gray-100' }}"
-                                                        title="{{ $business->is_featured ? 'Remove from Featured' : 'Add to Featured' }}"
-                                                        data-featured="{{ $business->is_featured ? 'true' : 'false' }}">
-                                                        <i class="bi {{ $business->is_featured ? 'bi-star-fill' : 'bi-star' }} text-lg"></i>
-                                                    </button>
-                                                @endif
-                                                @if(auth()->id() === $business->user_id || auth()->user()->isAdmin())
-                                                    <a href="{{ route('businesses.edit', $business) }}" 
-                                                       class="text-gray-500 hover:text-gray-700 text-sm">
-                                                        <i class="bi bi-pencil"></i>
-                                                    </a>
-                                                @endif
-                                            @endauth
+                                            <div class="flex items-center gap-2">
+                                                @auth
+                                                    @if(auth()->user()->isAdmin())
+                                                        <button 
+                                                            onclick="toggleFeatured({{ $business->id }}, this)"
+                                                            class="inline-flex items-center justify-center w-8 h-8 rounded-lg transition-colors {{ $business->is_featured ? 'text-yellow-600 hover:bg-yellow-50' : 'text-gray-400 hover:bg-gray-100' }}"
+                                                            title="{{ $business->is_featured ? 'Remove from Featured' : 'Add to Featured' }}"
+                                                            data-featured="{{ $business->is_featured ? 'true' : 'false' }}">
+                                                            <i class="bi {{ $business->is_featured ? 'bi-star-fill' : 'bi-star' }} text-lg"></i>
+                                                        </button>
+                                                    @endif
+                                                    @if(auth()->id() === $business->user_id || auth()->user()->isAdmin())
+                                                        <a href="{{ route('businesses.edit', $business) }}" 
+                                                           class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition">
+                                                            <i class="bi bi-pencil"></i>
+                                                        </a>
+                                                    @endif
+                                                @endauth
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -348,70 +387,114 @@
                         </div>
 
                         @if($myBusinesses->count() > 0)
-                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                 @foreach($myBusinesses as $business)
-                                    <div class="bg-white border border-gray-200 rounded-lg shadow hover:shadow-lg transition duration-150">
-                                        @if($business->photos->first())
-                                            <img src="{{ asset('storage/' . $business->photos->first()->photo_url) }}" 
-                                                 alt="{{ $business->name }}" 
-                                                 class="w-full h-48 object-cover rounded-t-lg">
-                                        @else
-                                            <div class="w-full h-48 bg-purple-100 rounded-t-lg flex items-center justify-center">
-                                                <i class="bi bi-briefcase text-6xl text-purple-600"></i>
-                                            </div>
-                                        @endif
-
-                                        <div class="p-5">
-                                            <h3 class="text-lg font-bold text-gray-900 mb-2 line-clamp-1" title="{{ $business->name }}">
-                                                {{ $business->name }}
-                                            </h3>
-                                            <p class="text-sm text-gray-600 mb-4 line-clamp-2">{{ $business->description }}</p>
-                                            
-                                            {{-- Business Type --}}
-                                            <div class="mb-3">
-                                                <span class="inline-block text-xs bg-purple-100 text-purple-800 px-3 py-1.5 rounded-lg font-medium max-w-full truncate" 
-                                                      title="{{ $business->businessType->name }}">
-                                                    {{ $business->businessType->name }}
-                                                </span>
-                                            </div>
-
-                                            {{-- Owner & Position --}}
-                                            <div class="mb-4 space-y-1.5">
-                                                @if($business->position)
-                                                    <div class="flex items-center gap-2 text-xs text-purple-600">
-                                                        <i class="bi bi-briefcase flex-shrink-0"></i>
-                                                        <span class="truncate" title="{{ $business->position }}">
-                                                            {{ $business->position }}
-                                                        </span>
+                                    <div class="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden group">
+                                        <div class="flex flex-col h-full">
+                                            {{-- Header with Photo & Logo --}}
+                                            <div class="relative h-56">
+                                                {{-- Business Photo Background --}}
+                                                @if($business->photos->first())
+                                                    <img src="{{ asset('storage/' . $business->photos->first()->photo_url) }}" 
+                                                         alt="{{ $business->name }}" 
+                                                         class="w-full h-full object-cover">
+                                                    <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
+                                                @else
+                                                    <div class="w-full h-full bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center">
+                                                        <i class="bi bi-briefcase text-6xl text-slate-400"></i>
                                                     </div>
+                                                    <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent"></div>
                                                 @endif
-                                                @if($business->is_featured)
-                                                    <div class="pt-1">
-                                                        <span class="inline-flex items-center gap-1 text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-lg font-medium">
-                                                            <i class="bi bi-star-fill"></i>
-                                                            Featured
+                                                
+                                                {{-- Logo Overlay --}}
+                                                <div class="absolute bottom-4 left-4 flex items-end gap-4">
+                                                    @if($business->logo)
+                                                        <div class="w-20 h-20 rounded-xl bg-white shadow-lg border-2 border-white overflow-hidden flex-shrink-0">
+                                                            <img src="{{ asset('storage/' . $business->logo) }}" 
+                                                                 alt="{{ $business->name }} logo" 
+                                                                 class="w-full h-full object-cover">
+                                                        </div>
+                                                    @else
+                                                        <div class="w-20 h-20 rounded-xl bg-white shadow-lg border-2 border-white flex items-center justify-center flex-shrink-0">
+                                                            <i class="bi bi-building text-3xl text-slate-400"></i>
+                                                        </div>
+                                                    @endif
+                                                    
+                                                    {{-- My Business Badge --}}
+                                                    <div class="mb-1 flex gap-2">
+                                                        <span class="inline-flex items-center gap-1.5 text-xs bg-green-500 text-white px-2.5 py-1.5 rounded-lg font-bold shadow-sm">
+                                                            <i class="bi bi-check-circle-fill"></i>
+                                                            My Business
                                                         </span>
+                                                        @if($business->is_featured)
+                                                            <span class="inline-flex items-center gap-1.5 text-xs bg-yellow-400 text-yellow-900 px-2.5 py-1.5 rounded-lg font-bold shadow-sm">
+                                                                <i class="bi bi-star-fill"></i>
+                                                                Featured
+                                                            </span>
+                                                        @endif
                                                     </div>
-                                                @endif
-                                                <div>
-                                                    <span class="inline-flex items-center gap-1.5 text-xs bg-green-100 text-green-800 px-2 py-1 rounded-lg font-medium">
-                                                        <i class="bi bi-check-circle"></i>
-                                                        My Business
-                                                    </span>
                                                 </div>
                                             </div>
 
-                                            <div class="flex items-center justify-between pt-3 border-t border-gray-200">
-                                                <a href="{{ route('businesses.show', $business) }}" 
-                                                   class="text-purple-600 hover:text-purple-700 text-sm font-medium flex items-center gap-1">
-                                                    View Details
-                                                    <i class="bi bi-arrow-right"></i>
-                                                </a>
-                                                <a href="{{ route('businesses.edit', $business) }}" 
-                                                   class="inline-flex items-center px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded text-sm transition duration-150">
-                                                    <i class="bi bi-pencil me-1"></i>
-                                                    Edit
-                                                </a>
+                                            {{-- Content --}}
+                                            <div class="p-5 flex-1 flex flex-col">
+                                                {{-- Business Name & Category --}}
+                                                <div class="mb-3">
+                                                    <h3 class="text-xl font-bold text-gray-900 mb-2 line-clamp-1 group-hover:text-gray-700 transition" 
+                                                        title="{{ $business->name }}">
+                                                        {{ $business->name }}
+                                                    </h3>
+                                                    <span class="inline-block text-xs bg-slate-100 text-slate-700 px-3 py-1 rounded-full font-medium" 
+                                                          title="{{ $business->businessType->name }}">
+                                                        {{ $business->businessType->name }}
+                                                    </span>
+                                                </div>
+                                                
+                                                {{-- Description --}}
+                                                <p class="text-sm text-gray-600 mb-4 line-clamp-2">{{ $business->description }}</p>
+                                                
+                                                {{-- Owner Info Card --}}
+                                                <div class="bg-slate-50 border border-slate-100 rounded-lg p-3 mb-4">
+                                                    <div class="flex items-center gap-3">
+                                                        {{-- Owner Avatar --}}
+                                                        @if($business->user->profile_photo_url ?? false)
+                                                            <img src="{{ $business->user->profile_photo_url }}" 
+                                                                 alt="{{ $business->user->name }}" 
+                                                                 class="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm">
+                                                        @else
+                                                            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-slate-400 to-slate-600 flex items-center justify-center text-white font-bold text-sm border-2 border-white shadow-sm">
+                                                                {{ strtoupper(substr($business->user->name, 0, 1)) }}
+                                                            </div>
+                                                        @endif
+                                                        
+                                                        <div class="flex-1 min-w-0">
+                                                            <p class="text-sm font-semibold text-gray-900 truncate" title="{{ $business->user->name }}">
+                                                                {{ $business->user->name }}
+                                                            </p>
+                                                            @if($business->position)
+                                                                <p class="text-xs text-slate-600 truncate" title="{{ $business->position }}">
+                                                                    {{ $business->position }}
+                                                                </p>
+                                                            @else
+                                                                <p class="text-xs text-slate-500">Owner</p>
+                                                            @endif
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                {{-- Actions --}}
+                                                <div class="flex items-center justify-between pt-3 border-t border-gray-100 mt-auto">
+                                                    <a href="{{ route('businesses.show', $business) }}" 
+                                                       class="inline-flex items-center gap-1.5 text-sm font-semibold text-gray-900 hover:text-gray-700 transition">
+                                                        View Details
+                                                        <i class="bi bi-arrow-right"></i>
+                                                    </a>
+                                                    <a href="{{ route('businesses.edit', $business) }}" 
+                                                       class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-900 hover:bg-gray-800 text-white rounded-lg text-sm font-medium transition">
+                                                        <i class="bi bi-pencil"></i>
+                                                        Edit
+                                                    </a>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -642,24 +725,6 @@
                     </div>
                 </div>
             </div>
-        @endif
-    @endauth
-                        return false;
-                    }
-                    
-                    // Check file extension
-                    const fileName = file.name.toLowerCase();
-                    const validExtensions = ['.xlsx', '.xls', '.csv'];
-                    const isValidExtension = validExtensions.some(ext => fileName.endsWith(ext));
-                    
-                    if (!isValidExtension) {
-                        alert('Please select a valid Excel file (.xlsx, .xls, or .csv)');
-                        return false;
-                    }
-                    
-                    return true;
-                }
-            </script>
         @endif
     @endauth
 </x-app-layout>
