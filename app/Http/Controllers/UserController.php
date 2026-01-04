@@ -234,7 +234,23 @@ class UserController extends Controller
             abort(403, 'Only administrators can edit users.');
         }
 
-        return view('users.edit', ['userToEdit' => $user]);
+        // Get available businesses for ownership transfer (excluding businesses owned by this user)
+        $availableBusinesses = Business::with('user', 'businessType')
+            ->where('user_id', '!=', $user->id)
+            ->get();
+
+        // Get businesses currently owned by this user
+        $ownedBusinesses = $user->businesses()->pluck('id')->toArray();
+
+        // Get team member details for this user
+        $teamMemberDetails = User_Businesses_Detail::where('user_id', $user->id)->get();
+
+        return view('users.edit', [
+            'userToEdit' => $user,
+            'availableBusinesses' => $availableBusinesses,
+            'ownedBusinesses' => $ownedBusinesses,
+            'teamMemberDetails' => $teamMemberDetails
+        ]);
     }
 
     /**
@@ -247,22 +263,126 @@ class UserController extends Controller
         }
 
         $validated = $request->validate([
+            // Basic Required
             'username' => 'required|string|max:255|unique:users,username,' . $user->id,
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
             'password' => ['nullable', 'confirmed', Rules\Password::defaults()],
             'role' => 'required|in:student,alumni,admin',
-            'is_active' => 'required|boolean',
+            'is_active' => 'nullable|boolean',
+            
+            // Core Personal
+            'birth_date' => 'nullable|date',
+            'birth_city' => 'nullable|string|max:255',
+            'religion' => 'nullable|string|max:255',
+            'phone_number' => 'nullable|string|max:50',
+            'mobile_number' => 'nullable|string|max:50',
+            'whatsapp' => 'nullable|string|max:50',
+            
+            // Core Student
+            'NIS' => 'nullable|string|max:255',
+            'Student_Year' => 'nullable|string|max:50',
+            'Major' => 'nullable|string|max:255',
+            'Is_Graduate' => 'nullable|boolean',
+            'CGPA' => 'nullable|numeric|min:0|max:4',
+            
+            // Employment & Extra (Virtual fields packed into JSON)
+            'current_employment_status' => 'nullable|string|max:100',
+            'has_side_business' => 'nullable|boolean',
+            'profile_photo_url' => 'nullable|string|max:2048',
+
+            // JSON Fields
+            'personal_data' => 'nullable|array',
+            'academic_data' => 'nullable|array',
+            'father_data' => 'nullable|array',
+            'mother_data' => 'nullable|array',
+            'graduation_data' => 'nullable|array',
+            
+            // Business Assignments
+            'owned_businesses' => 'nullable|array',
+            'owned_businesses.*' => 'exists:businesses,id',
+            'team_member' => 'nullable|array',
         ]);
+
+        // Prepare user data
+        $userData = [
+            'username' => $validated['username'],
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'role' => $validated['role'],
+            'is_active' => $request->has('is_active'),
+            
+            // Core fields
+            'birth_date' => $validated['birth_date'] ?? null,
+            'birth_city' => $validated['birth_city'] ?? null,
+            'religion' => $validated['religion'] ?? null,
+            'phone_number' => $validated['phone_number'] ?? null,
+            'mobile_number' => $validated['mobile_number'] ?? null,
+            'whatsapp' => $validated['whatsapp'] ?? null,
+            'NIS' => $validated['NIS'] ?? null,
+            'Student_Year' => $validated['Student_Year'] ?? null,
+            'Major' => $validated['Major'] ?? null,
+            'Is_Graduate' => $request->has('Is_Graduate'),
+            'CGPA' => $validated['CGPA'] ?? null,
+            
+            // JSON fields
+            'personal_data' => (function() use ($validated) {
+                $data = !empty($validated['personal_data']) ? array_filter($validated['personal_data']) : [];
+                if (isset($validated['profile_photo_url'])) $data['profile_photo_url'] = $validated['profile_photo_url'];
+                return !empty($data) ? $data : null;
+            })(),
+            'academic_data' => !empty($validated['academic_data']) ? array_filter($validated['academic_data']) : null,
+            'father_data' => !empty($validated['father_data']) ? array_filter($validated['father_data']) : null,
+            'mother_data' => !empty($validated['mother_data']) ? array_filter($validated['mother_data']) : null,
+            'graduation_data' => (function() use ($validated, $request) {
+                $data = !empty($validated['graduation_data']) ? array_filter($validated['graduation_data']) : [];
+                if (isset($validated['current_employment_status'])) $data['current_employment_status'] = $validated['current_employment_status'];
+                if ($request->has('has_side_business')) $data['has_side_business'] = (bool)$request->has_side_business;
+                return !empty($data) ? $data : null;
+            })(),
+        ];
 
         // Only update password if provided
         if (!empty($validated['password'])) {
-            $validated['password'] = Hash::make($validated['password']);
-        } else {
-            unset($validated['password']);
+            $userData['password'] = Hash::make($validated['password']);
         }
 
-        $user->update($validated);
+        // Update the user
+        $user->update($userData);
+
+        // Update business ownership if selected
+        if ($request->has('owned_businesses')) {
+            // Remove this user from businesses they no longer own
+            Business::where('user_id', $user->id)
+                ->whereNotIn('id', $request->owned_businesses ?? [])
+                ->update(['user_id' => null]);
+            
+            // Transfer selected businesses to this user
+            if (!empty($request->owned_businesses)) {
+                Business::whereIn('id', $request->owned_businesses)
+                    ->update(['user_id' => $user->id]);
+            }
+        }
+
+        // Update team member assignments
+        if ($request->has('team_member')) {
+            // Remove existing team assignments for this user
+            User_Businesses_Detail::where('user_id', $user->id)->delete();
+            
+            // Add new team assignments
+            foreach ($request->team_member as $assignment) {
+                if (!empty($assignment['enabled']) && !empty($assignment['business_id'])) {
+                    User_Businesses_Detail::create([
+                        'user_id' => $user->id,
+                        'business_id' => $assignment['business_id'],
+                        'role_type' => $assignment['role_type'] ?? 'employee',
+                        'Position_name' => $assignment['Position_name'] ?? null,
+                        'Working_Date' => $assignment['Working_Date'] ?? now(),
+                        'is_current' => !empty($assignment['is_current']),
+                    ]);
+                }
+            }
+        }
 
         return redirect()
             ->route('users.index')

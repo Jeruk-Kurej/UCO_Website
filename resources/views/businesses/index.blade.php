@@ -107,11 +107,11 @@
                             @if(!auth()->user()->isAdmin())
                                 {{-- My Businesses Tab FIRST for non-admin --}}
                                 <button @click="activeTab = 'my'" 
-                                        :class="activeTab === 'my' ? 'border-orange-500 text-orange-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                                        :class="activeTab === 'my' ? 'border-gray-900 text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
                                         class="flex items-center gap-2 py-4 px-4 border-b-2 font-medium text-sm transition duration-150">
                                     <i class="bi bi-briefcase"></i>
                                     My Businesses
-                                    <span class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-xs">
+                                    <span :class="activeTab === 'my' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-600'" class="px-2 py-0.5 rounded-full text-xs transition-colors">
                                         {{ $businesses->where('user_id', auth()->id())->count() }}
                                     </span>
                                 </button>
@@ -120,11 +120,11 @@
 
                         {{-- Browse All Tab --}}
                         <button @click="activeTab = 'browse'" 
-                                :class="activeTab === 'browse' ? 'border-orange-500 text-orange-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                                :class="activeTab === 'browse' ? 'border-gray-900 text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
                                 class="flex items-center gap-2 py-4 px-4 border-b-2 font-medium text-sm transition duration-150">
                             <i class="bi bi-shop"></i>
                             Browse All Businesses
-                            <span class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-xs">
+                            <span :class="activeTab === 'browse' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-600'" class="px-2 py-0.5 rounded-full text-xs transition-colors">
                                 {{ $businesses->total() }}
                             </span>
                         </button>
@@ -522,82 +522,128 @@
         @endif
     @endauth
 
-    {{-- Import Modal --}}
+    {{-- Import Modal - Elegant Professional Design --}}
     @auth
         @if(auth()->user()->isAdmin())
-            <div id="importModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-                <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-lg font-medium text-gray-900">Import Businesses from Excel</h3>
-                        <button onclick="document.getElementById('importModal').classList.add('hidden')" 
-                                class="text-gray-400 hover:text-gray-600">
-                            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                        </button>
-                    </div>
-                    
-                    <form action="{{ route('businesses.import') }}" method="POST" enctype="multipart/form-data" onsubmit="return validateImportFile()">
-                        @csrf
+            <div id="importModal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+                <div class="flex items-center justify-center min-h-screen px-4 py-20">
+                    <div class="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-soft-gray-200">
                         
-                        <div class="mb-4">
-                            <label for="import_file" class="block text-sm font-medium text-gray-700 mb-2">
-                                Select Excel File (.xlsx, .xls, .csv)
-                            </label>
-                            <input type="file" 
-                                   name="file" 
-                                   id="import_file" 
-                                   accept=".xlsx,.xls,.csv"
-                                   required
-                                   class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none">
-                            <p class="mt-1 text-xs text-gray-500">Maximum file size: 10 MB</p>
-                        </div>
-
-                        <div class="bg-blue-50 border-l-4 border-blue-400 p-3 mb-4">
-                            <div class="flex">
-                                <div class="flex-shrink-0">
-                                    <svg class="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
-                                    </svg>
-                                </div>
-                                <div class="ml-3">
-                                    <p class="text-xs text-blue-700">
-                                        Make sure your Excel file has the following columns:<br>
-                                        <span class="font-mono text-xs">Nama, Status dan Major, Email, Phone, Mobile, etc.</span>
-                                    </p>
+                        <form action="{{ route('businesses.import') }}" method="POST" enctype="multipart/form-data">
+                            @csrf
+                            
+                            {{-- Modal Header --}}
+                            <div class="px-8 pt-8 pb-6 bg-gradient-to-br from-soft-gray-50 to-white border-b border-soft-gray-100">
+                                <div class="flex items-start justify-between">
+                                    <div class="flex items-start gap-4">
+                                        <div class="flex items-center justify-center flex-shrink-0 w-14 h-14 bg-soft-gray-900 rounded-2xl shadow-lg">
+                                            <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <h3 class="text-2xl font-bold text-soft-gray-900 tracking-tight">
+                                                Import Businesses
+                                            </h3>
+                                            <p class="text-sm text-soft-gray-600 mt-1">
+                                                Upload Excel file to bulk import businesses
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <button type="button" 
+                                            onclick="document.getElementById('importModal').classList.add('hidden')"
+                                            class="text-soft-gray-400 hover:text-soft-gray-600 transition-colors ml-4">
+                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                        </svg>
+                                    </button>
                                 </div>
                             </div>
-                        </div>
 
-                        <div class="flex gap-2">
-                            <button type="submit"
-                                    class="flex-1 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
-                                Import
-                            </button>
-                            <button type="button"
-                                    onclick="document.getElementById('importModal').classList.add('hidden')"
-                                    class="flex-1 bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400 transition-colors">
-                                Cancel
-                            </button>
-                        </div>
-                    </form>
+                            {{-- Modal Body --}}
+                            <div class="px-8 py-6 space-y-5">
+                                {{-- File Upload --}}
+                                <div>
+                                    <label class="block text-sm font-semibold text-soft-gray-900 mb-3">
+                                        Select Excel File
+                                    </label>
+                                    <div class="relative">
+                                        <input type="file" 
+                                               name="file" 
+                                               accept=".xlsx,.xls"
+                                               required
+                                               class="block w-full text-sm text-soft-gray-900 file:mr-4 file:py-3 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-soft-gray-900 file:text-white hover:file:bg-soft-gray-800 file:cursor-pointer border border-soft-gray-300 rounded-xl cursor-pointer bg-soft-gray-50 focus:outline-none focus:border-soft-gray-900 focus:ring-2 focus:ring-soft-gray-900 focus:ring-opacity-20 transition-all">
+                                    </div>
+                                    <p class="mt-2 text-xs text-soft-gray-500">
+                                        Supported formats: <span class="font-semibold">.xlsx, .xls</span> • Maximum size: <span class="font-semibold">10MB</span>
+                                    </p>
+                                </div>
+
+                                {{-- Required Columns Info --}}
+                                <div class="bg-soft-gray-50 border-l-4 border-soft-gray-900 rounded-r-xl p-4">
+                                    <div class="flex gap-3">
+                                        <svg class="w-5 h-5 text-soft-gray-700 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        <div class="flex-1">
+                                            <p class="text-sm font-semibold text-soft-gray-900 mb-2">Required Excel Columns:</p>
+                                            <div class="flex flex-wrap gap-2">
+                                                <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-mono font-medium bg-white border border-soft-gray-200 text-soft-gray-700">Nama</span>
+                                                <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-mono font-medium bg-white border border-soft-gray-200 text-soft-gray-700">Email</span>
+                                                <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-mono font-medium bg-white border border-soft-gray-200 text-soft-gray-700">Phone</span>
+                                                <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-mono font-medium bg-white border border-soft-gray-200 text-soft-gray-700">Category</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {{-- Important Notes --}}
+                                <div class="space-y-2">
+                                    <p class="text-xs font-semibold text-soft-gray-700 uppercase tracking-wider">Important Notes:</p>
+                                    <ul class="space-y-1.5 text-xs text-soft-gray-600">
+                                        <li class="flex items-start gap-2">
+                                            <svg class="w-4 h-4 text-soft-gray-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                            </svg>
+                                            <span>Existing business names will be skipped to prevent duplicates</span>
+                                        </li>
+                                        <li class="flex items-start gap-2">
+                                            <svg class="w-4 h-4 text-soft-gray-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                            </svg>
+                                            <span>Missing business mode will default to <span class="font-mono font-semibold">product</span></span>
+                                        </li>
+                                        <li class="flex items-start gap-2">
+                                            <svg class="w-4 h-4 text-soft-gray-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                            </svg>
+                                            <span>All data will be validated before import</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            {{-- Modal Footer --}}
+                            <div class="px-8 py-5 bg-soft-gray-50 border-t border-soft-gray-100 flex justify-end gap-3">
+                                <button type="button"
+                                        onclick="document.getElementById('importModal').classList.add('hidden')"
+                                        class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-soft-gray-700 bg-white border border-soft-gray-300 rounded-xl hover:bg-soft-gray-50 hover:border-soft-gray-400 transition-all duration-200">
+                                    Cancel
+                                </button>
+                                <button type="submit"
+                                        class="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-semibold text-white bg-soft-gray-900 rounded-xl hover:bg-soft-gray-800 shadow-md hover:shadow-lg transition-all duration-200">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                    </svg>
+                                    Import Businesses
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
-
-            <script>
-                function validateImportFile() {
-                    const fileInput = document.getElementById('import_file');
-                    const file = fileInput.files[0];
-                    
-                    if (!file) {
-                        alert('Please select a file to import');
-                        return false;
-                    }
-                    
-                    // Check file size (10 MB = 10 * 1024 * 1024 bytes)
-                    const maxSize = 10 * 1024 * 1024;
-                    if (file.size > maxSize) {
-                        alert('File size exceeds 10 MB. Please select a smaller file.');
+        @endif
+    @endauth
                         return false;
                     }
                     
