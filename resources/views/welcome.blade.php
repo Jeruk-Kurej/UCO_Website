@@ -35,12 +35,8 @@
 </head>
 <body class="antialiased bg-soft-white">
     <div class="h-screen flex flex-col overflow-hidden relative">
-        <!-- Elegant Background Accents -->
-        <div class="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-br from-uco-orange-100 to-uco-yellow-100 rounded-full blur-3xl opacity-20 -z-10"></div>
-        <div class="absolute bottom-0 left-0 w-[500px] h-[500px] bg-gradient-to-tr from-uco-yellow-50 to-uco-orange-50 rounded-full blur-3xl opacity-30 -z-10"></div>
-        
         {{-- Main Content --}}
-        <main class="flex-1 flex items-center relative overflow-hidden">
+        <main class="flex-1 flex items-center relative overflow-hidden z-10">
             <div class="max-w-6xl mx-auto px-6 w-full relative z-10">
                 <div class="grid lg:grid-cols-2 gap-16 items-center">
                     {{-- Left: Content --}}

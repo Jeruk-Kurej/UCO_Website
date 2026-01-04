@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Business;
+use App\Models\UcTestimony;
 use Illuminate\View\View;
 
 class DashboardController extends Controller
@@ -31,8 +32,19 @@ class DashboardController extends Controller
             $featuredBusinesses = $featuredBusinesses->merge($latestBusinesses);
         }
 
+        // Fetch approved testimonies for homepage
+        $testimonies = UcTestimony::query()
+            ->with('aiAnalysis')
+            ->whereHas('aiAnalysis', function ($query) {
+                $query->where('is_approved', true);
+            })
+            ->latest()
+            ->take(6)
+            ->get();
+
         return view('dashboard', [
-            'featuredBusinesses' => $featuredBusinesses
+            'featuredBusinesses' => $featuredBusinesses,
+            'testimonies' => $testimonies,
         ]);
     }
 }
