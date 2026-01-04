@@ -56,11 +56,20 @@
 
                     {{-- Profile Dropdown --}}
                     <div class="relative group">
+                        @php
+                            $currentUser = Auth::user();
+                        @endphp
                         <button class="text-sm font-medium text-soft-gray-700 group-hover:text-soft-gray-900 transition flex items-center gap-2 px-3 py-2 rounded-lg group-hover:bg-soft-gray-50">
-                            <div class="w-7 h-7 bg-gradient-to-br from-uco-orange-500 to-uco-yellow-500 rounded-lg flex items-center justify-center text-white text-xs font-bold">
-                                {{ substr(Auth::user()->name, 0, 1) }}
-                            </div>
-                            {{ Auth::user()->name }}
+                            @if($currentUser->profile_photo_url)
+                                <img src="{{ asset('storage/' . $currentUser->profile_photo_url) }}?t={{ $currentUser->updated_at?->timestamp ?? time() }}" 
+                                     alt="Profile" 
+                                     class="w-7 h-7 rounded-lg object-cover">
+                            @else
+                                <div class="w-7 h-7 bg-gradient-to-br from-uco-orange-500 to-uco-yellow-500 rounded-lg flex items-center justify-center text-white text-xs font-bold">
+                                    {{ substr($currentUser->name, 0, 1) }}
+                                </div>
+                            @endif
+                            {{ $currentUser->name }}
                             <svg class="w-4 h-4 group-hover:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                             </svg>
@@ -68,11 +77,11 @@
 
                         <div class="absolute right-0 mt-2 w-60 bg-white rounded-xl shadow-xl border border-soft-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
                             <div class="px-4 py-3 border-b border-soft-gray-100">
-                                <p class="text-sm font-semibold text-soft-gray-900">{{ Auth::user()->name }}</p>
-                                <p class="text-xs text-soft-gray-600 mt-0.5">{{ Auth::user()->email }}</p>
+                                <p class="text-sm font-semibold text-soft-gray-900">{{ $currentUser->name }}</p>
+                                <p class="text-xs text-soft-gray-600 mt-0.5">{{ $currentUser->email }}</p>
                                 <span class="inline-block mt-2 px-2.5 py-1 text-xs font-medium rounded-lg 
-                                    {{ Auth::user()->isAdmin() ? 'bg-soft-gray-100 text-soft-gray-800' : (Auth::user()->isStudent() ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800') }}">
-                                    {{ ucfirst(Auth::user()->role) }}
+                                    {{ $currentUser->isAdmin() ? 'bg-soft-gray-100 text-soft-gray-800' : ($currentUser->isStudent() ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800') }}">
+                                    {{ ucfirst($currentUser->role) }}
                                 </span>
                             </div>
                             <div class="py-2">
@@ -141,14 +150,23 @@
                         </a>
                     </div>
                 @endif
+                @php
+                    $mobileUser = Auth::user();
+                @endphp
                 <div class="pt-2 mt-2 border-t border-soft-gray-100">
                     <div class="flex items-center gap-2 px-3 py-2">
-                        <div class="w-8 h-8 bg-gradient-to-br from-uco-orange-500 to-uco-yellow-500 rounded-lg flex items-center justify-center text-white text-xs font-bold">
-                            {{ substr(Auth::user()->name, 0, 1) }}
-                        </div>
+                        @if($mobileUser->profile_photo_url)
+                            <img src="{{ asset('storage/' . $mobileUser->profile_photo_url) }}?t={{ $mobileUser->updated_at?->timestamp ?? time() }}" 
+                                 alt="Profile" 
+                                 class="w-8 h-8 rounded-lg object-cover">
+                        @else
+                            <div class="w-8 h-8 bg-gradient-to-br from-uco-orange-500 to-uco-yellow-500 rounded-lg flex items-center justify-center text-white text-xs font-bold">
+                                {{ substr($mobileUser->name, 0, 1) }}
+                            </div>
+                        @endif
                         <div>
-                            <p class="text-xs font-semibold text-soft-gray-900">{{ Auth::user()->name }}</p>
-                            <p class="text-xs text-soft-gray-600">{{ Auth::user()->email }}</p>
+                            <p class="text-xs font-semibold text-soft-gray-900">{{ $mobileUser->name }}</p>
+                            <p class="text-xs text-soft-gray-600">{{ $mobileUser->email }}</p>
                         </div>
                     </div>
                     <a href="/profile" class="block py-2.5 px-3 text-sm font-medium text-soft-gray-700 hover:bg-soft-gray-50 hover:text-soft-gray-900 rounded-lg">

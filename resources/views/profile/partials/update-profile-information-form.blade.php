@@ -18,7 +18,7 @@
                     @if($user->profile_photo_url)
                         <img 
                             id="profile-photo-preview" 
-                            src="{{ asset('storage/' . $user->profile_photo_url) }}" 
+                            src="{{ asset('storage/' . $user->profile_photo_url) }}?t={{ $user->updated_at?->timestamp ?? time() }}" 
                             alt="Profile Photo" 
                             class="w-24 h-24 rounded-full object-cover border-4 border-gray-200 shadow-md"
                         />

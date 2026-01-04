@@ -57,6 +57,9 @@ class ProfileController extends Controller
             }
 
             $user->save();
+            
+            // Refresh auth session to reflect updated data
+            Auth::setUser($user->fresh());
 
             return Redirect::route('profile.edit')->with('status', 'profile-updated');
         } catch (\Exception $e) {
