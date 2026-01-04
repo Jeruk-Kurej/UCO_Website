@@ -8,35 +8,64 @@ use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
+use Maatwebsite\Excel\Concerns\WithBatchInserts;
+use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Illuminate\Support\Str;
 
-class UsersImport implements ToModel, WithHeadingRow, WithValidation
+class UsersImport implements ToModel, WithHeadingRow, WithValidation, WithBatchInserts, WithChunkReading
 {
     protected $errors = [];
     protected $successCount = 0;
     protected $skippedCount = 0;
 
     /**
+     * Batch size for bulk inserts
+     */
+    public function batchSize(): int
+    {
+        return 100;
+    }
+
+    /**
+     * Chunk size for reading
+     */
+    public function chunkSize(): int
+    {
+        return 100;
+    }
+
+    /**
      * Detect if the Excel data is business data instead of user data
      */
     private function isBusinessData(array $row): bool
     {
-        // Check for business-specific columns
-        $businessColumns = ['business_name', 'business_type', 'business_line', 'business_mode', 'established_date', 'employee_count', 'revenue_range'];
+        // Only reject if it's CLEARLY business data (has business columns but NO user columns)
+        $businessColumns = ['business_name', 'business_type', 'business_mode', 'established_date', 'employee_count', 'revenue_range'];
+        $userColumns = ['name', 'email', 'username', 'nis', 'student_year', 'major'];
         
+        $hasUserData = false;
+        foreach ($userColumns as $column) {
+            if (array_key_exists($column, $row) && !empty($row[$column])) {
+                $hasUserData = true;
+                break;
+            }
+        }
+        
+        // If we have user data (name or email), this is USER data, not business data
+        if ($hasUserData) {
+            return false;
+        }
+        
+        // Only mark as business data if NO user columns exist but business columns do
         $businessColumnCount = 0;
         foreach ($businessColumns as $column) {
-            if (array_key_exists($column, $row)) {
+            if (array_key_exists($column, $row) && !empty($row[$column])) {
                 $businessColumnCount++;
             }
         }
         
-        // If 2 or more business columns exist, this is likely business data
-        if ($businessColumnCount >= 2) {
-            return true;
-        }
-        
-        return false;
+        // If 3 or more business columns exist AND no user data, this is business data
+        return $businessColumnCount >= 3;
     }
 
     /**
