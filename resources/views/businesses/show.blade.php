@@ -409,7 +409,7 @@
                     @auth
                         @if(auth()->id() === $business->user_id || auth()->user()->isAdmin())
                             <a href="{{ route('businesses.contacts.create', $business) }}" 
-                               class="inline-flex items-center px-3 py-2 bg-orange-600 text-white text-sm rounded-md hover:bg-orange-700 transition duration-150">
+                               class="inline-flex items-center px-3 py-2 bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium rounded-lg shadow-sm transition duration-150">
                                 <i class="bi bi-plus-lg me-2"></i>
                                 Add Contact
                             </a>
@@ -470,7 +470,7 @@
                             @if(auth()->id() === $business->user_id || auth()->user()->isAdmin())
                                 <p class="text-sm text-gray-400 mb-4">Add contact methods so customers can reach you</p>
                                 <a href="{{ route('businesses.contacts.create', $business) }}" 
-                                   class="inline-flex items-center px-4 py-2 bg-orange-600 text-white text-sm rounded-md hover:bg-orange-700 transition duration-150">
+                                   class="inline-flex items-center px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium rounded-lg shadow-sm transition duration-150">
                                     <i class="bi bi-plus-lg me-2"></i>
                                     Add Your First Contact
                                 </a>

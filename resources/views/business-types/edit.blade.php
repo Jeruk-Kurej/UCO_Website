@@ -70,7 +70,7 @@
                     {{-- Submit Buttons --}}
                     <div class="flex items-center justify-between pt-6 border-t border-gray-200">
                         <a href="{{ route('business-types.index') }}" 
-                           class="inline-flex items-center px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition duration-150">
+                           class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition duration-150">
                             <i class="bi bi-x-lg me-2"></i>
                             Cancel
                         </a>
@@ -78,14 +78,14 @@
                             @if($businessType->businesses->count() === 0)
                                 <button type="button" 
                                         onclick="if(confirm('Are you sure you want to delete this business type?')) document.getElementById('delete-form').submit();"
-                                        class="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition duration-150">
+                                        class="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition duration-150">
                                     <i class="bi bi-trash me-2"></i>
                                     Delete
                                 </button>
                             @else
                                 <button type="button" 
                                         disabled
-                                        class="inline-flex items-center px-4 py-2 bg-gray-300 text-gray-500 rounded-md cursor-not-allowed"
+                                        class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-400 rounded-lg cursor-not-allowed"
                                         title="Cannot delete - type is in use">
                                     <i class="bi bi-trash me-2"></i>
                                     Delete
@@ -93,7 +93,7 @@
                             @endif
 
                             <button type="submit" 
-                                    class="inline-flex items-center gap-2 px-6 py-2.5 bg-soft-gray-900 hover:bg-soft-gray-800 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all duration-200">
+                                    class="inline-flex items-center gap-2 px-6 py-2.5 bg-gray-900 hover:bg-gray-800 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
                                 </svg>

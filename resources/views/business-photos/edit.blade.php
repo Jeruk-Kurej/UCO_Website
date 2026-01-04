@@ -80,13 +80,13 @@
                         <div class="flex items-center gap-3">
                             <button type="button" 
                                     onclick="if(confirm('Delete this photo permanently?')) document.getElementById('delete-form').submit();"
-                                    class="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition duration-150">
+                                    class="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition duration-150">
                                 <i class="bi bi-trash me-2"></i>
                                 Delete
                             </button>
 
                             <button type="submit" 
-                                    class="inline-flex items-center px-6 py-2 bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white font-semibold rounded-md shadow-sm transition duration-150">
+                                    class="inline-flex items-center gap-2 px-6 py-2.5 bg-gray-900 hover:bg-gray-800 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200">
                                 <i class="bi bi-check-lg me-2"></i>
                                 Update Photo
                             </button>

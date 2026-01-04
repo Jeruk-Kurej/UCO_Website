@@ -22,7 +22,7 @@
             @auth
                 @if(auth()->user()->isAdmin())
                     <a href="{{ route('contact-types.edit', $contactType) }}" 
-                       class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white rounded-lg font-semibold text-sm shadow-sm transition duration-150">
+                       class="inline-flex items-center px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-lg font-semibold text-sm shadow-sm transition duration-150">
                         <i class="bi bi-pencil me-2"></i>
                         Edit Contact Type
                     </a>
