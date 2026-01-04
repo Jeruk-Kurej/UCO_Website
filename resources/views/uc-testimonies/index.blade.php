@@ -5,8 +5,14 @@
                 <div class="p-6 text-gray-900">
                     <div class="flex items-start justify-between gap-4">
                         <div>
-                            <h2 class="text-xl font-bold">Universitas Ciputra Online Testimonies</h2>
-                            <p class="text-sm text-gray-600 mt-1">Share your experience with Universitas Ciputra Online.</p>
+                            <div class="flex items-center gap-3 mb-2">
+                                <a href="{{ route('dashboard') }}" 
+                                   class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-800 transition duration-150">
+                                    <i class="bi bi-arrow-left text-lg"></i>
+                                </a>
+                                <h2 class="text-xl font-bold">Universitas Ciputra Online Testimonies</h2>
+                            </div>
+                            <p class="text-sm text-gray-600 ml-13">Share your experience with Universitas Ciputra Online.</p>
                         </div>
                     </div>
 
@@ -18,7 +24,7 @@
 
                     @auth
                         @if (!auth()->user()->isAdmin())
-                            <div class="mt-6 border border-gray-200 rounded-lg p-4">
+                            <div class="mt-6 border border-gray-200 rounded-lg p-4" x-data="{ rating: {{ old('rating', 0) }} }">
                                 <h3 class="font-semibold">Write a Testimony</h3>
 
                                 <form action="{{ route('uc-testimonies.store') }}" method="POST" class="mt-4 space-y-4">
@@ -73,7 +79,7 @@
                                         <button type="submit" class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-md font-semibold">
                                             Submit
                                         </button>
-                                        <p class="text-xs text-gray-500">Submissions are AI-moderated.</p>
+                                        
                                     </div>
                                 </form>
                             </div>

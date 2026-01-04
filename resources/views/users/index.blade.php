@@ -56,11 +56,30 @@
                                         </div>
                                     </div>
                                 </td>
-                                <td class="px-4 py-3">{{ $user->email }}</td>
-                                <td class="px-4 py-3 text-center">
-                                    <span class="inline-flex items-center px-2 py-1 text-xs rounded-md {{ $user->role === 'admin' ? 'bg-indigo-100 text-indigo-800' : ($user->role === 'student' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800') }}">
-                                        {{ ucfirst($user->role) }}
-                                    </span>
+
+                                {{-- Email --}}
+                                <td class="px-4 py-4">
+                                    <div class="text-sm text-gray-600">{{ $user->email }}</div>
+                                </td>
+
+                                {{-- Role --}}
+                                <td class="px-4 py-4 text-center">
+                                    @if($user->role === 'admin')
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-md bg-purple-100 text-purple-800">
+                                            
+                                            Admin
+                                        </span>
+                                    @elseif($user->role === 'student')
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-md bg-blue-100 text-blue-800">
+                                            
+                                            Student
+                                        </span>
+                                    @else
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-md bg-green-100 text-green-800">
+                                            
+                                            Alumni
+                                        </span>
+                                    @endif
                                 </td>
                                 <td class="px-4 py-3 text-center">
                                     <span class="inline-flex items-center px-2 py-1 text-xs rounded-md {{ $user->is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-700' }}">

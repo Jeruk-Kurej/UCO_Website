@@ -36,10 +36,16 @@ class UcTestimonyController extends Controller
         $user = $this->getAuthUserOrNull();
 
         if (!$user) {
+            if ($request->wantsJson()) {
+                return response()->json(['message' => 'Unauthenticated.'], 401);
+            }
             abort(401, 'Unauthenticated.');
         }
 
         if ($user->isAdmin()) {
+            if ($request->wantsJson()) {
+                return response()->json(['message' => 'Administrators cannot create testimonies. Only students and alumni can.'], 403);
+            }
             abort(403, 'Administrators cannot create testimonies. Only students and alumni can.');
         }
 
@@ -68,16 +74,18 @@ class UcTestimonyController extends Controller
                 'is_approved' => $result['is_approved'],
             ]);
 
-            // Always show a generic message to the submitter.
-            // Non-approved items simply won't appear in the public list.
-            return redirect()
-                ->route('uc-testimonies.index')
-                ->with('success', 'Your testimony has been submitted.');
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            return back()->withErrors($e->errors())->withInput();
-        } catch (\Exception $e) {
-            return back()->withErrors(['error' => 'An error occurred while submitting your testimony. Please try again.'])->withInput();
+        // Always show a generic message to the submitter.
+        // Non-approved items simply won't appear in the public list.
+        if ($request->wantsJson()) {
+            return response()->json([
+                'message' => 'Your testimony has been submitted successfully!',
+                'testimony' => $testimony,
+            ], 201);
         }
+
+        return redirect()
+            ->route('uc-testimonies.index')
+            ->with('success', 'Your testimony has been submitted.');
     }
 
     public function destroy(UcTestimony $ucTestimony)

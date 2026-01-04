@@ -20,11 +20,6 @@
                         Business
                     </a>
 
-                    <a href="{{ route('uc-testimonies.index') }}" 
-                       class="text-sm font-medium {{ request()->routeIs('uc-testimonies.*') ? 'text-soft-gray-900 font-semibold' : 'text-soft-gray-600 hover:text-soft-gray-900' }} transition duration-150">
-                        Testimonies
-                    </a>
-
                     @if(auth()->user()->isAdmin())
                         <div class="relative group">
                             <button class="text-sm font-medium {{ request()->routeIs('users.*') || request()->routeIs('business-types.*') || request()->routeIs('contact-types.*') || request()->routeIs('ai-analyses.*') ? 'text-soft-gray-900 font-semibold' : 'text-soft-gray-600 group-hover:text-soft-gray-900' }} transition flex items-center gap-2">
@@ -32,12 +27,20 @@
                                 <i class="fa-solid fa-caret-down text-xs"></i>
                             </button>
 
-                            <div class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow border border-soft-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
-                                <div class="py-1">
-                                    <a href="/users" class="block px-4 py-2 text-sm text-soft-gray-700 hover:bg-soft-gray-50">Manage Users</a>
-                                    <a href="/business-types" class="block px-4 py-2 text-sm text-soft-gray-700 hover:bg-soft-gray-50">Business Types</a>
-                                    <a href="/contact-types" class="block px-4 py-2 text-sm text-soft-gray-700 hover:bg-soft-gray-50">Contact Types</a>
-                                    <a href="/ai-analyses" class="block px-4 py-2 text-sm text-soft-gray-700 hover:bg-soft-gray-50">AI Moderation</a>
+                            <div class="absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-xl border border-soft-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
+                                <div class="py-2">
+                                    <a href="/users" class="block px-4 py-2.5 text-sm font-medium text-soft-gray-700 hover:bg-soft-gray-50 hover:text-soft-gray-900 transition">
+                                        Manage Users
+                                    </a>
+                                    <a href="/business-types" class="block px-4 py-2.5 text-sm font-medium text-soft-gray-700 hover:bg-soft-gray-50 hover:text-soft-gray-900 transition">
+                                        Business Types
+                                    </a>
+                                    <a href="/contact-types" class="block px-4 py-2.5 text-sm font-medium text-soft-gray-700 hover:bg-soft-gray-50 hover:text-soft-gray-900 transition">
+                                        Contact Types
+                                    </a>
+                                    <a href="/ai-analyses" class="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-soft-gray-700 hover:bg-soft-gray-50 hover:text-soft-gray-900 transition">
+                                        Testimony Review
+                                    </a>
                                 </div>
                             </div>
                         </div>
@@ -90,10 +93,6 @@
                 <a href="/businesses" 
                    class="block py-2.5 px-3 text-sm font-medium rounded-lg {{ request()->routeIs('businesses.*') ? 'bg-soft-gray-100 text-soft-gray-900' : 'text-soft-gray-700 hover:bg-soft-gray-50' }}">
                     Business
-                </a>
-                <a href="{{ route('uc-testimonies.index') }}" 
-                   class="block py-2.5 px-3 text-sm font-medium rounded-lg {{ request()->routeIs('uc-testimonies.*') ? 'bg-soft-gray-100 text-soft-gray-900' : 'text-soft-gray-700 hover:bg-soft-gray-50' }}">
-                    Testimonies
                 </a>
                 @if(auth()->user()->isAdmin())
                     <div class="pt-2 border-t border-soft-gray-100">
