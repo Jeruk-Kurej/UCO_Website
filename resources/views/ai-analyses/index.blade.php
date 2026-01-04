@@ -27,11 +27,11 @@
             </div>
             <div class="bg-white rounded-lg shadow-sm p-4 border-l-4 border-red-500">
                 <p class="text-xs font-medium text-gray-500 uppercase">UC Needs Review</p>
-                <p class="text-2xl font-bold text-red-600 mt-1">{{ $ucRejectedCount }}</p>
+                <p class="text-2xl font-bold text-gray-900 mt-1">{{ $rejectedCount }}</p>
             </div>
             <div class="bg-white rounded-lg shadow-sm p-4 border-l-4 border-purple-500">
                 <p class="text-xs font-medium text-gray-500 uppercase">UC Approval Rate</p>
-                <p class="text-2xl font-bold text-purple-600 mt-1">{{ $ucApprovalRate }}%</p>
+                <p class="text-2xl font-bold text-gray-900 mt-1">{{ $approvalRate }}%</p>
             </div>
         </div>
 

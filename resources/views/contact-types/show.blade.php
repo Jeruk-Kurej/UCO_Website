@@ -2,16 +2,17 @@
     <div class="max-w-4xl mx-auto">
         {{-- Page Header --}}
         <div class="mb-6 flex items-center justify-between">
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-4">
                 <a href="{{ route('contact-types.index') }}" 
-                   class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-800 transition duration-150">
-                    <i class="bi bi-arrow-left text-lg"></i>
+                   class="group inline-flex items-center gap-2.5 px-4 py-2.5 bg-white hover:bg-gray-900 border border-gray-200 hover:border-gray-900 text-gray-700 hover:text-white rounded-xl font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200">
+                    <i class="bi bi-arrow-left text-base group-hover:-translate-x-0.5 transition-transform duration-200"></i>
+                    <span>Back</span>
                 </a>
                 <div class="flex items-center gap-3">
                     <div class="w-12 h-12 rounded-full bg-gradient-to-br from-orange-400 to-yellow-400 flex items-center justify-center text-white text-2xl">
                         <i class="{{ $contactType->icon_class }}"></i>
                     </div>
-                    <div>
+                    <div class="flex-1">
                         <h1 class="text-2xl font-bold text-gray-900">{{ $contactType->platform_name }}</h1>
                         <p class="text-sm text-gray-600">Contact Type Details</p>
                     </div>

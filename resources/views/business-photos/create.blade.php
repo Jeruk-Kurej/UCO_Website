@@ -31,7 +31,7 @@
                                accept="image/*"
                                required
                                class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none focus:border-orange-500 focus:ring-orange-500 @error('photo') border-red-500 @enderror">
-                        <p class="mt-1 text-xs text-gray-500">Accepted formats: JPG, PNG, GIF. Max size: 5MB</p>
+                        <p class="mt-1 text-xs text-gray-500">Accepted formats: JPG, PNG, GIF. Max size: 10MB</p>
                         @error('photo')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
@@ -99,11 +99,11 @@
         // Image preview with file size validation
         document.getElementById('photo').addEventListener('change', function(e) {
             const file = e.target.files[0];
-            const maxSize = 2 * 1024 * 1024; // 2MB
+            const maxSize = 10 * 1024 * 1024; // 10MB
             
             if (file) {
                 if (file.size > maxSize) {
-                    alert('Photo must not be larger than 2MB. Please choose a smaller file.');
+                    alert('Photo must not be larger than 10MB. Please choose a smaller file.');
                     e.target.value = '';
                     document.getElementById('preview-container').classList.add('hidden');
                     return;

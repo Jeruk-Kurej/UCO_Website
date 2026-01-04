@@ -110,7 +110,7 @@ class BusinessController extends Controller
                 'position' => 'nullable|string|max:255',
                 
                 // Enhanced fields
-                'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
+                'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:10240',
                 'established_date' => 'nullable|date',
                 'address' => 'nullable|string',
                 'employee_count' => 'nullable|integer|min:0',
@@ -264,7 +264,7 @@ class BusinessController extends Controller
                 'position' => 'nullable|string|max:255',
                 
                 // Enhanced fields
-                'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
+                'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:10240',
                 'established_date' => 'nullable|date',
                 'address' => 'nullable|string',
                 'employee_count' => 'nullable|integer|min:0',

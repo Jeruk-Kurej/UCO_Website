@@ -1,6 +1,33 @@
 <x-app-layout>
     <div class="max-w-5xl mx-auto py-12 px-4" x-data="{ activeTab: 'basic' }">
         
+        {{-- Success/Error Messages --}}
+        @if(session('success'))
+            <div class="mb-6 bg-green-50 border border-green-200 text-green-800 px-6 py-4 rounded-xl shadow-sm flex items-start gap-3">
+                <i class="bi bi-check-circle-fill text-green-600 text-xl flex-shrink-0 mt-0.5"></i>
+                <div class="flex-1">
+                    <p class="font-semibold">Success!</p>
+                    <p class="text-sm">{{ session('success') }}</p>
+                </div>
+            </div>
+        @endif
+
+        @if($errors->any())
+            <div class="mb-6 bg-red-50 border border-red-200 text-red-800 px-6 py-4 rounded-xl shadow-sm">
+                <div class="flex items-start gap-3">
+                    <i class="bi bi-exclamation-triangle-fill text-red-600 text-xl flex-shrink-0 mt-0.5"></i>
+                    <div class="flex-1">
+                        <p class="font-semibold mb-2">Please fix the following errors:</p>
+                        <ul class="list-disc list-inside space-y-1 text-sm">
+                            @foreach($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        @endif
+
         {{-- Page Header --}}
         <div class="bg-white border border-slate-200 rounded-xl shadow-sm px-8 py-10 mb-8">
             <div class="flex items-center gap-4">
@@ -235,7 +262,7 @@
                             </svg>
                         </div>
                         <p class="text-sm text-slate-600 font-medium">Klik area ini untuk upload logo</p>
-                        <p class="text-xs text-slate-400 mt-1">PNG, JPG up to 2MB</p>
+                        <p class="text-xs text-slate-400 mt-1">PNG, JPG, SVG up to 10MB</p>
                     </label>
                     <div id="logoPreview" class="mt-4 hidden">
                         <img src="" alt="Logo Preview" class="max-w-xs rounded-lg shadow-md mx-auto">
@@ -555,11 +582,11 @@
     <script>
         function previewLogo(event) {
             const file = event.target.files[0];
-            const maxSize = 2 * 1024 * 1024; // 2MB
+            const maxSize = 10 * 1024 * 1024; // 10MB
             
             if (file) {
                 if (file.size > maxSize) {
-                    alert('Logo must not be larger than 2MB. Please choose a smaller file.');
+                    alert('Logo must not be larger than 10MB. Please choose a smaller file.');
                     event.target.value = '';
                     return;
                 }

@@ -6,6 +6,7 @@ use App\Http\Requests\ProfileUpdateRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
@@ -29,16 +30,17 @@ class ProfileController extends Controller
     {
         try {
             $user = $request->user();
+            
+            // Fill basic validated fields
             $user->fill($request->validated());
 
             // Handle profile photo upload
             if ($request->hasFile('profile_photo')) {
-                // Additional validation for file size
                 $file = $request->file('profile_photo');
                 
-                if ($file->getSize() > 2048 * 1024) { // 2MB in bytes
+                if ($file->getSize() > 10240 * 1024) { // 10MB in bytes
                     return Redirect::route('profile.edit')
-                        ->withErrors(['profile_photo' => 'Profile photo must not be larger than 2MB.'])
+                        ->withErrors(['profile_photo' => 'Profile photo must not be larger than 10MB.'])
                         ->withInput();
                 }
                 
@@ -50,6 +52,19 @@ class ProfileController extends Controller
                 // Store new photo
                 $path = $file->store('profile-photos', 'public');
                 $user->profile_photo_url = $path;
+            }
+
+            // Handle password change
+            if ($request->filled('current_password') && $request->filled('password')) {
+                // Verify current password
+                if (!Hash::check($request->current_password, $user->password)) {
+                    return Redirect::route('profile.edit')
+                        ->withErrors(['current_password' => 'The current password is incorrect.'])
+                        ->withInput();
+                }
+                
+                // Update to new password
+                $user->password = Hash::make($request->password);
             }
 
             if ($user->isDirty('email')) {

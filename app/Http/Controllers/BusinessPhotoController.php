@@ -66,7 +66,7 @@ class BusinessPhotoController extends Controller
 
         try {
             $validated = $request->validate([
-                'photo' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+                'photo' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
                 'caption' => 'nullable|string|max:255',
             ]);
 
@@ -75,8 +75,8 @@ class BusinessPhotoController extends Controller
                 $file = $request->file('photo');
                 
                 // Additional file size check
-                if ($file->getSize() > 2048 * 1024) {
-                    return back()->withErrors(['photo' => 'Photo must not be larger than 2MB.'])->withInput();
+                if ($file->getSize() > 10240 * 1024) {
+                    return back()->withErrors(['photo' => 'Photo must not be larger than 10MB.'])->withInput();
                 }
                 
                 $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
@@ -147,7 +147,7 @@ class BusinessPhotoController extends Controller
         }
 
         $validated = $request->validate([
-            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
             'caption' => 'nullable|string|max:255',
         ]);
 

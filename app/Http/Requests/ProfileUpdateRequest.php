@@ -31,7 +31,28 @@ class ProfileUpdateRequest extends FormRequest
                 'max:255',
                 Rule::unique(User::class)->ignore($this->user()->id),
             ],
-            'profile_photo' => ['nullable', 'image', 'mimes:jpeg,jpg,png,gif', 'max:2048'], // Max 2MB
+            'profile_photo' => ['nullable', 'image', 'mimes:jpeg,jpg,png,gif', 'max:10240'], // Max 10MB
+            
+            // Contact Information
+            'phone_number' => ['nullable', 'string', 'max:50'],
+            'mobile_number' => ['nullable', 'string', 'max:50'],
+            'whatsapp' => ['nullable', 'string', 'max:50'],
+            
+            // Personal Information
+            'birth_date' => ['nullable', 'date'],
+            'birth_city' => ['nullable', 'string', 'max:255'],
+            'religion' => ['nullable', 'string', 'max:255'],
+            
+            // Academic Information
+            'NIS' => ['nullable', 'string', 'max:255'],
+            'Student_Year' => ['nullable', 'string', 'max:50'],
+            'Major' => ['nullable', 'string', 'max:255'],
+            'CGPA' => ['nullable', 'numeric', 'min:0', 'max:4'],
+            'Is_Graduate' => ['nullable', 'boolean'],
+            
+            // Password Change (optional)
+            'current_password' => ['nullable', 'required_with:password', 'string'],
+            'password' => ['nullable', 'confirmed', 'min:8'],
         ];
     }
 }
