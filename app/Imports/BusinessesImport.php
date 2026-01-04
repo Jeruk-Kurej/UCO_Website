@@ -192,14 +192,21 @@ class BusinessesImport implements ToModel, WithHeadingRow, WithValidation, WithC
             // Parse challenges
             $challenges = $this->parseChallenges($row);
 
-            // Note: Position/jabatan is user's role in the company, not a business attribute
-            // It should be stored in user data or user_businesses_detail, not in businesses table
+            // Get user position in this business (jabatan user di perusahaan)
+            // Excel headers: "Posisi saat ini (jika intraprenuer)" or "Posisi saat ini"
+            $position = $row['posisi_saat_ini_jika_intraprenuer'] 
+                ?? $row['posisi_saat_ini'] 
+                ?? $row['position'] 
+                ?? $row['posisi'] 
+                ?? $row['jabatan']
+                ?? null;
 
             // Create business
             $business = new Business([
                 'user_id' => $user->id,
                 'business_type_id' => $businessType->id,
                 'name' => $businessName,
+                'position' => $position,
                 'description' => $description ?: (
                     $row['deskripsi_bisnis'] ?? 
                     $row['deskripsi'] ?? 
