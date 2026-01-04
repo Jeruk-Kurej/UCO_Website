@@ -7,6 +7,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
@@ -31,14 +32,35 @@ class ProfileController extends Controller
         try {
             $user = $request->user();
             
-            // Fill basic validated fields
-            $user->fill($request->validated());
+            Log::info('Profile update started', [
+                'user_id' => $user->id,
+                'has_file' => $request->hasFile('profile_photo'),
+                'all_files' => $request->allFiles()
+            ]);
+            
+            // Fill basic validated fields (exclude password fields)
+            $validatedData = $request->validated();
+            $fillableData = collect($validatedData)->except([
+                'profile_photo', 
+                'current_password', 
+                'password', 
+                'password_confirmation'
+            ])->toArray();
+            
+            $user->fill($fillableData);
 
             // Handle profile photo upload
             if ($request->hasFile('profile_photo')) {
                 $file = $request->file('profile_photo');
                 
+                Log::info('Profile photo upload detected', [
+                    'filename' => $file->getClientOriginalName(),
+                    'size' => $file->getSize(),
+                    'mime' => $file->getMimeType()
+                ]);
+                
                 if ($file->getSize() > 10240 * 1024) { // 10MB in bytes
+                    Log::warning('Profile photo too large', ['size' => $file->getSize()]);
                     return Redirect::route('profile.edit')
                         ->withErrors(['profile_photo' => 'Profile photo must not be larger than 10MB.'])
                         ->withInput();
@@ -47,11 +69,13 @@ class ProfileController extends Controller
                 // Delete old photo if exists
                 if ($user->profile_photo_url && Storage::disk('public')->exists($user->profile_photo_url)) {
                     Storage::disk('public')->delete($user->profile_photo_url);
+                    Log::info('Old profile photo deleted', ['path' => $user->profile_photo_url]);
                 }
                 
                 // Store new photo
                 $path = $file->store('profile-photos', 'public');
                 $user->profile_photo_url = $path;
+                Log::info('New profile photo stored', ['path' => $path]);
             }
 
             // Handle password change
@@ -73,13 +97,23 @@ class ProfileController extends Controller
 
             $user->save();
             
+            Log::info('Profile updated successfully', [
+                'user_id' => $user->id,
+                'profile_photo_url' => $user->profile_photo_url
+            ]);
+            
             // Refresh auth session to reflect updated data
             Auth::setUser($user->fresh());
 
             return Redirect::route('profile.edit')->with('status', 'profile-updated');
         } catch (\Exception $e) {
+            Log::error('Profile update failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
             return Redirect::route('profile.edit')
-                ->withErrors(['error' => 'An error occurred while updating your profile. Please try again.'])
+                ->withErrors(['error' => 'An error occurred while updating your profile. Please try again: ' . $e->getMessage()])
                 ->withInput();
         }
     }
