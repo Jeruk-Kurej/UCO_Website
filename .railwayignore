@@ -1,0 +1,10 @@
+/node_modules
+/vendor
+/storage/*.key
+/storage/pail
+/.env
+/.env.backup
+/.phpunit.result.cache
+/public/hot
+/public/storage
+/auth.json

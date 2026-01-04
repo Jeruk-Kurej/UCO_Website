@@ -143,59 +143,6 @@
             @endif
         </div>
 
-        {{-- Icon Reference Guide --}}
-        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6">
-            <div class="flex items-start gap-4">
-                <div class="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center text-white flex-shrink-0">
-                    <i class="bi bi-info-circle text-2xl"></i>
-                </div>
-                <div class="flex-1">
-                    <h3 class="text-sm font-semibold text-blue-900 mb-2">Bootstrap Icons Reference</h3>
-                    <p class="text-sm text-blue-800 mb-3">
-                        Use Bootstrap Icons for contact types. Browse available icons at: 
-                        <a href="https://icons.getbootstrap.com/" target="_blank" class="underline font-semibold hover:text-blue-600">icons.getbootstrap.com</a>
-                    </p>
-                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-                        <div class="bg-white rounded-lg p-3 border border-blue-200">
-                            <div class="flex items-center gap-2 mb-1">
-                                <i class="bi bi-whatsapp text-green-600 text-lg"></i>
-                                <span class="text-xs font-medium text-gray-700">WhatsApp</span>
-                            </div>
-                            <code class="text-xs text-gray-500">bi bi-whatsapp</code>
-                        </div>
-                        <div class="bg-white rounded-lg p-3 border border-blue-200">
-                            <div class="flex items-center gap-2 mb-1">
-                                <i class="bi bi-instagram text-pink-600 text-lg"></i>
-                                <span class="text-xs font-medium text-gray-700">Instagram</span>
-                            </div>
-                            <code class="text-xs text-gray-500">bi bi-instagram</code>
-                        </div>
-                        <div class="bg-white rounded-lg p-3 border border-blue-200">
-                            <div class="flex items-center gap-2 mb-1">
-                                <i class="bi bi-facebook text-blue-600 text-lg"></i>
-                                <span class="text-xs font-medium text-gray-700">Facebook</span>
-                            </div>
-                            <code class="text-xs text-gray-500">bi bi-facebook</code>
-                        </div>
-                        <div class="bg-white rounded-lg p-3 border border-blue-200">
-                            <div class="flex items-center gap-2 mb-1">
-                                <i class="bi bi-telephone text-gray-600 text-lg"></i>
-                                <span class="text-xs font-medium text-gray-700">Phone</span>
-                            </div>
-                            <code class="text-xs text-gray-500">bi bi-telephone</code>
-                        </div>
-                        <div class="bg-white rounded-lg p-3 border border-blue-200">
-                            <div class="flex items-center gap-2 mb-1">
-                                <i class="bi bi-envelope text-red-600 text-lg"></i>
-                                <span class="text-xs font-medium text-gray-700">Email</span>
-                            </div>
-                            <code class="text-xs text-gray-500">bi bi-envelope</code>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         {{-- Stats Summary --}}
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div class="bg-white rounded-lg shadow-sm p-4 border-l-4 border-purple-500">

@@ -15,38 +15,45 @@ export default {
                 sans: ['Figtree', ...defaultTheme.fontFamily.sans],
             },
             colors: {
-                // UCO Orange Palette (Primary)
+                // UCO Orange Palette (Primary Accent)
                 'uco-orange': {
-                    50: '#fff7ed',
-                    100: '#ffedd5',
-                    200: '#fed7aa',
-                    300: '#fdba74',
-                    400: '#fb923c',
-                    500: '#f7931e',  // Main UCO Orange
-                    600: '#ea580c',
-                    700: '#c2410c',
-                    800: '#9a3412',
-                    900: '#7c2d12',
-                    950: '#431407',
+                    50: '#fff8f0',
+                    100: '#ffeedd',
+                    200: '#ffd9b3',
+                    300: '#ffc088',
+                    400: '#ffa85c',
+                    500: '#ff8c2e',  // Main Orange Accent
+                    600: '#f7931e',
+                    700: '#e67300',
+                    800: '#b85c00',
+                    900: '#8a4500',
                 },
-                // UCO Yellow Palette (Secondary)
+                // UCO Yellow Palette (Secondary Accent)
                 'uco-yellow': {
-                    50: '#fefce8',
-                    100: '#fef9c3',
-                    200: '#fef08a',
-                    300: '#fde047',
-                    400: '#facc15',
-                    500: '#fdb913',  // Main UCO Yellow
-                    600: '#ca8a04',
-                    700: '#a16207',
-                    800: '#854d0e',
-                    900: '#713f12',
-                    950: '#422006',
+                    50: '#fffef0',
+                    100: '#fffbd6',
+                    200: '#fff6ad',
+                    300: '#fff085',
+                    400: '#ffe95c',
+                    500: '#ffd633',  // Main Yellow Accent
+                    600: '#fdb913',
+                    700: '#d99a00',
+                    800: '#b37d00',
+                    900: '#8c6100',
                 },
-                // UCO Accent Colors
-                'uco-coral': {
-                    500: '#ff6b35',
-                    600: '#ff5722',
+                // Professional Base Colors
+                'soft-white': '#fafafa',
+                'soft-gray': {
+                    50: '#f9fafb',
+                    100: '#f3f4f6',
+                    200: '#e5e7eb',
+                    300: '#d1d5db',
+                    400: '#9ca3af',
+                    500: '#6b7280',
+                    600: '#4b5563',
+                    700: '#374151',
+                    800: '#1f2937',
+                    900: '#111827',
                 },
             },
             backgroundImage: {
