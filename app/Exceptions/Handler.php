@@ -37,6 +37,15 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Throwable $e)
     {
+        // Handle unauthenticated users
+        if ($e instanceof \Illuminate\Auth\AuthenticationException) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Unauthenticated.'], 401);
+            }
+            return redirect()->guest(route('login'))
+                ->with('error', 'Sesi login Anda telah berakhir. Silakan login kembali untuk melanjutkan.');
+        }
+
         // Handle file upload errors
         if ($e instanceof \Illuminate\Http\Exceptions\PostTooLargeException) {
             return back()->withErrors([
@@ -64,8 +73,15 @@ class Handler extends ExceptionHandler
             if ($request->expectsJson()) {
                 return response()->json(['message' => 'Access denied.'], 403);
             }
+            
+            // If session expired during admin check, redirect to login
+            if (!auth()->check()) {
+                return redirect()->guest(route('login'))
+                    ->with('error', 'Sesi login Anda telah berakhir. Silakan login kembali.');
+            }
+            
             return back()->withErrors([
-                'authorization' => 'You do not have permission to perform this action.'
+                'authorization' => 'Anda tidak memiliki izin untuk mengakses halaman ini. Hanya Administrator yang diizinkan.'
             ]);
         }
 
