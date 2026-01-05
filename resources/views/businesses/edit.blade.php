@@ -558,17 +558,26 @@
                         <div class="mb-3">
                             <p class="text-sm text-slate-600 mb-2">Current Documents:</p>
                             <div class="grid grid-cols-3 gap-4">
-                                @foreach($business->legal_documents as $doc)
-                                    <div class="border border-slate-200 rounded-lg p-3 bg-slate-50">
-                                        @if(is_array($doc) && isset($doc['file_path']))
-                                            <a href="{{ asset('storage/' . $doc['file_path']) }}" target="_blank" class="text-blue-600 hover:text-blue-800 text-sm truncate block">
-                                                📄 {{ $doc['original_name'] ?? basename($doc['file_path']) }}
-                                            </a>
-                                        @else
-                                            <a href="{{ asset('storage/' . $doc) }}" target="_blank" class="text-blue-600 hover:text-blue-800 text-sm truncate block">
-                                                📄 {{ basename($doc) }}
-                                            </a>
-                                        @endif
+                                @foreach($business->legal_documents as $index => $doc)
+                                    <div class="border border-slate-200 rounded-lg p-3 bg-slate-50 relative">
+                                        <div class="mb-2">
+                                            @if(is_array($doc) && isset($doc['file_path']))
+                                                <a href="{{ asset('storage/' . $doc['file_path']) }}" target="_blank" class="text-blue-600 hover:text-blue-800 text-sm truncate block">
+                                                    📄 {{ $doc['original_name'] ?? basename($doc['file_path']) }}
+                                                </a>
+                                            @else
+                                                <a href="{{ asset('storage/' . $doc) }}" target="_blank" class="text-blue-600 hover:text-blue-800 text-sm truncate block">
+                                                    📄 {{ basename($doc) }}
+                                                </a>
+                                            @endif
+                                        </div>
+                                        <label class="flex items-center gap-1.5 text-xs text-red-600 cursor-pointer hover:text-red-800">
+                                            <input type="checkbox" 
+                                                   name="remove_legal_docs[]" 
+                                                   value="{{ $index }}"
+                                                   class="rounded border-red-300 text-red-600 focus:ring-red-500">
+                                            <span>Hapus file ini</span>
+                                        </label>
                                     </div>
                                 @endforeach
                             </div>
@@ -597,17 +606,26 @@
                         <div class="mb-3">
                             <p class="text-sm text-slate-600 mb-2">Current Certifications:</p>
                             <div class="grid grid-cols-3 gap-4">
-                                @foreach($business->product_certifications as $cert)
-                                    <div class="border border-slate-200 rounded-lg p-3 bg-slate-50">
-                                        @if(is_array($cert) && isset($cert['file_path']))
-                                            <a href="{{ asset('storage/' . $cert['file_path']) }}" target="_blank" class="text-blue-600 hover:text-blue-800 text-sm truncate block">
-                                                🏆 {{ $cert['original_name'] ?? basename($cert['file_path']) }}
-                                            </a>
-                                        @else
-                                            <a href="{{ asset('storage/' . $cert) }}" target="_blank" class="text-blue-600 hover:text-blue-800 text-sm truncate block">
-                                                🏆 {{ basename($cert) }}
-                                            </a>
-                                        @endif
+                                @foreach($business->product_certifications as $index => $cert)
+                                    <div class="border border-slate-200 rounded-lg p-3 bg-slate-50 relative">
+                                        <div class="mb-2">
+                                            @if(is_array($cert) && isset($cert['file_path']))
+                                                <a href="{{ asset('storage/' . $cert['file_path']) }}" target="_blank" class="text-blue-600 hover:text-blue-800 text-sm truncate block">
+                                                    🏆 {{ $cert['original_name'] ?? basename($cert['file_path']) }}
+                                                </a>
+                                            @else
+                                                <a href="{{ asset('storage/' . $cert) }}" target="_blank" class="text-blue-600 hover:text-blue-800 text-sm truncate block">
+                                                    🏆 {{ basename($cert) }}
+                                                </a>
+                                            @endif
+                                        </div>
+                                        <label class="flex items-center gap-1.5 text-xs text-red-600 cursor-pointer hover:text-red-800">
+                                            <input type="checkbox" 
+                                                   name="remove_certifications[]" 
+                                                   value="{{ $index }}"
+                                                   class="rounded border-red-300 text-red-600 focus:ring-red-500">
+                                            <span>Hapus file ini</span>
+                                        </label>
                                     </div>
                                 @endforeach
                             </div>
