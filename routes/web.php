@@ -91,6 +91,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('ai-analyses.index');
     Route::get('/uc-testimonies/{ucTestimony}/ai-analysis', [AiAnalysisController::class, 'showUc'])
         ->name('uc-ai-analyses.show');
+    Route::post('/uc-testimonies/{ucTestimony}/approve', [AiAnalysisController::class, 'approve'])
+        ->name('uc-ai-analyses.approve');
 });
 
 // ============================================================
