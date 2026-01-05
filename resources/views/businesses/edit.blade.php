@@ -1,9 +1,9 @@
 <x-app-layout>
-    <div class="max-w-5xl mx-auto py-12 px-4" x-data="{ activeTab: 'basic' }">
+    <div class="max-w-5xl mx-auto py-6 sm:py-12 px-4 sm:px-6 lg:px-8" x-data="{ activeTab: 'basic' }">
         
         {{-- Success/Error Messages --}}
         @if(session('success'))
-            <div class="mb-6 bg-green-50 border border-green-200 text-green-800 px-6 py-4 rounded-xl shadow-sm flex items-start gap-3">
+            <div class="mb-6 bg-green-50 border border-green-200 text-green-800 px-4 sm:px-6 py-4 rounded-xl shadow-sm flex items-start gap-3">
                 <i class="bi bi-check-circle-fill text-green-600 text-xl flex-shrink-0 mt-0.5"></i>
                 <div class="flex-1">
                     <p class="font-semibold">Success!</p>
@@ -29,45 +29,45 @@
         @endif
 
         {{-- Page Header --}}
-        <div class="bg-white border border-slate-200 rounded-xl shadow-sm px-8 py-10 mb-8">
-            <div class="flex items-center gap-4">
+        <div class="bg-white border border-slate-200 rounded-xl shadow-sm px-4 sm:px-8 py-6 sm:py-10 mb-8">
+            <div class="flex flex-col sm:flex-row sm:items-center gap-4">
                 <a href="{{ route('businesses.show', $business) }}" 
-                   class="group inline-flex items-center gap-2.5 px-4 py-2.5 bg-white hover:bg-gray-900 border border-gray-200 hover:border-gray-900 text-gray-700 hover:text-white rounded-xl font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200">
+                   class="group inline-flex items-center justify-center sm:justify-start gap-2.5 px-4 py-2.5 bg-white hover:bg-gray-900 border border-gray-200 hover:border-gray-900 text-gray-700 hover:text-white rounded-xl font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200">
                     <i class="bi bi-arrow-left text-base group-hover:-translate-x-0.5 transition-transform duration-200"></i>
                     <span>Back</span>
                 </a>
-                <div class="flex-1">
-                    <h1 class="text-3xl font-bold text-slate-800">Edit Business</h1>
-                    <p class="text-slate-600 mt-2">{{ $business->name }}</p>
+                <div class="flex-1 text-center sm:text-left">
+                    <h1 class="text-2xl sm:text-3xl font-bold text-slate-800">Edit Business</h1>
+                    <p class="text-slate-600 mt-2 text-sm sm:text-base">{{ $business->name }}</p>
                 </div>
             </div>
         </div>
 
         {{-- Tab Navigation --}}
         <div class="bg-white border border-slate-200 rounded-t-xl shadow-sm mb-0">
-            <div class="flex border-b border-slate-200">
+            <div class="flex border-b border-slate-200 overflow-x-auto">
                 <button type="button" 
                         @click="activeTab = 'basic'"
                         :class="activeTab === 'basic' ? 'border-b-2 border-gray-900 text-gray-900 font-semibold' : 'text-slate-500 hover:text-slate-700'"
-                        class="flex-1 px-6 py-4 text-sm transition-colors">
+                        class="flex-1 px-4 sm:px-6 py-4 text-xs sm:text-sm transition-colors whitespace-nowrap">
                     Informasi Dasar
                 </button>
                 <button type="button" 
                         @click="activeTab = 'products'"
                         :class="activeTab === 'products' ? 'border-b-2 border-gray-900 text-gray-900 font-semibold' : 'text-slate-500 hover:text-slate-700'"
-                        class="flex-1 px-6 py-4 text-sm transition-colors">
+                        class="flex-1 px-4 sm:px-6 py-4 text-xs sm:text-sm transition-colors whitespace-nowrap">
                     Produk & Layanan
                 </button>
                 <button type="button" 
                         @click="activeTab = 'development'"
                         :class="activeTab === 'development' ? 'border-b-2 border-gray-900 text-gray-900 font-semibold' : 'text-slate-500 hover:text-slate-700'"
-                        class="flex-1 px-6 py-4 text-sm transition-colors">
+                        class="flex-1 px-4 sm:px-6 py-4 text-xs sm:text-sm transition-colors whitespace-nowrap">
                     Perkembangan Business
                 </button>
                 <button type="button" 
                         @click="activeTab = 'documents'"
                         :class="activeTab === 'documents' ? 'border-b-2 border-gray-900 text-gray-900 font-semibold' : 'text-slate-500 hover:text-slate-700'"
-                        class="flex-1 px-6 py-4 text-sm transition-colors">
+                        class="flex-1 px-4 sm:px-6 py-4 text-xs sm:text-sm transition-colors whitespace-nowrap">
                     Dokumen & Sertifikasi
                 </button>
             </div>
@@ -557,7 +557,7 @@
                     @if($business->legal_documents && count($business->legal_documents) > 0)
                         <div class="mb-3">
                             <p class="text-sm text-slate-600 mb-2">Current Documents:</p>
-                            <div class="grid grid-cols-3 gap-4">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                 @foreach($business->legal_documents as $index => $doc)
                                     <div class="border border-slate-200 rounded-lg p-3 bg-slate-50 relative">
                                         <div class="mb-2">
@@ -593,7 +593,7 @@
                         <p class="text-sm text-slate-600 font-medium">Klik area ini untuk upload dokumen baru</p>
                         <p class="text-xs text-slate-400 mt-1">PDF, Image up to 5MB per file</p>
                     </label>
-                    <div id="legalDocsPreview" class="mt-4 grid grid-cols-3 gap-4"></div>
+                    <div id="legalDocsPreview" class="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
                     @error('legal_documents')
                         <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -605,7 +605,7 @@
                     @if($business->product_certifications && count($business->product_certifications) > 0)
                         <div class="mb-3">
                             <p class="text-sm text-slate-600 mb-2">Current Certifications:</p>
-                            <div class="grid grid-cols-3 gap-4">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                 @foreach($business->product_certifications as $index => $cert)
                                     <div class="border border-slate-200 rounded-lg p-3 bg-slate-50 relative">
                                         <div class="mb-2">
@@ -641,7 +641,7 @@
                         <p class="text-sm text-slate-600 font-medium">Klik area ini untuk upload sertifikat baru</p>
                         <p class="text-xs text-slate-400 mt-1">PDF, Image up to 5MB per file</p>
                     </label>
-                    <div id="certificationsPreview" class="mt-4 grid grid-cols-3 gap-4"></div>
+                    <div id="certificationsPreview" class="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
                     @error('product_certifications')
                         <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
                     @enderror

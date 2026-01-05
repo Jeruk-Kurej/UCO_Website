@@ -1,14 +1,14 @@
 <x-app-layout>
     {{-- Hero Section with Elegant Back Button --}}
-    <div class="mb-8">
-        <div class="flex items-center gap-4 mb-6">
+    <div class="mb-8 px-4 sm:px-0">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
             <button onclick="window.history.back()" 
-               class="group inline-flex items-center gap-2.5 px-4 py-2.5 bg-white hover:bg-gray-900 border border-gray-200 hover:border-gray-900 text-gray-700 hover:text-white rounded-xl font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200">
+               class="group inline-flex items-center justify-center sm:justify-start gap-2.5 px-4 py-2.5 bg-white hover:bg-gray-900 border border-gray-200 hover:border-gray-900 text-gray-700 hover:text-white rounded-xl font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200">
                 <i class="bi bi-arrow-left text-base group-hover:-translate-x-0.5 transition-transform duration-200"></i>
                 <span>Back</span>
             </button>
             <div class="flex-1">
-                <div class="flex items-center gap-2 mb-1">
+                <div class="flex flex-wrap items-center gap-2 mb-2">
                     <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-soft-gray-100 text-soft-gray-700 text-xs font-semibold rounded-lg">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
@@ -26,19 +26,21 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
                             @endif
                         </svg>
-                        {{ $business->isBothMode() ? 'Products & Services' : ($business->isProductMode() ? 'Product-Based' : 'Service-Based') }}
+                        <span class="hidden sm:inline">{{ $business->isBothMode() ? 'Products & Services' : ($business->isProductMode() ? 'Product-Based' : 'Service-Based') }}</span>
+                        <span class="sm:hidden">{{ $business->isBothMode() ? 'Both' : ($business->isProductMode() ? 'Product' : 'Service') }}</span>
                     </span>
                 </div>
-                <h1 class="text-3xl font-bold text-soft-gray-900 tracking-tight">{{ $business->name }}</h1>
+                <h1 class="text-2xl sm:text-3xl font-bold text-soft-gray-900 tracking-tight">{{ $business->name }}</h1>
             </div>
             @auth
                 @if(auth()->id() === $business->user_id || auth()->user()->isAdmin())
                     <a href="{{ route('businesses.edit', $business) }}" 
-                       class="inline-flex items-center gap-2 px-5 py-2.5 bg-soft-gray-900 hover:bg-soft-gray-800 text-white rounded-xl font-semibold text-sm shadow-md hover:shadow-lg transition-all duration-200">
+                       class="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-soft-gray-900 hover:bg-soft-gray-800 text-white rounded-xl font-semibold text-sm shadow-md hover:shadow-lg transition-all duration-200">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                         </svg>
-                        Edit Business
+                        <span class="hidden sm:inline">Edit Business</span>
+                        <span class="sm:hidden">Edit</span>
                     </a>
                 @endif
             @endauth
@@ -66,9 +68,9 @@
             </div>
 
             {{-- Business Info Section --}}
-            <div class="p-8">
+            <div class="p-4 sm:p-6 lg:p-8">
                 {{-- Owner Info - PROMINENT with Avatar --}}
-                <div class="flex items-start gap-4 mb-6 pb-6 border-b-2 border-soft-gray-100">
+                <div class="flex flex-col sm:flex-row items-start gap-4 mb-6 pb-6 border-b-2 border-soft-gray-100">
                     @if($business->user->profile_photo_url)
                         <img src="{{ asset('storage/' . $business->user->profile_photo_url) }}" 
                              alt="{{ $business->user->name }}" 

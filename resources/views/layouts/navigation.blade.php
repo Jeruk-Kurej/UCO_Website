@@ -1,4 +1,4 @@
-<nav class="bg-white border-b border-soft-gray-100 shadow-sm sticky top-0 z-50">
+<nav x-data="{ open: false }" class="bg-white border-b border-soft-gray-100 shadow-sm sticky top-0 z-50">
     <!-- Subtle Orange Accent Line -->
     <div class="h-1 bg-gradient-to-r from-uco-orange-500 via-uco-yellow-500 to-uco-orange-500"></div>
     
@@ -136,7 +136,7 @@
     </div>
 
     {{-- Mobile Menu --}}
-    <div x-data="{ open: false }" :class="{'block': open, 'hidden': ! open}" class="hidden md:hidden border-t border-soft-gray-100 bg-white">
+    <div :class="{'block': open, 'hidden': ! open}" class="hidden md:hidden border-t border-soft-gray-100 bg-white">
         <div class="px-4 py-3 space-y-1">
             @auth
                 <a href="/dashboard" 
