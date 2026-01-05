@@ -560,9 +560,15 @@
                             <div class="grid grid-cols-3 gap-4">
                                 @foreach($business->legal_documents as $doc)
                                     <div class="border border-slate-200 rounded-lg p-3 bg-slate-50">
-                                        <a href="{{ asset('storage/' . $doc) }}" target="_blank" class="text-blue-600 hover:text-blue-800 text-sm truncate block">
-                                            📄 {{ basename($doc) }}
-                                        </a>
+                                        @if(is_array($doc) && isset($doc['file_path']))
+                                            <a href="{{ asset('storage/' . $doc['file_path']) }}" target="_blank" class="text-blue-600 hover:text-blue-800 text-sm truncate block">
+                                                📄 {{ $doc['original_name'] ?? basename($doc['file_path']) }}
+                                            </a>
+                                        @else
+                                            <a href="{{ asset('storage/' . $doc) }}" target="_blank" class="text-blue-600 hover:text-blue-800 text-sm truncate block">
+                                                📄 {{ basename($doc) }}
+                                            </a>
+                                        @endif
                                     </div>
                                 @endforeach
                             </div>
@@ -593,9 +599,15 @@
                             <div class="grid grid-cols-3 gap-4">
                                 @foreach($business->product_certifications as $cert)
                                     <div class="border border-slate-200 rounded-lg p-3 bg-slate-50">
-                                        <a href="{{ asset('storage/' . $cert) }}" target="_blank" class="text-blue-600 hover:text-blue-800 text-sm truncate block">
-                                            🏆 {{ basename($cert) }}
-                                        </a>
+                                        @if(is_array($cert) && isset($cert['file_path']))
+                                            <a href="{{ asset('storage/' . $cert['file_path']) }}" target="_blank" class="text-blue-600 hover:text-blue-800 text-sm truncate block">
+                                                🏆 {{ $cert['original_name'] ?? basename($cert['file_path']) }}
+                                            </a>
+                                        @else
+                                            <a href="{{ asset('storage/' . $cert) }}" target="_blank" class="text-blue-600 hover:text-blue-800 text-sm truncate block">
+                                                🏆 {{ basename($cert) }}
+                                            </a>
+                                        @endif
                                     </div>
                                 @endforeach
                             </div>
