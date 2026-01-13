@@ -38,7 +38,10 @@ Route::get('/', function () {
 Route::get('/businesses', [BusinessController::class, 'index'])->name('businesses.index');
 Route::get('/business-types', [BusinessTypeController::class, 'index'])->name('business-types.index');
 Route::get('/contact-types', [ContactTypeController::class, 'index'])->name('contact-types.index');
+
+// ✅ PUBLIC: Everyone (guests + authenticated) can view and submit testimonies
 Route::get('/uc-testimonies', [UcTestimonyController::class, 'index'])->name('uc-testimonies.index');
+Route::post('/uc-testimonies', [UcTestimonyController::class, 'store'])->name('uc-testimonies.store');
 
 // ============================================================
 // AUTHENTICATED ROUTES (Student, Alumni, Admin)
@@ -82,8 +85,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('products.photos', ProductPhotoController::class)
         ->scoped(['product' => 'id', 'photo' => 'id']);
 
-    Route::post('/uc-testimonies', [UcTestimonyController::class, 'store'])
-        ->name('uc-testimonies.store');
+    // Testimony deletion (admin only)
     Route::delete('/uc-testimonies/{ucTestimony}', [UcTestimonyController::class, 'destroy'])
         ->name('uc-testimonies.destroy');
 

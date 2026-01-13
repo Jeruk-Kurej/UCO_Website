@@ -115,10 +115,17 @@
                         </div>
                     </div>
                 @else
-                    <a href="/" 
-                       class="px-4 py-2 text-sm font-medium text-white bg-soft-gray-900 rounded-lg hover:bg-soft-gray-800 hover:shadow-lg transition-all">
-                        Login
-                    </a>
+                    {{-- ✅ NEW: Login/Register buttons for guests --}}
+                    <div class="flex items-center gap-2">
+                        <a href="{{ route('login') }}" 
+                           class="px-4 py-2.5 text-sm font-medium text-soft-gray-700 hover:text-soft-gray-900 transition">
+                            Log in
+                        </a>
+                        <a href="{{ route('register') }}" 
+                           class="px-4 py-2.5 bg-soft-gray-900 hover:bg-soft-gray-800 text-white text-sm font-medium rounded-xl shadow-sm transition">
+                            Register
+                        </a>
+                    </div>
                 @endauth
             </div>
 
@@ -202,9 +209,25 @@
                     </form>
                 </div>
             @else
-                <a href="/" class="block py-2.5 px-3 text-sm font-medium text-white bg-soft-gray-900 rounded-lg text-center hover:bg-soft-gray-800">
-                    Login
+                {{-- ✅ NEW: Mobile login/register for guests --}}
+                <a href="/businesses" 
+                   class="block py-2.5 px-3 text-sm font-medium rounded-lg {{ request()->routeIs('businesses.index') ? 'bg-soft-gray-100 text-soft-gray-900' : 'text-soft-gray-700 hover:bg-soft-gray-50' }}">
+                    Browse Businesses
                 </a>
+                <a href="{{ route('uc-testimonies.index') }}" 
+                   class="block py-2.5 px-3 text-sm font-medium rounded-lg {{ request()->routeIs('uc-testimonies.*') ? 'bg-soft-gray-100 text-soft-gray-900' : 'text-soft-gray-700 hover:bg-soft-gray-50' }}">
+                    Testimonies
+                </a>
+                <div class="pt-2 mt-2 border-t border-soft-gray-100 space-y-2">
+                    <a href="{{ route('login') }}" 
+                       class="block text-center py-2.5 px-3 text-sm font-medium text-soft-gray-700 hover:bg-soft-gray-50 rounded-lg border border-soft-gray-200 transition">
+                        Log in
+                    </a>
+                    <a href="{{ route('register') }}" 
+                       class="block text-center py-2.5 px-3 bg-soft-gray-900 hover:bg-soft-gray-800 text-white text-sm font-medium rounded-lg shadow-sm transition">
+                        Register
+                    </a>
+                </div>
             @endauth
         </div>
     </div>

@@ -35,12 +35,9 @@ class UcTestimonyController extends Controller
     {
         $user = $this->getAuthUserOrNull();
 
-        if (!$user) {
-            abort(401, 'Unauthenticated.');
-        }
-
-        if ($user->isAdmin()) {
-            abort(403, 'Administrators cannot create testimonies. Only students and alumni can.');
+        // ✅ CHANGED: Allow guests to submit, but block admins
+        if ($user && $user->isAdmin()) {
+            abort(403, 'Administrators cannot create testimonies. Only students, alumni, and guests can.');
         }
 
         try {
