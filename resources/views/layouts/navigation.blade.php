@@ -78,7 +78,7 @@
                     <div class="relative group">
                         <button class="text-sm font-medium text-soft-gray-700 group-hover:text-soft-gray-900 transition flex items-center gap-2 px-3 py-2 rounded-lg group-hover:bg-soft-gray-50">
                             @if(auth()->user()->profile_photo_url)
-                                <img src="{{ asset('storage/' . auth()->user()->profile_photo_url) }}?t={{ auth()->user()->updated_at?->timestamp ?? time() }}" 
+                                <img src="{{ Storage::url(auth()->user()->profile_photo_url) }}?t={{ auth()->user()->updated_at?->timestamp ?? time() }}" 
                                      alt="Profile" 
                                      class="w-7 h-7 rounded-lg object-cover">
                             @else
@@ -195,7 +195,7 @@
                 <div class="pt-2 mt-2 border-t border-soft-gray-100">
                     <div class="flex items-center gap-2 px-3 py-2">
                         @if(auth()->user()->profile_photo_url)
-                            <img src="{{ asset('storage/' . auth()->user()->profile_photo_url) }}?t={{ auth()->user()->updated_at?->timestamp ?? time() }}" 
+                            <img src="{{ Storage::url(auth()->user()->profile_photo_url) }}?t={{ auth()->user()->updated_at?->timestamp ?? time() }}" 
                                  alt="Profile" 
                                  class="w-8 h-8 rounded-lg object-cover">
                         @else

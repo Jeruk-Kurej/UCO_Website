@@ -53,29 +53,20 @@ class ProfileController extends Controller
             if ($request->hasFile('profile_photo')) {
                 $file = $request->file('profile_photo');
                 
-                Log::info('Profile photo upload detected', [
-                    'filename' => $file->getClientOriginalName(),
-                    'size' => $file->getSize(),
-                    'mime' => $file->getMimeType()
-                ]);
-                
                 if ($file->getSize() > 10240 * 1024) { // 10MB in bytes
-                    Log::warning('Profile photo too large', ['size' => $file->getSize()]);
                     return Redirect::route('profile.edit')
                         ->withErrors(['profile_photo' => 'Profile photo must not be larger than 10MB.'])
                         ->withInput();
                 }
                 
-                // Delete old photo if exists
-                if ($user->profile_photo_url && Storage::disk('public')->exists($user->profile_photo_url)) {
-                    Storage::disk('public')->delete($user->profile_photo_url);
-                    Log::info('Old profile photo deleted', ['path' => $user->profile_photo_url]);
+                // Delete old photo if exists (from Cloudinary)
+                if ($user->profile_photo_url && Storage::exists($user->profile_photo_url)) {
+                    Storage::delete($user->profile_photo_url);
                 }
                 
-                // Store new photo
-                $path = $file->store('profile-photos', 'public');
+                // Store new photo to Cloudinary (using default disk which is now cloudinary)
+                $path = $file->store('profile-photos');
                 $user->profile_photo_url = $path;
-                Log::info('New profile photo stored', ['path' => $path]);
             }
 
             // Handle password change

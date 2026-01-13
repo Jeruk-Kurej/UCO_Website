@@ -1,3 +1,5 @@
+@use('Illuminate\Support\Facades\Storage')
+
 <x-app-layout>
     {{-- ✅ REMOVED: <x-slot name="header"> section --}}
 
@@ -304,7 +306,7 @@
                                         
                                         {{-- Business Photo Background --}}
                                         @if($business->photos->first())
-                                            <img src="{{ asset('storage/' . $business->photos->first()->photo_url) }}" 
+                                            <img src="{{ Storage::url($business->photos->first()->photo_url) }}" 
                                                  alt="{{ $business->name }}" 
                                                  class="w-full h-full object-cover">
                                             <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
@@ -319,7 +321,7 @@
                                         <div class="absolute bottom-4 left-4 flex items-end gap-4">
                                             @if($business->logo_url)
                                                 <div class="w-20 h-20 rounded-xl bg-white shadow-lg border-2 border-white overflow-hidden flex-shrink-0">
-                                                    <img src="{{ asset('storage/' . $business->logo_url) }}" 
+                                                    <img src="{{ Storage::url($business->logo_url) }}" 
                                                          alt="{{ $business->name }} logo" 
                                                          class="w-full h-full object-cover">
                                                 </div>
@@ -349,7 +351,7 @@
                                             <div class="flex items-center gap-3">
                                                 {{-- Owner Avatar --}}
                                                 @if($business->user->profile_photo_url ?? false)
-                                                    <img src="{{ asset('storage/' . $business->user->profile_photo_url) }}" 
+                                                    <img src="{{ Storage::url($business->user->profile_photo_url) }}" 
                                                          alt="{{ $business->user->name }}" 
                                                          class="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm">
                                                 @else
@@ -444,7 +446,7 @@
                                                 
                                                 {{-- Business Photo Background --}}
                                                 @if($business->photos->first())
-                                                    <img src="{{ asset('storage/' . $business->photos->first()->photo_url) }}" 
+                                                    <img src="{{ Storage::url($business->photos->first()->photo_url) }}" 
                                                          alt="{{ $business->name }}" 
                                                          class="w-full h-full object-cover">
                                                     <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
@@ -459,7 +461,7 @@
                                                 <div class="absolute bottom-4 left-4 flex items-end gap-4">
                                                     @if($business->logo_url)
                                                         <div class="w-20 h-20 rounded-xl bg-white shadow-lg border-2 border-white overflow-hidden flex-shrink-0">
-                                                            <img src="{{ asset('storage/' . $business->logo_url) }}" 
+                                                            <img src="{{ Storage::url($business->logo_url) }}" 
                                                                  alt="{{ $business->name }} logo" 
                                                                  class="w-full h-full object-cover">
                                                         </div>
@@ -497,7 +499,7 @@
                                                     <div class="flex items-center gap-3">
                                                         {{-- Owner Avatar --}}
                                                         @if($business->user->profile_photo_url ?? false)
-                                                            <img src="{{ asset('storage/' . $business->user->profile_photo_url) }}" 
+                                                            <img src="{{ Storage::url($business->user->profile_photo_url) }}" 
                                                                  alt="{{ $business->user->name }}" 
                                                                  class="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm">
                                                         @else

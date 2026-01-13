@@ -81,10 +81,10 @@ class BusinessPhotoController extends Controller
                 
                 $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
                 
+                // Store to Cloudinary (default disk)
                 $path = $file->storeAs(
                     "businesses/{$business->id}/photos",
-                    $filename,
-                    'public'
+                    $filename
                 );
                 
                 $validated['photo_url'] = $path;

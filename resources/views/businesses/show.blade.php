@@ -1,3 +1,5 @@
+@use('Illuminate\Support\Facades\Storage')
+
 <x-app-layout>
     {{-- Hero Section with Elegant Back Button --}}
     <div class="mb-8 px-4 sm:px-0">
@@ -53,7 +55,7 @@
             {{-- Hero Image with Overlay --}}
             <div class="relative h-80">
                 @if($business->photos->first())
-                    <img src="{{ asset('storage/' . $business->photos->first()->photo_url) }}" 
+                    <img src="{{ Storage::url($business->photos->first()->photo_url) }}" 
                          alt="{{ $business->name }}" 
                          class="w-full h-full object-cover">
                     <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent"></div>
@@ -72,7 +74,7 @@
                 {{-- Owner Info - PROMINENT with Avatar --}}
                 <div class="flex flex-col sm:flex-row items-start gap-4 mb-6 pb-6 border-b-2 border-soft-gray-100">
                     @if($business->user->profile_photo_url)
-                        <img src="{{ asset('storage/' . $business->user->profile_photo_url) }}" 
+                        <img src="{{ Storage::url($business->user->profile_photo_url) }}" 
                              alt="{{ $business->user->name }}" 
                              class="flex-shrink-0 w-16 h-16 rounded-2xl object-cover shadow-lg">
                     @else
@@ -185,7 +187,7 @@
                             <div class="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition duration-150">
                                 {{-- Product Image --}}
                                 @if($product->photos->first())
-                                    <img src="{{ asset('storage/' . $product->photos->first()->photo_url) }}" 
+                                    <img src="{{ Storage::url($product->photos->first()->photo_url) }}" 
                                          alt="{{ $product->name }}" 
                                          class="w-full h-40 object-cover">
                                 @else
@@ -358,7 +360,7 @@
                     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                         @foreach($business->photos as $photo)
                             <div class="relative group">
-                                <img src="{{ asset('storage/' . $photo->photo_url) }}" 
+                                <img src="{{ Storage::url($photo->photo_url) }}" 
                                      alt="{{ $photo->caption }}" 
                                      class="w-full h-48 object-cover rounded-lg">
                                 @if($photo->caption)

@@ -60,10 +60,10 @@ class ProductPhotoController extends Controller
                 $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
                 
                 $product->load('business');
+                // Store to Cloudinary (default disk)
                 $path = $file->storeAs(
                     "businesses/{$product->business_id}/products/{$product->id}/photos",
-                    $filename,
-                    'public'
+                    $filename
                 );
                 
                 $validated['photo_url'] = $path;
