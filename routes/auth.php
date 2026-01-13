@@ -17,9 +17,9 @@ Route::middleware('guest')->group(function () {
 
     Route::post('register', [RegisteredUserController::class, 'store']);
 
-    // Redirect /login to / since login form is on homepage
+    // Show login page (welcome.blade.php)
     Route::get('login', function () {
-        return redirect('/');
+        return view('welcome');
     })->name('login');
 
     Route::post('login', [AuthenticatedSessionController::class, 'store']);

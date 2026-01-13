@@ -31,8 +31,12 @@ Route::get('/ping', function () {
     return response()->json(['status' => 'ok'], 200);
 });
 
+// Home route - redirect to appropriate page based on auth status
 Route::get('/', function () {
-    return view('welcome');
+    if (Auth::check()) {
+        return redirect('/dashboard');
+    }
+    return redirect('/businesses');  // Guests go to public businesses page
 })->name('home');
 
 Route::get('/businesses', [BusinessController::class, 'index'])->name('businesses.index');

@@ -6,7 +6,7 @@
         <div class="flex justify-between items-center h-16">
             {{-- Logo & Brand --}}
             <div class="flex items-center">
-                <a href="/dashboard" class="flex items-center gap-3">
+                <a href="{{ auth()->check() ? '/dashboard' : '/businesses' }}" class="flex items-center gap-3">
                     <img src="{{ asset('images/Logo UCO.png') }}" alt="UCO Logo" class="w-9 h-9 object-contain">
                     <span class="text-lg font-bold text-soft-gray-900">UC Online</span>
                 </a>
@@ -115,15 +115,25 @@
                         </div>
                     </div>
                 @else
+                    {{-- ✅ GUEST: Public navigation links --}}
+                    <a href="/businesses" 
+                       class="text-sm font-medium {{ request()->routeIs('businesses.*') ? 'text-soft-gray-900 font-semibold' : 'text-soft-gray-600 hover:text-soft-gray-900' }} transition">
+                        Businesses
+                    </a>
+                    <a href="/business-types" 
+                       class="text-sm font-medium {{ request()->routeIs('business-types.*') ? 'text-soft-gray-900 font-semibold' : 'text-soft-gray-600 hover:text-soft-gray-900' }} transition">
+                        Categories
+                    </a>
+                    <a href="{{ route('uc-testimonies.index') }}" 
+                       class="text-sm font-medium {{ request()->routeIs('uc-testimonies.*') ? 'text-soft-gray-900 font-semibold' : 'text-soft-gray-600 hover:text-soft-gray-900' }} transition">
+                        Testimonies
+                    </a>
+                    
                     {{-- ✅ NEW: Login/Register buttons for guests --}}
                     <div class="flex items-center gap-2">
                         <a href="{{ route('login') }}" 
                            class="px-4 py-2.5 text-sm font-medium text-soft-gray-700 hover:text-soft-gray-900 transition">
                             Log in
-                        </a>
-                        <a href="{{ route('register') }}" 
-                           class="px-4 py-2.5 bg-soft-gray-900 hover:bg-soft-gray-800 text-white text-sm font-medium rounded-xl shadow-sm transition">
-                            Register
                         </a>
                     </div>
                 @endauth
