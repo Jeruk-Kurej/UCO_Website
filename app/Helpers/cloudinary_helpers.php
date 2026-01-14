@@ -49,15 +49,7 @@ if (! function_exists('cloudinary_url')) {
             // silently fail and fallback to Storage::url
         }
 
-        // Fallback to Storage URL if available
-        try {
-            if (Illuminate\Support\Facades\Storage::exists($publicId)) {
-                return Illuminate\Support\Facades\Storage::url($publicId);
-            }
-        } catch (Exception $e) {
-            return null;
-        }
-
+        // If Cloudinary couldn't generate a URL, return null (do not call Storage::exists())
         return null;
     }
 }
@@ -71,7 +63,12 @@ if (! function_exists('storage_image_url')) {
      * @param array $options
      * @return string|null
      */
-    function storage_image_url(?string $path, array $options = []): ?string
+    /**
+     * @param string|null $path
+     * @param array|string|null $options  Either an options array or a preset name string
+     * @return string|null
+     */
+    function storage_image_url(?string $path, $options = []): ?string
     {
         if (! $path) {
             return null;

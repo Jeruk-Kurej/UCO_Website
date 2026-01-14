@@ -135,7 +135,7 @@
         </div>
     @endif
 
-    <div x-data="{ activeTab: @auth @if(!auth()->user()->isAdmin()) 'my' @else 'browse' @endif @else 'browse' @endauth }" class="space-y-6">
+    <div class="space-y-6">
         {{-- Tabs Navigation with Admin Button (Hidden for Admin) --}}
         <div class="bg-white shadow-sm sm:rounded-lg">
             @auth
@@ -143,30 +143,20 @@
                     {{-- Show tabs only for non-admin users --}}
                     <div class="border-b border-gray-200">
                         <div class="flex justify-between items-center px-6">
-                            {{-- Left: Tabs --}}
-                            <nav class="flex -mb-px">
-                                {{-- My Businesses Tab FIRST for non-admin --}}
-                                <button @click="activeTab = 'my'" 
-                                        :class="activeTab === 'my' ? 'border-gray-900 text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
-                                        class="flex items-center gap-2 py-4 px-4 border-b-2 font-medium text-sm transition duration-150">
+                            {{-- Left: Tabs (static) --}}
+                            <div class="flex gap-3">
+                                <div class="flex items-center gap-2 py-4 px-4 font-medium text-sm">
                                     <i class="bi bi-briefcase"></i>
-                                    My Businesses
-                                    <span :class="activeTab === 'my' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-600'" class="px-2 py-0.5 rounded-full text-xs transition-colors">
-                                        {{ $businesses->where('user_id', auth()->id())->count() }}
-                                    </span>
-                                </button>
+                                    <span>My Businesses</span>
+                                    <span class="px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 text-xs">{{ $businesses->where('user_id', auth()->id())->count() }}</span>
+                                </div>
 
-                                {{-- Browse All Tab --}}
-                                <button @click="activeTab = 'browse'" 
-                                        :class="activeTab === 'browse' ? 'border-gray-900 text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
-                                        class="flex items-center gap-2 py-4 px-4 border-b-2 font-medium text-sm transition duration-150">
+                                <div class="flex items-center gap-2 py-4 px-4 font-medium text-sm">
                                     <i class="bi bi-shop"></i>
-                                    Browse All Businesses
-                                    <span :class="activeTab === 'browse' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-600'" class="px-2 py-0.5 rounded-full text-xs transition-colors">
-                                        {{ $businesses->total() }}
-                                    </span>
-                                </button>
-                            </nav>
+                                    <span>Browse All Businesses</span>
+                                    <span class="px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 text-xs">{{ $businesses->total() }}</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 @else
@@ -195,20 +185,11 @@
                     </div>
                 @endif
             @else
-                {{-- Guest: Just Browse All tab --}}
-                <div class="border-b border-gray-200">
-                    <div class="px-6">
-                        <nav class="flex -mb-px">
-                            <button @click="activeTab = 'browse'" 
-                                    :class="activeTab === 'browse' ? 'border-gray-900 text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
-                                    class="flex items-center gap-2 py-4 px-4 border-b-2 font-medium text-sm transition duration-150">
-                                <i class="bi bi-shop"></i>
-                                Browse All Businesses
-                                <span :class="activeTab === 'browse' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-600'" class="px-2 py-0.5 rounded-full text-xs transition-colors">
-                                    {{ $businesses->total() }}
-                                </span>
-                            </button>
-                        </nav>
+                {{-- Guest: simple header (no tabs) --}}
+                <div class="px-6 py-4">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-xl font-bold text-gray-900">Browse All Businesses</h2>
+                        <span class="px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 text-sm">{{ $businesses->total() }}</span>
                     </div>
                 </div>
             @endauth
@@ -290,10 +271,12 @@
             </div>
 
             {{-- Tab Content: Browse All Businesses --}}
-            <div x-show="activeTab === 'browse'" class="p-6">
-                {{-- Filter bar (categories) --}}
+            <div class="p-6">
+                {{-- Browse by Business Type (link to full types page) --}}
                 @if(isset($businessTypes) && $businessTypes->count() > 0)
-                    @include('components.filter-bar', ['businessTypes' => $businessTypes])
+                    <div class="mb-4 px-6">
+                        <a href="{{ route('business-types.index') }}" class="inline-flex items-center px-3 py-1.5 bg-gray-100 rounded-full text-sm font-medium text-gray-700 hover:bg-gray-200">Browse by type</a>
+                    </div>
                 @endif
                 @if($businesses->count() > 0)
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -432,7 +415,7 @@
             {{-- Tab Content: My Businesses (ONLY for Student/Alumni) --}}
             @auth
                 @if(!auth()->user()->isAdmin())
-                    <div x-show="activeTab === 'my'" class="p-6" style="display: none;">
+                    <div class="p-6">
                         <div class="mb-6 flex items-center justify-between">
                             <h3 class="text-lg font-semibold text-gray-900">My Businesses</h3>
                             <a href="/businesses/create" 
