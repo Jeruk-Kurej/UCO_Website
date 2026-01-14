@@ -11,10 +11,20 @@ class IsAdmin
 {
     public function handle(Request $request, Closure $next): Response
     {
-        /** @var \App\Models\User|null $user */
+        // Check if user is authenticated first
+        if (!Auth::check()) {
+            // Session expired or not logged in - redirect to login with intended URL
+            return redirect()->guest(route('login'))
+                ->with('error', 'Sesi login Anda telah berakhir. Silakan login kembali.');
+        }
+
+        /** @var \App\Models\User $user */
         $user = Auth::user();
-        if (!$user || !$user->isAdmin()) {
-            abort(403, 'Hanya Admin yang boleh masuk sini!');
+        
+        // Check if user is admin
+        if (!$user->isAdmin()) {
+            // Logged in but not admin - show 403
+            abort(403, 'Hanya Administrator yang dapat mengakses halaman ini.');
         }
 
         return $next($request);

@@ -1,119 +1,143 @@
 <x-app-layout>
     <div class="space-y-12">
-        {{-- Hero Section --}}
-        <div class="bg-white border border-gray-200 rounded-2xl p-12">
-            <div class="max-w-4xl mx-auto">
-                <div class="inline-flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-full mb-6">
-                    <span class="w-1.5 h-1.5 bg-purple-600 rounded-full"></span>
-                    <span class="text-xs font-medium text-gray-700">Welcome to UCO Platform</span>
-                </div>
-                
-                <h1 class="text-4xl font-bold text-gray-900 mb-4">
-                    Student & Alumni <span class="text-purple-600">Business Directory</span>
-                </h1>
-                <p class="text-lg text-gray-600 mb-8 leading-relaxed">
-                    Connect with Universitas Ciputra's entrepreneurial community. Discover businesses, showcase your products, and grow your network.
-                </p>
-                
-                <div class="flex items-center gap-4">
-                    @auth
-                        @if(!auth()->user()->isAdmin())
-                            <a href="/businesses/create" 
-                               class="inline-flex items-center px-5 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                                </svg>
-                                Create Business
-                            </a>
-                        @endif
-                        <a href="/businesses" 
-                           class="inline-flex items-center px-5 py-2.5 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors">
-                            Explore Directory
-                        </a>
-                    @else
-                        <a href="/register" 
-                           class="inline-flex items-center px-5 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors">
-                            Join Now
-                        </a>
-                        <a href="/login" 
-                           class="inline-flex items-center px-5 py-2.5 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors">
-                            Login
-                        </a>
-                    @endauth
-                </div>
-            </div>
-        </div>
 
-        {{-- Featured Businesses --}}
+        {{-- Featured Businesses - Professional & Elegant --}}
         @if($featuredBusinesses->count() > 0)
-            <div class="space-y-8">
-                <div class="text-center">
-                    <h2 class="text-2xl font-bold text-gray-900 mb-2">Featured Businesses</h2>
-                    <p class="text-sm text-gray-600">
-                        Discover amazing businesses from our community
-                    </p>
-                </div>
+            <div class="relative">
+                {{-- Subtle Background Accent --}}
+                <div class="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-uco-orange-50 to-uco-yellow-50 rounded-full blur-3xl opacity-40 -z-10"></div>
+                
+                <div class="space-y-8">
+                    {{-- Section Header - Clean & Professional --}}
+                    <div class="flex items-end justify-between border-b border-soft-gray-200 pb-6">
+                        <div>
+                            <h2 class="text-3xl font-bold text-soft-gray-900 tracking-tight">
+                                Our Businesses
+                            </h2>
+                            <p class="text-sm text-soft-gray-600 mt-2">
+                                Explore amazing ventures from our community of entrepreneurs
+                            </p>
+                        </div>
+                        <a href="{{ route('businesses.index') }}" 
+                           class="hidden sm:inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-soft-gray-700 hover:text-soft-gray-900 border border-soft-gray-200 rounded-lg hover:border-soft-gray-300 hover:shadow-sm transition-all">
+                            View All
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                            </svg>
+                        </a>
+                    </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {{-- Business Cards - Modern Professional Grid with 2 Columns --}}
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     @foreach($featuredBusinesses as $business)
-                        <a href="{{ route('businesses.show', $business) }}" 
-                           class="group bg-white border border-gray-200 rounded-xl overflow-hidden hover:border-purple-600 hover:shadow-lg transition-all duration-300">
-                            {{-- Photo --}}
-                            @if($business->photos->first())
-                                <div class="relative overflow-hidden h-48">
-                                    <img src="{{ asset('storage/' . $business->photos->first()->photo_url) }}" 
-                                         alt="{{ $business->name }}" 
-                                         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-                                </div>
-                            @else
-                                <div class="h-48 bg-gray-100 flex items-center justify-center">
-                                    <svg class="w-16 h-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                                    </svg>
-                                </div>
-                            @endif
-
-                            {{-- Info --}}
-                            <div class="p-5">
-                                <div class="flex items-start justify-between mb-2">
-                                    <h3 class="text-base font-bold text-gray-900 group-hover:text-purple-600 transition-colors flex-1">
-                                        {{ $business->name }}
-                                    </h3>
-                                    @if($business->is_featured)
-                                        <span class="ml-2 inline-flex items-center gap-1 text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded font-medium flex-shrink-0">
-                                            <i class="bi bi-star-fill"></i>
-                                            Featured
+                        <a href="{{ route('businesses.show', $business) }}" class="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden group block">
+                            <div class="flex flex-col h-full">
+                                {{-- Header with Photo & Logo --}}
+                                <div class="relative h-56">
+                                    {{-- Category Badge - Top Left --}}
+                                    <div class="absolute top-3 left-3 z-10">
+                                        <span class="inline-block text-xs bg-white/95 backdrop-blur-sm text-slate-800 px-3 py-1.5 rounded-full font-semibold shadow-md">
+                                            {{ $business->businessType->name }}
                                         </span>
+                                    </div>
+                                    
+                                    {{-- Business Photo Background --}}
+                                    @if($business->photos->first())
+                                        <img src="{{ asset('storage/' . $business->photos->first()->photo_url) }}" 
+                                             alt="{{ $business->name }}" 
+                                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+                                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
+                                    @else
+                                        <div class="w-full h-full bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center">
+                                            <i class="bi bi-briefcase text-6xl text-slate-400"></i>
+                                        </div>
+                                        <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent"></div>
                                     @endif
+                                    
+                                    {{-- Logo & Featured Badge Overlay --}}
+                                    <div class="absolute bottom-4 left-4 flex items-end gap-4">
+                                        @if($business->logo_url)
+                                            <div class="w-20 h-20 rounded-xl bg-white shadow-lg border-2 border-white overflow-hidden flex-shrink-0">
+                                                <img src="{{ asset('storage/' . $business->logo_url) }}" 
+                                                     alt="{{ $business->name }} logo" 
+                                                     class="w-full h-full object-cover">
+                                            </div>
+                                        @else
+                                            <div class="w-20 h-20 rounded-xl bg-white shadow-lg border-2 border-white flex items-center justify-center flex-shrink-0">
+                                                <i class="bi bi-building text-3xl text-slate-400"></i>
+                                            </div>
+                                        @endif
+                                    </div>
                                 </div>
-                                <p class="text-sm text-gray-600 mb-4 line-clamp-2 leading-relaxed">
-                                    {{ $business->description }}
-                                </p>
-                                <div class="flex items-center justify-between">
-                                    <span class="inline-flex items-center gap-1.5 text-xs bg-gray-50 text-gray-700 px-3 py-1.5 rounded-lg font-medium border border-gray-200">
-                                        {{ $business->businessType->name }}
-                                    </span>
-                                    <span class="text-xs text-gray-500">
-                                        {{ Str::limit($business->user->name, 15) }}
-                                    </span>
+
+                                {{-- Content --}}
+                                <div class="p-5 flex-1 flex flex-col">
+                                    {{-- Business Name --}}
+                                    <div class="mb-3">
+                                        <h3 class="text-xl font-bold text-gray-900 mb-2 line-clamp-1 group-hover:text-gray-700 transition" 
+                                            title="{{ $business->name }}">
+                                            {{ $business->name }}
+                                        </h3>
+                                    </div>
+                                    
+                                    {{-- Description --}}
+                                    <p class="text-sm text-gray-600 mb-4 line-clamp-2">{{ $business->description }}</p>
+                                    
+                                    {{-- Owner Info Card --}}
+                                    <div class="bg-slate-50 border border-slate-100 rounded-lg p-3 mb-4">
+                                        <div class="flex items-center gap-3">
+                                            {{-- Owner Avatar --}}
+                                            @if($business->user->profile_photo_url ?? false)
+                                                <img src="{{ asset('storage/' . $business->user->profile_photo_url) }}" 
+                                                     alt="{{ $business->user->name }}" 
+                                                     class="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm">
+                                            @else
+                                                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-slate-400 to-slate-600 flex items-center justify-center text-white font-bold text-sm border-2 border-white shadow-sm">
+                                                    {{ strtoupper(substr($business->user->name, 0, 1)) }}
+                                                </div>
+                                            @endif
+                                            
+                                            <div class="flex-1 min-w-0">
+                                                <p class="text-sm font-semibold text-gray-900 truncate" title="{{ $business->user->name }}">
+                                                    {{ $business->user->name }}
+                                                </p>
+                                                @if($business->position)
+                                                    <p class="text-xs text-slate-600 truncate" title="{{ $business->position }}">
+                                                        {{ $business->position }}
+                                                    </p>
+                                                @else
+                                                    <p class="text-xs text-slate-500">Owner</p>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    {{-- Actions --}}
+                                    <div class="flex items-center justify-end pt-3 border-t border-gray-100 mt-auto">
+                                        @auth
+                                            @if(auth()->id() === $business->user_id || auth()->user()->isAdmin())
+                                                <button onclick="event.preventDefault(); event.stopPropagation(); window.location.href='{{ route('businesses.edit', $business) }}'" 
+                                                   class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 transition">
+                                                    <i class="bi bi-pencil"></i>
+                                                    Edit
+                                                </button>
+                                            @endif
+                                        @endauth
+                                    </div>
                                 </div>
                             </div>
                         </a>
                     @endforeach
-                </div>
-
-                {{-- View All Button --}}
-                <div class="text-center">
-                    <a href="/businesses" 
-                       class="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors">
-                        <span>Explore All Businesses</span>
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </div>
+                @else
+                    {{-- No Featured Businesses Message --}}
+                    <div class="text-center py-12">
+                        <svg class="w-16 h-16 text-slate-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
                         </svg>
-                    </a>
-                </div>
-            </div>
-        @endif
+                        <p class="text-slate-600">No featured businesses available at the moment.</p>
+                    </div>
+                @endif
 
         
     </div>

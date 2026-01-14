@@ -1,3 +1,5 @@
+@use('Illuminate\Support\Facades\Storage')
+
 <x-app-layout>
     <div class="max-w-6xl mx-auto">
         {{-- Page Header --}}
@@ -14,7 +16,7 @@
             @auth
                 @if(auth()->id() === $product->business->user_id || auth()->user()->isAdmin())
                     <a href="{{ route('products.photos.create', $product) }}" 
-                       class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white rounded-lg font-semibold text-sm shadow-sm transition duration-150">
+                       class="inline-flex items-center px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-lg font-semibold text-sm shadow-sm transition duration-150">
                         <i class="bi bi-upload me-2"></i>
                         Upload Photo
                     </a>
@@ -45,10 +47,17 @@
                 <div class="p-6">
                     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                         @foreach($photos as $photo)
+                            @php $photoUrl = $photo->photo_url; @endphp
                             <div class="relative group">
-                                <img src="{{ asset('storage/' . $photo->photo_url) }}" 
-                                     alt="{{ $photo->caption }}" 
-                                     class="w-full h-48 object-cover rounded-lg">
+                                @if($photoUrl && Storage::exists($photoUrl))
+                                    <img src="{{ Storage::url($photoUrl) }}" 
+                                         alt="{{ $photo->caption }}" 
+                                         class="w-full h-48 object-cover rounded-lg">
+                                @else
+                                    <div class="w-full h-48 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center rounded-lg">
+                                        <i class="bi bi-image text-4xl text-gray-400"></i>
+                                    </div>
+                                @endif
                                 
                                 {{-- Caption Overlay --}}
                                 @if($photo->caption)
@@ -91,7 +100,7 @@
                         @if(auth()->id() === $product->business->user_id || auth()->user()->isAdmin())
                             <p class="text-sm text-gray-400 mb-4">Upload photos to showcase this product</p>
                             <a href="{{ route('products.photos.create', $product) }}" 
-                               class="inline-flex items-center px-4 py-2 bg-orange-600 text-white text-sm rounded-md hover:bg-orange-700 transition duration-150">
+                               class="inline-flex items-center px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium rounded-lg shadow-sm transition duration-150">
                                 <i class="bi bi-upload me-2"></i>
                                 Upload First Photo
                             </a>

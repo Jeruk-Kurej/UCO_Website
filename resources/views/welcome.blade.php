@@ -11,6 +11,24 @@
     
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     
+    {{-- Manual fallback: Read manifest and inject assets --}}
+    @php
+        $manifestPath = public_path('build/manifest.json');
+        if (file_exists($manifestPath)) {
+            $manifest = json_decode(file_get_contents($manifestPath), true);
+            $cssFile = $manifest['resources/css/app.css']['file'] ?? null;
+            $jsFile = $manifest['resources/js/app.js']['file'] ?? null;
+        }
+    @endphp
+    
+    @if(isset($cssFile))
+        <link rel="stylesheet" href="/build/{{ $cssFile }}">
+    @endif
+    
+    @if(isset($jsFile))
+        <script type="module" src="/build/{{ $jsFile }}"></script>
+    @endif
+    
     <style>
         body { font-family: 'Inter', system-ui, sans-serif; }
     </style>
@@ -126,11 +144,12 @@
                             </button>
                         </form>
                         
-                        <div class="mt-6 pt-6 border-t border-soft-gray-100 text-center relative z-10">
-                            <p class="text-sm text-soft-gray-600">
-                                Don't have an account? 
-                                <a href="/register" class="font-semibold text-soft-gray-900 hover:text-soft-gray-700 transition-colors">Sign up</a>
-                            </p>
+                        {{-- Back to Home Button --}}
+                        <div class="mt-4 pt-4 border-t border-soft-gray-100 relative z-10">
+                            <a href="/businesses" 
+                               class="block w-full py-3 text-center bg-soft-gray-50 text-soft-gray-700 text-sm font-medium rounded-xl border border-soft-gray-200 hover:bg-soft-gray-100 hover:border-soft-gray-300 transition-all duration-200">
+                                Browse as Guest
+                            </a>
                         </div>
                     </div>
                 </div>

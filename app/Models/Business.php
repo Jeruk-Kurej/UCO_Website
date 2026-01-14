@@ -18,11 +18,14 @@ class Business extends Model
         'business_mode',
         'name',
         'description',
+        'position', // User's position in this business
         
         // Enhanced Fields
         'logo_url',
         'established_date',
         'address',
+        'city',
+        'province',
         'employee_count',
         'revenue_range',
         'is_from_college_project',
@@ -226,5 +229,13 @@ class Business extends Model
     public function getChallengesCount(): int
     {
         return !empty($this->business_challenges) ? count($this->business_challenges) : 0;
+    }
+
+    /**
+     * Accessor for logo attribute (maps to logo_url)
+     */
+    public function getLogoAttribute()
+    {
+        return $this->logo_url;
     }
 }

@@ -1,12 +1,13 @@
 <x-app-layout>
     <div class="max-w-3xl mx-auto">
         {{-- Page Header --}}
-        <div class="mb-6 flex items-center gap-3">
+        <div class="mb-6 flex items-center gap-4">
             <a href="/business-types" 
-               class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-800 transition duration-150">
-                <i class="bi bi-arrow-left text-lg"></i>
+               class="group inline-flex items-center gap-2.5 px-4 py-2.5 bg-white hover:bg-gray-900 border border-gray-200 hover:border-gray-900 text-gray-700 hover:text-white rounded-xl font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200">
+                <i class="bi bi-arrow-left text-base group-hover:-translate-x-0.5 transition-transform duration-200"></i>
+                <span>Back</span>
             </a>
-            <div>
+            <div class="flex-1">
                 <h1 class="text-2xl font-bold text-gray-900">Create Business Type</h1>
                 <p class="text-sm text-gray-600">Add a new business category</p>
             </div>
@@ -54,12 +55,12 @@
                     {{-- Submit Buttons --}}
                     <div class="flex items-center justify-between pt-6 border-t border-gray-200">
                         <a href="/business-types" 
-                           class="inline-flex items-center px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition duration-150">
+                           class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition duration-150">
                             <i class="bi bi-x-lg me-2"></i>
                             Cancel
                         </a>
                         <button type="submit" 
-                                class="inline-flex items-center px-6 py-2 bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white font-semibold rounded-md shadow-sm transition duration-150">
+                                class="inline-flex items-center gap-2 px-6 py-2.5 bg-gray-900 hover:bg-gray-800 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200">
                             <i class="bi bi-check-lg me-2"></i>
                             Create Business Type
                         </button>

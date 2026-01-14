@@ -30,9 +30,9 @@
                             <div class="flex items-center justify-between">
                                 <h3 class="font-semibold">AI Result</h3>
                                 @if($analysis->is_approved)
-                                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Approved</span>
+                                    <span class="inline-flex px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Approved</span>
                                 @else
-                                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">Review</span>
+                                    <span class="inline-flex px-3 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Rejected</span>
                                 @endif
                             </div>
 

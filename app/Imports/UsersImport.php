@@ -4,13 +4,61 @@ namespace App\Imports;
 
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
+use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Illuminate\Support\Str;
 
-class UsersImport implements ToModel, WithHeadingRow, WithValidation
+class UsersImport implements ToModel, WithHeadingRow, WithValidation, WithChunkReading
 {
+    protected $errors = [];
+    protected $successCount = 0;
+    protected $skippedCount = 0;
+
+    /**
+     * Chunk size for reading (memory efficient)
+     */
+    public function chunkSize(): int
+    {
+        return 100;
+    }
+
+    /**
+     * Detect if the Excel data is business data instead of user data
+     */
+    private function isBusinessData(array $row): bool
+    {
+        // Only reject if it's CLEARLY business data (has business columns but NO user columns)
+        $businessColumns = ['business_name', 'business_type', 'business_mode', 'established_date', 'employee_count', 'revenue_range'];
+        $userColumns = ['name', 'email', 'username', 'nis', 'student_year', 'major'];
+        
+        $hasUserData = false;
+        foreach ($userColumns as $column) {
+            if (array_key_exists($column, $row) && !empty($row[$column])) {
+                $hasUserData = true;
+                break;
+            }
+        }
+        
+        // If we have user data (name or email), this is USER data, not business data
+        if ($hasUserData) {
+            return false;
+        }
+        
+        // Only mark as business data if NO user columns exist but business columns do
+        $businessColumnCount = 0;
+        foreach ($businessColumns as $column) {
+            if (array_key_exists($column, $row) && !empty($row[$column])) {
+                $businessColumnCount++;
+            }
+        }
+        
+        // If 3 or more business columns exist AND no user data, this is business data
+        return $businessColumnCount >= 3;
+    }
+
     /**
      * @param array $row
      *
@@ -18,46 +66,86 @@ class UsersImport implements ToModel, WithHeadingRow, WithValidation
      */
     public function model(array $row)
     {
-        // Check if user already exists
-        $existingUser = User::where('email', $row['email'])->first();
-        
-        if ($existingUser) {
-            return null; // Skip existing users
-        }
+        try {
+            // CRITICAL: Remove 'id' column if exists to prevent duplicate key errors
+            // ID should be auto-incremented by database, not set from Excel
+            unset($row['id']);
+            
+            // CRITICAL: Detect if this is business data instead of user data
+            if ($this->isBusinessData($row)) {
+                $this->skippedCount++;
+                $errorMsg = "Row skipped: This appears to be BUSINESS data, not USER data. Found business columns: " . implode(', ', array_keys($row)) . ". Please use Business Import instead.";
+                $this->errors[] = $errorMsg;
+                Log::error("User import: " . $errorMsg);
+                return null;
+            }
 
-        return new User([
-            'username' => $row['username'] ?? strtolower(str_replace(' ', '_', $row['name'])),
-            'name' => $row['name'],
-            'email' => $row['email'],
-            'password' => isset($row['password']) ? Hash::make($row['password']) : Hash::make('password123'),
-            'role' => $row['role'] ?? 'student',
-            'is_active' => isset($row['is_active']) ? (bool)$row['is_active'] : true,
-            'email_verified_at' => now(),
+            // Check required fields
+            if (empty($row['name'])) {
+                $this->skippedCount++;
+                $this->errors[] = "❌ Missing name - row skipped";
+                return null;
+            }
+
+            if (empty($row['email'])) {
+                $this->skippedCount++;
+                $this->errors[] = "❌ Missing email for '{$row['name']}' - row skipped";
+                return null;
+            }
+
+            // Check if user already exists
+            $existingUser = User::where('email', $row['email'])->first();
             
-            // Personal Information
-            'birth_date' => $row['birth_date'] ?? null,
-            'birth_city' => $row['birth_city'] ?? null,
-            'religion' => $row['religion'] ?? null,
+            if ($existingUser) {
+                $this->skippedCount++;
+                $this->errors[] = "⚠️ Duplicate: '{$row['name']}' ({$row['email']}) already exists, skipped";
+                return null;
+            }
+
+            $user = new User([
+                'username' => $row['username'] ?? strtolower(str_replace(' ', '_', $row['name'])),
+                'name' => $row['name'],
+                'email' => $row['email'],
+                'password' => isset($row['password']) ? Hash::make($row['password']) : Hash::make('password123'),
+                'role' => $row['role'] ?? 'student',
+                'is_active' => isset($row['is_active']) ? (bool)$row['is_active'] : true,
+                'email_verified_at' => now(),
+                
+                // Personal Information
+                'birth_date' => $row['birth_date'] ?? $row['tanggal_lahir'] ?? null,
+                'birth_city' => $row['birth_city'] ?? $row['tempat_lahir'] ?? null,
+                'religion' => $row['religion'] ?? $row['agama'] ?? null,
+                
+                // Contact Information
+                'phone_number' => $row['phone_number'] ?? $row['phone'] ?? $row['telp'] ?? null,
+                'mobile_number' => $row['mobile_number'] ?? $row['mobile'] ?? $row['hp'] ?? null,
+                'whatsapp' => $row['whatsapp'] ?? $row['wa'] ?? null,
+                
+                // Student/Academic Information - MATCH DATABASE FIELD NAMES (PascalCase)
+                'NIS' => $row['nis'] ?? null,
+                'Student_Year' => $row['student_year'] ?? $row['angkatan'] ?? null,
+                'Major' => $row['major'] ?? $row['prodi'] ?? $row['jurusan'] ?? null,
+                'Is_Graduate' => isset($row['is_graduate']) ? (bool)$row['is_graduate'] : false,
+                'CGPA' => $row['cgpa'] ?? $row['ipk'] ?? null,
+                
+                // JSON fields - store additional data
+                'personal_data' => $this->buildPersonalData($row),
+                'academic_data' => $this->buildAcademicData($row),
+                'father_data' => $this->buildFatherData($row),
+                'mother_data' => $this->buildMotherData($row),
+                'graduation_data' => $this->buildGraduationData($row),
+            ]);
+
+            $this->successCount++;
             
-            // Contact Information
-            'phone_number' => $row['phone_number'] ?? null,
-            'mobile_number' => $row['mobile_number'] ?? null,
-            'whatsapp' => $row['whatsapp'] ?? null,
-            
-            // Student/Academic Information
-            'nis' => $row['nis'] ?? null,
-            'student_year' => $row['student_year'] ?? null,
-            'major' => $row['major'] ?? null,
-            'is_graduate' => isset($row['is_graduate']) ? (bool)$row['is_graduate'] : false,
-            'cgpa' => $row['cgpa'] ?? null,
-            
-            // JSON fields - store additional data
-            'personal_data' => $this->buildPersonalData($row),
-            'academic_data' => $this->buildAcademicData($row),
-            'father_data' => $this->buildFatherData($row),
-            'mother_data' => $this->buildMotherData($row),
-            'graduation_data' => $this->buildGraduationData($row),
-        ]);
+            return $user;
+
+        } catch (\Exception $e) {
+            $this->errors[] = "Error importing user: {$e->getMessage()} - Data: " . json_encode($row);
+            Log::error("User import error: " . $e->getMessage());
+            $this->skippedCount++;
+            return null;
+        }
     }
 
     /**
@@ -257,6 +345,18 @@ class UsersImport implements ToModel, WithHeadingRow, WithValidation
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'role' => 'nullable|in:student,alumni,admin',
+        ];
+    }
+
+    /**
+     * Get import results
+     */
+    public function getResults(): array
+    {
+        return [
+            'success' => $this->successCount,
+            'skipped' => $this->skippedCount,
+            'errors' => $this->errors,
         ];
     }
 }

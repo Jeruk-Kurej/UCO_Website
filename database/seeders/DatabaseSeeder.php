@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
             BusinessTypeSeeder::class,      // 2. Create business types
             ProductCategorySeeder::class,   // 3. Create product categories (depends on BusinessTypes)
             ContactTypeSeeder::class,       // 4. Create contact types
+            DummyBusinessSeeder::class,     // 5. Create dummy businesses with products and services
         ]);
 
         $this->command->newLine();

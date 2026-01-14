@@ -42,34 +42,46 @@ class ProductPhotoController extends Controller
     {
         $this->authorizeProductAccess($product);
 
-        $validated = $request->validate([
-            'photo' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-            'caption' => 'nullable|string|max:255',
-        ]);
+        try {
+            $validated = $request->validate([
+                'photo' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
+                'caption' => 'nullable|string|max:255',
+            ]);
 
-        // Handle file upload
-        if ($request->hasFile('photo')) {
-            $file = $request->file('photo');
-            $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-            
-            $product->load('business');
-            $path = $file->storeAs(
-                "businesses/{$product->business_id}/products/{$product->id}/photos",
-                $filename,
-                'public'
-            );
-            
-            $validated['photo_url'] = $path;
+            // Handle file upload
+            if ($request->hasFile('photo')) {
+                $file = $request->file('photo');
+                
+                // Additional file size check
+                if ($file->getSize() > 10240 * 1024) {
+                    return back()->withErrors(['photo' => 'Photo must not be larger than 10MB.'])->withInput();
+                }
+                
+                $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                
+                $product->load('business');
+                // Store to Cloudinary (default disk)
+                $path = $file->storeAs(
+                    "businesses/{$product->business_id}/products/{$product->id}/photos",
+                    $filename
+                );
+                
+                $validated['photo_url'] = $path;
+            }
+
+            $validated['product_id'] = $product->id;
+
+            $photo = ProductPhoto::create($validated);
+
+            // ✅ FIXED: Redirect back to photo index
+            return redirect()
+                ->route('products.photos.index', $product)
+                ->with('success', 'Product photo uploaded successfully!');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return back()->withErrors($e->errors())->withInput();
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => 'An error occurred while uploading the photo. Please try again.'])->withInput();
         }
-
-        $validated['product_id'] = $product->id;
-
-        $photo = ProductPhoto::create($validated);
-
-        // ✅ FIXED: Redirect back to photo index
-        return redirect()
-            ->route('products.photos.index', $product)
-            ->with('success', 'Product photo uploaded successfully!');
     }
 
     /**
@@ -115,7 +127,7 @@ class ProductPhotoController extends Controller
         }
 
         $validated = $request->validate([
-            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
             'caption' => 'nullable|string|max:255',
         ]);
 

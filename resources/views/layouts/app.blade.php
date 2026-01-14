@@ -13,9 +13,30 @@
 
         <!-- Bootstrap Icons -->
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+        
+        <!-- FontAwesome Icons -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+        
+        {{-- Manual fallback: Read manifest and inject assets --}}
+        @php
+            $manifestPath = public_path('build/manifest.json');
+            if (file_exists($manifestPath)) {
+                $manifest = json_decode(file_get_contents($manifestPath), true);
+                $cssFile = $manifest['resources/css/app.css']['file'] ?? null;
+                $jsFile = $manifest['resources/js/app.js']['file'] ?? null;
+            }
+        @endphp
+        
+        @if(isset($cssFile))
+            <link rel="stylesheet" href="/build/{{ $cssFile }}">
+        @endif
+        
+        @if(isset($jsFile))
+            <script type="module" src="/build/{{ $jsFile }}"></script>
+        @endif
 
         <style>
             [x-cloak] { display: none !important; }

@@ -70,4 +70,30 @@ class AiAnalysisController extends Controller
         $approvalRate = $totalCount > 0 ? round(($approvedCount / $totalCount) * 100, 1) : 0;
 
 return view('ai-analyses.index', compact('ucAnalyses', 'totalCount', 'approvedCount', 'rejectedCount', 'approvalRate'));    }
+
+    /**
+     * Manually approve a rejected testimony (Admin only)
+     */
+    public function approve(UcTestimony $ucTestimony)
+    {
+        $user = $this->getAuthUser();
+
+        if (!$user->isAdmin()) {
+            abort(403, 'Only administrators can approve testimonies.');
+        }
+
+        $analysis = $ucTestimony->aiAnalysis;
+
+        if (!$analysis) {
+            return back()->with('error', 'AI Analysis not found for this testimony.');
+        }
+
+        // Update analysis to approved
+        $analysis->update([
+            'is_approved' => true,
+            'rejection_reason' => null, // Clear rejection reason
+        ]);
+
+        return back()->with('success', 'Testimony has been manually approved and will now be visible.');
+    }
 }

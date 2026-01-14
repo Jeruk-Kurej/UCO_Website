@@ -1,27 +1,48 @@
-<x-app-layout>
-    {{-- Page Header --}}
-    <div class="mb-6">
-        <div class="flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <a href="/businesses" 
-                   class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-800 transition duration-150">
-                    <i class="bi bi-arrow-left text-lg"></i>
-                </a>
-                <div>
-                    <h1 class="text-2xl font-bold text-gray-900">{{ $business->name }}</h1>
-                    <p class="text-sm text-gray-600">
-                        <i class="bi bi-tag me-1"></i>
-                        {{ $business->businessType->name }}
-                    </p>
-                </div>
-            </div>
+@use('Illuminate\Support\Facades\Storage')
 
+<x-app-layout>
+    {{-- Hero Section with Elegant Back Button --}}
+    <div class="mb-8 px-4 sm:px-0">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
+            <button onclick="window.history.back()" 
+               class="group inline-flex items-center justify-center sm:justify-start gap-2.5 px-4 py-2.5 bg-white hover:bg-gray-900 border border-gray-200 hover:border-gray-900 text-gray-700 hover:text-white rounded-xl font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200">
+                <i class="bi bi-arrow-left text-base group-hover:-translate-x-0.5 transition-transform duration-200"></i>
+                <span>Back</span>
+            </button>
+            <div class="flex-1">
+                <div class="flex flex-wrap items-center gap-2 mb-2">
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-soft-gray-100 text-soft-gray-700 text-xs font-semibold rounded-lg">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                        </svg>
+                        {{ $business->businessType->name }}
+                    </span>
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-lg
+                        {{ $business->isBothMode() ? 'bg-purple-100 text-purple-700' : ($business->isProductMode() ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700') }}">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            @if($business->isBothMode())
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 16a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1H5a1 1 0 01-1-1v-3zM14 16a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1h-4a1 1 0 01-1-1v-3z"/>
+                            @elseif($business->isProductMode())
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                            @else
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                            @endif
+                        </svg>
+                        <span class="hidden sm:inline">{{ $business->isBothMode() ? 'Products & Services' : ($business->isProductMode() ? 'Product-Based' : 'Service-Based') }}</span>
+                        <span class="sm:hidden">{{ $business->isBothMode() ? 'Both' : ($business->isProductMode() ? 'Product' : 'Service') }}</span>
+                    </span>
+                </div>
+                <h1 class="text-2xl sm:text-3xl font-bold text-soft-gray-900 tracking-tight">{{ $business->name }}</h1>
+            </div>
             @auth
                 @if(auth()->id() === $business->user_id || auth()->user()->isAdmin())
                     <a href="{{ route('businesses.edit', $business) }}" 
-                       class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white rounded-lg font-semibold text-sm shadow-sm transition duration-150">
-                        <i class="bi bi-pencil me-2"></i>
-                        Edit Business
+                       class="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-soft-gray-900 hover:bg-soft-gray-800 text-white rounded-xl font-semibold text-sm shadow-md hover:shadow-lg transition-all duration-200">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                        </svg>
+                        <span class="hidden sm:inline">Edit Business</span>
+                        <span class="sm:hidden">Edit</span>
                     </a>
                 @endif
             @endauth
@@ -29,85 +50,112 @@
     </div>
 
     <div class="space-y-6">
-        {{-- Business Overview Card --}}
-        <div class="bg-white shadow-sm sm:rounded-lg overflow-hidden">
-            @if($business->photos->first())
-                <img src="{{ asset('storage/' . $business->photos->first()->photo_url) }}" 
-                     alt="{{ $business->name }}" 
-                     class="w-full h-64 object-cover">
-            @else
-                <div class="w-full h-64 bg-gradient-to-br from-orange-100 to-yellow-100 flex items-center justify-center">
-                    <i class="bi bi-briefcase text-8xl text-orange-300"></i>
-                </div>
-            @endif
+        {{-- Business Overview Card - Professional Design --}}
+        <div class="bg-white shadow-lg sm:rounded-2xl overflow-hidden border border-soft-gray-100">
+            {{-- Hero Image with Overlay --}}
+            <div class="relative h-80">
+                @php $firstPhoto = $business->photos->first()?->photo_url; @endphp
+                @if($firstPhoto && Storage::exists($firstPhoto))
+                    <img src="{{ Storage::url($firstPhoto) }}" 
+                         alt="{{ $business->name }}" 
+                         class="w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent"></div>
+                @else
+                    <div class="w-full h-full bg-gradient-to-br from-soft-gray-100 via-soft-gray-50 to-soft-gray-100 flex items-center justify-center relative">
+                        <svg class="w-24 h-24 text-soft-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                        </svg>
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-black/5 to-transparent"></div>
+                    </div>
+                @endif
+            </div>
 
-            <div class="p-6">
-                <div class="flex items-start justify-between mb-4">
-                    <div>
-                        <div class="flex items-center gap-4 text-sm text-gray-600 mb-3">
-                            <span class="flex items-center gap-1">
-                                <i class="bi bi-tag"></i>
-                                {{ $business->businessType->name }}
-                            </span>
-                            <span class="flex items-center gap-1">
-                                <i class="bi bi-person"></i>
-                                {{ $business->user->name }}
-                            </span>
-                            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium 
-                                {{ $business->isBothMode() ? 'bg-purple-100 text-purple-800' : ($business->isProductMode() ? 'bg-orange-100 text-orange-800' : 'bg-blue-100 text-blue-800') }}">
-                                <i class="bi {{ $business->isBothMode() ? 'bi-grid-3x3' : ($business->isProductMode() ? 'bi-box-seam' : 'bi-wrench') }}"></i>
-                                {{ $business->isBothMode() ? 'Product & Service' : ($business->isProductMode() ? 'Product-Based' : 'Service-Based') }}
-                            </span>
+            {{-- Business Info Section --}}
+            <div class="p-4 sm:p-6 lg:p-8">
+                {{-- Owner Info - PROMINENT with Avatar --}}
+                <div class="flex flex-col sm:flex-row items-start gap-4 mb-6 pb-6 border-b-2 border-soft-gray-100">
+                    @php $ownerPhoto = $business->user->profile_photo_url; @endphp
+                        @if($ownerPhoto && Storage::exists($ownerPhoto))
+                            <img src="{{ Storage::url($ownerPhoto) }}" 
+                                 alt="{{ $business->user->name }}" 
+                                 class="flex-shrink-0 w-16 h-16 rounded-2xl object-cover shadow-lg">
+                        @else
+                        <div class="flex-shrink-0 w-16 h-16 rounded-2xl bg-gradient-to-br from-uco-orange-500 to-uco-yellow-500 flex items-center justify-center text-white text-2xl font-bold shadow-lg">
+                            {{ strtoupper(substr($business->user->name, 0, 1)) }}
                         </div>
+                    @endif
+                    <div class="flex-1">
+                        <p class="text-xs font-semibold text-soft-gray-500 uppercase tracking-wider mb-1">Business Owner</p>
+                        <h3 class="text-xl font-bold text-soft-gray-900 mb-1">{{ $business->user->name }}</h3>
+                        @if($business->position)
+                            <div class="flex items-center gap-2">
+                                <div class="flex items-center gap-1.5 px-3 py-1.5 bg-soft-gray-100 text-soft-gray-700 rounded-lg">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                                    </svg>
+                                    <span class="text-sm font-semibold">{{ $business->position }}</span>
+                                </div>
+                            </div>
+                        @endif
                     </div>
                 </div>
 
-                <div class="prose max-w-none">
-                    <p class="text-gray-700 leading-relaxed">{{ $business->description }}</p>
+                {{-- Description --}}
+                <div>
+                    <h4 class="text-sm font-bold text-soft-gray-900 uppercase tracking-wider mb-3">About This Business</h4>
+                    <p class="text-base text-soft-gray-700 leading-relaxed">{{ $business->description }}</p>
                 </div>
             </div>
         </div>
 
-        {{-- Tabs Navigation --}}
+        {{-- Tabs Navigation - Elegant Design --}}
         <div x-data="{ 
             activeTab: '{{ session('activeTab', $business->isProductMode() ? 'products' : 'services') }}'
-        }" class="bg-white shadow-sm sm:rounded-lg">
-            <div class="border-b border-gray-200">
+        }" class="bg-white shadow-lg sm:rounded-2xl border border-soft-gray-100">
+            <div class="border-b-2 border-soft-gray-100">
                 <nav class="flex -mb-px px-6 overflow-x-auto">
                     @if($business->isProductMode())
                         <button @click="activeTab = 'products'" 
-                                :class="activeTab === 'products' ? 'border-orange-500 text-orange-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
-                                class="flex items-center gap-2 py-4 px-4 border-b-2 font-medium text-sm transition duration-150 whitespace-nowrap">
-                            <i class="bi bi-box-seam"></i>
+                                :class="activeTab === 'products' ? 'border-soft-gray-900 text-soft-gray-900' : 'border-transparent text-soft-gray-500 hover:text-soft-gray-700 hover:border-soft-gray-300'"
+                                class="flex items-center gap-2 py-4 px-4 border-b-2 font-semibold text-sm transition duration-150 whitespace-nowrap">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                            </svg>
                             Products
-                            <span class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-xs">{{ $business->products->count() }}</span>
+                            <span :class="activeTab === 'products' ? 'bg-soft-gray-900 text-white' : 'bg-soft-gray-100 text-soft-gray-600'" class="px-2.5 py-0.5 rounded-full text-xs font-semibold transition-colors">{{ $business->products->count() }}</span>
                         </button>
                     @endif
 
                     @if($business->isServiceMode())
                         <button @click="activeTab = 'services'" 
-                                :class="activeTab === 'services' ? 'border-orange-500 text-orange-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
-                                class="flex items-center gap-2 py-4 px-4 border-b-2 font-medium text-sm transition duration-150 whitespace-nowrap">
-                            <i class="bi bi-wrench"></i>
+                                :class="activeTab === 'services' ? 'border-soft-gray-900 text-soft-gray-900' : 'border-transparent text-soft-gray-500 hover:text-soft-gray-700 hover:border-soft-gray-300'"
+                                class="flex items-center gap-2 py-4 px-4 border-b-2 font-semibold text-sm transition duration-150 whitespace-nowrap">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                            </svg>
                             Services
-                            <span class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-xs">{{ $business->services->count() }}</span>
+                            <span :class="activeTab === 'services' ? 'bg-soft-gray-900 text-white' : 'bg-soft-gray-100 text-soft-gray-600'" class="px-2.5 py-0.5 rounded-full text-xs font-semibold transition-colors">{{ $business->services->count() }}</span>
                         </button>
                     @endif
 
                     <button @click="activeTab = 'photos'" 
-                            :class="activeTab === 'photos' ? 'border-orange-500 text-orange-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
-                            class="flex items-center gap-2 py-4 px-4 border-b-2 font-medium text-sm transition duration-150 whitespace-nowrap">
-                        <i class="bi bi-images"></i>
-                        Photos
-                        <span class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-xs">{{ $business->photos->count() }}</span>
+                            :class="activeTab === 'photos' ? 'border-soft-gray-900 text-soft-gray-900' : 'border-transparent text-soft-gray-500 hover:text-soft-gray-700 hover:border-soft-gray-300'"
+                            class="flex items-center gap-2 py-4 px-4 border-b-2 font-semibold text-sm transition duration-150 whitespace-nowrap">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                            Photos
+                            <span :class="activeTab === 'photos' ? 'bg-soft-gray-900 text-white' : 'bg-soft-gray-100 text-soft-gray-600'" class="px-2.5 py-0.5 rounded-full text-xs font-semibold transition-colors">{{ $business->photos->count() }}</span>
                     </button>
 
                     <button @click="activeTab = 'contacts'" 
-                            :class="activeTab === 'contacts' ? 'border-orange-500 text-orange-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
-                            class="flex items-center gap-2 py-4 px-4 border-b-2 font-medium text-sm transition duration-150 whitespace-nowrap">
-                        <i class="bi bi-telephone"></i>
-                        Contacts
-                        <span class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-xs">{{ $business->contacts->count() }}</span>
+                            :class="activeTab === 'contacts' ? 'border-soft-gray-900 text-soft-gray-900' : 'border-transparent text-soft-gray-500 hover:text-soft-gray-700 hover:border-soft-gray-300'"
+                            class="flex items-center gap-2 py-4 px-4 border-b-2 font-semibold text-sm transition duration-150 whitespace-nowrap">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                            </svg>
+                            Contacts
+                            <span :class="activeTab === 'contacts' ? 'bg-soft-gray-900 text-white' : 'bg-soft-gray-100 text-soft-gray-600'" class="px-2.5 py-0.5 rounded-full text-xs font-semibold transition-colors">{{ $business->contacts->count() }}</span>
                     </button>
                 </nav>
             </div>
@@ -121,12 +169,12 @@
                         @if(auth()->id() === $business->user_id || auth()->user()->isAdmin())
                             <div class="flex items-center gap-2">
                                 <a href="{{ route('business-types.product-categories.index', $business->businessType) }}" 
-                                   class="inline-flex items-center px-3 py-2 bg-gray-100 text-gray-700 text-sm rounded-md hover:bg-gray-200 transition duration-150">
+                                   class="inline-flex items-center px-3 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition duration-150">
                                     <i class="bi bi-tags me-2"></i>
                                     Manage Categories
                                 </a>
                                 <a href="{{ route('businesses.products.create', $business) }}" 
-                                   class="inline-flex items-center px-3 py-2 bg-orange-600 text-white text-sm rounded-md hover:bg-orange-700 transition duration-150">
+                                   class="inline-flex items-center px-3 py-2 bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium rounded-lg shadow-sm transition duration-150">
                                     <i class="bi bi-plus-lg me-2"></i>
                                     Add Product
                                 </a>
@@ -140,8 +188,9 @@
                         @foreach($business->products as $product)
                             <div class="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition duration-150">
                                 {{-- Product Image --}}
-                                @if($product->photos->first())
-                                    <img src="{{ asset('storage/' . $product->photos->first()->photo_url) }}" 
+                                @php $prodPhoto = $product->photos->first()?->photo_url; @endphp
+                                @if($prodPhoto && Storage::exists($prodPhoto))
+                                    <img src="{{ Storage::url($prodPhoto) }}" 
                                          alt="{{ $product->name }}" 
                                          class="w-full h-40 object-cover">
                                 @else
@@ -207,7 +256,7 @@
                             @if(auth()->id() === $business->user_id || auth()->user()->isAdmin())
                                 <p class="text-sm text-gray-400 mb-4">Start adding products to showcase your offerings</p>
                                 <a href="{{ route('businesses.products.create', $business) }}" 
-                                   class="inline-flex items-center px-4 py-2 bg-orange-600 text-white text-sm rounded-md hover:bg-orange-700 transition duration-150">
+                                   class="inline-flex items-center px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium rounded-lg shadow-sm transition duration-150">
                                     <i class="bi bi-plus-lg me-2"></i>
                                     Add Your First Product
                                 </a>
@@ -226,7 +275,7 @@
                     @auth
                         @if(auth()->id() === $business->user_id || auth()->user()->isAdmin())
                             <a href="{{ route('businesses.services.create', $business) }}" 
-                               class="inline-flex items-center px-3 py-2 bg-orange-600 text-white text-sm rounded-md hover:bg-orange-700 transition duration-150">
+                               class="inline-flex items-center px-3 py-2 bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium rounded-lg shadow-sm transition duration-150">
                                 <i class="bi bi-plus-lg me-2"></i>
                                 Add Service
                             </a>
@@ -284,7 +333,7 @@
                             @if(auth()->id() === $business->user_id || auth()->user()->isAdmin())
                                 <p class="text-sm text-gray-400 mb-4">Add services to showcase what you offer</p>
                                 <a href="{{ route('businesses.services.create', $business) }}" 
-                                   class="inline-flex items-center px-4 py-2 bg-orange-600 text-white text-sm rounded-md hover:bg-orange-700 transition duration-150">
+                                   class="inline-flex items-center px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium rounded-lg shadow-sm transition duration-150">
                                     <i class="bi bi-plus-lg me-2"></i>
                                     Add Your First Service
                                 </a>
@@ -302,7 +351,7 @@
                     @auth
                         @if(auth()->id() === $business->user_id || auth()->user()->isAdmin())
                             <a href="{{ route('businesses.photos.create', $business) }}" 
-                               class="inline-flex items-center px-3 py-2 bg-orange-600 text-white text-sm rounded-md hover:bg-orange-700 transition duration-150">
+                               class="inline-flex items-center px-3 py-2 bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium rounded-lg shadow-sm transition duration-150">
                                 <i class="bi bi-upload me-2"></i>
                                 Upload Photo
                             </a>
@@ -313,10 +362,26 @@
                 @if($business->photos->count() > 0)
                     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                         @foreach($business->photos as $photo)
+                            @php $gphoto = $photo->photo_url; $gphotoUrl = null; @endphp
                             <div class="relative group">
-                                <img src="{{ asset('storage/' . $photo->photo_url) }}" 
-                                     alt="{{ $photo->caption }}" 
-                                     class="w-full h-48 object-cover rounded-lg">
+                                @if($gphoto)
+                                    @php
+                                        try {
+                                            if (Storage::exists($gphoto)) {
+                                                $gphotoUrl = Storage::url($gphoto);
+                                            }
+                                        } catch (\Exception $e) {
+                                            $gphotoUrl = null;
+                                        }
+                                    @endphp
+                                @endif
+                                @if($gphotoUrl)
+                                    <img src="{{ $gphotoUrl }}" alt="{{ $photo->caption }}" class="w-full h-48 object-cover rounded-lg">
+                                @else
+                                    <div class="w-full h-48 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center rounded-lg">
+                                        <i class="bi bi-image text-4xl text-gray-400"></i>
+                                    </div>
+                                @endif
                                 @if($photo->caption)
                                     <div class="absolute bottom-0 left-0 right-0 bg-black bg-opacity-60 text-white text-xs p-2 rounded-b-lg">
                                         {{ $photo->caption }}
@@ -350,7 +415,7 @@
                             @if(auth()->id() === $business->user_id || auth()->user()->isAdmin())
                                 <p class="text-sm text-gray-400 mb-4">Upload photos to showcase your business</p>
                                 <a href="{{ route('businesses.photos.create', $business) }}" 
-                                   class="inline-flex items-center px-4 py-2 bg-orange-600 text-white text-sm rounded-md hover:bg-orange-700 transition duration-150">
+                                   class="inline-flex items-center px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium rounded-lg shadow-sm transition duration-150">
                                     <i class="bi bi-upload me-2"></i>
                                     Upload Your First Photo
                                 </a>
@@ -367,7 +432,7 @@
                     @auth
                         @if(auth()->id() === $business->user_id || auth()->user()->isAdmin())
                             <a href="{{ route('businesses.contacts.create', $business) }}" 
-                               class="inline-flex items-center px-3 py-2 bg-orange-600 text-white text-sm rounded-md hover:bg-orange-700 transition duration-150">
+                               class="inline-flex items-center px-3 py-2 bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium rounded-lg shadow-sm transition duration-150">
                                 <i class="bi bi-plus-lg me-2"></i>
                                 Add Contact
                             </a>
@@ -428,7 +493,7 @@
                             @if(auth()->id() === $business->user_id || auth()->user()->isAdmin())
                                 <p class="text-sm text-gray-400 mb-4">Add contact methods so customers can reach you</p>
                                 <a href="{{ route('businesses.contacts.create', $business) }}" 
-                                   class="inline-flex items-center px-4 py-2 bg-orange-600 text-white text-sm rounded-md hover:bg-orange-700 transition duration-150">
+                                   class="inline-flex items-center px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium rounded-lg shadow-sm transition duration-150">
                                     <i class="bi bi-plus-lg me-2"></i>
                                     Add Your First Contact
                                 </a>

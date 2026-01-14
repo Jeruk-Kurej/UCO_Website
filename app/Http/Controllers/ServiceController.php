@@ -70,22 +70,28 @@ class ServiceController extends Controller
     {
         $this->authorizeBusinessAccess($business);
 
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'required|string',
-            'price_type' => 'required|string|max:255',
-            'price' => 'required|numeric|min:0',
-        ]);
+        try {
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'description' => 'required|string',
+                'price_type' => 'required|string|max:255',
+                'price' => 'required|numeric|min:0',
+            ]);
 
-        $validated['business_id'] = $business->id;
+            $validated['business_id'] = $business->id;
 
-        $service = Service::create($validated);
+            $service = Service::create($validated);
 
-        // ✅ FIXED: Redirect to business show page
-        return redirect()
-            ->route('businesses.show', $business)
-            ->with('success', 'Service created successfully!')
-            ->with('activeTab', 'services');
+            // ✅ FIXED: Redirect to business show page with services tab active
+            return redirect()
+                ->route('businesses.show', $business)
+                ->with('success', 'Service created successfully!')
+                ->with('activeTab', 'services');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return back()->withErrors($e->errors())->withInput();
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => 'An error occurred while creating the service. Please try again.'])->withInput();
+        }
     }
 
     /**

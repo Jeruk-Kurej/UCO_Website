@@ -1,14 +1,13 @@
 <x-app-layout>
     <div class="max-w-4xl mx-auto space-y-6">
         {{-- Back Button --}}
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-4">
             <a href="{{ route('ai-analyses.index') }}" 
-               class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 transition">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-                </svg>
+               class="group inline-flex items-center gap-2.5 px-4 py-2.5 bg-white hover:bg-gray-900 border border-gray-200 hover:border-gray-900 text-gray-700 hover:text-white rounded-xl font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200">
+                <i class="bi bi-arrow-left text-base group-hover:-translate-x-0.5 transition-transform duration-200"></i>
+                <span>Back</span>
             </a>
-            <div>
+            <div class="flex-1">
                 <h1 class="text-2xl font-bold text-gray-900">AI Analysis Details</h1>
                 <p class="text-sm text-gray-600">Review testimony and AI moderation results</p>
             </div>
@@ -106,6 +105,31 @@
                         <div>
                             <p class="text-sm font-semibold text-yellow-800 mb-1">Rejection Reason</p>
                             <p class="text-sm text-yellow-700">{{ $analysis->rejection_reason }}</p>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
+            {{-- Manual Approval Button (if rejected) --}}
+            @if(!$analysis->is_approved)
+                <div class="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <div class="flex items-start gap-4">
+                        <svg class="w-6 h-6 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <div class="flex-1">
+                            <h3 class="text-sm font-semibold text-blue-900 mb-1">Manual Approval</h3>
+                            <p class="text-sm text-blue-700 mb-3">This testimony was rejected by AI. You can manually approve it if you believe it's appropriate.</p>
+                            <form method="POST" action="{{ route('uc-ai-analyses.approve', $testimony) }}" onsubmit="return confirm('Are you sure you want to approve this testimony? It will be visible to all users.')">
+                                @csrf
+                                <button type="submit" 
+                                        class="inline-flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium text-sm shadow-sm hover:shadow-md transition-all">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                    Approve Manually
+                                </button>
+                            </form>
                         </div>
                     </div>
                 </div>

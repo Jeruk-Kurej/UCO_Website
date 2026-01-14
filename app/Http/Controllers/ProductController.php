@@ -73,29 +73,35 @@ class ProductController extends Controller
     {
         $this->authorizeBusinessAccess($business);
 
-        $validated = $request->validate([
-            'product_category_id' => 'required|exists:product_categories,id',
-            'name' => 'required|string|max:255',
-            'description' => 'required|string',
-            'price' => 'required|numeric|min:0',
-        ]);
+        try {
+            $validated = $request->validate([
+                'product_category_id' => 'required|exists:product_categories,id',
+                'name' => 'required|string|max:255',
+                'description' => 'required|string',
+                'price' => 'required|numeric|min:0',
+            ]);
 
-        // Ensure the category belongs to this BUSINESS TYPE
-        $category = $business->businessType->productCategories()->find($validated['product_category_id']);
-        
-        if (!$category) {
-            return back()->withErrors(['product_category_id' => 'The selected category does not belong to this business type.']);
+            // Ensure the category belongs to this BUSINESS TYPE
+            $category = $business->businessType->productCategories()->find($validated['product_category_id']);
+            
+            if (!$category) {
+                return back()->withErrors(['product_category_id' => 'The selected category does not belong to this business type.'])->withInput();
+            }
+
+            $validated['business_id'] = $business->id;
+
+            $product = Product::create($validated);
+
+            // ✅ FIXED: Redirect to business show page with products tab active
+            return redirect()
+                ->route('businesses.show', $business)
+                ->with('success', 'Product created successfully!')
+                ->with('activeTab', 'products');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return back()->withErrors($e->errors())->withInput();
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => 'An error occurred while creating the product. Please try again.'])->withInput();
         }
-
-        $validated['business_id'] = $business->id;
-
-        $product = Product::create($validated);
-
-        // ✅ FIXED: Redirect to business show page with products tab active
-        return redirect()
-            ->route('businesses.show', $business)
-            ->with('success', 'Product created successfully!')
-            ->with('activeTab', 'products');
     }
 
     /**
