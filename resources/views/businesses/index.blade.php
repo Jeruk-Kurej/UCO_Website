@@ -216,18 +216,20 @@
             {{-- Search Bar --}}
             <div class="px-6 py-4 bg-gray-50 border-b border-gray-200"
                  x-data="{
-                    search: '{{ request('search') }}',
+                    search: @json(request('search')),
                     isSearching: false,
                     performSearch() {
                         this.isSearching = true;
-                        const trimmed = this.search.trim();
-                        const myParam = '{{ request('my') }}';
-                        let url = '{{ route('businesses.index') }}';
-                        if (myParam) url += '?my=1';
-                        if (trimmed.length > 0) {
-                            url += (myParam ? '&' : '?') + 'search=' + encodeURIComponent(trimmed);
-                        }
-                        
+                        const trimmed = this.search ? this.search.trim() : '';
+                        const myParam = @json(request('my'));
+                        const typeParam = @json(request('type'));
+                        const params = new URLSearchParams();
+                        if (myParam) params.append('my', '1');
+                        if (typeParam) params.append('type', typeParam);
+                        if (trimmed.length > 0) params.append('search', trimmed);
+
+                        const url = '{{ route('businesses.index') }}' + (params.toString() ? ('?' + params.toString()) : '');
+
                         fetch(url, {
                             method: 'GET',
                             headers: {
@@ -289,13 +291,17 @@
 
             {{-- Tab Content: Browse All Businesses --}}
             <div x-show="activeTab === 'browse'" class="p-6">
+                {{-- Filter bar (categories) --}}
+                @if(isset($businessTypes) && $businessTypes->count() > 0)
+                    @include('components.filter-bar', ['businessTypes' => $businessTypes])
+                @endif
                 @if($businesses->count() > 0)
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         @foreach($businesses as $business)
-                            <a href="{{ route('businesses.show', $business) }}" class="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden group block">
+                            <a href="{{ route('businesses.show', $business) }}" aria-label="View {{ $business->name }}" class="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transform hover:-translate-y-0.5 transition-all duration-200 overflow-hidden group block focus:outline-none focus:ring-2 focus:ring-orange-500" tabindex="0">
                                 <div class="flex flex-col h-full">
                                     {{-- Header with Photo & Logo --}}
-                                    <div class="relative h-56">
+                                    <div class="relative h-36">
                                         {{-- Category Badge - Top Left --}}
                                         <div class="absolute top-3 left-3 z-10">
                                             <span class="inline-block text-xs bg-white/95 backdrop-blur-sm text-slate-800 px-3 py-1.5 rounded-full font-semibold shadow-md" 
@@ -306,10 +312,12 @@
                                         
                                         {{-- Business Photo Background --}}
                                         @php $firstPhoto = $business->photos->first()?->photo_url; @endphp
-                                        @if($firstPhoto && Storage::exists($firstPhoto))
-                                            <img src="{{ Storage::url($firstPhoto) }}" 
-                                                 alt="{{ $business->name }}" 
-                                                 class="w-full h-full object-cover">
+                                        @if($firstPhoto)
+                                                    <img src="{{ storage_image_url($firstPhoto, 'hero') }}" 
+                                                    alt="{{ $business->name }}" 
+                                                    loading="lazy" decoding="async"
+                                                    onload="this.classList.remove('blur-sm')"
+                                                    class="w-full h-full object-cover blur-sm transform transition-transform duration-300 group-hover:scale-105">
                                             <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
                                         @else
                                             <div class="w-full h-full bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center">
@@ -319,17 +327,18 @@
                                         @endif
                                         
                                         {{-- Logo Overlay --}}
-                                        <div class="absolute bottom-4 left-4 flex items-end gap-4">
+                                        <div class="absolute bottom-3 left-3 flex items-end gap-3">
                                             @php $logo = $business->logo_url; @endphp
-                                            @if($logo && Storage::exists($logo))
-                                                <div class="w-20 h-20 rounded-xl bg-white shadow-lg border-2 border-white overflow-hidden flex-shrink-0">
-                                                    <img src="{{ Storage::url($logo) }}" 
-                                                         alt="{{ $business->name }} logo" 
-                                                         class="w-full h-full object-cover">
-                                                </div>
-                                            @else
-                                                <div class="w-20 h-20 rounded-xl bg-white shadow-lg border-2 border-white flex items-center justify-center flex-shrink-0">
-                                                    <i class="bi bi-building text-3xl text-slate-400"></i>
+                                            @if($logo)
+                                                    <div class="w-16 h-16 rounded-full bg-white shadow-lg border-2 border-white overflow-hidden flex-shrink-0">
+                                                        <img src="{{ storage_image_url($logo, 'logo_thumb') }}" 
+                                                             alt="{{ $business->name }} logo" 
+                                                             loading="lazy" decoding="async"
+                                                             class="w-full h-full object-cover">
+                                                    </div>
+                                                @else
+                                                <div class="w-16 h-16 rounded-full bg-white shadow-lg border-2 border-white flex items-center justify-center flex-shrink-0" aria-hidden="true">
+                                                    <i class="bi bi-building text-2xl text-slate-400"></i>
                                                 </div>
                                             @endif
                                         </div>
@@ -346,7 +355,7 @@
                                         </div>
                                         
                                         {{-- Description --}}
-                                        <p class="text-sm text-gray-600 mb-4 line-clamp-2">{{ $business->description }}</p>
+                                            <p class="text-sm text-gray-600 mb-4 line-clamp-1">{{ $business->description }}</p>
                                         
                                         {{-- Owner Info Card --}}
                                         <div class="bg-slate-50 border border-slate-100 rounded-lg p-3 mb-4">
@@ -354,17 +363,7 @@
                                                 {{-- Owner Avatar (safe) --}}
                                                 @php
                                                     $ownerPhoto = $business->user->profile_photo_url ?? null;
-                                                    $ownerPhotoUrl = null;
-                                                    if ($ownerPhoto) {
-                                                        try {
-                                                            if (Storage::exists($ownerPhoto)) {
-                                                                $ownerPhotoUrl = Storage::url($ownerPhoto);
-                                                            }
-                                                        } catch (\Exception $e) {
-                                                            // ignore Cloudinary API errors and fallback to initials
-                                                            $ownerPhotoUrl = null;
-                                                        }
-                                                    }
+                                                        $ownerPhotoUrl = $ownerPhoto ? storage_image_url($ownerPhoto, 'profile_thumb') : null;
                                                 @endphp
                                                 @if($ownerPhotoUrl)
                                                     <img src="{{ $ownerPhotoUrl }}" 
@@ -379,14 +378,13 @@
                                                 <div class="flex-1 min-w-0">
                                                     <p class="text-sm font-semibold text-gray-900 truncate" title="{{ $business->user->name }}">
                                                         {{ $business->user->name }}
+                                                        @if($business->position)
+                                                            <span class="text-xs text-slate-600 font-medium"> — {{ $business->position }}</span>
+                                                        @endif
                                                     </p>
-                                                    @if($business->position)
-                                                        <p class="text-xs text-slate-600 truncate" title="{{ $business->position }}">
-                                                            {{ $business->position }}
-                                                        </p>
-                                                    @else
-                                                        <p class="text-xs text-slate-500">Owner</p>
-                                                    @endif
+                                                    @unless($business->position)
+                                                        <p class="text-xs text-gray-500">Owner</p>
+                                                    @endunless
                                                 </div>
                                             </div>
                                         </div>
@@ -399,8 +397,9 @@
                                                         onclick="event.preventDefault(); event.stopPropagation(); toggleFeatured({{ $business->id }}, this)"
                                                         class="inline-flex items-center justify-center w-8 h-8 rounded-lg transition-colors {{ $business->is_featured ? 'text-yellow-600 hover:bg-yellow-50' : 'text-gray-400 hover:bg-gray-100' }}"
                                                         title="{{ $business->is_featured ? 'Remove from Featured' : 'Add to Featured' }}"
+                                                        aria-pressed="{{ $business->is_featured ? 'true' : 'false' }}"
                                                         data-featured="{{ $business->is_featured ? 'true' : 'false' }}">
-                                                        <i class="bi {{ $business->is_featured ? 'bi-star-fill' : 'bi-star' }} text-lg"></i>
+                                                        <i class="bi {{ $business->is_featured ? 'bi-star-fill' : 'bi-star' }} text-lg" aria-hidden="true"></i>
                                                     </button>
                                                 @endif
                                                 @if(auth()->id() === $business->user_id || auth()->user()->isAdmin())
@@ -448,10 +447,10 @@
                         @if($myBusinesses->count() > 0)
                             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                 @foreach($myBusinesses as $business)
-                                    <a href="{{ route('businesses.show', $business) }}" class="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden group block">
+                                    <a href="{{ route('businesses.show', $business) }}" class="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transform hover:-translate-y-0.5 transition-all duration-200 overflow-hidden group block">
                                         <div class="flex flex-col h-full">
                                             {{-- Header with Photo & Logo --}}
-                                            <div class="relative h-56">
+                                            <div class="relative h-36">
                                                 {{-- Category Badge - Top Left --}}
                                                 <div class="absolute top-3 left-3 z-10">
                                                     <span class="inline-block text-xs bg-white/95 backdrop-blur-sm text-slate-800 px-3 py-1.5 rounded-full font-semibold shadow-md" 
@@ -463,20 +462,11 @@
                                                 {{-- Business Photo Background --}}
                                                 @php $myFirstPhoto = $business->photos->first()?->photo_url; @endphp
                                                 @if($myFirstPhoto)
-                                                    @php
-                                                        $myFirstPhotoUrl = null;
-                                                        try {
-                                                            if (Storage::exists($myFirstPhoto)) {
-                                                                $myFirstPhotoUrl = Storage::url($myFirstPhoto);
-                                                            }
-                                                        } catch (\Exception $e) {
-                                                            $myFirstPhotoUrl = null;
-                                                        }
-                                                    @endphp
-                                                    @if($myFirstPhotoUrl)
-                                                        <img src="{{ $myFirstPhotoUrl }}" alt="{{ $business->name }}" class="w-full h-full object-cover">
-                                                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
-                                                    @else
+                                                        @php $myFirstPhotoUrl = $myFirstPhoto ? storage_image_url($myFirstPhoto, 'hero') : null; @endphp
+                                                        @if($myFirstPhotoUrl)
+                                                            <img src="{{ $myFirstPhotoUrl }}" alt="{{ $business->name }}" class="w-full h-full object-cover transform transition-transform duration-300 group-hover:scale-105">
+                                                            <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
+                                                        @else
                                                         <div class="w-full h-full bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center">
                                                             <i class="bi bi-briefcase text-6xl text-slate-400"></i>
                                                         </div>
@@ -490,26 +480,18 @@
                                                 @endif
                                                 
                                                 {{-- Logo Overlay --}}
-                                                <div class="absolute bottom-4 left-4 flex items-end gap-4">
+                                                <div class="absolute bottom-3 left-3 flex items-end gap-3">
                                                     @php $myLogo = $business->logo_url ?? null; $myLogoUrl = null; @endphp
                                                     @if($myLogo)
-                                                        @php
-                                                            try {
-                                                                if (Storage::exists($myLogo)) {
-                                                                    $myLogoUrl = Storage::url($myLogo);
-                                                                }
-                                                            } catch (\Exception $e) {
-                                                                $myLogoUrl = null;
-                                                            }
-                                                        @endphp
+                                                        @php $myLogoUrl = $myLogo ? storage_image_url($myLogo, 'logo_thumb') : null; @endphp
                                                     @endif
                                                     @if($myLogoUrl)
-                                                        <div class="w-20 h-20 rounded-xl bg-white shadow-lg border-2 border-white overflow-hidden flex-shrink-0">
+                                                        <div class="w-16 h-16 rounded-xl bg-white shadow-lg border-2 border-white overflow-hidden flex-shrink-0">
                                                             <img src="{{ $myLogoUrl }}" alt="{{ $business->name }} logo" class="w-full h-full object-cover">
                                                         </div>
                                                     @else
-                                                        <div class="w-20 h-20 rounded-xl bg-white shadow-lg border-2 border-white flex items-center justify-center flex-shrink-0">
-                                                            <i class="bi bi-building text-3xl text-slate-400"></i>
+                                                        <div class="w-16 h-16 rounded-xl bg-white shadow-lg border-2 border-white flex items-center justify-center flex-shrink-0">
+                                                            <i class="bi bi-building text-2xl text-slate-400"></i>
                                                         </div>
                                                     @endif
                                                     
@@ -534,25 +516,16 @@
                                                 </div>
                                                 
                                                 {{-- Description --}}
-                                                <p class="text-sm text-gray-600 mb-4 line-clamp-2">{{ $business->description }}</p>
+                                                <p class="text-sm text-gray-600 mb-4 line-clamp-1">{{ $business->description }}</p>
                                                 
                                                 {{-- Owner Info Card --}}
                                                 <div class="bg-slate-50 border border-slate-100 rounded-lg p-3 mb-4">
                                                     <div class="flex items-center gap-3">
                                                         {{-- Owner Avatar (safe) --}}
-                                                        @php
-                                                            $ownerPhoto = $business->user->profile_photo_url ?? null;
-                                                            $ownerPhotoUrl = null;
-                                                            if ($ownerPhoto) {
-                                                                try {
-                                                                    if (Storage::exists($ownerPhoto)) {
-                                                                        $ownerPhotoUrl = Storage::url($ownerPhoto);
-                                                                    }
-                                                                } catch (\Exception $e) {
-                                                                    $ownerPhotoUrl = null;
-                                                                }
-                                                            }
-                                                        @endphp
+                                                            @php
+                                                                $ownerPhoto = $business->user->profile_photo_url ?? null;
+                                                                $ownerPhotoUrl = $ownerPhoto ? storage_image_url($ownerPhoto, 'profile_thumb') : null;
+                                                            @endphp
                                                         @if($ownerPhotoUrl)
                                                             <img src="{{ $ownerPhotoUrl }}" 
                                                                  alt="{{ $business->user->name }}" 
@@ -566,14 +539,13 @@
                                                         <div class="flex-1 min-w-0">
                                                             <p class="text-sm font-semibold text-gray-900 truncate" title="{{ $business->user->name }}">
                                                                 {{ $business->user->name }}
+                                                                @if($business->position)
+                                                                    <span class="text-xs text-slate-600 font-medium"> — {{ $business->position }}</span>
+                                                                @endif
                                                             </p>
-                                                            @if($business->position)
-                                                                <p class="text-xs text-slate-600 truncate" title="{{ $business->position }}">
-                                                                    {{ $business->position }}
-                                                                </p>
-                                                            @else
+                                                            @unless($business->position)
                                                                 <p class="text-xs text-slate-500">Owner</p>
-                                                            @endif
+                                                            @endunless
                                                         </div>
                                                     </div>
                                                 </div>

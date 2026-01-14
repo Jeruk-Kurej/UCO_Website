@@ -52,6 +52,12 @@ class BusinessController extends Controller
             });
         }
         
+        // Filter by business type id if provided
+        $type = $request->get('type');
+        if ($type) {
+            $query->where('business_type_id', $type);
+        }
+        
         // Filter for "My Businesses" if query param present
         if ($request->get('my') && Auth::check()) {
             /** @var User $user */
@@ -67,7 +73,10 @@ class BusinessController extends Controller
             $myBusinesses = $businesses->where('user_id', Auth::id());
         }
         
-        return view('businesses.index', compact('businesses', 'myBusinesses'));
+        // Also load business types for the filter bar
+        $businessTypes = BusinessType::all();
+
+        return view('businesses.index', compact('businesses', 'myBusinesses', 'businessTypes'));
     }
 
     /**
