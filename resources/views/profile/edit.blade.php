@@ -79,9 +79,23 @@
                     <label class="block text-sm font-semibold text-gray-700 mb-3">Profile Photo</label>
                     <div class="flex items-center gap-6">
                         <div class="relative">
-                            @if($user->profile_photo_url)
+                            @php
+                                $profilePhoto = $user->profile_photo_url ?? null;
+                                $profilePhotoUrl = null;
+                                if ($profilePhoto) {
+                                    try {
+                                        if (Storage::exists($profilePhoto)) {
+                                            $profilePhotoUrl = Storage::url($profilePhoto) . '?t=' . ($user->updated_at?->timestamp ?? time());
+                                        }
+                                    } catch (\Exception $e) {
+                                        // ignore Cloudinary API errors and fallback to initials
+                                        $profilePhotoUrl = null;
+                                    }
+                                }
+                            @endphp
+                            @if($profilePhotoUrl)
                                 <img id="profile-photo-preview" 
-                                     src="{{ Storage::url($user->profile_photo_url) }}?t={{ $user->updated_at?->timestamp ?? time() }}" 
+                                     src="{{ $profilePhotoUrl }}" 
                                      alt="Profile Photo" 
                                      class="w-24 h-24 rounded-full object-cover border-4 border-gray-200 shadow-md">
                             @else

@@ -6,6 +6,13 @@
   },
   "deploy": {
     "restartPolicyType": "ON_FAILURE",
-    "restartPolicyMaxRetries": 3
+    "restartPolicyMaxRetries": 3,
+    "postDeploy": [
+      "php artisan config:clear",
+      "php artisan cache:clear",
+      "php artisan migrate --force",
+      "php artisan queue:restart"
+    ],
+    "notes": "Ensure Cloudinary env vars (CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET) are set in Railway environment variables. The app uses FILESYSTEM_DISK=cloudinary."
   }
 }

@@ -17,10 +17,11 @@
             <div class="flex items-center gap-6">
                 <!-- Current Photo Preview -->
                 <div class="relative">
-                    @if($user->profile_photo_url)
+                    @php $profilePhoto = $user->profile_photo_url; @endphp
+                    @if($profilePhoto && Storage::exists($profilePhoto))
                         <img 
                             id="profile-photo-preview" 
-                            src="{{ Storage::url($user->profile_photo_url) }}?t={{ $user->updated_at?->timestamp ?? time() }}" 
+                            src="{{ Storage::url($profilePhoto) }}?t={{ $user->updated_at?->timestamp ?? time() }}" 
                             alt="Profile Photo" 
                             class="w-24 h-24 rounded-full object-cover border-4 border-gray-200 shadow-md"
                         />

@@ -305,8 +305,9 @@
                                         </div>
                                         
                                         {{-- Business Photo Background --}}
-                                        @if($business->photos->first())
-                                            <img src="{{ Storage::url($business->photos->first()->photo_url) }}" 
+                                        @php $firstPhoto = $business->photos->first()?->photo_url; @endphp
+                                        @if($firstPhoto && Storage::exists($firstPhoto))
+                                            <img src="{{ Storage::url($firstPhoto) }}" 
                                                  alt="{{ $business->name }}" 
                                                  class="w-full h-full object-cover">
                                             <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
@@ -319,9 +320,10 @@
                                         
                                         {{-- Logo Overlay --}}
                                         <div class="absolute bottom-4 left-4 flex items-end gap-4">
-                                            @if($business->logo_url)
+                                            @php $logo = $business->logo_url; @endphp
+                                            @if($logo && Storage::exists($logo))
                                                 <div class="w-20 h-20 rounded-xl bg-white shadow-lg border-2 border-white overflow-hidden flex-shrink-0">
-                                                    <img src="{{ Storage::url($business->logo_url) }}" 
+                                                    <img src="{{ Storage::url($logo) }}" 
                                                          alt="{{ $business->name }} logo" 
                                                          class="w-full h-full object-cover">
                                                 </div>
@@ -349,9 +351,23 @@
                                         {{-- Owner Info Card --}}
                                         <div class="bg-slate-50 border border-slate-100 rounded-lg p-3 mb-4">
                                             <div class="flex items-center gap-3">
-                                                {{-- Owner Avatar --}}
-                                                @if($business->user->profile_photo_url ?? false)
-                                                    <img src="{{ Storage::url($business->user->profile_photo_url) }}" 
+                                                {{-- Owner Avatar (safe) --}}
+                                                @php
+                                                    $ownerPhoto = $business->user->profile_photo_url ?? null;
+                                                    $ownerPhotoUrl = null;
+                                                    if ($ownerPhoto) {
+                                                        try {
+                                                            if (Storage::exists($ownerPhoto)) {
+                                                                $ownerPhotoUrl = Storage::url($ownerPhoto);
+                                                            }
+                                                        } catch (\Exception $e) {
+                                                            // ignore Cloudinary API errors and fallback to initials
+                                                            $ownerPhotoUrl = null;
+                                                        }
+                                                    }
+                                                @endphp
+                                                @if($ownerPhotoUrl)
+                                                    <img src="{{ $ownerPhotoUrl }}" 
                                                          alt="{{ $business->user->name }}" 
                                                          class="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm">
                                                 @else
@@ -445,11 +461,27 @@
                                                 </div>
                                                 
                                                 {{-- Business Photo Background --}}
-                                                @if($business->photos->first())
-                                                    <img src="{{ Storage::url($business->photos->first()->photo_url) }}" 
-                                                         alt="{{ $business->name }}" 
-                                                         class="w-full h-full object-cover">
-                                                    <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
+                                                @php $myFirstPhoto = $business->photos->first()?->photo_url; @endphp
+                                                @if($myFirstPhoto)
+                                                    @php
+                                                        $myFirstPhotoUrl = null;
+                                                        try {
+                                                            if (Storage::exists($myFirstPhoto)) {
+                                                                $myFirstPhotoUrl = Storage::url($myFirstPhoto);
+                                                            }
+                                                        } catch (\Exception $e) {
+                                                            $myFirstPhotoUrl = null;
+                                                        }
+                                                    @endphp
+                                                    @if($myFirstPhotoUrl)
+                                                        <img src="{{ $myFirstPhotoUrl }}" alt="{{ $business->name }}" class="w-full h-full object-cover">
+                                                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
+                                                    @else
+                                                        <div class="w-full h-full bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center">
+                                                            <i class="bi bi-briefcase text-6xl text-slate-400"></i>
+                                                        </div>
+                                                        <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent"></div>
+                                                    @endif
                                                 @else
                                                     <div class="w-full h-full bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center">
                                                         <i class="bi bi-briefcase text-6xl text-slate-400"></i>
@@ -459,11 +491,21 @@
                                                 
                                                 {{-- Logo Overlay --}}
                                                 <div class="absolute bottom-4 left-4 flex items-end gap-4">
-                                                    @if($business->logo_url)
+                                                    @php $myLogo = $business->logo_url ?? null; $myLogoUrl = null; @endphp
+                                                    @if($myLogo)
+                                                        @php
+                                                            try {
+                                                                if (Storage::exists($myLogo)) {
+                                                                    $myLogoUrl = Storage::url($myLogo);
+                                                                }
+                                                            } catch (\Exception $e) {
+                                                                $myLogoUrl = null;
+                                                            }
+                                                        @endphp
+                                                    @endif
+                                                    @if($myLogoUrl)
                                                         <div class="w-20 h-20 rounded-xl bg-white shadow-lg border-2 border-white overflow-hidden flex-shrink-0">
-                                                            <img src="{{ Storage::url($business->logo_url) }}" 
-                                                                 alt="{{ $business->name }} logo" 
-                                                                 class="w-full h-full object-cover">
+                                                            <img src="{{ $myLogoUrl }}" alt="{{ $business->name }} logo" class="w-full h-full object-cover">
                                                         </div>
                                                     @else
                                                         <div class="w-20 h-20 rounded-xl bg-white shadow-lg border-2 border-white flex items-center justify-center flex-shrink-0">
@@ -497,9 +539,22 @@
                                                 {{-- Owner Info Card --}}
                                                 <div class="bg-slate-50 border border-slate-100 rounded-lg p-3 mb-4">
                                                     <div class="flex items-center gap-3">
-                                                        {{-- Owner Avatar --}}
-                                                        @if($business->user->profile_photo_url ?? false)
-                                                            <img src="{{ Storage::url($business->user->profile_photo_url) }}" 
+                                                        {{-- Owner Avatar (safe) --}}
+                                                        @php
+                                                            $ownerPhoto = $business->user->profile_photo_url ?? null;
+                                                            $ownerPhotoUrl = null;
+                                                            if ($ownerPhoto) {
+                                                                try {
+                                                                    if (Storage::exists($ownerPhoto)) {
+                                                                        $ownerPhotoUrl = Storage::url($ownerPhoto);
+                                                                    }
+                                                                } catch (\Exception $e) {
+                                                                    $ownerPhotoUrl = null;
+                                                                }
+                                                            }
+                                                        @endphp
+                                                        @if($ownerPhotoUrl)
+                                                            <img src="{{ $ownerPhotoUrl }}" 
                                                                  alt="{{ $business->user->name }}" 
                                                                  class="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm">
                                                         @else

@@ -166,3 +166,25 @@ TePolicies: [BusinessPolicy.php](app/Policies/BusinessPolicy.php) (handles publi
 - Main models: [Business.php](app/Models/Business.php), [User.php](app/Models/User.php)
 - Import logic: [UsersImport.php](app/Imports/UsersImport.php), [BusinessesImport.php](app/Imports/BusinessesImport.php)
 - Detailed guides: [IMPORT_GUIDE.md](IMPORT_GUIDE.md), [SEARCH_FEATURE.md](SEARCH_FEATURE.md), [EXCEL_IMPORT_GUIDE.md](EXCEL_IMPORT_GUIDE.md)
+
+## Cloudinary & Deployment Notes
+
+- Storage: The app uses Laravel Filesystems. We configure `FILESYSTEM_DISK=cloudinary` for persistent image storage.
+- Required environment variables (set these in Railway / deployment environment):
+  - `CLOUDINARY_CLOUD_NAME`
+  - `CLOUDINARY_API_KEY`
+  - `CLOUDINARY_API_SECRET`
+  - `FILESYSTEM_DISK=cloudinary`
+
+- Railway deployment guidance:
+  1. Add the Cloudinary env vars to your Railway project settings (do NOT commit secrets to the repo).
+  2. The `railway.json` includes a `postDeploy` step to clear config/cache and run migrations. Ensure the Railway build/run supports these commands.
+  3. The app no longer relies on `storage/app/public` for runtime assets — Cloudinary serves uploaded images.
+
+- Migration of existing local files (recommended):
+  - Create an Artisan command or a one-off script to iterate `storage/app/public` and upload files to Cloudinary, then update DB rows to the Cloudinary public id (path) used by your models (`profile_photo_url`, `photo_url`, `logo_url`, etc.).
+  - After migration, verify pages (businesses index/show, profile) render images.
+
+- Runtime checks: On startup the deploy script runs `php artisan config:clear` and `php artisan cache:clear`. If you need an explicit Cloudinary connectivity check, add a lightweight Artisan command that calls `Storage::disk('cloudinary')->exists('some-known-public-id')` and returns success/failure; wire that into a healthcheck endpoint.
+
+If you want, I can add a migration command/script to upload existing local files to Cloudinary and patch DB entries automatically — say the word and I'll scaffold it.

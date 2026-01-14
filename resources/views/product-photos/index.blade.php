@@ -47,10 +47,17 @@
                 <div class="p-6">
                     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                         @foreach($photos as $photo)
+                            @php $photoUrl = $photo->photo_url; @endphp
                             <div class="relative group">
-                                <img src="{{ Storage::url($photo->photo_url) }}" 
-                                     alt="{{ $photo->caption }}" 
-                                     class="w-full h-48 object-cover rounded-lg">
+                                @if($photoUrl && Storage::exists($photoUrl))
+                                    <img src="{{ Storage::url($photoUrl) }}" 
+                                         alt="{{ $photo->caption }}" 
+                                         class="w-full h-48 object-cover rounded-lg">
+                                @else
+                                    <div class="w-full h-48 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center rounded-lg">
+                                        <i class="bi bi-image text-4xl text-gray-400"></i>
+                                    </div>
+                                @endif
                                 
                                 {{-- Caption Overlay --}}
                                 @if($photo->caption)

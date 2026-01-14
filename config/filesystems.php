@@ -62,10 +62,14 @@ return [
 
         'cloudinary' => [
             'driver' => 'cloudinary',
-            'api_key' => env('CLOUDINARY_API_KEY'),
-            'api_secret' => env('CLOUDINARY_API_SECRET'),
-            'cloud_name' => env('CLOUDINARY_CLOUD_NAME'),
-            'secure' => true,
+            // The cloudinary-laravel package expects these keys:
+            // 'cloud' => cloud name, 'key' => api key, 'secret' => api secret
+            'cloud' => env('CLOUDINARY_CLOUD_NAME'),
+            'key' => env('CLOUDINARY_API_KEY'),
+            'secret' => env('CLOUDINARY_API_SECRET'),
+            'secure' => env('CLOUDINARY_SECURE', true),
+            // Optional prefix for object keys
+            'prefix' => env('CLOUDINARY_PREFIX', null),
         ],
 
     ],
