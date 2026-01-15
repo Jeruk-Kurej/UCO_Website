@@ -56,7 +56,8 @@
         </div>
     @endif
 
-    @if(session('import_errors'))
+    @auth
+        @if(session('import_errors'))
         <div x-data="{ show: true }" 
              x-show="show" 
              x-transition:enter="ease-out duration-300"
@@ -104,83 +105,34 @@
                         </div>
                         
                         <div class="mt-4 flex justify-end">
-                            <button @click="show = false" 
-                                    class="px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors">
-                                Close
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    @endif
-
-    @if($errors->any())
-        <div class="bg-red-50 border-l-4 border-red-400 p-4 mb-4 rounded-r-lg">
-            <div class="flex">
-                <div class="flex-shrink-0">
-                    <svg class="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
-                    </svg>
-                </div>
-                <div class="ml-3">
-                    <p class="text-sm text-red-700 font-medium">Errors:</p>
-                    <ul class="list-disc list-inside text-xs text-red-600 space-y-1 mt-1">
-                        @foreach($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            </div>
-        </div>
-    @endif
-
-    <div class="space-y-6">
-        {{-- Tabs Navigation with Admin Button (Hidden for Admin) --}}
-        <div class="bg-white shadow-sm sm:rounded-lg">
-            @auth
-                @if(!auth()->user()->isAdmin())
-                    {{-- Show tabs only for non-admin users --}}
-                    <div class="border-b border-gray-200">
-                        <div class="flex justify-between items-center px-6">
-                            {{-- Left: Tabs (static) --}}
-                            <div class="flex gap-3">
-                                <div class="flex items-center gap-2 py-4 px-4 font-medium text-sm">
-                                    <i class="bi bi-briefcase"></i>
-                                    <span>My Businesses</span>
-                                    <span class="px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 text-xs">{{ $businesses->where('user_id', auth()->id())->count() }}</span>
-                                </div>
-
-                                <div class="flex items-center gap-2 py-4 px-4 font-medium text-sm">
-                                    <i class="bi bi-shop"></i>
-                                    <span>Browse All Businesses</span>
-                                    <span class="px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 text-xs">{{ $businesses->total() }}</span>
-                                </div>
+                            {{-- Search Bar (simple GET form to avoid inline JS issues) --}}
+                            <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                                <form action="{{ route('businesses.index') }}" method="GET" class="flex gap-3">
+                                    <div class="flex-1">
+                                        <div class="relative">
+                                            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                                </svg>
+                                            </div>
+                                            <input name="search" type="text" value="{{ request('search') }}" placeholder="Search by business name, description, owner, or category..." class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                                        </div>
+                                    </div>
+                                    @if(request('type'))
+                                        <input type="hidden" name="type" value="{{ request('type') }}">
+                                    @endif
+                                    @if(request('my'))
+                                        <input type="hidden" name="my" value="1">
+                                    @endif
+                                    <div class="flex items-center">
+                                        @if(request('search'))
+                                            <a href="{{ route('businesses.index', request()->except(['page','search'])) }}" class="inline-flex items-center px-4 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors">Clear</a>
+                                        @else
+                                            <button type="submit" class="inline-flex items-center px-4 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors">Search</button>
+                                        @endif
+                                    </div>
+                                </form>
                             </div>
-                        </div>
-                    </div>
-                @else
-                    {{-- Admin: Just header with buttons, no tabs --}}
-                    <div class="px-6 py-4 flex justify-between items-center">
-                        <h2 class="text-xl font-bold text-gray-900">All Businesses</h2>
-                        <div class="flex gap-2">
-                            {{-- Import Button --}}
-                            <button onclick="document.getElementById('importModal').classList.remove('hidden')"
-                               class="inline-flex items-center px-4 py-2.5 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
-                                </svg>
-                                Import Excel
-                            </button>
-                            
-                            {{-- Add Business Button --}}
-                            <a href="/businesses/create"
-                               class="inline-flex items-center px-4 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                                </svg>
-                                Add Business
-                            </a>
                         </div>
                     </div>
                 @endif
@@ -192,11 +144,11 @@
                         <span class="px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 text-sm">{{ $businesses->total() }}</span>
                     </div>
                 </div>
-            @endauth
+            
 
             {{-- Search Bar --}}
-            <div class="px-6 py-4 bg-gray-50 border-b border-gray-200"
-                 x-data="{
+            <script>
+                window.__businessesSearchData = {
                     search: @json(request('search')),
                     isSearching: false,
                     performSearch() {
@@ -237,7 +189,10 @@
                             window.location.href = url;
                         });
                     }
-                 }">
+                };
+            </script>
+
+            <div class="px-6 py-4 bg-gray-50 border-b border-gray-200" x-data="window.__businessesSearchData">
                 <div class="flex gap-3">
                     <div class="flex-1">
                         <div class="relative">
@@ -778,5 +733,6 @@
                 </div>
             </div>
         @endif
+    @endauth
     @endauth
 </x-app-layout>
