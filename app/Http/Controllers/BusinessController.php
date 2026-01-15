@@ -140,7 +140,7 @@ class BusinessController extends Controller
 
             // Handle logo upload
             if ($request->hasFile('logo')) {
-                $logoPath = $request->file('logo')->store('businesses/logos', 'public');
+                $logoPath = $request->file('logo')->store('businesses/logos', config('filesystems.default'));
                 $validated['logo_url'] = $logoPath;
             }
             unset($validated['logo']);
@@ -152,7 +152,7 @@ class BusinessController extends Controller
                     if ($file->getSize() > 5120 * 1024) {
                         return back()->withErrors(['legal_documents' => 'Each legal document must not be larger than 5MB.'])->withInput();
                     }
-                    $path = $file->store('businesses/legal-documents', 'public');
+                    $path = $file->store('businesses/legal-documents', config('filesystems.default'));
                     $legalDocs[] = [
                         'file_path' => $path,
                         'original_name' => $file->getClientOriginalName(),
@@ -169,7 +169,7 @@ class BusinessController extends Controller
                     if ($file->getSize() > 5120 * 1024) {
                         return back()->withErrors(['product_certifications' => 'Each certification file must not be larger than 5MB.'])->withInput();
                     }
-                    $path = $file->store('businesses/certifications', 'public');
+                    $path = $file->store('businesses/certifications', config('filesystems.default'));
                     $certifications[] = [
                         'file_path' => $path,
                         'original_name' => $file->getClientOriginalName(),
@@ -322,10 +322,10 @@ class BusinessController extends Controller
                 }
                 
                 // Delete old logo if exists
-                if ($business->logo_url && Storage::disk('public')->exists($business->logo_url)) {
-                    Storage::disk('public')->delete($business->logo_url);
+                if ($business->logo_url && Storage::disk(config('filesystems.default'))->exists($business->logo_url)) {
+                    Storage::disk(config('filesystems.default'))->delete($business->logo_url);
                 }
-                $logoPath = $logoFile->store('businesses/logos', 'public');
+                $logoPath = $logoFile->store('businesses/logos', config('filesystems.default'));
                 $validated['logo_url'] = $logoPath;
             }
             unset($validated['logo']);
@@ -336,8 +336,8 @@ class BusinessController extends Controller
             // Remove selected documents
             if ($request->has('remove_legal_docs')) {
                 foreach ($request->remove_legal_docs as $index) {
-                    if (isset($currentLegalDocs[$index]['file_path'])) {
-                        Storage::disk('public')->delete($currentLegalDocs[$index]['file_path']);
+                        if (isset($currentLegalDocs[$index]['file_path'])) {
+                        Storage::disk(config('filesystems.default'))->delete($currentLegalDocs[$index]['file_path']);
                         unset($currentLegalDocs[$index]);
                     }
                 }
@@ -350,7 +350,7 @@ class BusinessController extends Controller
                     if ($file->getSize() > 5120 * 1024) {
                         return back()->withErrors(['legal_documents' => 'Each legal document must not be larger than 5MB.'])->withInput();
                     }
-                    $path = $file->store('businesses/legal-documents', 'public');
+                    $path = $file->store('businesses/legal-documents', config('filesystems.default'));
                     $currentLegalDocs[] = [
                         'file_path' => $path,
                         'original_name' => $file->getClientOriginalName(),
@@ -366,8 +366,8 @@ class BusinessController extends Controller
             // Remove selected certifications
             if ($request->has('remove_certifications')) {
                 foreach ($request->remove_certifications as $index) {
-                    if (isset($currentCertifications[$index]['file_path'])) {
-                        Storage::disk('public')->delete($currentCertifications[$index]['file_path']);
+                        if (isset($currentCertifications[$index]['file_path'])) {
+                        Storage::disk(config('filesystems.default'))->delete($currentCertifications[$index]['file_path']);
                         unset($currentCertifications[$index]);
                     }
                 }
@@ -380,7 +380,7 @@ class BusinessController extends Controller
                     if ($file->getSize() > 5120 * 1024) {
                         return back()->withErrors(['product_certifications' => 'Each certification file must not be larger than 5MB.'])->withInput();
                     }
-                    $path = $file->store('businesses/certifications', 'public');
+                    $path = $file->store('businesses/certifications', config('filesystems.default'));
                     $currentCertifications[] = [
                         'file_path' => $path,
                         'original_name' => $file->getClientOriginalName(),

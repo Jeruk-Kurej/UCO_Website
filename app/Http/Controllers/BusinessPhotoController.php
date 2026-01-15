@@ -154,8 +154,8 @@ class BusinessPhotoController extends Controller
         // Handle file upload (if new photo is provided)
         if ($request->hasFile('photo')) {
             // Delete old photo
-            if ($photo->photo_url && Storage::disk('public')->exists($photo->photo_url)) {
-                Storage::disk('public')->delete($photo->photo_url);
+                if ($photo->photo_url && Storage::disk(config('filesystems.default'))->exists($photo->photo_url)) {
+                    Storage::disk(config('filesystems.default'))->delete($photo->photo_url);
             }
 
             $file = $request->file('photo');
@@ -163,8 +163,8 @@ class BusinessPhotoController extends Controller
             
             $path = $file->storeAs(
                 "businesses/{$business->id}/photos",
-                $filename,
-                'public'
+                    $filename,
+                    config('filesystems.default')
             );
             
             $validated['photo_url'] = $path;
@@ -192,8 +192,8 @@ class BusinessPhotoController extends Controller
         }
 
         // Delete file from storage
-        if ($photo->photo_url && Storage::disk('public')->exists($photo->photo_url)) {
-            Storage::disk('public')->delete($photo->photo_url);
+            if ($photo->photo_url && Storage::disk(config('filesystems.default'))->exists($photo->photo_url)) {
+                Storage::disk(config('filesystems.default'))->delete($photo->photo_url);
         }
 
         $photo->delete();

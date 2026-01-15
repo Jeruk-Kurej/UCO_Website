@@ -258,7 +258,7 @@
                     @if($business->logo)
                         <div class="mb-3">
                             <p class="text-sm text-slate-600 mb-2">Current Logo:</p>
-                            <img src="{{ asset('storage/' . $business->logo) }}" alt="Current Logo" class="max-w-xs rounded-lg shadow-md">
+                            <img src="{{ storage_image_url($business->logo) }}" alt="Current Logo" class="max-w-xs rounded-lg shadow-md">
                         </div>
                     @endif
                     <input type="file" name="logo" id="logo" accept="image/*" class="hidden" onchange="previewLogo(event)">
@@ -561,12 +561,12 @@
                                 @foreach($business->legal_documents as $index => $doc)
                                     <div class="border border-slate-200 rounded-lg p-3 bg-slate-50 relative">
                                         <div class="mb-2">
-                                            @if(is_array($doc) && isset($doc['file_path']))
-                                                <a href="{{ asset('storage/' . $doc['file_path']) }}" target="_blank" class="text-blue-600 hover:text-blue-800 text-sm truncate block">
+                                                @if(is_array($doc) && isset($doc['file_path']))
+                                                <a href="{{ storage_image_url($doc['file_path']) ?? Storage::url($doc['file_path']) }}" target="_blank" class="text-blue-600 hover:text-blue-800 text-sm truncate block">
                                                     📄 {{ $doc['original_name'] ?? basename($doc['file_path']) }}
                                                 </a>
                                             @else
-                                                <a href="{{ asset('storage/' . $doc) }}" target="_blank" class="text-blue-600 hover:text-blue-800 text-sm truncate block">
+                                                <a href="{{ storage_image_url($doc) ?? Storage::url($doc) }}" target="_blank" class="text-blue-600 hover:text-blue-800 text-sm truncate block">
                                                     📄 {{ basename($doc) }}
                                                 </a>
                                             @endif
@@ -609,12 +609,12 @@
                                 @foreach($business->product_certifications as $index => $cert)
                                     <div class="border border-slate-200 rounded-lg p-3 bg-slate-50 relative">
                                         <div class="mb-2">
-                                            @if(is_array($cert) && isset($cert['file_path']))
-                                                <a href="{{ asset('storage/' . $cert['file_path']) }}" target="_blank" class="text-blue-600 hover:text-blue-800 text-sm truncate block">
+                                                @if(is_array($cert) && isset($cert['file_path']))
+                                                <a href="{{ storage_image_url($cert['file_path']) ?? Storage::url($cert['file_path']) }}" target="_blank" class="text-blue-600 hover:text-blue-800 text-sm truncate block">
                                                     🏆 {{ $cert['original_name'] ?? basename($cert['file_path']) }}
                                                 </a>
                                             @else
-                                                <a href="{{ asset('storage/' . $cert) }}" target="_blank" class="text-blue-600 hover:text-blue-800 text-sm truncate block">
+                                                <a href="{{ storage_image_url($cert) ?? Storage::url($cert) }}" target="_blank" class="text-blue-600 hover:text-blue-800 text-sm truncate block">
                                                     🏆 {{ basename($cert) }}
                                                 </a>
                                             @endif
