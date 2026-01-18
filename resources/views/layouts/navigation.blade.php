@@ -70,7 +70,9 @@
                     <a href="{{ route('uc-testimonies.index') }}" class="text-sm font-medium {{ request()->routeIs('uc-testimonies.*') ? 'text-soft-gray-900 font-semibold' : 'text-soft-gray-600 hover:text-soft-gray-900' }}">Testimonies</a>
                     <div class="flex items-center gap-2">
                         <a href="{{ route('login') }}" class="px-4 py-2.5 text-sm font-medium text-soft-gray-700 hover:text-soft-gray-900 transition">Log in</a>
-                        <a href="{{ route('register') }}" class="px-4 py-2.5 text-sm font-medium bg-soft-gray-900 text-white rounded-lg hover:bg-soft-gray-800 transition">Register</a>
+                        @if(env('REGISTRATION_OPEN', false))
+                            <a href="{{ route('register') }}" class="px-4 py-2.5 text-sm font-medium bg-soft-gray-900 text-white rounded-lg hover:bg-soft-gray-800 transition">Register</a>
+                        @endif
                     </div>
                 @endif
             </div>
@@ -133,7 +135,9 @@
                 <a href="{{ route('uc-testimonies.index') }}" class="block py-2.5 px-3 text-sm font-medium rounded-lg {{ request()->routeIs('uc-testimonies.*') ? 'bg-soft-gray-100 text-soft-gray-900' : 'text-soft-gray-700 hover:bg-soft-gray-50' }}">Testimonies</a>
                 <div class="pt-2 mt-2 border-t border-soft-gray-100 space-y-2">
                     <a href="{{ route('login') }}" class="block text-center py-2.5 px-3 text-sm font-medium text-soft-gray-700 hover:bg-soft-gray-50 rounded-lg border border-soft-gray-200 transition">Log in</a>
-                    <a href="{{ route('register') }}" class="block text-center py-2.5 px-3 bg-soft-gray-900 hover:bg-soft-gray-800 text-white text-sm font-medium rounded-lg shadow-sm transition">Register</a>
+                    @if(env('REGISTRATION_OPEN', false))
+                        <a href="{{ route('register') }}" class="block text-center py-2.5 px-3 bg-soft-gray-900 hover:bg-soft-gray-800 text-white text-sm font-medium rounded-lg shadow-sm transition">Register</a>
+                    @endif
                 </div>
             @endif
         </div>

@@ -160,9 +160,11 @@
                     <textarea name="description" 
                               id="description" 
                               rows="4"
+                              maxlength="1000"
                               required
                               class="block w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('description') border-red-300 @enderror transition"
                               placeholder="Deskripsikan business Anda...">{{ old('description') }}</textarea>
+                    <p class="mt-1 text-xs text-gray-500">Max 1000 characters.</p>
                     @error('description')
                         <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
                     @enderror

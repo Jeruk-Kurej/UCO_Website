@@ -12,10 +12,15 @@ use App\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
-    Route::get('register', [RegisteredUserController::class, 'create'])
-        ->name('register');
+    // Public registration can be toggled via the REGISTRATION_OPEN env var.
+    // When false (default) registration routes are not registered and users
+    // must be created by an admin.
+    if (env('REGISTRATION_OPEN', false)) {
+        Route::get('register', [RegisteredUserController::class, 'create'])
+            ->name('register');
 
-    Route::post('register', [RegisteredUserController::class, 'store']);
+        Route::post('register', [RegisteredUserController::class, 'store']);
+    }
 
     // Show login page (welcome.blade.php)
     Route::get('login', function () {

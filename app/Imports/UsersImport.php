@@ -134,6 +134,8 @@ class UsersImport implements ToModel, WithHeadingRow, WithValidation, WithChunkR
                 'father_data' => $this->buildFatherData($row),
                 'mother_data' => $this->buildMotherData($row),
                 'graduation_data' => $this->buildGraduationData($row),
+                // Store all remaining columns for future reference
+                'additional_data' => $this->buildAdditionalData($row),
             ]);
 
             $this->successCount++;
@@ -146,6 +148,28 @@ class UsersImport implements ToModel, WithHeadingRow, WithValidation, WithChunkR
             $this->skippedCount++;
             return null;
         }
+    }
+
+    /**
+     * Store additional (unmapped) columns from the Excel row
+     */
+    private function buildAdditionalData(array $row): ?array
+    {
+        // Remove known mapped fields to avoid duplication
+        $known = [
+            'id','username','name','email','password','role','is_active','birth_date','birth_city','religion',
+            'phone_number','mobile_number','whatsapp','nis','student_year','major','is_graduate','cgpa',
+            'personal_data','academic_data','father_data','mother_data','graduation_data'
+        ];
+
+        $data = [];
+        foreach ($row as $k => $v) {
+            if (in_array($k, $known, true)) continue;
+            if ($v === null || $v === '') continue;
+            $data[$k] = $v;
+        }
+
+        return !empty($data) ? $data : null;
     }
 
     /**

@@ -112,7 +112,8 @@ class BusinessController extends Controller
             $validated = $request->validate([
                 // Basic fields
                 'name' => 'required|string|max:255',
-                'description' => 'required|string',
+                // Limit description length to avoid extremely long content being stored/displayed
+                'description' => 'required|string|max:1000',
                 'business_type_id' => 'required|exists:business_types,id',
                 'business_mode' => 'required|in:product,service',
                 'user_id' => 'nullable|exists:users,id',
@@ -266,7 +267,8 @@ class BusinessController extends Controller
             $validated = $request->validate([
                 // Basic fields
                 'name' => 'required|string|max:255',
-                'description' => 'required|string',
+                // Limit description length on update as well
+                'description' => 'required|string|max:1000',
                 'business_type_id' => 'required|exists:business_types,id',
                 'business_mode' => 'required|in:product,service,both',
                 'user_id' => 'nullable|exists:users,id',

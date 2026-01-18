@@ -224,6 +224,8 @@ class BusinessesImport implements ToModel, WithHeadingRow, WithValidation, WithC
                 'is_from_college_project' => $this->parseBoolean($row['from_college_project'] ?? $row['dari_kuliah'] ?? null),
                 'is_continued_after_graduation' => $this->parseBoolean($row['continued_after_grad'] ?? $row['lanjut_setelah_lulus'] ?? null),
                 'business_challenges' => $challenges,
+                // capture any remaining unmapped columns for audit/reference
+                'additional_data' => $this->buildAdditionalData($row),
             ]);
 
             $business->save();
@@ -446,6 +448,31 @@ class BusinessesImport implements ToModel, WithHeadingRow, WithValidation, WithC
             'name' => 'nullable|string',
             'email' => 'nullable|email',
         ];
+    }
+
+    /**
+     * Store additional (unmapped) columns from the Excel row
+     */
+    private function buildAdditionalData(array $row): ?array
+    {
+        // Remove known mapped fields to avoid duplication
+        $known = [
+            'id','nama_bisnisventura','nama_bisnis_ventura','nama_perusahaan_tempat_bekerja_jika_intraprenuer',
+            'nama_perusahaan_tempat_bekerja','business_name','nama_bisnis','owner','owner_name','nama_owner','nama',
+            'email','owner_email','email_owner','jenis_bisnisventura','jenis_bisnis_ventura','business_type',
+            'business_mode','description','deskripsi','business_description','alamat','address','established_date',
+            'tanggal_berdiri','employee_count','revenue_range','from_college_project','dari_kuliah','continued_after_grad',
+            'lanjut_setelah_lulus','posisi_saat_ini_jika_intraprenuer','posisi_saat_ini','position','posisi','jabatan',
+        ];
+
+        $data = [];
+        foreach ($row as $k => $v) {
+            if (in_array($k, $known, true)) continue;
+            if ($v === null || $v === '') continue;
+            $data[$k] = $v;
+        }
+
+        return !empty($data) ? $data : null;
     }
 
     /**
