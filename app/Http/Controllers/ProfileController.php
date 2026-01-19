@@ -6,6 +6,8 @@ use App\Http\Requests\ProfileUpdateRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
@@ -29,27 +31,63 @@ class ProfileController extends Controller
     {
         try {
             $user = $request->user();
-            $user->fill($request->validated());
+            
+            Log::info('Profile update started', [
+                'user_id' => $user->id,
+                'has_file' => $request->hasFile('profile_photo'),
+                'all_files' => $request->allFiles()
+            ]);
+            
+            // Fill basic validated fields (exclude password fields)
+            $validatedData = $request->validated();
+            $fillableData = collect($validatedData)->except([
+                'profile_photo', 
+                'current_password', 
+                'password', 
+                'password_confirmation'
+            ])->toArray();
+            
+            $user->fill($fillableData);
 
             // Handle profile photo upload
             if ($request->hasFile('profile_photo')) {
-                // Additional validation for file size
                 $file = $request->file('profile_photo');
-                
-                if ($file->getSize() > 2048 * 1024) { // 2MB in bytes
+
+                // clearer size check
+                if ($file->getSize() > 10 * 1024 * 1024) { // 10MB in bytes
                     return Redirect::route('profile.edit')
-                        ->withErrors(['profile_photo' => 'Profile photo must not be larger than 2MB.'])
+                        ->withErrors(['profile_photo' => 'Profile photo must not be larger than 10MB.'])
+                        ->withInput();
+                }
+
+                // Delete old photo if exists (from Cloudinary)
+                if (!empty($user->profile_photo_url)) {
+                    try {
+                        if (Storage::exists((string)$user->profile_photo_url)) {
+                            Storage::delete((string)$user->profile_photo_url);
+                        }
+                    } catch (\Throwable $e) {
+                        // Log and continue - missing Cloudinary resource should not block profile update
+                        Log::warning('Failed to delete old profile photo from storage: ' . $e->getMessage(), ['path' => $user->profile_photo_url]);
+                    }
+                }
+
+                // Store new photo to default disk (Cloudinary or local depending on env)
+                $path = $file->store('profile-photos');
+                $user->profile_photo_url = $path;
+            }
+
+            // Handle password change
+            if ($request->filled('current_password') && $request->filled('password')) {
+                // Verify current password
+                if (!Hash::check($request->current_password, $user->password)) {
+                    return Redirect::route('profile.edit')
+                        ->withErrors(['current_password' => 'The current password is incorrect.'])
                         ->withInput();
                 }
                 
-                // Delete old photo if exists
-                if ($user->profile_photo_url && Storage::disk('public')->exists($user->profile_photo_url)) {
-                    Storage::disk('public')->delete($user->profile_photo_url);
-                }
-                
-                // Store new photo
-                $path = $file->store('profile-photos', 'public');
-                $user->profile_photo_url = $path;
+                // Update to new password
+                $user->password = Hash::make($request->password);
             }
 
             if ($user->isDirty('email')) {
@@ -57,11 +95,24 @@ class ProfileController extends Controller
             }
 
             $user->save();
+            
+            Log::info('Profile updated successfully', [
+                'user_id' => $user->id,
+                'profile_photo_url' => $user->profile_photo_url
+            ]);
+            
+            // Refresh auth session to reflect updated data
+            Auth::setUser($user->fresh());
 
             return Redirect::route('profile.edit')->with('status', 'profile-updated');
         } catch (\Exception $e) {
+            Log::error('Profile update failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
             return Redirect::route('profile.edit')
-                ->withErrors(['error' => 'An error occurred while updating your profile. Please try again.'])
+                ->withErrors(['error' => 'An error occurred while updating your profile. Please try again: ' . $e->getMessage()])
                 ->withInput();
         }
     }

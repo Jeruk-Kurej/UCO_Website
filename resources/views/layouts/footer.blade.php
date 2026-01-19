@@ -7,7 +7,7 @@
                 <div class="flex items-center gap-2.5 mb-4">
                     <img src="{{ asset('images/Logo UCO.png') }}" alt="UCO Logo" class="w-10 h-10 object-contain">
                     <div>
-                        <h3 class="font-bold text-base text-gray-900">UC Online</h3>
+                        <h3 class="font-bold text-base text-gray-900">UC Online Learning</h3>
                         <p class="text-xs text-gray-600">Student & Alumni Community</p>
                     </div>
                 </div>
@@ -26,9 +26,15 @@
                         </a>
                     </li>
                     <li>
-                        <a href="/businesses" class="text-sm text-gray-600 hover:text-gray-900 transition-colors">
-                            Businesses Directory
-                        </a>
+                        @if(auth()->check())
+                            <a href="{{ route('businesses.index') }}" class="text-sm text-gray-600 hover:text-gray-900 transition-colors">
+                                Businesses Directory
+                            </a>
+                        @else
+                            <a href="{{ route('featured') }}" class="text-sm text-gray-600 hover:text-gray-900 transition-colors">
+                                Businesses Directory
+                            </a>
+                        @endif
                     </li>
                     <li>
                         <a href="/business-types" class="text-sm text-gray-600 hover:text-gray-900 transition-colors">

@@ -1,3 +1,5 @@
+@use('Illuminate\Support\Facades\Storage')
+
 <section>
     <form id="send-verification" method="post" action="{{ route('verification.send') }}">
         @csrf
@@ -15,10 +17,11 @@
             <div class="flex items-center gap-6">
                 <!-- Current Photo Preview -->
                 <div class="relative">
-                    @if($user->profile_photo_url)
+                    @php $profilePhoto = $user->profile_photo_url; @endphp
+                    @if($profilePhoto)
                         <img 
                             id="profile-photo-preview" 
-                            src="{{ asset('storage/' . $user->profile_photo_url) }}" 
+                            src="{{ storage_image_url($profilePhoto, ['width' => 256, 'height' => 256, 'crop' => 'thumb', 'quality' => 'auto', 'fetch_format' => 'auto']) }}?t={{ $user->updated_at?->timestamp ?? time() }}" 
                             alt="Profile Photo" 
                             class="w-24 h-24 rounded-full object-cover border-4 border-gray-200 shadow-md"
                         />
@@ -45,7 +48,7 @@
                         class="hidden"
                         onchange="validateAndPreviewPhoto(event)"
                     />
-                    <p class="text-xs text-gray-500 mt-2">JPG, PNG or GIF (Max 2MB)</p>
+                    <p class="text-xs text-gray-500 mt-2">JPG, PNG or GIF (Max 10MB)</p>
                     <x-input-error class="mt-2" :messages="$errors->get('profile_photo')" />
                 </div>
             </div>

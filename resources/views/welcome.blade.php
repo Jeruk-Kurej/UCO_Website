@@ -139,6 +139,21 @@
                                 Sign in to Dashboard
                             </button>
                         </form>
+                        
+                        {{-- Back to Home Button --}}
+                        <div class="mt-4 pt-4 border-t border-soft-gray-100 relative z-10">
+                            @if(auth()->check())
+                                <a href="{{ route('businesses.index') }}" 
+                                   class="block w-full py-3 text-center bg-soft-gray-50 text-soft-gray-700 text-sm font-medium rounded-xl border border-soft-gray-200 hover:bg-soft-gray-100 hover:border-soft-gray-300 transition-all duration-200">
+                                    Browse Businesses
+                                </a>
+                            @else
+                                <a href="{{ route('featured') }}" 
+                                   class="block w-full py-3 text-center bg-soft-gray-50 text-soft-gray-700 text-sm font-medium rounded-xl border border-soft-gray-200 hover:bg-soft-gray-100 hover:border-soft-gray-300 transition-all duration-200">
+                                    Browse as Guest
+                                </a>
+                            @endif
+                        </div>
                     </div>
                 </div>
             </div>

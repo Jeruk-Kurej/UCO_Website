@@ -31,7 +31,7 @@
                                accept="image/*"
                                required
                                class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none focus:border-orange-500 focus:ring-orange-500 @error('photo') border-red-500 @enderror">
-                        <p class="mt-1 text-xs text-gray-500">Accepted formats: JPG, PNG, GIF. Max size: 5MB</p>
+                        <p class="mt-1 text-xs text-gray-500">Accepted formats: JPG, PNG, GIF. Max size: 10MB</p>
                         @error('photo')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
@@ -79,12 +79,12 @@
                     {{-- Submit Buttons --}}
                     <div class="flex items-center justify-between pt-6 border-t border-gray-200">
                         <a href="{{ route('businesses.products.show', [$product->business, $product]) }}" 
-                           class="inline-flex items-center px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition duration-150">
+                           class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition duration-150">
                             <i class="bi bi-x-lg me-2"></i>
                             Cancel
                         </a>
                         <button type="submit" 
-                                class="inline-flex items-center px-6 py-2 bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white font-semibold rounded-md shadow-sm transition duration-150">
+                                class="inline-flex items-center gap-2 px-6 py-2.5 bg-gray-900 hover:bg-gray-800 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200">
                             <i class="bi bi-upload me-2"></i>
                             Upload Photo
                         </button>
@@ -99,11 +99,11 @@
         // Image preview with file size validation
         document.getElementById('photo').addEventListener('change', function(e) {
             const file = e.target.files[0];
-            const maxSize = 2 * 1024 * 1024; // 2MB
+            const maxSize = 10 * 1024 * 1024; // 10MB
             
             if (file) {
                 if (file.size > maxSize) {
-                    alert('Photo must not be larger than 2MB. Please choose a smaller file.');
+                    alert('Photo must not be larger than 10MB. Please choose a smaller file.');
                     e.target.value = '';
                     document.getElementById('preview-container').classList.add('hidden');
                     return;

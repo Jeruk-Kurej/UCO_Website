@@ -3,11 +3,39 @@
         {{-- Page Header --}}
         <div class="flex items-center justify-between">
             <div>
-                <h1 class="text-2xl font-bold text-gray-900">UCO Testimony Review</h1>
+                <h1 class="text-2xl font-bold text-gray-900">AI UC Testimony Moderation Dashboard</h1>
+                <p class="text-sm text-gray-600">Review and manage AI-moderated UC-wide testimonies powered by Google Gemini</p>
             </div>
         </div>
 
+        {{-- Stats Cards --}}
+        @php
+            $ucTotalCount = $ucAnalyses->total();
+            $ucApprovedCount = \App\Models\UcAiAnalysis::where('is_approved', true)->count();
+            $ucRejectedCount = \App\Models\UcAiAnalysis::where('is_approved', false)->count();
+            $ucApprovalRate = $ucTotalCount > 0 ? round(($ucApprovedCount / $ucTotalCount) * 100, 1) : 0;
+        @endphp
 
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="bg-white rounded-lg shadow-sm p-4 border-l-4 border-blue-500">
+                <p class="text-xs font-medium text-gray-500 uppercase">UC Total Analyzed</p>
+                <p class="text-2xl font-bold text-gray-900 mt-1">{{ $ucTotalCount }}</p>
+            </div>
+            <div class="bg-white rounded-lg shadow-sm p-4 border-l-4 border-green-500">
+                <p class="text-xs font-medium text-gray-500 uppercase">UC Auto-Approved</p>
+                <p class="text-2xl font-bold text-green-600 mt-1">{{ $ucApprovedCount }}</p>
+            </div>
+            <div class="bg-white rounded-lg shadow-sm p-4 border-l-4 border-red-500">
+                <p class="text-xs font-medium text-gray-500 uppercase">UC Needs Review</p>
+                <p class="text-2xl font-bold text-gray-900 mt-1">{{ $rejectedCount }}</p>
+            </div>
+            <div class="bg-white rounded-lg shadow-sm p-4 border-l-4 border-purple-500">
+                <p class="text-xs font-medium text-gray-500 uppercase">UC Approval Rate</p>
+                <p class="text-2xl font-bold text-gray-900 mt-1">{{ $approvalRate }}%</p>
+            </div>
+        </div>
+
+        {{-- UC Analyses Table --}}
 
         {{-- UC Analyses Table --}}
         <div class="bg-white shadow-sm rounded-lg overflow-hidden">
@@ -30,6 +58,7 @@
                                     <div class="max-w-xs">
                                         <p class="text-sm font-medium text-gray-900">{{ $analysis->ucTestimony?->customer_name ?? 'Unknown' }}</p>
                                         <p class="text-xs text-gray-600 line-clamp-2 mt-1">{{ $analysis->ucTestimony?->content ?? '' }}</p>
+                                        <p class="text-xs text-gray-500 mt-1">UC-wide</p>
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 text-center">
@@ -63,22 +92,65 @@
                                     {{ $analysis->created_at->format('d M Y') }}
                                 </td>
                                 <td class="px-6 py-4 text-center">
-                                    @if($analysis->ucTestimony)
-                                        <a href="{{ route('uc-ai-analyses.show', $analysis->ucTestimony) }}"
-                                           class="inline-flex items-center justify-center w-9 h-9 rounded-lg text-blue-600 hover:bg-blue-50 transition">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                                            </svg>
-                                        </a>
-                                    @else
-                                        <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg text-gray-300">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                                            </svg>
-                                        </span>
-                                    @endif
+                                    <div class="flex items-center justify-center gap-2">
+                                        @if($analysis->ucTestimony)
+                                            <a href="{{ route('uc-ai-analyses.show', $analysis->ucTestimony) }}"
+                                               class="inline-flex items-center justify-center w-9 h-9 rounded-lg text-blue-600 hover:bg-blue-50 transition"
+                                               title="View Details">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                                </svg>
+                                            </a>
+                                            
+                                            {{-- Approve (if not approved) --}}
+                                            @if(!$analysis->is_approved)
+                                                <form method="POST" action="{{ route('uc-ai-analyses.approve', $analysis->ucTestimony) }}" 
+                                                      onsubmit="return confirm('Approve this testimony?')"
+                                                      class="inline">
+                                                    @csrf
+                                                    <button type="submit"
+                                                            class="inline-flex items-center justify-center w-9 h-9 rounded-lg text-green-600 hover:bg-green-50 transition"
+                                                            title="Approve">
+                                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                                        </svg>
+                                                    </button>
+                                                </form>
+                                            @endif
+
+                                            {{-- Reject (always available) --}}
+                                            <form method="POST" action="{{ route('uc-ai-analyses.reject', $analysis->ucTestimony) }}" class="inline">
+                                                @csrf
+                                                <input type="hidden" name="rejection_reason" value="">
+                                                <button type="button"
+                                                        onclick="
+                                                            if (!confirm('Reject this testimony?')) return;
+                                                            const reason = prompt('Optional reason for rejection:');
+                                                            const input = this.closest('form').querySelector('input[name=rejection_reason]');
+                                                            if (reason === null) {
+                                                                input.value = 'Rejected by administrator';
+                                                            } else {
+                                                                input.value = reason;
+                                                            }
+                                                            this.closest('form').submit();
+                                                        "
+                                                        class="inline-flex items-center justify-center w-9 h-9 rounded-lg text-red-600 hover:bg-red-50 transition"
+                                                        title="Reject">
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                                    </svg>
+                                                </button>
+                                            </form>
+                                        @else
+                                            <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg text-gray-300">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                                </svg>
+                                            </span>
+                                        @endif
+                                    </div>
                                 </td>
                             </tr>
                         @empty

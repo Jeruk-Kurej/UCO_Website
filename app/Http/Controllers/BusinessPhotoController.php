@@ -66,7 +66,7 @@ class BusinessPhotoController extends Controller
 
         try {
             $validated = $request->validate([
-                'photo' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+                'photo' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
                 'caption' => 'nullable|string|max:255',
             ]);
 
@@ -75,16 +75,16 @@ class BusinessPhotoController extends Controller
                 $file = $request->file('photo');
                 
                 // Additional file size check
-                if ($file->getSize() > 2048 * 1024) {
-                    return back()->withErrors(['photo' => 'Photo must not be larger than 2MB.'])->withInput();
+                if ($file->getSize() > 10240 * 1024) {
+                    return back()->withErrors(['photo' => 'Photo must not be larger than 10MB.'])->withInput();
                 }
                 
                 $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
                 
+                // Store to Cloudinary (default disk)
                 $path = $file->storeAs(
                     "businesses/{$business->id}/photos",
-                    $filename,
-                    'public'
+                    $filename
                 );
                 
                 $validated['photo_url'] = $path;
@@ -147,15 +147,15 @@ class BusinessPhotoController extends Controller
         }
 
         $validated = $request->validate([
-            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
             'caption' => 'nullable|string|max:255',
         ]);
 
         // Handle file upload (if new photo is provided)
         if ($request->hasFile('photo')) {
             // Delete old photo
-            if ($photo->photo_url && Storage::disk('public')->exists($photo->photo_url)) {
-                Storage::disk('public')->delete($photo->photo_url);
+                if ($photo->photo_url && Storage::disk(config('filesystems.default'))->exists($photo->photo_url)) {
+                    Storage::disk(config('filesystems.default'))->delete($photo->photo_url);
             }
 
             $file = $request->file('photo');
@@ -163,8 +163,8 @@ class BusinessPhotoController extends Controller
             
             $path = $file->storeAs(
                 "businesses/{$business->id}/photos",
-                $filename,
-                'public'
+                    $filename,
+                    config('filesystems.default')
             );
             
             $validated['photo_url'] = $path;
@@ -192,8 +192,8 @@ class BusinessPhotoController extends Controller
         }
 
         // Delete file from storage
-        if ($photo->photo_url && Storage::disk('public')->exists($photo->photo_url)) {
-            Storage::disk('public')->delete($photo->photo_url);
+            if ($photo->photo_url && Storage::disk(config('filesystems.default'))->exists($photo->photo_url)) {
+                Storage::disk(config('filesystems.default'))->delete($photo->photo_url);
         }
 
         $photo->delete();

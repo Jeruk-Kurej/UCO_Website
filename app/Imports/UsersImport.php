@@ -8,35 +8,55 @@ use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
+use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Illuminate\Support\Str;
 
-class UsersImport implements ToModel, WithHeadingRow, WithValidation
+class UsersImport implements ToModel, WithHeadingRow, WithValidation, WithChunkReading
 {
     protected $errors = [];
     protected $successCount = 0;
     protected $skippedCount = 0;
 
     /**
+     * Chunk size for reading (memory efficient)
+     */
+    public function chunkSize(): int
+    {
+        return 100;
+    }
+
+    /**
      * Detect if the Excel data is business data instead of user data
      */
     private function isBusinessData(array $row): bool
     {
-        // Check for business-specific columns
-        $businessColumns = ['business_name', 'business_type', 'business_line', 'business_mode', 'established_date', 'employee_count', 'revenue_range'];
+        // Only reject if it's CLEARLY business data (has business columns but NO user columns)
+        $businessColumns = ['business_name', 'business_type', 'business_mode', 'established_date', 'employee_count', 'revenue_range'];
+        $userColumns = ['name', 'email', 'username', 'nis', 'student_year', 'major'];
         
+        $hasUserData = false;
+        foreach ($userColumns as $column) {
+            if (array_key_exists($column, $row) && !empty($row[$column])) {
+                $hasUserData = true;
+                break;
+            }
+        }
+        
+        // If we have user data (name or email), this is USER data, not business data
+        if ($hasUserData) {
+            return false;
+        }
+        
+        // Only mark as business data if NO user columns exist but business columns do
         $businessColumnCount = 0;
         foreach ($businessColumns as $column) {
-            if (array_key_exists($column, $row)) {
+            if (array_key_exists($column, $row) && !empty($row[$column])) {
                 $businessColumnCount++;
             }
         }
         
-        // If 2 or more business columns exist, this is likely business data
-        if ($businessColumnCount >= 2) {
-            return true;
-        }
-        
-        return false;
+        // If 3 or more business columns exist AND no user data, this is business data
+        return $businessColumnCount >= 3;
     }
 
     /**
@@ -47,6 +67,10 @@ class UsersImport implements ToModel, WithHeadingRow, WithValidation
     public function model(array $row)
     {
         try {
+            // CRITICAL: Remove 'id' column if exists to prevent duplicate key errors
+            // ID should be auto-incremented by database, not set from Excel
+            unset($row['id']);
+            
             // CRITICAL: Detect if this is business data instead of user data
             if ($this->isBusinessData($row)) {
                 $this->skippedCount++;
@@ -110,6 +134,8 @@ class UsersImport implements ToModel, WithHeadingRow, WithValidation
                 'father_data' => $this->buildFatherData($row),
                 'mother_data' => $this->buildMotherData($row),
                 'graduation_data' => $this->buildGraduationData($row),
+                // Store all remaining columns for future reference
+                'additional_data' => $this->buildAdditionalData($row),
             ]);
 
             $this->successCount++;
@@ -122,6 +148,28 @@ class UsersImport implements ToModel, WithHeadingRow, WithValidation
             $this->skippedCount++;
             return null;
         }
+    }
+
+    /**
+     * Store additional (unmapped) columns from the Excel row
+     */
+    private function buildAdditionalData(array $row): ?array
+    {
+        // Remove known mapped fields to avoid duplication
+        $known = [
+            'id','username','name','email','password','role','is_active','birth_date','birth_city','religion',
+            'phone_number','mobile_number','whatsapp','nis','student_year','major','is_graduate','cgpa',
+            'personal_data','academic_data','father_data','mother_data','graduation_data'
+        ];
+
+        $data = [];
+        foreach ($row as $k => $v) {
+            if (in_array($k, $known, true)) continue;
+            if ($v === null || $v === '') continue;
+            $data[$k] = $v;
+        }
+
+        return !empty($data) ? $data : null;
     }
 
     /**

@@ -10,13 +10,22 @@ use App\Models\ContactType;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
+use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Illuminate\Support\Facades\Log;
 
-class BusinessesImport implements ToModel, WithHeadingRow, WithValidation
+class BusinessesImport implements ToModel, WithHeadingRow, WithValidation, WithChunkReading
 {
     protected $errors = [];
     protected $successCount = 0;
     protected $skippedCount = 0;
+
+    /**
+     * Chunk size for reading (memory efficient)
+     */
+    public function chunkSize(): int
+    {
+        return 100;
+    }
 
     /**
      * Detect if the Excel data is student/user data instead of business data
@@ -49,6 +58,10 @@ class BusinessesImport implements ToModel, WithHeadingRow, WithValidation
     public function model(array $row)
     {
         try {
+            // CRITICAL: Remove 'id' column if exists to prevent duplicate key errors
+            // ID should be auto-incremented by database, not set from Excel
+            unset($row['id']);
+            
             // CRITICAL: Detect if this is student data instead of business data
             if ($this->isStudentData($row)) {
                 $this->skippedCount++;
@@ -179,7 +192,7 @@ class BusinessesImport implements ToModel, WithHeadingRow, WithValidation
             // Parse challenges
             $challenges = $this->parseChallenges($row);
 
-            // Get user position in this business
+            // Get user position in this business (jabatan user di perusahaan)
             // Excel headers: "Posisi saat ini (jika intraprenuer)" or "Posisi saat ini"
             $position = $row['posisi_saat_ini_jika_intraprenuer'] 
                 ?? $row['posisi_saat_ini'] 
@@ -211,6 +224,8 @@ class BusinessesImport implements ToModel, WithHeadingRow, WithValidation
                 'is_from_college_project' => $this->parseBoolean($row['from_college_project'] ?? $row['dari_kuliah'] ?? null),
                 'is_continued_after_graduation' => $this->parseBoolean($row['continued_after_grad'] ?? $row['lanjut_setelah_lulus'] ?? null),
                 'business_challenges' => $challenges,
+                // capture any remaining unmapped columns for audit/reference
+                'additional_data' => $this->buildAdditionalData($row),
             ]);
 
             $business->save();
@@ -433,6 +448,31 @@ class BusinessesImport implements ToModel, WithHeadingRow, WithValidation
             'name' => 'nullable|string',
             'email' => 'nullable|email',
         ];
+    }
+
+    /**
+     * Store additional (unmapped) columns from the Excel row
+     */
+    private function buildAdditionalData(array $row): ?array
+    {
+        // Remove known mapped fields to avoid duplication
+        $known = [
+            'id','nama_bisnisventura','nama_bisnis_ventura','nama_perusahaan_tempat_bekerja_jika_intraprenuer',
+            'nama_perusahaan_tempat_bekerja','business_name','nama_bisnis','owner','owner_name','nama_owner','nama',
+            'email','owner_email','email_owner','jenis_bisnisventura','jenis_bisnis_ventura','business_type',
+            'business_mode','description','deskripsi','business_description','alamat','address','established_date',
+            'tanggal_berdiri','employee_count','revenue_range','from_college_project','dari_kuliah','continued_after_grad',
+            'lanjut_setelah_lulus','posisi_saat_ini_jika_intraprenuer','posisi_saat_ini','position','posisi','jabatan',
+        ];
+
+        $data = [];
+        foreach ($row as $k => $v) {
+            if (in_array($k, $known, true)) continue;
+            if ($v === null || $v === '') continue;
+            $data[$k] = $v;
+        }
+
+        return !empty($data) ? $data : null;
     }
 
     /**

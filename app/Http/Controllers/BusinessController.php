@@ -35,6 +35,28 @@ class BusinessController extends Controller
      */
     public function index(Request $request)
     {
+        // If visitor is a guest, show the featured dashboard layout with larger cards
+        if (!Auth::check()) {
+            $featuredBusinesses = Business::with(['businessType', 'photos', 'user'])
+                ->where('is_featured', true)
+                ->latest()
+                ->take(6)
+                ->get();
+
+            if ($featuredBusinesses->count() < 6) {
+                $remaining = 6 - $featuredBusinesses->count();
+                $latestBusinesses = Business::with(['businessType', 'photos', 'user'])
+                    ->where('is_featured', false)
+                    ->latest()
+                    ->take($remaining)
+                    ->get();
+
+                $featuredBusinesses = $featuredBusinesses->merge($latestBusinesses);
+            }
+
+            return view('dashboard', compact('featuredBusinesses'));
+        }
+
         $search = $request->get('search');
         $query = Business::with(['user', 'businessType', 'products', 'photos']);
         
@@ -52,6 +74,12 @@ class BusinessController extends Controller
             });
         }
         
+        // Filter by business type id if provided
+        $type = $request->get('type');
+        if ($type) {
+            $query->where('business_type_id', $type);
+        }
+        
         // Filter for "My Businesses" if query param present
         if ($request->get('my') && Auth::check()) {
             /** @var User $user */
@@ -59,7 +87,7 @@ class BusinessController extends Controller
             $query->where('user_id', $user->id);
         }
         
-        $businesses = $query->latest()->paginate(15);
+        $businesses = $query->latest()->paginate(10);
         
         // Prepare my businesses for current user
         $myBusinesses = collect();
@@ -67,7 +95,10 @@ class BusinessController extends Controller
             $myBusinesses = $businesses->where('user_id', Auth::id());
         }
         
-        return view('businesses.index', compact('businesses', 'myBusinesses'));
+        // Also load business types for the filter bar
+        $businessTypes = BusinessType::all();
+
+        return view('businesses.index', compact('businesses', 'myBusinesses', 'businessTypes'));
     }
 
     /**
@@ -103,14 +134,15 @@ class BusinessController extends Controller
             $validated = $request->validate([
                 // Basic fields
                 'name' => 'required|string|max:255',
-                'description' => 'required|string',
+                // Limit description length to avoid extremely long content being stored/displayed
+                'description' => 'required|string|max:1000',
                 'business_type_id' => 'required|exists:business_types,id',
                 'business_mode' => 'required|in:product,service',
                 'user_id' => 'nullable|exists:users,id',
                 'position' => 'nullable|string|max:255',
                 
                 // Enhanced fields
-                'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
+                'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:10240',
                 'established_date' => 'nullable|date',
                 'address' => 'nullable|string',
                 'employee_count' => 'nullable|integer|min:0',
@@ -131,7 +163,7 @@ class BusinessController extends Controller
 
             // Handle logo upload
             if ($request->hasFile('logo')) {
-                $logoPath = $request->file('logo')->store('businesses/logos', 'public');
+                $logoPath = $request->file('logo')->store('businesses/logos', config('filesystems.default'));
                 $validated['logo_url'] = $logoPath;
             }
             unset($validated['logo']);
@@ -143,7 +175,7 @@ class BusinessController extends Controller
                     if ($file->getSize() > 5120 * 1024) {
                         return back()->withErrors(['legal_documents' => 'Each legal document must not be larger than 5MB.'])->withInput();
                     }
-                    $path = $file->store('businesses/legal-documents', 'public');
+                    $path = $file->store('businesses/legal-documents', config('filesystems.default'));
                     $legalDocs[] = [
                         'file_path' => $path,
                         'original_name' => $file->getClientOriginalName(),
@@ -160,7 +192,7 @@ class BusinessController extends Controller
                     if ($file->getSize() > 5120 * 1024) {
                         return back()->withErrors(['product_certifications' => 'Each certification file must not be larger than 5MB.'])->withInput();
                     }
-                    $path = $file->store('businesses/certifications', 'public');
+                    $path = $file->store('businesses/certifications', config('filesystems.default'));
                     $certifications[] = [
                         'file_path' => $path,
                         'original_name' => $file->getClientOriginalName(),
@@ -257,14 +289,15 @@ class BusinessController extends Controller
             $validated = $request->validate([
                 // Basic fields
                 'name' => 'required|string|max:255',
-                'description' => 'required|string',
+                // Limit description length on update as well
+                'description' => 'required|string|max:1000',
                 'business_type_id' => 'required|exists:business_types,id',
                 'business_mode' => 'required|in:product,service,both',
                 'user_id' => 'nullable|exists:users,id',
                 'position' => 'nullable|string|max:255',
                 
                 // Enhanced fields
-                'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
+                'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:10240',
                 'established_date' => 'nullable|date',
                 'address' => 'nullable|string',
                 'employee_count' => 'nullable|integer|min:0',
@@ -313,10 +346,10 @@ class BusinessController extends Controller
                 }
                 
                 // Delete old logo if exists
-                if ($business->logo_url && Storage::disk('public')->exists($business->logo_url)) {
-                    Storage::disk('public')->delete($business->logo_url);
+                if ($business->logo_url && Storage::disk(config('filesystems.default'))->exists($business->logo_url)) {
+                    Storage::disk(config('filesystems.default'))->delete($business->logo_url);
                 }
-                $logoPath = $logoFile->store('businesses/logos', 'public');
+                $logoPath = $logoFile->store('businesses/logos', config('filesystems.default'));
                 $validated['logo_url'] = $logoPath;
             }
             unset($validated['logo']);
@@ -327,8 +360,8 @@ class BusinessController extends Controller
             // Remove selected documents
             if ($request->has('remove_legal_docs')) {
                 foreach ($request->remove_legal_docs as $index) {
-                    if (isset($currentLegalDocs[$index]['file_path'])) {
-                        Storage::disk('public')->delete($currentLegalDocs[$index]['file_path']);
+                        if (isset($currentLegalDocs[$index]['file_path'])) {
+                        Storage::disk(config('filesystems.default'))->delete($currentLegalDocs[$index]['file_path']);
                         unset($currentLegalDocs[$index]);
                     }
                 }
@@ -341,7 +374,7 @@ class BusinessController extends Controller
                     if ($file->getSize() > 5120 * 1024) {
                         return back()->withErrors(['legal_documents' => 'Each legal document must not be larger than 5MB.'])->withInput();
                     }
-                    $path = $file->store('businesses/legal-documents', 'public');
+                    $path = $file->store('businesses/legal-documents', config('filesystems.default'));
                     $currentLegalDocs[] = [
                         'file_path' => $path,
                         'original_name' => $file->getClientOriginalName(),
@@ -357,8 +390,8 @@ class BusinessController extends Controller
             // Remove selected certifications
             if ($request->has('remove_certifications')) {
                 foreach ($request->remove_certifications as $index) {
-                    if (isset($currentCertifications[$index]['file_path'])) {
-                        Storage::disk('public')->delete($currentCertifications[$index]['file_path']);
+                        if (isset($currentCertifications[$index]['file_path'])) {
+                        Storage::disk(config('filesystems.default'))->delete($currentCertifications[$index]['file_path']);
                         unset($currentCertifications[$index]);
                     }
                 }
@@ -371,7 +404,7 @@ class BusinessController extends Controller
                     if ($file->getSize() > 5120 * 1024) {
                         return back()->withErrors(['product_certifications' => 'Each certification file must not be larger than 5MB.'])->withInput();
                     }
-                    $path = $file->store('businesses/certifications', 'public');
+                    $path = $file->store('businesses/certifications', config('filesystems.default'));
                     $currentCertifications[] = [
                         'file_path' => $path,
                         'original_name' => $file->getClientOriginalName(),
@@ -448,6 +481,10 @@ class BusinessController extends Controller
         $request->validate([
             'file' => 'required|mimes:xlsx,xls,csv|max:10240', // Max 10MB
         ]);
+
+        // Increase execution time and memory limit for large imports
+        set_time_limit(300); // 5 minutes
+        ini_set('memory_limit', '512M');
 
         try {
             $import = new BusinessesImport();

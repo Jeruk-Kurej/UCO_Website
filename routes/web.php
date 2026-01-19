@@ -7,6 +7,7 @@ use App\Http\Controllers\BusinessPhotoController;
 use App\Http\Controllers\BusinessTypeController;
 use App\Http\Controllers\ContactTypeController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\FeaturedController;
 use App\Http\Controllers\ProductCategoryController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductPhotoController;
@@ -23,73 +24,104 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| Public Routes
-|--------------------------------------------------------------------------
-*/
+// ============================================================
+// PUBLIC ROUTES
+// ============================================================
 
 Route::get('/ping', function () {
     return response()->json(['status' => 'ok'], 200);
 });
 
+// Home route - redirect to appropriate page based on auth status
 Route::get('/', function () {
-    return view('welcome');
+    if (Auth::check()) {
+        return redirect('/dashboard');
+    }
+    return redirect('/featured');  // Guests go to featured page instead of the full businesses listing
 })->name('home');
 
-Route::get('/businesses', [BusinessController::class, 'index'])->name('businesses.index');
+// Public featured page for guests
+Route::get('/featured', [FeaturedController::class, 'index'])->name('featured');
+
+use Illuminate\Http\Request as HttpRequest;
+
+// Businesses index: authenticated users see full listing; guests get redirected to featured dashboard
+Route::get('/businesses', function (HttpRequest $request) {
+    if (!Auth::check()) {
+        return redirect()->route('featured');
+    }
+
+    /** @var \App\Http\Controllers\BusinessController $controller */
+    $controller = app()->make(\App\Http\Controllers\BusinessController::class);
+    return $controller->index($request);
+})->name('businesses.index');
 Route::get('/business-types', [BusinessTypeController::class, 'index'])->name('business-types.index');
 Route::get('/contact-types', [ContactTypeController::class, 'index'])->name('contact-types.index');
-Route::get('/uc-testimonies', [UcTestimonyController::class, 'index'])->name('uc-testimonies.index');
 
-/*
-|--------------------------------------------------------------------------
-| Authenticated Routes
-|--------------------------------------------------------------------------
-*/
+// ✅ PUBLIC: Everyone (guests + authenticated) can view and submit testimonies
+Route::get('/uc-testimonies', [UcTestimonyController::class, 'index'])->name('uc-testimonies.index');
+Route::post('/uc-testimonies', [UcTestimonyController::class, 'store'])->name('uc-testimonies.store');
+
+// ============================================================
+// AUTHENTICATED ROUTES (Student, Alumni, Admin)
+// ============================================================
 
 Route::middleware(['auth', 'verified'])->group(function () {
     
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // Import progress tracking endpoint
+    Route::get('/import-progress/{sessionId}', function($sessionId) {
+        $progress = session("import_progress_{$sessionId}", ['current' => 0, 'total' => 0, 'status' => 'unknown']);
+        return response()->json($progress);
+    })->name('import.progress');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::resource('businesses', BusinessController::class)->except(['index', 'show']);
-    Route::post('/businesses/{business}/toggle-featured', [BusinessController::class, 'toggleFeatured'])->name('businesses.toggle-featured');
-    Route::post('/businesses/import', [BusinessController::class, 'import'])->name('businesses.import');
 
     Route::resource('business-types.product-categories', ProductCategoryController::class)
         ->scoped(['businessType' => 'id', 'productCategory' => 'id']);
 
     Route::resource('businesses.products', ProductController::class)
-        ->except(['index'])->scoped(['business' => 'id', 'product' => 'id']);
+        ->except(['index'])
+        ->scoped(['business' => 'id', 'product' => 'id']);
 
     Route::resource('businesses.services', ServiceController::class)
-        ->except(['index'])->scoped(['business' => 'id', 'service' => 'id']);
+        ->except(['index'])
+        ->scoped(['business' => 'id', 'service' => 'id']);
 
     Route::resource('businesses.photos', BusinessPhotoController::class)
-        ->except(['index'])->scoped(['business' => 'id', 'photo' => 'id']);
+        ->except(['index'])
+        ->scoped(['business' => 'id', 'photo' => 'id']);
 
     Route::resource('businesses.contacts', BusinessContactController::class)
-        ->except(['index'])->scoped(['business' => 'id', 'contact' => 'id']);
+        ->except(['index'])
+        ->scoped(['business' => 'id', 'contact' => 'id']);
 
     Route::resource('products.photos', ProductPhotoController::class)
         ->scoped(['product' => 'id', 'photo' => 'id']);
 
-    Route::post('/uc-testimonies', [UcTestimonyController::class, 'store'])->name('uc-testimonies.store');
-    Route::delete('/uc-testimonies/{ucTestimony}', [UcTestimonyController::class, 'destroy'])->name('uc-testimonies.destroy');
+    // Testimony deletion (admin only)
+    Route::delete('/uc-testimonies/{ucTestimony}', [UcTestimonyController::class, 'destroy'])
+        ->name('uc-testimonies.destroy');
 
-    Route::get('/ai-analyses', [AiAnalysisController::class, 'index'])->name('ai-analyses.index');
-    Route::get('/uc-testimonies/{ucTestimony}/ai-analysis', [AiAnalysisController::class, 'showUc'])->name('uc-ai-analyses.show');
+    Route::get('/ai-analyses', [AiAnalysisController::class, 'index'])
+        ->name('ai-analyses.index');
+    Route::get('/uc-testimonies/{ucTestimony}/ai-analysis', [AiAnalysisController::class, 'showUc'])
+        ->name('uc-ai-analyses.show');
+    Route::post('/uc-testimonies/{ucTestimony}/approve', [AiAnalysisController::class, 'approve'])
+        ->name('uc-ai-analyses.approve');
+    // Admin can also explicitly reject (or re-reject) a testimony
+    Route::post('/uc-testimonies/{ucTestimony}/reject', [AiAnalysisController::class, 'reject'])
+        ->name('uc-ai-analyses.reject');
 });
 
-/*
-|--------------------------------------------------------------------------
-| Admin-Only Routes
-|--------------------------------------------------------------------------
-*/
+// ============================================================
+// ADMIN-ONLY ROUTES
+// ============================================================
 
 Route::middleware(['auth', 'verified', 'admin'])->group(function () {
     
@@ -99,39 +131,47 @@ Route::middleware(['auth', 'verified', 'admin'])->group(function () {
 
     Route::resource('business-types', BusinessTypeController::class)->except(['index', 'show']);
     Route::resource('contact-types', ContactTypeController::class)->except(['index', 'show']);
+    
+    Route::post('/businesses/import', [BusinessController::class, 'import'])->name('businesses.import');
+    Route::post('/businesses/{business}/toggle-featured', [BusinessController::class, 'toggleFeatured'])
+        ->name('businesses.toggle-featured');
 });
 
-/*
-|--------------------------------------------------------------------------
-| Public Show Routes (Must come last)
-|--------------------------------------------------------------------------
-*/
+// ============================================================
+// PUBLIC SHOW ROUTES (Must be after specific routes)
+// ============================================================
 
 Route::get('/businesses/{business}', [BusinessController::class, 'show'])->name('businesses.show');
 Route::get('/business-types/{businessType}', [BusinessTypeController::class, 'show'])->name('business-types.show');
 Route::get('/contact-types/{contactType}', [ContactTypeController::class, 'show'])->name('contact-types.show');
 
-/*
-|--------------------------------------------------------------------------
-| Database Reset Routes (Keep as requested)
-|--------------------------------------------------------------------------
-*/
+// ============================================================
+// DATABASE RESET ROUTES (TEMPORARY - DELETE AFTER USE)
+// ============================================================
 
 Route::get('/admin/reset-database-confirm', function () {
-    if (!Auth::check() || Auth::user()->role !== 'admin') {
+    /** @var User $user */
+    $user = Auth::user();
+    
+    if (!Auth::check() || !$user->isAdmin()) {
         abort(403, 'Only administrators can reset database.');
     }
+    
     return view('admin.reset-database');
 })->middleware('auth')->name('admin.reset-database');
 
 Route::post('/admin/reset-database-execute', function () {
-    if (!Auth::check() || Auth::user()->role !== 'admin') {
+    /** @var User $user */
+    $user = Auth::user();
+    
+    if (!Auth::check() || !$user->isAdmin()) {
         abort(403, 'Only administrators can reset database.');
     }
     
     try {
         $businessCount = Business::count();
         Business::query()->delete();
+        
         BusinessType::query()->delete();
         ProductCategory::query()->delete();
         ContactType::query()->delete();
@@ -139,7 +179,7 @@ Route::post('/admin/reset-database-execute', function () {
         $userCount = User::count();
         User::query()->delete();
         
-        $admin = User::create([
+        User::create([
             'username' => 'admin',
             'name' => 'Admin UCO',
             'email' => 'admin@uco.com',

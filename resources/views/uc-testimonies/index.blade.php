@@ -5,14 +5,8 @@
                 <div class="p-6 text-gray-900">
                     <div class="flex items-start justify-between gap-4">
                         <div>
-                            <div class="flex items-center gap-3 mb-2">
-                                <a href="{{ route('dashboard') }}" 
-                                   class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-800 transition duration-150">
-                                    <i class="bi bi-arrow-left text-lg"></i>
-                                </a>
-                                <h2 class="text-xl font-bold">Universitas Ciputra Online Testimonies</h2>
-                            </div>
-                            <p class="text-sm text-gray-600 ml-13">Share your experience with Universitas Ciputra Online.</p>
+                            <h2 class="text-xl font-bold">Universitar Ciputra Online Learning</h2>
+                            <p class="text-sm text-gray-600 mt-1">Share your experience with Universitar Ciputra Online Learning.</p>
                         </div>
                     </div>
 
@@ -22,22 +16,30 @@
                         </div>
                     @endif
 
-                    @auth
-                        @if (!auth()->user()->isAdmin())
-                            <div class="mt-6 border border-gray-200 rounded-lg p-4" x-data="{ rating: {{ old('rating', 0) }} }">
-                                <h3 class="font-semibold">Write a Testimony</h3>
+                    {{-- ✅ CHANGED: Show form to everyone except admins --}}
+                    @if(!auth()->check() || !auth()->user()->isAdmin())
+                        <div class="mt-6 border border-gray-200 rounded-lg p-4">
+                            <h3 class="font-semibold">Write a Testimony</h3>
 
-                                <form action="{{ route('uc-testimonies.store') }}" method="POST" class="mt-4 space-y-4">
-                                    @csrf
+                            <form action="{{ route('uc-testimonies.store') }}" method="POST" class="mt-4 space-y-4">
+                                @csrf
 
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700">Your Name</label>
-                                        <input type="text" name="customer_name" value="{{ old('customer_name') }}"
-                                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500">
-                                        @error('customer_name')
-                                            <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
-                                        @enderror
-                                    </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Your Name</label>
+                                    {{-- ✅ CHANGED: Auto-fill with username if logged in --}}
+                                    <input type="text" 
+                                           name="customer_name" 
+                                           value="{{ old('customer_name', auth()->check() ? auth()->user()->name : '') }}"
+                                           {{ auth()->check() ? 'readonly' : '' }}
+                                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 {{ auth()->check() ? 'bg-gray-50' : '' }}"
+                                           required>
+                                    @if(auth()->check())
+                                        <p class="text-xs text-gray-500 mt-1">Your name is automatically filled from your account</p>
+                                    @endif
+                                    @error('customer_name')
+                                        <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
+                                    @enderror
+                                </div>
 
                                     <div x-data="{
                                         rating: {{ old('rating', 0) }},
@@ -68,27 +70,28 @@
 
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700">Your Testimony</label>
-                                        <textarea name="content" rows="5"
-                                                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500">{{ old('content') }}</textarea>
+                                        <textarea name="content" rows="4"
+                                                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500"
+                                                  required>{{ old('content') }}</textarea>
                                         @error('content')
                                             <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
                                         @enderror
                                     </div>
 
                                     <div class="flex items-center gap-3">
-                                        <button type="submit" class="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-md font-semibold">
+                                        <button type="submit" class="px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-lg font-semibold shadow-sm transition duration-150">
                                             Submit
                                         </button>
-                                        
+                                        <p class="text-xs text-gray-500">Submissions are AI-moderated.</p>
                                     </div>
                                 </form>
-                            </div>
-                        @endif
-                    @else
-                        <div class="mt-6 border border-gray-200 rounded-lg p-4 text-sm text-gray-700">
-                            <a class="text-orange-600 font-semibold hover:underline" href="{{ route('login') }}">Log in</a> to submit a testimony.
                         </div>
-                    @endauth
+                    @else
+                        {{-- Admin users cannot submit testimonies --}}
+                        <div class="mt-6 border border-yellow-200 bg-yellow-50 rounded-lg p-4 text-sm text-yellow-800">
+                            <strong>Note:</strong> Administrators cannot submit testimonies. Please log out or use a non-admin account.
+                        </div>
+                    @endif
 
                     <div class="mt-8">
                         <h3 class="font-semibold">Approved Testimonies</h3>
