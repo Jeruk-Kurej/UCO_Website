@@ -7,7 +7,7 @@
         $graduationData = $user->graduation_data ?? [];
     @endphp
 
-    <div class="max-w-6xl mx-auto py-8" x-data="{ activeTab: 'basic', editEnabled: false }">
+    <div class="max-w-6xl mx-auto py-8" x-data="{ activeTab: 'basic' }">
         <div class="mb-6 flex items-center justify-between">
             <div class="flex items-center gap-4">
                 <a href="{{ route('users.index') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm">
@@ -21,13 +21,7 @@
 
             <div class="flex items-center gap-3">
                 @can('update', $user)
-                    <label class="inline-flex items-center space-x-2">
-                        <span class="text-sm text-gray-600">Enable edit</span>
-                        <input type="checkbox" x-model="editEnabled" class="rounded text-indigo-600 focus:ring-indigo-500" />
-                    </label>
-
-                    <a x-show="editEnabled" x-cloak :href="'{{ url('/users') }}/' + {{ $user->id }} + '/edit'"
-                       class="ml-3 inline-flex items-center px-4 py-2 bg-gray-900 text-white rounded-lg text-sm">Edit</a>
+                    <a href="{{ route('users.edit', $user) }}" class="ml-3 inline-flex items-center px-4 py-2 bg-gray-900 text-white rounded-lg text-sm">Edit</a>
                 @endcan
             </div>
         </div>
