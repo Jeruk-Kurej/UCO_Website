@@ -6,7 +6,7 @@
         <div class="flex justify-between items-center h-16">
             {{-- Logo & Brand --}}
             <div class="flex items-center">
-                <a href="{{ auth()->check() ? '/dashboard' : '/businesses' }}" class="flex items-center gap-3">
+                <a href="{{ auth()->check() ? route('dashboard') : route('featured') }}" class="flex items-center gap-3">
                     <img src="{{ asset('images/Logo UCO.png') }}" alt="UCO Logo" class="w-9 h-9 object-contain">
                     <span class="text-lg font-bold text-soft-gray-900">UC Online Learning</span>
                 </a>
@@ -64,7 +64,7 @@
                     </div>
                 @else
                     {{-- Guest navigation --}}
-                    <a href="{{ route('businesses.index') }}" class="text-sm font-medium {{ request()->routeIs('businesses.*') ? 'text-soft-gray-900 font-semibold' : 'text-soft-gray-600 hover:text-soft-gray-900' }}">Businesses</a>
+                    <a href="{{ route('featured') }}" class="text-sm font-medium {{ request()->routeIs('featured') ? 'text-soft-gray-900 font-semibold' : 'text-soft-gray-600 hover:text-soft-gray-900' }}">Featured</a>
                     <a href="{{ route('business-types.index') }}" class="text-sm font-medium {{ request()->routeIs('business-types.*') ? 'text-soft-gray-900 font-semibold' : 'text-soft-gray-600 hover:text-soft-gray-900' }}">Business Types</a>
                     <a href="{{ route('uc-testimonies.index') }}" class="text-sm font-medium {{ request()->routeIs('uc-testimonies.*') ? 'text-soft-gray-900 font-semibold' : 'text-soft-gray-600 hover:text-soft-gray-900' }}">Testimonies</a>
                     <div class="flex items-center gap-2">
@@ -126,7 +126,7 @@
                 </div>
             @else
                 {{-- Guest mobile --}}
-                <a href="{{ route('businesses.index') }}" class="block py-2.5 px-3 text-sm font-medium rounded-lg {{ request()->routeIs('businesses.index') ? 'bg-soft-gray-100 text-soft-gray-900' : 'text-soft-gray-700 hover:bg-soft-gray-50' }}">Browse Businesses</a>
+                <a href="{{ route('featured') }}" class="block py-2.5 px-3 text-sm font-medium rounded-lg {{ request()->routeIs('featured') ? 'bg-soft-gray-100 text-soft-gray-900' : 'text-soft-gray-700 hover:bg-soft-gray-50' }}">Featured</a>
                 <a href="{{ route('business-types.index') }}" class="block py-2.5 px-3 text-sm font-medium rounded-lg {{ request()->routeIs('business-types.*') ? 'bg-soft-gray-100 text-soft-gray-900' : 'text-soft-gray-700 hover:bg-soft-gray-50' }}">Business Types</a>
                 <a href="{{ route('uc-testimonies.index') }}" class="block py-2.5 px-3 text-sm font-medium rounded-lg {{ request()->routeIs('uc-testimonies.*') ? 'bg-soft-gray-100 text-soft-gray-900' : 'text-soft-gray-700 hover:bg-soft-gray-50' }}">Testimonies</a>
                 <div class="pt-2 mt-2 border-t border-soft-gray-100 space-y-2">

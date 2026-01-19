@@ -12,10 +12,10 @@
                     <div class="flex items-end justify-between border-b border-soft-gray-200 pb-6">
                         <div>
                             <h2 class="text-3xl font-bold text-soft-gray-900 tracking-tight">
-                                Our Businesses
+                                Featured Businesses
                             </h2>
                             <p class="text-sm text-soft-gray-600 mt-2">
-                                Explore amazing ventures from our community of entrepreneurs
+                                A curated selection of standout businesses from our community
                             </p>
                         </div>
                         <a href="{{ route('businesses.index') }}" 
