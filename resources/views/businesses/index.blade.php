@@ -56,59 +56,50 @@
         </div>
     @endif
 
-    @auth
-        @if(session('import_errors'))
-        <div x-data="{ show: true }" 
-            @php
-                // Minimal businesses index view to avoid Blade parse errors while debugging.
-                // NOTE: Keep simple and valid. Remove complex directives and nested layouts.
-                /** @var \Illuminate\Contracts\Pagination\LengthAwarePaginator $businesses */
-            @endphp
+    {{-- Main Content --}}
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="flex items-center justify-between mb-6">
+            <h1 class="text-2xl font-bold">Businesses</h1>
+            <form action="{{ route('businesses.index') }}" method="GET" class="w-1/3">
+                <input name="search" type="text" value="{{ request('search') }}" placeholder="Search businesses..." class="w-full px-3 py-2 border rounded-lg">
+            </form>
+        </div>
 
-            <x-app-layout>
-                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                    <div class="flex items-center justify-between mb-6">
-                        <h1 class="text-2xl font-bold">Businesses</h1>
-                        <form action="{{ route('businesses.index') }}" method="GET" class="w-1/3">
-                            <input name="search" type="text" value="{{ request('search') }}" placeholder="Search businesses..." class="w-full px-3 py-2 border rounded-lg">
-                        </form>
-                    </div>
+        @if (session('success'))
+            <div class="mb-4 text-green-700">{{ session('success') }}</div>
+        @endif
 
-                    @if (session('success'))
-                        <div class="mb-4 text-green-700">{{ session('success') }}</div>
-                    @endif
+        @if ($businesses->count() > 0)
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                @foreach ($businesses as $business)
+                    <div class="bg-white border rounded-lg overflow-hidden">
+                        <a href="{{ route('businesses.show', $business) }}" class="block p-4">
+                            <div class="flex items-center gap-4">
+                                @php
+                                    $logo = $business->logo_url ?? null;
+                                    $logoUrl = $logo ? storage_image_url($logo, 'logo_thumb') : null;
+                                @endphp
+                                @if ($logoUrl)
+                                    <img src="{{ $logoUrl }}" alt="{{ $business->name }}" class="w-16 h-16 rounded-md object-cover">
+                                @else
+                                    <div class="w-16 h-16 bg-gray-100 rounded-md flex items-center justify-center text-gray-400">
+                                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 16 16"><path d="M8 0a2 2 0 00-2 2v1H3a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2V5a2 2 0 00-2-2h-3V2a2 2 0 00-2-2z"/></svg>
+                                    </div>
+                                @endif
 
-                    @if ($businesses->count() > 0)
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            @foreach ($businesses as $business)
-                                <div class="bg-white border rounded-lg overflow-hidden">
-                                    <a href="{{ route('businesses.show', $business) }}" class="block p-4">
-                                        <div class="flex items-center gap-4">
-                                            @php
-                                                $logo = $business->logo_url ?? null;
-                                                $logoUrl = $logo ? storage_image_url($logo, 'logo_thumb') : null;
-                                            @endphp
-                                            @if ($logoUrl)
-                                                <img src="{{ $logoUrl }}" alt="{{ $business->name }}" class="w-16 h-16 rounded-md object-cover">
-                                            @else
-                                                <div class="w-16 h-16 bg-gray-100 rounded-md flex items-center justify-center text-gray-400">
-                                                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 16 16"><path d="M8 0a2 2 0 00-2 2v1H3a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2V5a2 2 0 00-2-2h-3V2a2 2 0 00-2-2z"/></svg>
-                                                </div>
-                                            @endif
-
-                                            <div class="flex-1">
-                                                <h3 class="font-semibold">{{ $business->name }}</h3>
-                                                <p class="text-sm text-gray-600">{{ \Illuminate\Support\Str::limit($business->description, 80) }}</p>
-                                            </div>
-                                        </div>
-                                    </a>
+                                <div class="flex-1">
+                                    <h3 class="font-semibold">{{ $business->name }}</h3>
+                                    <p class="text-sm text-gray-600">{{ \Illuminate\Support\Str::limit($business->description, 80) }}</p>
                                 </div>
-                            @endforeach
-                        </div>
+                            </div>
+                        </a>
+                    </div>
+                @endforeach
+            </div>
 
-                        <div class="mt-6">{{ $businesses->links() }}</div>
-                    @else
-                        <div class="text-center py-12 text-gray-500">No businesses found.</div>
-                    @endif
-                </div>
-            </x-app-layout>
+            <div class="mt-6">{{ $businesses->links() }}</div>
+        @else
+            <div class="text-center py-12 text-gray-500">No businesses found.</div>
+        @endif
+    </div>
+</x-app-layout>
