@@ -43,7 +43,18 @@ Route::get('/', function () {
 // Public featured page for guests
 Route::get('/featured', [FeaturedController::class, 'index'])->name('featured');
 
-Route::get('/businesses', [BusinessController::class, 'index'])->name('businesses.index');
+use Illuminate\Http\Request as HttpRequest;
+
+// Businesses index: authenticated users see full listing; guests get redirected to featured dashboard
+Route::get('/businesses', function (HttpRequest $request) {
+    if (!Auth::check()) {
+        return redirect()->route('featured');
+    }
+
+    /** @var \App\Http\Controllers\BusinessController $controller */
+    $controller = app()->make(\App\Http\Controllers\BusinessController::class);
+    return $controller->index($request);
+})->name('businesses.index');
 Route::get('/business-types', [BusinessTypeController::class, 'index'])->name('business-types.index');
 Route::get('/contact-types', [ContactTypeController::class, 'index'])->name('contact-types.index');
 
