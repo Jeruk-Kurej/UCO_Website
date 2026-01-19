@@ -52,26 +52,27 @@ class ProfileController extends Controller
             // Handle profile photo upload
             if ($request->hasFile('profile_photo')) {
                 $file = $request->file('profile_photo');
-                
-                if ($file->getSize() > 10240 * 1024) { // 10MB in bytes
+
+                // clearer size check
+                if ($file->getSize() > 10 * 1024 * 1024) { // 10MB in bytes
                     return Redirect::route('profile.edit')
                         ->withErrors(['profile_photo' => 'Profile photo must not be larger than 10MB.'])
                         ->withInput();
                 }
-                
+
                 // Delete old photo if exists (from Cloudinary)
-                if ($user->profile_photo_url) {
+                if (!empty($user->profile_photo_url)) {
                     try {
-                        if (Illuminate\Support\Facades\Storage::exists($user->profile_photo_url)) {
-                            Illuminate\Support\Facades\Storage::delete($user->profile_photo_url);
+                        if (Storage::exists((string)$user->profile_photo_url)) {
+                            Storage::delete((string)$user->profile_photo_url);
                         }
                     } catch (\Throwable $e) {
                         // Log and continue - missing Cloudinary resource should not block profile update
-                        \Log::warning('Failed to delete old profile photo from storage: ' . $e->getMessage(), ['path' => $user->profile_photo_url]);
+                        Log::warning('Failed to delete old profile photo from storage: ' . $e->getMessage(), ['path' => $user->profile_photo_url]);
                     }
                 }
-                
-                // Store new photo to Cloudinary (using default disk which is now cloudinary)
+
+                // Store new photo to default disk (Cloudinary or local depending on env)
                 $path = $file->store('profile-photos');
                 $user->profile_photo_url = $path;
             }
