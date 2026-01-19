@@ -134,8 +134,9 @@
             @endif
         </div>
 
-        {{-- My Businesses (visible when activeTab === 'my') --}}
-        <div x-show="activeTab === 'my'" x-transition.opacity class="col-span-1 md:col-span-2">
+        @auth
+            {{-- My Businesses (visible when activeTab === 'my') --}}
+            <div x-show="activeTab === 'my'" x-transition.opacity class="col-span-1 md:col-span-2">
             <div class="p-6 bg-white border border-slate-200 rounded-xl shadow-sm">
                 <div class="mb-6 flex items-center justify-between">
                     <h3 class="text-lg font-semibold text-gray-900">My Businesses</h3>
@@ -173,7 +174,8 @@
                     </div>
                 @endif
             </div>
-        </div>
+            </div>
+        @endauth
     </div>
 
     {{-- My Businesses for authenticated non-admin users --}}
