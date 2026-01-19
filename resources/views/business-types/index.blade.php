@@ -3,8 +3,13 @@
         {{-- Page Header --}}
         <div class="flex items-center justify-between">
             <div>
-                <h1 class="text-2xl font-bold text-gray-900">Business Type Management</h1>
-                <p class="text-sm text-gray-600 mt-1">Manage business categories and types</p>
+                @if(auth()->check() && auth()->user()->isAdmin())
+                    <h1 class="text-2xl font-bold text-gray-900">Business Type Management</h1>
+                    <p class="text-sm text-gray-600 mt-1">Manage business categories and types</p>
+                @else
+                    <h1 class="text-2xl font-bold text-gray-900">Business Types</h1>
+                    <p class="text-sm text-gray-600 mt-1">Browse business categories</p>
+                @endif
             </div>
             @auth
                 @if(auth()->user()->isAdmin())
