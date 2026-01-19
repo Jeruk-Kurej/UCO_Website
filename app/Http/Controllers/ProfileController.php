@@ -60,8 +60,15 @@ class ProfileController extends Controller
                 }
                 
                 // Delete old photo if exists (from Cloudinary)
-                if ($user->profile_photo_url && Storage::exists($user->profile_photo_url)) {
-                    Storage::delete($user->profile_photo_url);
+                if ($user->profile_photo_url) {
+                    try {
+                        if (Illuminate\Support\Facades\Storage::exists($user->profile_photo_url)) {
+                            Illuminate\Support\Facades\Storage::delete($user->profile_photo_url);
+                        }
+                    } catch (\Throwable $e) {
+                        // Log and continue - missing Cloudinary resource should not block profile update
+                        \Log::warning('Failed to delete old profile photo from storage: ' . $e->getMessage(), ['path' => $user->profile_photo_url]);
+                    }
                 }
                 
                 // Store new photo to Cloudinary (using default disk which is now cloudinary)

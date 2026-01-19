@@ -102,20 +102,24 @@ if (! function_exists('storage_image_url')) {
 
         try {
             $disk = config('filesystems.default');
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             $disk = null;
         }
 
         if ($disk === 'cloudinary') {
-            $url = cloudinary_url($path, $options);
-            if ($url) {
-                return $url;
+            try {
+                $url = cloudinary_url($path, $options);
+                if ($url) {
+                    return $url;
+                }
+            } catch (\Throwable $e) {
+                // If Cloudinary SDK throws (e.g. resource not found), swallow and fall back to Storage::url()
             }
         }
 
         try {
             return Illuminate\Support\Facades\Storage::url($path);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             return null;
         }
     }
