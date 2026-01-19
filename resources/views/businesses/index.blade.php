@@ -97,9 +97,9 @@
         @auth
             @if(!auth()->user()->isAdmin())
                 <div class="mt-4">
-                    <div role="tablist" class="inline-flex rounded-lg bg-white border border-slate-200 p-1 shadow-sm">
-                        <button @click="activeTab = 'all'" type="button" role="tab" :aria-selected="activeTab === 'all'" :class="activeTab === 'all' ? 'bg-gray-900 text-white' : 'text-gray-700 hover:bg-gray-50'" class="px-4 py-2 rounded-lg text-sm font-medium">All Businesses</button>
-                        <button @click="activeTab = 'my'" type="button" role="tab" :aria-selected="activeTab === 'my'" :class="activeTab === 'my' ? 'bg-gray-900 text-white' : 'text-gray-700 hover:bg-gray-50'" class="ml-2 px-4 py-2 rounded-lg text-sm font-medium">My Businesses</button>
+                    <div role="tablist" class="inline-flex rounded-lg bg-white border border-slate-200 p-2 shadow-sm gap-4">
+                        <button @click="activeTab = 'my'" type="button" role="tab" :aria-selected="activeTab === 'my'" :class="activeTab === 'my' ? 'bg-gray-900 text-white' : 'text-gray-700 hover:bg-gray-50'" class="px-5 py-2 rounded-lg text-sm font-medium">My Businesses</button>
+                        <button @click="activeTab = 'all'" type="button" role="tab" :aria-selected="activeTab === 'all'" :class="activeTab === 'all' ? 'bg-gray-900 text-white' : 'text-gray-700 hover:bg-gray-50'" class="px-5 py-2 rounded-lg text-sm font-medium">All Businesses</button>
                     </div>
                 </div>
             @endif
