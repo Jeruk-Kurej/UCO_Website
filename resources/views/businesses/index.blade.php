@@ -86,41 +86,99 @@
             </div>
         </div>
 
+        {{-- Tabs for non-admin users: All / My --}}
+        @auth
+            @if(!auth()->user()->isAdmin())
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <nav class="inline-flex rounded-lg bg-white border border-slate-200 p-1">
+                        @php $activeTab = request('tab', 'all'); @endphp
+                        <a href="{{ route('businesses.index', array_merge(request()->except('page'), ['tab' => 'all'])) }}" class="px-4 py-2 rounded-lg text-sm font-medium {{ $activeTab === 'all' ? 'bg-gray-900 text-white' : 'text-gray-700 hover:bg-gray-50' }}">All Businesses</a>
+                        <a href="{{ route('businesses.index', array_merge(request()->except('page'), ['tab' => 'my'])) }}" class="ml-2 px-4 py-2 rounded-lg text-sm font-medium {{ $activeTab === 'my' ? 'bg-gray-900 text-white' : 'text-gray-700 hover:bg-gray-50' }}">My Businesses</a>
+                    </nav>
+                </div>
+            @endif
+        @endauth
+
         @if (session('success'))
             <div class="mb-4 text-green-700">{{ session('success') }}</div>
         @endif
 
-        @if ($businesses->count() > 0)
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                @foreach ($businesses as $business)
-                    <div class="bg-white border rounded-lg overflow-hidden">
-                        <a href="{{ route('businesses.show', $business) }}" class="block p-4">
-                            <div class="flex items-center gap-4">
-                                @php
-                                    $logo = $business->logo_url ?? null;
-                                    $logoUrl = $logo ? storage_image_url($logo, 'logo_thumb') : null;
-                                @endphp
-                                @if ($logoUrl)
-                                    <img src="{{ $logoUrl }}" alt="{{ $business->name }}" class="w-16 h-16 rounded-md object-cover">
-                                @else
-                                    <div class="w-16 h-16 bg-gray-100 rounded-md flex items-center justify-center text-gray-400">
-                                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 16 16"><path d="M8 0a2 2 0 00-2 2v1H3a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2V5a2 2 0 00-2-2h-3V2a2 2 0 00-2-2z"/></svg>
-                                    </div>
-                                @endif
+        @php $activeTab = request('tab', 'all'); @endphp
 
-                                <div class="flex-1">
-                                    <h3 class="font-semibold">{{ $business->name }}</h3>
-                                    <p class="text-sm text-gray-600">{{ \Illuminate\Support\Str::limit($business->description, 80) }}</p>
+        @if($activeTab === 'all')
+            @if ($businesses->count() > 0)
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    @foreach ($businesses as $business)
+                        <div class="bg-white border rounded-lg overflow-hidden">
+                            <a href="{{ route('businesses.show', $business) }}" class="block p-4">
+                                <div class="flex items-center gap-4">
+                                    @php
+                                        $logo = $business->logo_url ?? null;
+                                        $logoUrl = $logo ? storage_image_url($logo, 'logo_thumb') : null;
+                                    @endphp
+                                    @if ($logoUrl)
+                                        <img src="{{ $logoUrl }}" alt="{{ $business->name }}" class="w-16 h-16 rounded-md object-cover">
+                                    @else
+                                        <div class="w-16 h-16 bg-gray-100 rounded-md flex items-center justify-center text-gray-400">
+                                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 16 16"><path d="M8 0a2 2 0 00-2 2v1H3a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2V5a2 2 0 00-2-2h-3V2a2 2 0 00-2-2z"/></svg>
+                                        </div>
+                                    @endif
+
+                                    <div class="flex-1">
+                                        <h3 class="font-semibold">{{ $business->name }}</h3>
+                                        <p class="text-sm text-gray-600">{{ \Illuminate\Support\Str::limit($business->description, 80) }}</p>
+                                    </div>
                                 </div>
-                            </div>
+                            </a>
+                        </div>
+                    @endforeach
+                </div>
+
+                <div class="mt-6">{{ $businesses->links() }}</div>
+            @else
+                <div class="text-center py-12 text-gray-500">No businesses found.</div>
+            @endif
+        @elseif($activeTab === 'my')
+            {{-- My Businesses tab content (authenticated non-admin) --}}
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <div class="p-6 bg-white border border-slate-200 rounded-xl shadow-sm">
+                    <div class="mb-6 flex items-center justify-between">
+                        <h3 class="text-lg font-semibold text-gray-900">My Businesses</h3>
+                        <a href="{{ route('businesses.create') }}" class="inline-flex items-center px-4 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                            </svg>
+                            Add Business
                         </a>
                     </div>
-                @endforeach
-            </div>
 
-            <div class="mt-6">{{ $businesses->links() }}</div>
-        @else
-            <div class="text-center py-12 text-gray-500">No businesses found.</div>
+                    @if(($myBusinesses ?? collect())->count() > 0)
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            @foreach($myBusinesses as $b)
+                                <a href="{{ route('businesses.show', $b) }}" class="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transform hover:-translate-y-0.5 transition-all duration-200 overflow-hidden block">
+                                    <div class="p-4 flex items-center gap-4">
+                                        @php $myLogo = $b->logo_url ?? null; $myLogoUrl = $myLogo ? storage_image_url($myLogo, 'logo_thumb') : null; @endphp
+                                        @if($myLogoUrl)
+                                            <img src="{{ $myLogoUrl }}" alt="{{ $b->name }}" class="w-12 h-12 rounded-md object-cover">
+                                        @else
+                                            <div class="w-12 h-12 bg-gray-100 rounded-md flex items-center justify-center text-gray-400"><i class="bi bi-briefcase"></i></div>
+                                        @endif
+                                        <div class="flex-1">
+                                            <h4 class="font-semibold">{{ $b->name }}</h4>
+                                            <p class="text-sm text-gray-600">{{ \Illuminate\Support\Str::limit($b->description, 80) }}</p>
+                                        </div>
+                                    </div>
+                                </a>
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="text-center py-8">
+                            <p class="text-gray-600 mb-4">You don't have any businesses yet.</p>
+                            <a href="{{ route('businesses.create') }}" class="inline-flex items-center px-4 py-2 bg-gray-900 text-white rounded-lg">Create Your First Business</a>
+                        </div>
+                    @endif
+                </div>
+            </div>
         @endif
     </div>
 
