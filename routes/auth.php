@@ -10,12 +10,19 @@ use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 Route::middleware('guest')->group(function () {
-    Route::get('register', [RegisteredUserController::class, 'create'])
-        ->name('register');
+    // Public registration can be toggled via the REGISTRATION_OPEN env var.
+    // When false (default) registration routes are not registered and users
+    // must be created by an admin.
+    if (env('REGISTRATION_OPEN', false)) {
+        Route::get('register', [RegisteredUserController::class, 'create'])
+            ->name('register');
 
-    Route::post('register', [RegisteredUserController::class, 'store']);
+        Route::post('register', [RegisteredUserController::class, 'store']);
+    }
 
     // Show login page (welcome.blade.php)
     Route::get('login', function () {
@@ -58,4 +65,15 @@ Route::middleware('auth')->group(function () {
 
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
         ->name('logout');
+
+    // Convenience GET logout route for browsers that navigate to /logout
+    // Performs the same logout steps as POST and redirects to home.
+    Route::get('logout', function (Request $request) {
+        Auth::guard('web')->logout();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect('/');
+    })->name('logout.get');
 });

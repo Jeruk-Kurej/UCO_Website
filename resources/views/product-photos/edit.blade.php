@@ -25,7 +25,7 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Current Photo</label>
                         <div class="border-2 border-gray-200 rounded-lg p-4 bg-gray-50">
-                            <img src="{{ asset('storage/' . $photo->photo_url) }}" 
+                                <img src="{{ storage_image_url($photo->photo_url) }}" 
                                  alt="{{ $photo->caption }}" 
                                  class="max-w-full h-auto max-h-96 mx-auto rounded-lg">
                         </div>

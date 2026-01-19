@@ -53,12 +53,14 @@
         {{-- Business Overview Card - Professional Design --}}
         <div class="bg-white shadow-lg sm:rounded-2xl overflow-hidden border border-soft-gray-100">
             {{-- Hero Image with Overlay --}}
-            <div class="relative h-80">
+            <div class="relative h-56">
                 @php $firstPhoto = $business->photos->first()?->photo_url; @endphp
-                @if($firstPhoto && Storage::exists($firstPhoto))
-                    <img src="{{ Storage::url($firstPhoto) }}" 
-                         alt="{{ $business->name }}" 
-                         class="w-full h-full object-cover">
+                @if($firstPhoto)
+                    <img src="{{ storage_image_url($firstPhoto, 'hero') }}" 
+                        alt="{{ $business->name }}" 
+                        loading="lazy" decoding="async"
+                        onload="this.classList.remove('blur-sm')"
+                        class="w-full h-full object-cover blur-sm">
                     <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent"></div>
                 @else
                     <div class="w-full h-full bg-gradient-to-br from-soft-gray-100 via-soft-gray-50 to-soft-gray-100 flex items-center justify-center relative">
@@ -75,9 +77,10 @@
                 {{-- Owner Info - PROMINENT with Avatar --}}
                 <div class="flex flex-col sm:flex-row items-start gap-4 mb-6 pb-6 border-b-2 border-soft-gray-100">
                     @php $ownerPhoto = $business->user->profile_photo_url; @endphp
-                        @if($ownerPhoto && Storage::exists($ownerPhoto))
-                            <img src="{{ Storage::url($ownerPhoto) }}" 
+                        @if($ownerPhoto)
+                               <img src="{{ storage_image_url($ownerPhoto, 'profile_thumb') }}" 
                                  alt="{{ $business->user->name }}" 
+                                 loading="lazy" decoding="async"
                                  class="flex-shrink-0 w-16 h-16 rounded-2xl object-cover shadow-lg">
                         @else
                         <div class="flex-shrink-0 w-16 h-16 rounded-2xl bg-gradient-to-br from-uco-orange-500 to-uco-yellow-500 flex items-center justify-center text-white text-2xl font-bold shadow-lg">
@@ -189,10 +192,12 @@
                             <div class="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition duration-150">
                                 {{-- Product Image --}}
                                 @php $prodPhoto = $product->photos->first()?->photo_url; @endphp
-                                @if($prodPhoto && Storage::exists($prodPhoto))
-                                    <img src="{{ Storage::url($prodPhoto) }}" 
+                                @if($prodPhoto)
+                                     <img src="{{ storage_image_url($prodPhoto, 'gallery_thumb') }}" 
                                          alt="{{ $product->name }}" 
-                                         class="w-full h-40 object-cover">
+                                         loading="lazy" decoding="async"
+                                         onload="this.classList.remove('blur-sm')"
+                                         class="w-full h-40 object-cover blur-sm">
                                 @else
                                     <div class="w-full h-40 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
                                         <i class="bi bi-image text-5xl text-gray-400"></i>
@@ -365,18 +370,10 @@
                             @php $gphoto = $photo->photo_url; $gphotoUrl = null; @endphp
                             <div class="relative group">
                                 @if($gphoto)
-                                    @php
-                                        try {
-                                            if (Storage::exists($gphoto)) {
-                                                $gphotoUrl = Storage::url($gphoto);
-                                            }
-                                        } catch (\Exception $e) {
-                                            $gphotoUrl = null;
-                                        }
-                                    @endphp
+                                    @php $gphotoUrl = storage_image_url($gphoto, 'gallery_thumb'); @endphp
                                 @endif
                                 @if($gphotoUrl)
-                                    <img src="{{ $gphotoUrl }}" alt="{{ $photo->caption }}" class="w-full h-48 object-cover rounded-lg">
+                                    <img src="{{ $gphotoUrl }}" alt="{{ $photo->caption }}" loading="lazy" decoding="async" onload="this.classList.remove('blur-sm')" class="w-full h-48 object-cover rounded-lg blur-sm">
                                 @else
                                     <div class="w-full h-48 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center rounded-lg">
                                         <i class="bi bi-image text-4xl text-gray-400"></i>

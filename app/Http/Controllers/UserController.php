@@ -222,7 +222,8 @@ class UserController extends Controller
 
         $user->load('businesses.products');
 
-        return view('users.show', ['userToShow' => $user]);
+        // Pass both variable names to be safe for views that expect either
+        return view('users.show', ['userToShow' => $user, 'user' => $user]);
     }
 
     /**

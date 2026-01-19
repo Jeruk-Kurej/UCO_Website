@@ -103,9 +103,10 @@
                                                 </svg>
                                             </a>
                                             
+                                            {{-- Approve (if not approved) --}}
                                             @if(!$analysis->is_approved)
                                                 <form method="POST" action="{{ route('uc-ai-analyses.approve', $analysis->ucTestimony) }}" 
-                                                      onsubmit="return confirm('Are you sure you want to approve this testimony?')"
+                                                      onsubmit="return confirm('Approve this testimony?')"
                                                       class="inline">
                                                     @csrf
                                                     <button type="submit"
@@ -117,6 +118,30 @@
                                                     </button>
                                                 </form>
                                             @endif
+
+                                            {{-- Reject (always available) --}}
+                                            <form method="POST" action="{{ route('uc-ai-analyses.reject', $analysis->ucTestimony) }}" class="inline">
+                                                @csrf
+                                                <input type="hidden" name="rejection_reason" value="">
+                                                <button type="button"
+                                                        onclick="
+                                                            if (!confirm('Reject this testimony?')) return;
+                                                            const reason = prompt('Optional reason for rejection:');
+                                                            const input = this.closest('form').querySelector('input[name=rejection_reason]');
+                                                            if (reason === null) {
+                                                                input.value = 'Rejected by administrator';
+                                                            } else {
+                                                                input.value = reason;
+                                                            }
+                                                            this.closest('form').submit();
+                                                        "
+                                                        class="inline-flex items-center justify-center w-9 h-9 rounded-lg text-red-600 hover:bg-red-50 transition"
+                                                        title="Reject">
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                                    </svg>
+                                                </button>
+                                            </form>
                                         @else
                                             <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg text-gray-300">
                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

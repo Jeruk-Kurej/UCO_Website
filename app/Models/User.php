@@ -57,6 +57,7 @@ class User extends Authenticatable
         'father_data',      // All father information
         'mother_data',      // All mother information
         'graduation_data',  // Official_Email, Current_Status, Class_Semester, Form_No, Start_Date, End_Date, business info
+        'additional_data',
     ];
 
     /**
@@ -90,6 +91,7 @@ class User extends Authenticatable
             'father_data' => 'array',
             'mother_data' => 'array',
             'graduation_data' => 'array',
+            'additional_data' => 'array',
         ];
     }
 

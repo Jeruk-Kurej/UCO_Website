@@ -18,10 +18,10 @@
                 <!-- Current Photo Preview -->
                 <div class="relative">
                     @php $profilePhoto = $user->profile_photo_url; @endphp
-                    @if($profilePhoto && Storage::exists($profilePhoto))
+                    @if($profilePhoto)
                         <img 
                             id="profile-photo-preview" 
-                            src="{{ Storage::url($profilePhoto) }}?t={{ $user->updated_at?->timestamp ?? time() }}" 
+                            src="{{ storage_image_url($profilePhoto, ['width' => 256, 'height' => 256, 'crop' => 'thumb', 'quality' => 'auto', 'fetch_format' => 'auto']) }}?t={{ $user->updated_at?->timestamp ?? time() }}" 
                             alt="Profile Photo" 
                             class="w-24 h-24 rounded-full object-cover border-4 border-gray-200 shadow-md"
                         />

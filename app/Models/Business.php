@@ -33,6 +33,7 @@ class Business extends Model
         'legal_documents',
         'product_certifications',
         'business_challenges',
+        'additional_data',
     ];
 
     protected $casts = [
@@ -42,6 +43,7 @@ class Business extends Model
         'legal_documents' => 'array',
         'product_certifications' => 'array',
         'business_challenges' => 'array',
+        'additional_data' => 'array',
     ];
 
     public function user(): BelongsTo

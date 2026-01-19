@@ -134,8 +134,8 @@ class ProductPhotoController extends Controller
         // Handle file upload (if new photo is provided)
         if ($request->hasFile('photo')) {
             // Delete old photo
-            if ($photo->photo_url && Storage::disk('public')->exists($photo->photo_url)) {
-                Storage::disk('public')->delete($photo->photo_url);
+            if ($photo->photo_url && Storage::disk(config('filesystems.default'))->exists($photo->photo_url)) {
+                Storage::disk(config('filesystems.default'))->delete($photo->photo_url);
             }
 
             $file = $request->file('photo');
@@ -145,7 +145,7 @@ class ProductPhotoController extends Controller
             $path = $file->storeAs(
                 "businesses/{$product->business_id}/products/{$product->id}/photos",
                 $filename,
-                'public'
+                config('filesystems.default')
             );
             
             $validated['photo_url'] = $path;
@@ -172,8 +172,8 @@ class ProductPhotoController extends Controller
         }
 
         // Delete file from storage
-        if ($photo->photo_url && Storage::disk('public')->exists($photo->photo_url)) {
-            Storage::disk('public')->delete($photo->photo_url);
+        if ($photo->photo_url && Storage::disk(config('filesystems.default'))->exists($photo->photo_url)) {
+            Storage::disk(config('filesystems.default'))->delete($photo->photo_url);
         }
 
         $photo->delete();

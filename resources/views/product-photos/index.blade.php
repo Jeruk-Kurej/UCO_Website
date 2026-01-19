@@ -49,10 +49,15 @@
                         @foreach($photos as $photo)
                             @php $photoUrl = $photo->photo_url; @endphp
                             <div class="relative group">
-                                @if($photoUrl && Storage::exists($photoUrl))
-                                    <img src="{{ Storage::url($photoUrl) }}" 
-                                         alt="{{ $photo->caption }}" 
-                                         class="w-full h-48 object-cover rounded-lg">
+                                @if($photoUrl)
+                                    {{-- LQIP placeholder + IntersectionObserver swap to full image --}}
+                                    <img 
+                                        src="{{ storage_image_url($photoUrl, 'lqip') }}" 
+                                        data-src="{{ storage_image_url($photoUrl, 'gallery_full') }}" 
+                                        alt="{{ $photo->caption ?? $product->name }}" 
+                                        loading="lazy"
+                                        class="w-full h-48 object-cover rounded-lg blur-lg transition duration-300 ease-out"
+                                        onload="if(this.dataset && !this.dataset.loaded) { /* keep LQIP until swapped */ }">
                                 @else
                                     <div class="w-full h-48 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center rounded-lg">
                                         <i class="bi bi-image text-4xl text-gray-400"></i>
@@ -110,4 +115,43 @@
             @endif
         </div>
     </div>
+
+    {{-- Inline script: swap LQIP placeholders with full images when visible and remove blur on load --}}
+    <script>
+        (function(){
+            function loadImage(img){
+                if(!img || !img.dataset || !img.dataset.src) return;
+                if(img.dataset.loaded) return;
+                img.onload = function(){
+                    img.classList.remove('blur-lg');
+                    img.dataset.loaded = '1';
+                };
+                img.src = img.dataset.src;
+            }
+
+            function observe(){
+                var imgs = document.querySelectorAll('img[data-src]');
+                if('IntersectionObserver' in window){
+                    var io = new IntersectionObserver(function(entries){
+                        entries.forEach(function(entry){
+                            if(entry.isIntersecting){
+                                loadImage(entry.target);
+                                io.unobserve(entry.target);
+                            }
+                        });
+                    },{rootMargin: '200px'});
+                    imgs.forEach(function(i){ io.observe(i); });
+                } else {
+                    // Fallback: load all
+                    imgs.forEach(function(i){ loadImage(i); });
+                }
+            }
+
+            if(document.readyState === 'loading'){
+                document.addEventListener('DOMContentLoaded', observe);
+            } else {
+                observe();
+            }
+        })();
+    </script>
 </x-app-layout>

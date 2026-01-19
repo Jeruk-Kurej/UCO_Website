@@ -81,17 +81,7 @@
                         <div class="relative">
                             @php
                                 $profilePhoto = $user->profile_photo_url ?? null;
-                                $profilePhotoUrl = null;
-                                if ($profilePhoto) {
-                                    try {
-                                        if (Storage::exists($profilePhoto)) {
-                                            $profilePhotoUrl = Storage::url($profilePhoto) . '?t=' . ($user->updated_at?->timestamp ?? time());
-                                        }
-                                    } catch (\Exception $e) {
-                                        // ignore Cloudinary API errors and fallback to initials
-                                        $profilePhotoUrl = null;
-                                    }
-                                }
+                                $profilePhotoUrl = $profilePhoto ? (storage_image_url($profilePhoto, ['width' => 256, 'height' => 256, 'crop' => 'thumb', 'quality' => 'auto', 'fetch_format' => 'auto']) . '?t=' . ($user->updated_at?->timestamp ?? time())) : null;
                             @endphp
                             @if($profilePhotoUrl)
                                 <img id="profile-photo-preview" 

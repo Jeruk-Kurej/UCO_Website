@@ -5,8 +5,8 @@
                 <div class="p-6 text-gray-900">
                     <div class="flex items-start justify-between gap-4">
                         <div>
-                            <h2 class="text-xl font-bold">Universitas Ciputra Online Testimonies</h2>
-                            <p class="text-sm text-gray-600 mt-1">Share your experience with Universitas Ciputra Online.</p>
+                            <h2 class="text-xl font-bold">Universitar Ciputra Online Learning</h2>
+                            <p class="text-sm text-gray-600 mt-1">Share your experience with Universitar Ciputra Online Learning.</p>
                         </div>
                     </div>
 
