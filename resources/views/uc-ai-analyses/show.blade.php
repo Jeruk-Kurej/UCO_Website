@@ -48,21 +48,39 @@
                             </div>
                         </div>
 
-                        @if(auth()->user()?->isAdmin() && !$analysis->is_approved)
-                            <div class="border border-red-200 rounded-lg p-4 bg-red-50">
+                        @if(auth()->user()?->isAdmin())
+                            <div class="border border-gray-200 rounded-lg p-4 bg-white">
                                 <div class="flex items-center justify-between gap-4">
                                     <div>
-                                        <p class="font-semibold text-red-800">Admin Action</p>
-                                        <p class="text-sm text-red-700 mt-1">Reject this testimony by deleting it. This cannot be undone.</p>
+                                        <p class="font-semibold text-gray-800">Admin Actions</p>
+                                        <p class="text-sm text-gray-600 mt-1">Approve or reject this UC testimony manually.</p>
                                     </div>
-                                    <form action="{{ route('uc-testimonies.destroy', $testimony) }}" method="POST"
-                                          onsubmit="return confirm('Reject and delete this UC testimony? This cannot be undone.')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md font-semibold">
-                                            Reject & Delete
-                                        </button>
-                                    </form>
+
+                                    <div class="flex items-center gap-2">
+                                        {{-- Approve --}}
+                                        @if(!$analysis->is_approved)
+                                            <form method="POST" action="{{ route('uc-ai-analyses.approve', $testimony) }}" onsubmit="return confirm('Approve this testimony?')" class="inline">
+                                                @csrf
+                                                <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-md font-semibold">Approve</button>
+                                            </form>
+                                        @endif
+
+                                        {{-- Reject (ask for optional reason) --}}
+                                        <form method="POST" action="{{ route('uc-ai-analyses.reject', $testimony) }}" class="inline">
+                                            @csrf
+                                            <input type="hidden" name="rejection_reason" value="">
+                                            <button type="button" onclick="
+                                                if (!confirm('Reject this testimony?')) return;
+                                                const reason = prompt('Optional reason for rejection:');
+                                                if (reason === null) {
+                                                    this.closest('form').querySelector('input[name=rejection_reason]').value = 'Rejected by administrator';
+                                                } else {
+                                                    this.closest('form').querySelector('input[name=rejection_reason]').value = reason;
+                                                }
+                                                this.closest('form').submit();
+                                            " class="px-4 py-2 bg-red-600 text-white rounded-md font-semibold">Reject</button>
+                                        </form>
+                                    </div>
                                 </div>
                             </div>
                         @endif

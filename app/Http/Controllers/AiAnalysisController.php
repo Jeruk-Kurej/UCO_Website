@@ -6,6 +6,7 @@ use App\Models\UcAiAnalysis;
 use App\Models\UcTestimony;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
 
 class AiAnalysisController extends Controller
 {
@@ -95,5 +96,32 @@ return view('ai-analyses.index', compact('ucAnalyses', 'totalCount', 'approvedCo
         ]);
 
         return back()->with('success', 'Testimony has been manually approved and will now be visible.');
+    }
+
+    /**
+     * Manually reject (or re-reject) a testimony (Admin only)
+     */
+    public function reject(UcTestimony $ucTestimony, Request $request)
+    {
+        $user = $this->getAuthUser();
+
+        if (!$user->isAdmin()) {
+            abort(403, 'Only administrators can reject testimonies.');
+        }
+
+        $analysis = $ucTestimony->aiAnalysis;
+
+        if (!$analysis) {
+            return back()->with('error', 'AI Analysis not found for this testimony.');
+        }
+
+        $reason = $request->input('rejection_reason', 'Rejected by administrator');
+
+        $analysis->update([
+            'is_approved' => false,
+            'rejection_reason' => $reason,
+        ]);
+
+        return back()->with('success', 'Testimony has been rejected.');
     }
 }

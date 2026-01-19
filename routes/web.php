@@ -103,6 +103,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('uc-ai-analyses.show');
     Route::post('/uc-testimonies/{ucTestimony}/approve', [AiAnalysisController::class, 'approve'])
         ->name('uc-ai-analyses.approve');
+    // Admin can also explicitly reject (or re-reject) a testimony
+    Route::post('/uc-testimonies/{ucTestimony}/reject', [AiAnalysisController::class, 'reject'])
+        ->name('uc-ai-analyses.reject');
 });
 
 // ============================================================
