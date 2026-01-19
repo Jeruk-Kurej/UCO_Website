@@ -7,6 +7,7 @@ use App\Http\Controllers\BusinessPhotoController;
 use App\Http\Controllers\BusinessTypeController;
 use App\Http\Controllers\ContactTypeController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\FeaturedController;
 use App\Http\Controllers\ProductCategoryController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductPhotoController;
@@ -36,8 +37,11 @@ Route::get('/', function () {
     if (Auth::check()) {
         return redirect('/dashboard');
     }
-    return redirect('/businesses');  // Guests go to public businesses page
+    return redirect('/featured');  // Guests go to featured page instead of the full businesses listing
 })->name('home');
+
+// Public featured page for guests
+Route::get('/featured', [FeaturedController::class, 'index'])->name('featured');
 
 Route::get('/businesses', [BusinessController::class, 'index'])->name('businesses.index');
 Route::get('/business-types', [BusinessTypeController::class, 'index'])->name('business-types.index');

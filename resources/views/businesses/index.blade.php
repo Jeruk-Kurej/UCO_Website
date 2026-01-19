@@ -57,7 +57,14 @@
     @endif
 
     {{-- Main Content --}}
-    @php $initialTab = request('tab', 'my'); @endphp
+    @php
+        // Default tab: for authenticated non-admin users default to 'my', otherwise 'all'
+        if (auth()->check() && !auth()->user()->isAdmin()) {
+            $initialTab = request('tab', 'my');
+        } else {
+            $initialTab = request('tab', 'all');
+        }
+    @endphp
     <div x-data="{ activeTab: '{{ $initialTab }}' }" x-cloak class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div class="flex items-center justify-between mb-6">
             <h1 class="text-2xl font-bold">Businesses</h1>
@@ -178,50 +185,7 @@
         @endauth
     </div>
 
-    {{-- My Businesses for authenticated non-admin users --}}
-    @auth
-        @if(!auth()->user()->isAdmin())
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                <div class="p-6 bg-white border border-slate-200 rounded-xl shadow-sm">
-                    <div class="mb-6 flex items-center justify-between">
-                        <h3 class="text-lg font-semibold text-gray-900">My Businesses</h3>
-                        <a href="{{ route('businesses.create') }}" class="inline-flex items-center px-4 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                            </svg>
-                            Add Business
-                        </a>
-                    </div>
-
-                    @if(($myBusinesses ?? collect())->count() > 0)
-                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            @foreach($myBusinesses as $b)
-                                <a href="{{ route('businesses.show', $b) }}" class="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transform hover:-translate-y-0.5 transition-all duration-200 overflow-hidden block">
-                                    <div class="p-4 flex items-center gap-4">
-                                        @php $myLogo = $b->logo_url ?? null; $myLogoUrl = $myLogo ? storage_image_url($myLogo, 'logo_thumb') : null; @endphp
-                                        @if($myLogoUrl)
-                                            <img src="{{ $myLogoUrl }}" alt="{{ $b->name }}" class="w-12 h-12 rounded-md object-cover">
-                                        @else
-                                            <div class="w-12 h-12 bg-gray-100 rounded-md flex items-center justify-center text-gray-400"><i class="bi bi-briefcase"></i></div>
-                                        @endif
-                                        <div class="flex-1">
-                                            <h4 class="font-semibold">{{ $b->name }}</h4>
-                                            <p class="text-sm text-gray-600">{{ \Illuminate\Support\Str::limit($b->description, 80) }}</p>
-                                        </div>
-                                    </div>
-                                </a>
-                            @endforeach
-                        </div>
-                    @else
-                        <div class="text-center py-8">
-                            <p class="text-gray-600 mb-4">You don't have any businesses yet.</p>
-                            <a href="{{ route('businesses.create') }}" class="inline-flex items-center px-4 py-2 bg-gray-900 text-white rounded-lg">Create Your First Business</a>
-                        </div>
-                    @endif
-                </div>
-            </div>
-        @endif
-    @endauth
+    {{-- Duplicate 'My Businesses' block removed; kept only the tabbed 'my' section above. --}}
 
     @auth
         @if(auth()->user()->isAdmin())
