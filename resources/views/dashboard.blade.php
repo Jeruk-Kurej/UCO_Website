@@ -18,13 +18,6 @@
                                 A curated selection of standout businesses from our community
                             </p>
                         </div>
-                        <a href="{{ route('businesses.index') }}" 
-                           class="hidden sm:inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-soft-gray-700 hover:text-soft-gray-900 border border-soft-gray-200 rounded-lg hover:border-soft-gray-300 hover:shadow-sm transition-all">
-                            View All
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                            </svg>
-                        </a>
                     </div>
 
                     {{-- Business Cards - Modern Professional Grid with 2 Columns --}}

@@ -141,10 +141,20 @@
             @endif
         </div>
 
+        {{-- Pagination for All Businesses --}}
+        <div x-show="activeTab === 'all'" x-transition.opacity class="mt-6">
+            <div class="flex items-center justify-center">
+                @if(method_exists($businesses, 'links'))
+                    {{-- Preserve existing query params and force tab=all so the tab remains active after navigation --}}
+                    {{ $businesses->withQueryString()->appends(['tab' => 'all'])->links() }}
+                @endif
+            </div>
+        </div>
+
         @auth
             {{-- My Businesses (visible when activeTab === 'my') --}}
             <div x-show="activeTab === 'my'" x-transition.opacity class="col-span-1 md:col-span-2">
-            <div class="p-6 bg-white border border-slate-200 rounded-xl shadow-sm">
+            <div class="p-10 bg-white border border-slate-200 rounded-xl shadow-sm">
                 <div class="mb-6 flex items-center justify-between">
                     <h3 class="text-lg font-semibold text-gray-900">My Businesses</h3>
                     <a href="{{ route('businesses.create') }}" class="inline-flex items-center px-4 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors">
@@ -156,10 +166,10 @@
                 </div>
 
                 @if(($myBusinesses ?? collect())->count() > 0)
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                         @foreach($myBusinesses as $b)
                             <a href="{{ route('businesses.show', $b) }}" class="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transform hover:-translate-y-0.5 transition-all duration-200 overflow-hidden block">
-                                <div class="p-4 flex items-center gap-4">
+                                <div class="p-6 flex items-center gap-4">
                                     @php $myLogo = $b->logo_url ?? null; $myLogoUrl = $myLogo ? storage_image_url($myLogo, 'logo_thumb') : null; @endphp
                                     @if($myLogoUrl)
                                         <img src="{{ $myLogoUrl }}" alt="{{ $b->name }}" class="w-12 h-12 rounded-md object-cover">
