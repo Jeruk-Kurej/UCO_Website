@@ -88,7 +88,7 @@
                         </div>
                     @endif
                     <div class="flex-1">
-                        <p class="text-xs font-semibold text-soft-gray-500 uppercase tracking-wider mb-1">Business Owner</p>
+                        <p class="text-xs font-semibold text-soft-gray-500 uppercase tracking-wider mb-1">Business Added By</p>
                         <h3 class="text-xl font-bold text-soft-gray-900 mb-1">{{ $business->user->name }}</h3>
                         @if($business->position)
                             <div class="flex items-center gap-2">
