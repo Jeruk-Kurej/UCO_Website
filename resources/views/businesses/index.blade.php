@@ -152,7 +152,7 @@
         @auth
             {{-- My Businesses (visible when activeTab === 'my') --}}
             <div x-show="activeTab === 'my'" x-transition.opacity class="col-span-1 md:col-span-2">
-            <div class="p-10 bg-white border border-slate-200 rounded-xl shadow-sm max-w-5xl mx-auto">
+            <div class="p-10 bg-white border border-slate-200 rounded-xl shadow-sm w-full mt-6">
                 <div class="mb-6 flex items-center justify-between">
                     <h3 class="text-lg font-semibold text-gray-900">My Businesses</h3>
                     <a href="{{ route('businesses.create') }}" class="inline-flex items-center px-4 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors">
