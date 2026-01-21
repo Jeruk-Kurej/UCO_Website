@@ -13,14 +13,27 @@ class FeaturedController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Business::with(['user', 'businessType', 'products', 'photos'])
-            ->where('is_featured', true);
+        // Use the same curated featured selection as the dashboard so guests
+        // see the same card layout as authenticated users on the dashboard.
+        $featuredBusinesses = Business::with(['businessType', 'photos', 'user'])
+            ->where('is_featured', true)
+            ->latest()
+            ->take(6)
+            ->get();
 
-        $businesses = $query->latest()->paginate(10)->withQueryString();
+        if ($featuredBusinesses->count() < 6) {
+            $remaining = 6 - $featuredBusinesses->count();
+            $latestBusinesses = Business::with(['businessType', 'photos', 'user'])
+                ->where('is_featured', false)
+                ->latest()
+                ->take($remaining)
+                ->get();
 
-        $myBusinesses = collect();
-        $businessTypes = BusinessType::all();
+            $featuredBusinesses = $featuredBusinesses->merge($latestBusinesses);
+        }
 
-        return view('businesses.index', compact('businesses', 'myBusinesses', 'businessTypes'));
+        return view('dashboard', [
+            'featuredBusinesses' => $featuredBusinesses
+        ]);
     }
 }

@@ -65,14 +65,12 @@
             $initialTab = request('tab', 'all');
         }
     @endphp
-    <div x-data="{ activeTab: '{{ $initialTab }}' }" x-cloak class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div x-data="{ activeTab: '{{ $initialTab }}' }" x-cloak class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div class="flex items-center justify-between mb-6">
             <h1 class="text-2xl font-bold">Businesses</h1>
 
             <div class="flex items-center gap-3">
-                <form action="{{ route('businesses.index') }}" method="GET" class="w-72">
-                    <input name="search" type="text" value="{{ request('search') }}" placeholder="Search businesses..." class="w-full px-3 py-2 border rounded-lg">
-                </form>
+                {{-- Search removed by request --}}
 
                 @auth
                     @if(auth()->user()->isAdmin())
@@ -96,7 +94,7 @@
         {{-- Client-side Tabs for non-admin users: All / My --}}
         @auth
             @if(!auth()->user()->isAdmin())
-                <div class="mt-4">
+                <div class="mt-6">
                     <div role="tablist" class="inline-flex rounded-lg bg-white border border-slate-200 p-2 shadow-sm gap-4">
                         <button @click="activeTab = 'my'" type="button" role="tab" :aria-selected="activeTab === 'my'" :class="activeTab === 'my' ? 'bg-gray-900 text-white' : 'text-gray-700 hover:bg-gray-50'" class="px-5 py-2 rounded-lg text-sm font-medium">My Businesses</button>
                         <button @click="activeTab = 'all'" type="button" role="tab" :aria-selected="activeTab === 'all'" :class="activeTab === 'all' ? 'bg-gray-900 text-white' : 'text-gray-700 hover:bg-gray-50'" class="px-5 py-2 rounded-lg text-sm font-medium">All Businesses</button>
@@ -154,7 +152,7 @@
         @auth
             {{-- My Businesses (visible when activeTab === 'my') --}}
             <div x-show="activeTab === 'my'" x-transition.opacity class="col-span-1 md:col-span-2">
-            <div class="p-10 bg-white border border-slate-200 rounded-xl shadow-sm">
+            <div class="p-10 bg-white border border-slate-200 rounded-xl shadow-sm max-w-5xl mx-auto">
                 <div class="mb-6 flex items-center justify-between">
                     <h3 class="text-lg font-semibold text-gray-900">My Businesses</h3>
                     <a href="{{ route('businesses.create') }}" class="inline-flex items-center px-4 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors">
