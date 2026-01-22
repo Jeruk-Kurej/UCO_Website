@@ -12,6 +12,9 @@ use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
 use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Http;
+use App\Models\BusinessPhoto;
 
 class BusinessesImport implements ToModel, WithHeadingRow, WithValidation, WithChunkReading
 {
@@ -232,6 +235,14 @@ class BusinessesImport implements ToModel, WithHeadingRow, WithValidation, WithC
             
             // Import contacts (phone, email, whatsapp, etc.)
             $this->importContacts($business, $row);
+
+            // Synchronously download any image URLs found in the row and upload to storage
+            // This will set business->logo_url and create BusinessPhoto records for other photos
+            try {
+                $this->handleImages($business, $row);
+            } catch (\Exception $e) {
+                Log::warning("Image handling failed for business '{$businessName}': " . $e->getMessage());
+            }
             
             $this->successCount++;
             
@@ -436,6 +447,106 @@ class BusinessesImport implements ToModel, WithHeadingRow, WithValidation, WithC
 
         $value = strtolower(trim($value ?? ''));
         return in_array($value, ['yes', 'ya', 'true', '1', 'y']);
+    }
+
+    /**
+     * Scan row for image URLs, download synchronously and upload to configured storage.
+     * Sets business->logo_url for logo-like columns and creates BusinessPhoto for other images.
+     */
+    private function handleImages(Business $business, array $row): void
+    {
+        $disk = config('filesystems.default', 'local');
+
+        foreach ($row as $col => $val) {
+            if (empty($val)) continue;
+
+            // Split potential multiple URLs in a single cell (comma or whitespace separated)
+            $candidates = preg_split('/[\s,;]+/', trim($val));
+
+            foreach ($candidates as $candidate) {
+                $candidate = trim($candidate);
+                if (empty($candidate)) continue;
+
+                // Quick URL validation
+                if (!filter_var($candidate, FILTER_VALIDATE_URL)) continue;
+
+                try {
+                    $storedPath = $this->downloadAndStoreImage($candidate, $business->id, $disk);
+                    if (!$storedPath) continue;
+
+                    // Resolve public URL if available
+                    try {
+                        $publicUrl = Storage::disk($disk)->url($storedPath);
+                    } catch (\Exception $e) {
+                        // Fallback to stored path
+                        $publicUrl = $storedPath;
+                    }
+
+                    // Determine if this column is likely a logo
+                    if (preg_match('/logo|logo_usaha|logo_kantor|logo_perusahaan/i', $col)) {
+                        $business->logo_url = $publicUrl;
+                        $business->save();
+                    } else {
+                        BusinessPhoto::create([
+                            'business_id' => $business->id,
+                            'photo_url' => $publicUrl,
+                            'caption' => $col,
+                        ]);
+                    }
+
+                } catch (\Exception $e) {
+                    Log::warning("Failed downloading/uploading image '{$candidate}' for business ID {$business->id}: " . $e->getMessage());
+                    continue;
+                }
+            }
+        }
+    }
+
+    /**
+     * Download remote image and store it to the configured disk.
+     * Returns the stored path on success or null on failure.
+     */
+    private function downloadAndStoreImage(string $url, int $businessId, string $disk): ?string
+    {
+        // Only allow http/https
+        $scheme = parse_url($url, PHP_URL_SCHEME);
+        if (!in_array(strtolower($scheme), ['http', 'https'], true)) {
+            return null;
+        }
+
+        $response = Http::timeout(15)->withOptions(['verify' => true])->get($url);
+        if (!$response->ok()) {
+            return null;
+        }
+
+        $contentType = $response->header('Content-Type', '');
+        if (stripos($contentType, 'image/') !== 0) {
+            return null;
+        }
+
+        // Limit size to 5MB
+        $maxBytes = 5 * 1024 * 1024;
+        $contentLength = $response->header('Content-Length');
+        if ($contentLength !== null && is_numeric($contentLength) && (int)$contentLength > $maxBytes) {
+            return null;
+        }
+
+        $body = $response->body();
+        if (strlen($body) > $maxBytes) {
+            return null;
+        }
+
+        $basename = basename(parse_url($url, PHP_URL_PATH) ?: 'image');
+        $basename = preg_replace('/[^A-Za-z0-9_\-\.]/', '_', $basename);
+        if (empty($basename)) {
+            $basename = 'image_' . uniqid();
+        }
+
+        $path = "imports/businesses/{$businessId}/" . uniqid() . '_' . $basename;
+
+        Storage::disk($disk)->put($path, $body);
+
+        return $path;
     }
 
     /**

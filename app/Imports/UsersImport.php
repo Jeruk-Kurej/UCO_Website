@@ -5,6 +5,8 @@ namespace App\Imports;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Http;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
@@ -138,8 +140,18 @@ class UsersImport implements ToModel, WithHeadingRow, WithValidation, WithChunkR
                 'additional_data' => $this->buildAdditionalData($row),
             ]);
 
+            // Persist user so we have an id for image paths and further updates
+            $user->save();
+
+            // Handle synchronous image downloads for user (profile photo, other photos)
+            try {
+                $this->handleUserImages($user, $row);
+            } catch (\Exception $e) {
+                Log::warning('User image handling failed for ' . ($user->email ?? $user->name) . ': ' . $e->getMessage());
+            }
+
             $this->successCount++;
-            
+
             return $user;
 
         } catch (\Exception $e) {
@@ -358,6 +370,81 @@ class UsersImport implements ToModel, WithHeadingRow, WithValidation, WithChunkR
         ]);
         
         return !empty($data) ? $data : null;
+    }
+
+    /**
+     * Handle image URLs in user import row: download and upload synchronously.
+     * Sets `profile_photo_url` for profile-like columns and stores others in additional_data.imported_images
+     */
+    private function handleUserImages(User $user, array $row): void
+    {
+        $disk = config('filesystems.default', 'local');
+
+        foreach ($row as $col => $val) {
+            if (empty($val)) continue;
+
+            $candidates = preg_split('/[\s,;]+/', trim($val));
+            foreach ($candidates as $candidate) {
+                $candidate = trim($candidate);
+                if (empty($candidate)) continue;
+                if (!filter_var($candidate, FILTER_VALIDATE_URL)) continue;
+
+                try {
+                    $storedPath = $this->downloadAndStoreImageUser($candidate, $user->id, $disk);
+                    if (!$storedPath) continue;
+
+                    try {
+                        $publicUrl = Storage::disk($disk)->url($storedPath);
+                    } catch (\Exception $e) {
+                        $publicUrl = $storedPath;
+                    }
+
+                    if (preg_match('/foto_pribadi|foto_diri|foto_profil|profile_photo|photo_profile|foto/i', $col)) {
+                        $user->profile_photo_url = $publicUrl;
+                        $user->save();
+                    } else {
+                        $additional = $user->additional_data ?? [];
+                        $additional['imported_images'][] = $publicUrl;
+                        $user->additional_data = $additional;
+                        $user->save();
+                    }
+
+                } catch (\Exception $e) {
+                    Log::warning("Failed to import image for user ({$user->email}): " . $e->getMessage());
+                    continue;
+                }
+            }
+        }
+    }
+
+    /**
+     * Download remote image and store for a user import. Returns stored path or null.
+     */
+    private function downloadAndStoreImageUser(string $url, int $userId, string $disk): ?string
+    {
+        $scheme = parse_url($url, PHP_URL_SCHEME);
+        if (!in_array(strtolower($scheme), ['http', 'https'], true)) return null;
+
+        $response = Http::timeout(15)->withOptions(['verify' => true])->get($url);
+        if (!$response->ok()) return null;
+
+        $contentType = $response->header('Content-Type', '');
+        if (stripos($contentType, 'image/') !== 0) return null;
+
+        $maxBytes = 5 * 1024 * 1024;
+        $contentLength = $response->header('Content-Length');
+        if ($contentLength !== null && is_numeric($contentLength) && (int)$contentLength > $maxBytes) return null;
+
+        $body = $response->body();
+        if (strlen($body) > $maxBytes) return null;
+
+        $basename = basename(parse_url($url, PHP_URL_PATH) ?: 'image');
+        $basename = preg_replace('/[^A-Za-z0-9_\-\.]/', '_', $basename);
+        if (empty($basename)) $basename = 'image_' . uniqid();
+
+        $path = "imports/users/{$userId}/" . uniqid() . '_' . $basename;
+        Storage::disk($disk)->put($path, $body);
+        return $path;
     }
 
     /**
