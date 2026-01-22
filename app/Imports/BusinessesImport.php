@@ -514,7 +514,12 @@ class BusinessesImport implements ToModel, WithHeadingRow, WithValidation, WithC
             return null;
         }
 
-        $response = Http::timeout(15)->withOptions(['verify' => true])->get($url);
+        // Prevent SSRF / local network access
+        if ($this->isUrlPrivate($url)) {
+            return null;
+        }
+
+        $response = Http::retry(3, 200)->timeout(15)->withOptions(['verify' => true])->get($url);
         if (!$response->ok()) {
             return null;
         }
@@ -547,6 +552,26 @@ class BusinessesImport implements ToModel, WithHeadingRow, WithValidation, WithC
         Storage::disk($disk)->put($path, $body);
 
         return $path;
+    }
+
+    /**
+     * Basic check to prevent downloading from private IPs or localhost.
+     */
+    private function isUrlPrivate(string $url): bool
+    {
+        $host = parse_url($url, PHP_URL_HOST);
+        if (empty($host)) return true;
+
+        if (in_array(strtolower($host), ['localhost', '127.0.0.1', '::1'])) return true;
+
+        $ips = @gethostbynamel($host) ?: [];
+        foreach ($ips as $ip) {
+            if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) === false) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

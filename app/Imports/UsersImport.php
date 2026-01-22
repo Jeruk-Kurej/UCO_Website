@@ -95,12 +95,75 @@ class UsersImport implements ToModel, WithHeadingRow, WithValidation, WithChunkR
                 return null;
             }
 
-            // Check if user already exists
+            // Check if user already exists — if so, merge non-empty fields from import
             $existingUser = User::where('email', $row['email'])->first();
-            
             if ($existingUser) {
+                $updated = false;
+
+                $mergeFields = [
+                    'username' => $row['username'] ?? null,
+                    'name' => $row['name'] ?? null,
+                    'role' => $row['role'] ?? null,
+                    'is_active' => isset($row['is_active']) ? (bool)$row['is_active'] : null,
+                    'birth_date' => $row['birth_date'] ?? $row['tanggal_lahir'] ?? null,
+                    'birth_city' => $row['birth_city'] ?? $row['tempat_lahir'] ?? null,
+                    'religion' => $row['religion'] ?? $row['agama'] ?? null,
+                    'phone_number' => $row['phone_number'] ?? $row['phone'] ?? $row['telp'] ?? null,
+                    'mobile_number' => $row['mobile_number'] ?? $row['mobile'] ?? $row['hp'] ?? null,
+                    'whatsapp' => $row['whatsapp'] ?? $row['wa'] ?? null,
+                    'NIS' => $row['nis'] ?? null,
+                    'Student_Year' => $row['student_year'] ?? $row['angkatan'] ?? null,
+                    'Major' => $row['major'] ?? $row['prodi'] ?? $row['jurusan'] ?? null,
+                    'Is_Graduate' => isset($row['is_graduate']) ? (bool)$row['is_graduate'] : null,
+                    'CGPA' => $row['cgpa'] ?? $row['ipk'] ?? null,
+                ];
+
+                foreach ($mergeFields as $k => $v) {
+                    if ($v === null) continue;
+                    if (empty($existingUser->{$k}) && $v !== null && $v !== '') {
+                        $existingUser->{$k} = $v;
+                        $updated = true;
+                    }
+                }
+
+                // Merge JSON fields
+                foreach (['personal_data','academic_data','father_data','mother_data','graduation_data'] as $jsonField) {
+                    $incoming = $this->{"build" . ucfirst(str_replace('_', '', $jsonField))}($row) ?? ($row[$jsonField] ?? null);
+                    if ($incoming && is_array($incoming)) {
+                        $existingVal = $existingUser->{$jsonField} ?? [];
+                        $merged = array_merge((array)$existingVal, $incoming);
+                        if ($merged !== (array)$existingVal) {
+                            $existingUser->{$jsonField} = $merged;
+                            $updated = true;
+                        }
+                    }
+                }
+
+                // Merge additional_data
+                $incomingAdditional = $this->buildAdditionalData($row) ?? [];
+                if (!empty($incomingAdditional)) {
+                    $existingAdditional = (array)($existingUser->additional_data ?? []);
+                    $mergedAdditional = array_merge($existingAdditional, $incomingAdditional);
+                    if ($mergedAdditional !== $existingAdditional) {
+                        $existingUser->additional_data = $mergedAdditional;
+                        $updated = true;
+                    }
+                }
+
+                if ($updated) {
+                    $existingUser->save();
+                    $this->successCount++;
+                    // try images as well
+                    try {
+                        $this->handleUserImages($existingUser, $row);
+                    } catch (\Exception $e) {
+                        Log::warning('User image handling failed for existing user ' . ($existingUser->email ?? $existingUser->name) . ': ' . $e->getMessage());
+                    }
+                    return $existingUser;
+                }
+
                 $this->skippedCount++;
-                $this->errors[] = "⚠️ Duplicate: '{$row['name']}' ({$row['email']}) already exists, skipped";
+                $this->errors[] = "⚠️ Duplicate: '{$row['name']}' ({$row['email']}) already exists, no new data to merge";
                 return null;
             }
 
@@ -425,7 +488,12 @@ class UsersImport implements ToModel, WithHeadingRow, WithValidation, WithChunkR
         $scheme = parse_url($url, PHP_URL_SCHEME);
         if (!in_array(strtolower($scheme), ['http', 'https'], true)) return null;
 
-        $response = Http::timeout(15)->withOptions(['verify' => true])->get($url);
+        // Prevent SSRF / local network access
+        if ($this->isUrlPrivate($url)) {
+            return null;
+        }
+
+        $response = Http::retry(3, 200)->timeout(15)->withOptions(['verify' => true])->get($url);
         if (!$response->ok()) return null;
 
         $contentType = $response->header('Content-Type', '');
@@ -445,6 +513,28 @@ class UsersImport implements ToModel, WithHeadingRow, WithValidation, WithChunkR
         $path = "imports/users/{$userId}/" . uniqid() . '_' . $basename;
         Storage::disk($disk)->put($path, $body);
         return $path;
+    }
+
+    /**
+     * Basic check to prevent downloading from private IPs or localhost.
+     */
+    private function isUrlPrivate(string $url): bool
+    {
+        $host = parse_url($url, PHP_URL_HOST);
+        if (empty($host)) return true;
+
+        // quick rejects
+        if (in_array(strtolower($host), ['localhost', '127.0.0.1', '::1'])) return true;
+
+        $ips = @gethostbynamel($host) ?: [];
+        foreach ($ips as $ip) {
+            if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) === false) {
+                // If it's not a public IP, consider it private/reserved
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
