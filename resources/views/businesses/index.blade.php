@@ -221,12 +221,32 @@
                             };
 
                             const container = getToastContainer();
+                            // Deduplicate identical messages: if found, reset its timeout and bring to front
+                            const existing = Array.from(container.children).find(t => t.dataset && t.dataset.msg === message && t.dataset.type === type);
+                            if (existing) {
+                                if (existing.__timeoutId) clearTimeout(existing.__timeoutId);
+                                // bump to top (end)
+                                container.appendChild(existing);
+                                existing.style.opacity = '1';
+                                existing.style.transform = 'translateY(0)';
+                                existing.__timeoutId = setTimeout(() => dismissToast(existing), 3500);
+                                return;
+                            }
+
                             const toast = document.createElement('div');
+                            toast.dataset.msg = message;
+                            toast.dataset.type = type;
                             toast.className = `max-w-sm w-full text-white px-4 py-2 rounded-lg shadow-lg transform transition-all duration-300 ease-out ${colors[type] || colors.info}`;
                             toast.style.opacity = '0';
                             toast.style.transform = 'translateY(-8px)';
                             toast.setAttribute('role', 'alert');
                             toast.innerHTML = `<div class="flex items-center justify-between gap-3"><div class="text-sm">${escapeHtml(message)}</div><button type="button" aria-label="Close" class="ml-3 text-white opacity-90 hover:opacity-100 close-toast">&times;</button></div>`;
+
+                            // cap visible toasts (remove oldest if over 4)
+                            while (container.children.length >= 4) {
+                                const oldest = container.children[0];
+                                dismissToast(oldest);
+                            }
 
                             container.appendChild(toast);
                             // trigger enter
@@ -236,12 +256,12 @@
                             });
 
                             // dismiss after timeout
-                            const timeout = setTimeout(() => dismissToast(toast), 3500);
+                            toast.__timeoutId = setTimeout(() => dismissToast(toast), 3500);
 
                             // click to close
                             toast.addEventListener('click', (e) => {
                                 if (e.target.closest('.close-toast')) {
-                                    clearTimeout(timeout);
+                                    if (toast.__timeoutId) clearTimeout(toast.__timeoutId);
                                     dismissToast(toast);
                                 }
                             });
