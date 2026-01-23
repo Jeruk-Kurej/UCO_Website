@@ -106,31 +106,55 @@
         @endif
 
         {{-- All Businesses (visible when activeTab === 'all') --}}
-        <div x-show="activeTab === 'all'" x-transition.opacity class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div x-show="activeTab === 'all'" x-transition.opacity class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             @if ($businesses->count() > 0)
                 @foreach ($businesses as $business)
-                    <div class="bg-white border rounded-lg overflow-hidden hover:shadow-md transition-shadow">
-                        <a href="{{ route('businesses.show', $business) }}" class="block p-4">
-                            <div class="flex items-center gap-4">
-                                @php
-                                    $logo = $business->logo_url ?? null;
-                                    $logoUrl = $logo ? storage_image_url($logo, 'logo_thumb') : null;
-                                @endphp
-                                @if ($logoUrl)
-                                    <img src="{{ $logoUrl }}" alt="{{ $business->name }}" class="w-16 h-16 rounded-md object-cover">
-                                @else
-                                    <div class="w-16 h-16 bg-gray-100 rounded-md flex items-center justify-center text-gray-400">
-                                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 16 16"><path d="M8 0a2 2 0 00-2 2v1H3a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2V5a2 2 0 00-2-2h-3V2a2 2 0 00-2-2z"/></svg>
-                                    </div>
-                                @endif
+                    <a href="{{ route('businesses.show', $business) }}" class="block bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transform hover:-translate-y-1 transition-all duration-200 group">
+                        <div class="relative h-44 bg-gray-50">
+                            @php $hero = $business->photos->first()?->photo_url ?? $business->logo_url ?? null; @endphp
+                            @if($hero)
+                                <img src="{{ storage_image_url($hero, 'hero') }}" alt="{{ $business->name }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+                            @else
+                                <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-50">
+                                    <i class="bi bi-building text-6xl text-gray-300"></i>
+                                </div>
+                            @endif
 
-                                <div class="flex-1">
-                                    <h3 class="font-semibold">{{ $business->name }}</h3>
-                                    <p class="text-sm text-gray-600">{{ \Illuminate\Support\Str::limit($business->description, 80) }}</p>
+                            <span class="absolute top-3 left-3 inline-block bg-white/90 text-xs font-semibold px-3 py-1 rounded-full shadow">
+                                {{ $business->businessType->name ?? 'Other' }}
+                            </span>
+                        </div>
+
+                        <div class="p-4">
+                            <h3 class="font-semibold text-gray-900 mb-1 line-clamp-2">{{ $business->name }}</h3>
+                            <p class="text-sm text-gray-600 mb-3 line-clamp-3">
+                                {{ $business->description ? \Illuminate\Support\Str::limit($business->description, 140) : 'No description provided' }}
+                            </p>
+
+                            <div class="flex items-center justify-between mt-2">
+                                <div class="flex items-center gap-3">
+                                    @php $ownerPhoto = $business->user->profile_photo_url ?? null; $ownerPhotoUrl = $ownerPhoto ? storage_image_url($ownerPhoto, 'profile_thumb') : null; @endphp
+                                    @if($ownerPhotoUrl)
+                                        <img src="{{ $ownerPhotoUrl }}" alt="{{ $business->user->name }}" class="w-8 h-8 rounded-full object-cover">
+                                    @else
+                                        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-uco-orange-400 to-uco-yellow-400 text-white flex items-center justify-center font-semibold">{{ strtoupper(substr($business->user->name ?? 'U',0,1)) }}</div>
+                                    @endif
+                                    <div class="text-xs text-gray-500">
+                                        <div class="font-medium text-gray-800">{{ $business->user->name ?? 'Unknown' }}</div>
+                                        <div class="text-xs text-gray-400">{{ $business->position ?? 'Owner' }}</div>
+                                    </div>
+                                </div>
+
+                                <div class="text-right">
+                                    @if($business->is_featured)
+                                        <span class="text-xs inline-flex items-center gap-2 bg-yellow-100 text-yellow-800 px-2 py-1 rounded">Featured</span>
+                                    @endif
+                                    <a href="{{ route('businesses.show', $business) }}" class="inline-flex items-center px-3 py-1.5 bg-gray-900 text-white text-xs font-medium rounded-lg ml-3">View</a>
                                 </div>
                             </div>
-                        </a>
-                    </div>
+                        </div>
+                    </a>
                 @endforeach
             @else
                 <div class="col-span-1 md:col-span-2 text-center py-12 text-gray-500">No businesses found.</div>
