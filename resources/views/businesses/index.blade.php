@@ -106,37 +106,70 @@
         @endif
 
         {{-- All Businesses (visible when activeTab === 'all') --}}
-        <div x-show="activeTab === 'all'" x-transition.opacity class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div x-show="activeTab === 'all'" x-transition.opacity class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             @forelse($businesses as $business)
-                <a href="{{ route('businesses.show', $business) }}" class="block bg-white border border-gray-200 rounded-xl p-4 hover:shadow-md transition">
-                    <div class="flex items-start gap-4">
-                        <div class="w-20 h-16 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0">
-                            @if($business->logo_url)
-                                <img src="{{ storage_image_url($business->logo_url, 'thumb') }}" alt="{{ $business->name }}" class="w-full h-full object-cover">
+                <a href="{{ route('businesses.show', $business) }}" class="group block bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition duration-200">
+                    <div class="flex flex-col h-full">
+                        {{-- Hero --}}
+                        <div class="relative h-44 bg-gray-50">
+                            @php $hero = $business->photos->first()?->photo_url ?? $business->logo_url ?? null; @endphp
+                            @if($hero)
+                                <img src="{{ storage_image_url($hero, 'hero') }}" alt="{{ $business->name }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
                             @else
-                                <i class="bi bi-building text-3xl text-gray-300"></i>
+                                <div class="w-full h-full bg-gradient-to-br from-gray-100 to-gray-50 flex items-center justify-center">
+                                    <i class="bi bi-briefcase text-6xl text-gray-300"></i>
+                                </div>
                             @endif
+
+                            <span class="absolute top-3 left-3 inline-block bg-white/95 text-xs font-semibold px-3 py-1 rounded-full shadow-sm">
+                                {{ $business->businessType?->name ?? 'Other' }}
+                            </span>
+
+                            {{-- Admin toggle star --}}
+                            @auth
+                                @if(auth()->user()->isAdmin())
+                                    <button
+                                        type="button"
+                                        data-url="{{ route('businesses.toggle-featured', $business) }}"
+                                        class="toggle-featured-btn absolute top-3 right-3 inline-flex items-center justify-center w-9 h-9 rounded-full bg-white/90 shadow-sm transition hover:scale-105"
+                                        aria-pressed="{{ $business->is_featured ? 'true' : 'false' }}"
+                                        title="{{ $business->is_featured ? 'Unfeature business' : 'Feature business' }}">
+                                        @if($business->is_featured)
+                                            <i class="bi bi-star-fill text-yellow-500"></i>
+                                        @else
+                                            <i class="bi bi-star text-gray-400"></i>
+                                        @endif
+                                    </button>
+                                @endif
+                            @endauth
                         </div>
 
-                        <div class="flex-1">
-                            <h3 class="text-sm font-semibold text-gray-900 line-clamp-2">{{ $business->name }}</h3>
-                            <p class="text-xs text-gray-500 mt-1 line-clamp-2">
-                                {{ $business->description ? \Illuminate\Support\Str::limit($business->description, 100) : 'No description provided' }}
-                            </p>
+                        {{-- Body --}}
+                        <div class="p-4 flex-1 flex flex-col justify-between">
+                            <div>
+                                <h3 class="text-sm font-semibold text-gray-900 mb-1 line-clamp-2">{{ $business->name }}</h3>
+                                <p class="text-xs text-gray-600 mb-3 line-clamp-3">
+                                    {{ $business->description ? \Illuminate\Support\Str::limit($business->description, 140) : 'No description provided' }}
+                                </p>
+                            </div>
 
-                            <div class="mt-3 flex items-center justify-between">
+                            <div class="flex items-center justify-between mt-3">
                                 <div class="flex items-center gap-3 text-xs text-gray-500">
                                     @if($business->user?->profile_photo_url)
-                                        <img src="{{ storage_image_url($business->user->profile_photo_url, 'profile_thumb') }}" alt="{{ $business->user->name }}" class="w-6 h-6 rounded-full object-cover">
+                                        <img src="{{ storage_image_url($business->user->profile_photo_url, 'profile_thumb') }}" alt="{{ $business->user->name }}" class="w-8 h-8 rounded-full object-cover">
                                     @else
-                                        <div class="w-6 h-6 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center">{{ strtoupper(substr($business->user?->name ?? 'U', 0,1)) }}</div>
+                                        <div class="w-8 h-8 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center font-medium">{{ strtoupper(substr($business->user?->name ?? 'U',0,1)) }}</div>
                                     @endif
-                                    <div>{{ $business->user?->name ?? 'Unknown' }}</div>
+                                    <div>
+                                        <div class="text-xs text-gray-800 font-medium">{{ $business->user?->name ?? 'Unknown' }}</div>
+                                        <div class="text-xs text-gray-500">{{ $business->products->count() }} products • {{ $business->services->count() }} services</div>
+                                    </div>
                                 </div>
 
                                 <div class="flex items-center gap-2">
                                     @if($business->is_featured)
-                                        <span class="text-xs px-2 py-1 rounded-full bg-yellow-100 text-yellow-800">Featured</span>
+                                        <span class="text-xs inline-flex items-center gap-1 px-2 py-1 rounded-full bg-yellow-100 text-yellow-800">Featured</span>
                                     @endif
                                     <span class="text-xs px-2 py-1 rounded bg-gray-100 text-gray-600">{{ $business->businessType?->name ?? 'Other' }}</span>
                                 </div>
@@ -157,6 +190,140 @@
                 @endif
             </div>
         </div>
+
+        {{-- Inline JS for admin toggle (minimal, unobtrusive) --}}
+        @auth
+            @if(auth()->user()->isAdmin())
+                <script>
+                    (function(){
+                        const csrf = '{{ csrf_token() }}';
+
+                        // Ensure a persistent toast container exists
+                        function getToastContainer(){
+                            const id = 'global-toast-container';
+                            let container = document.getElementById(id);
+                            if (!container) {
+                                container = document.createElement('div');
+                                container.id = id;
+                                container.setAttribute('aria-live', 'polite');
+                                container.setAttribute('role', 'status');
+                                container.className = 'fixed top-6 right-6 z-50 flex flex-col gap-3 items-end';
+                                document.body.appendChild(container);
+                            }
+                            return container;
+                        }
+
+                        function showToast(message, type = 'info'){
+                            const colors = {
+                                success: 'bg-emerald-600',
+                                error: 'bg-red-600',
+                                info: 'bg-gray-800'
+                            };
+
+                            const container = getToastContainer();
+                            const toast = document.createElement('div');
+                            toast.className = `max-w-sm w-full text-white px-4 py-2 rounded-lg shadow-lg transform transition-all duration-300 ease-out ${colors[type] || colors.info}`;
+                            toast.style.opacity = '0';
+                            toast.style.transform = 'translateY(-8px)';
+                            toast.setAttribute('role', 'alert');
+                            toast.innerHTML = `<div class="flex items-center justify-between gap-3"><div class="text-sm">${escapeHtml(message)}</div><button type="button" aria-label="Close" class="ml-3 text-white opacity-90 hover:opacity-100 close-toast">&times;</button></div>`;
+
+                            container.appendChild(toast);
+                            // trigger enter
+                            requestAnimationFrame(() => {
+                                toast.style.opacity = '1';
+                                toast.style.transform = 'translateY(0)';
+                            });
+
+                            // dismiss after timeout
+                            const timeout = setTimeout(() => dismissToast(toast), 3500);
+
+                            // click to close
+                            toast.addEventListener('click', (e) => {
+                                if (e.target.closest('.close-toast')) {
+                                    clearTimeout(timeout);
+                                    dismissToast(toast);
+                                }
+                            });
+                        }
+
+                        function dismissToast(toast){
+                            toast.style.opacity = '0';
+                            toast.style.transform = 'translateY(-8px)';
+                            setTimeout(() => toast.remove(), 300);
+                        }
+
+                        function escapeHtml(unsafe){
+                            return String(unsafe)
+                                .replace(/&/g, '&amp;')
+                                .replace(/</g, '&lt;')
+                                .replace(/>/g, '&gt;')
+                                .replace(/\"/g, '&quot;')
+                                .replace(/'/g, '&#039;');
+                        }
+
+                        // Spinner SVG
+                        const spinner = '<svg class="animate-spin w-4 h-4 text-gray-700" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path></svg>';
+
+                        document.addEventListener('click', async (e) => {
+                            const btn = e.target.closest('.toggle-featured-btn');
+                            if (!btn) return;
+                            e.preventDefault();
+                            const url = btn.dataset.url;
+                            if (!url) return;
+
+                            // Prevent double clicks
+                            if (btn.dataset.loading === '1') return;
+                            btn.dataset.loading = '1';
+
+                            const originalHtml = btn.innerHTML;
+                            btn.innerHTML = spinner;
+                            btn.setAttribute('aria-busy', 'true');
+
+                            try {
+                                const res = await fetch(url, {
+                                    method: 'POST',
+                                    headers: {
+                                        'X-CSRF-TOKEN': csrf,
+                                        'Accept': 'application/json',
+                                        'X-Requested-With': 'XMLHttpRequest'
+                                    },
+                                });
+
+                                if (!res.ok) {
+                                    const text = await res.text();
+                                    console.error('Toggle featured failed', res.status, text);
+                                    showToast('Failed to update featured status.', 'error');
+                                    return;
+                                }
+
+                                const data = await res.json();
+
+                                const i = btn.querySelector('i');
+                                if (data?.is_featured) {
+                                    if (i) i.className = 'bi bi-star-fill text-yellow-500';
+                                    btn.setAttribute('aria-pressed', 'true');
+                                    btn.title = 'Unfeature business';
+                                    showToast(data.message || 'Business featured', 'success');
+                                } else {
+                                    if (i) i.className = 'bi bi-star text-gray-400';
+                                    btn.setAttribute('aria-pressed', 'false');
+                                    btn.title = 'Feature business';
+                                    showToast(data.message || 'Business unfeatured', 'success');
+                                }
+                            } catch (err) {
+                                console.error(err);
+                                showToast('Failed to update featured status.', 'error');
+                            } finally {
+                                btn.dataset.loading = '0';
+                                btn.removeAttribute('aria-busy');
+                                btn.innerHTML = originalHtml;
+                            }
+                        });
+                    })();
+                </script>
+            @endif
+        @endauth
 
         @auth
             {{-- My Businesses (visible when activeTab === 'my') --}}
