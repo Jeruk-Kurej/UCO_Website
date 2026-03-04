@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 
 class BusinessController extends Controller
@@ -135,17 +136,20 @@ class BusinessController extends Controller
             $validated = $request->validate([
                 // Basic fields
                 'name' => 'required|string|max:255',
-                // Limit description length to avoid extremely long content being stored/displayed
                 'description' => 'required|string|max:1000',
                 'business_type_id' => 'required|exists:business_types,id',
                 'business_mode' => 'required|in:product,service',
                 'user_id' => 'nullable|exists:users,id',
                 'position' => 'nullable|string|max:255',
-                
+
+                // Location
+                'city' => 'nullable|string|max:255',
+                'province' => 'nullable|string|max:255',
+                'address' => 'nullable|string',
+
                 // Enhanced fields
                 'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:10240',
                 'established_date' => 'nullable|date',
-                'address' => 'nullable|string',
                 'employee_count' => 'nullable|integer|min:0',
                 'revenue_range' => 'nullable|in:Mikro: <= Rp 300 Juta,Kecil: > Rp 300 Juta - Rp 2,5 Milyar,Menengah: > Rp 2,5 Milyar - Rp 50 Milyar,Besar: > Rp 50 Milyar',
                 'is_from_college_project' => 'nullable|boolean',
@@ -153,6 +157,20 @@ class BusinessController extends Controller
                 'legal_documents.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
                 'product_certifications.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
                 'business_challenges' => 'nullable|array',
+
+                // Additional data fields (stored in additional_data JSON)
+                'phone' => 'nullable|string|max:50',
+                'email' => 'nullable|email|max:255',
+                'website' => 'nullable|url|max:255',
+                'instagram_handle' => 'nullable|string|max:100',
+                'whatsapp_number' => 'nullable|string|max:50',
+                'product_name' => 'nullable|string|max:255',
+                'product_description' => 'nullable|string|max:2000',
+                'unique_value_proposition' => 'nullable|string|max:1000',
+                'target_market' => 'nullable|string|max:255',
+                'customer_base_size' => 'nullable|integer|min:0',
+                'establishment_date' => 'nullable|date',
+                'operational_status' => 'nullable|in:active,inactive,seasonal',
             ]);
 
             $user = $this->getAuthUser();
@@ -164,7 +182,10 @@ class BusinessController extends Controller
 
             // Handle logo upload
             if ($request->hasFile('logo')) {
-                $logoPath = $request->file('logo')->store('businesses/logos', config('filesystems.default'));
+                $logoFile = $request->file('logo');
+                $businessSlug = Str::slug($validated['name'], '_');
+                $logoFilename = $businessSlug . '_logo_' . time() . '.' . $logoFile->getClientOriginalExtension();
+                $logoPath = $logoFile->storeAs('businesses/logos', $logoFilename, config('filesystems.default'));
                 $validated['logo_url'] = $logoPath;
             }
             unset($validated['logo']);
@@ -172,11 +193,14 @@ class BusinessController extends Controller
             // Handle legal documents upload
             $legalDocs = [];
             if ($request->hasFile('legal_documents')) {
+                $businessSlug = $businessSlug ?? Str::slug($validated['name'], '_');
                 foreach ($request->file('legal_documents') as $index => $file) {
                     if ($file->getSize() > 5120 * 1024) {
                         return back()->withErrors(['legal_documents' => 'Each legal document must not be larger than 5MB.'])->withInput();
                     }
-                    $path = $file->store('businesses/legal-documents', config('filesystems.default'));
+                    $docNumber = $index + 1;
+                    $docFilename = $businessSlug . '_legal_' . $docNumber . '_' . time() . '.' . $file->getClientOriginalExtension();
+                    $path = $file->storeAs('businesses/legal-documents', $docFilename, config('filesystems.default'));
                     $legalDocs[] = [
                         'file_path' => $path,
                         'original_name' => $file->getClientOriginalName(),
@@ -189,11 +213,14 @@ class BusinessController extends Controller
             // Handle product certifications upload
             $certifications = [];
             if ($request->hasFile('product_certifications')) {
+                $businessSlug = $businessSlug ?? Str::slug($validated['name'], '_');
                 foreach ($request->file('product_certifications') as $index => $file) {
                     if ($file->getSize() > 5120 * 1024) {
                         return back()->withErrors(['product_certifications' => 'Each certification file must not be larger than 5MB.'])->withInput();
                     }
-                    $path = $file->store('businesses/certifications', config('filesystems.default'));
+                    $certNumber = $index + 1;
+                    $certFilename = $businessSlug . '_cert_' . $certNumber . '_' . time() . '.' . $file->getClientOriginalExtension();
+                    $path = $file->storeAs('businesses/certifications', $certFilename, config('filesystems.default'));
                     $certifications[] = [
                         'file_path' => $path,
                         'original_name' => $file->getClientOriginalName(),
@@ -202,6 +229,19 @@ class BusinessController extends Controller
                 }
             }
             $validated['product_certifications'] = !empty($certifications) ? $certifications : null;
+
+            // Move extra fields into additional_data JSON
+            $additionalDataKeys = ['phone', 'email', 'website', 'instagram_handle', 'whatsapp_number',
+                'product_name', 'product_description', 'unique_value_proposition', 'target_market',
+                'customer_base_size', 'establishment_date', 'operational_status'];
+            $additionalData = [];
+            foreach ($additionalDataKeys as $key) {
+                if (array_key_exists($key, $validated)) {
+                    $additionalData[$key] = $validated[$key];
+                    unset($validated[$key]);
+                }
+            }
+            $validated['additional_data'] = !empty($additionalData) ? $additionalData : null;
 
             $business = Business::create($validated);
 
@@ -290,17 +330,20 @@ class BusinessController extends Controller
             $validated = $request->validate([
                 // Basic fields
                 'name' => 'required|string|max:255',
-                // Limit description length on update as well
                 'description' => 'required|string|max:1000',
                 'business_type_id' => 'required|exists:business_types,id',
                 'business_mode' => 'required|in:product,service,both',
                 'user_id' => 'nullable|exists:users,id',
                 'position' => 'nullable|string|max:255',
-                
+
+                // Location
+                'city' => 'nullable|string|max:255',
+                'province' => 'nullable|string|max:255',
+                'address' => 'nullable|string',
+
                 // Enhanced fields
                 'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:10240',
                 'established_date' => 'nullable|date',
-                'address' => 'nullable|string',
                 'employee_count' => 'nullable|integer|min:0',
                 'revenue_range' => 'nullable|in:Mikro: <= Rp 300 Juta,Kecil: > Rp 300 Juta - Rp 2,5 Milyar,Menengah: > Rp 2,5 Milyar - Rp 50 Milyar,Besar: > Rp 50 Milyar',
                 'is_from_college_project' => 'nullable|boolean',
@@ -310,6 +353,20 @@ class BusinessController extends Controller
                 'business_challenges' => 'nullable|array',
                 'remove_legal_docs' => 'nullable|array',
                 'remove_certifications' => 'nullable|array',
+
+                // Additional data fields (stored in additional_data JSON)
+                'phone' => 'nullable|string|max:50',
+                'email' => 'nullable|email|max:255',
+                'website' => 'nullable|url|max:255',
+                'instagram_handle' => 'nullable|string|max:100',
+                'whatsapp_number' => 'nullable|string|max:50',
+                'product_name' => 'nullable|string|max:255',
+                'product_description' => 'nullable|string|max:2000',
+                'unique_value_proposition' => 'nullable|string|max:1000',
+                'target_market' => 'nullable|string|max:255',
+                'customer_base_size' => 'nullable|integer|min:0',
+                'establishment_date' => 'nullable|date',
+                'operational_status' => 'nullable|in:active,inactive,seasonal',
             ]);
 
             $user = $this->getAuthUser();
@@ -350,7 +407,9 @@ class BusinessController extends Controller
                 if ($business->logo_url && Storage::disk(config('filesystems.default'))->exists($business->logo_url)) {
                     Storage::disk(config('filesystems.default'))->delete($business->logo_url);
                 }
-                $logoPath = $logoFile->store('businesses/logos', config('filesystems.default'));
+                $businessSlug = Str::slug($business->name, '_');
+                $logoFilename = $businessSlug . '_logo_' . time() . '.' . $logoFile->getClientOriginalExtension();
+                $logoPath = $logoFile->storeAs('businesses/logos', $logoFilename, config('filesystems.default'));
                 $validated['logo_url'] = $logoPath;
             }
             unset($validated['logo']);
@@ -371,11 +430,14 @@ class BusinessController extends Controller
             
             // Add new documents
             if ($request->hasFile('legal_documents')) {
+                $businessSlug = Str::slug($business->name, '_');
                 foreach ($request->file('legal_documents') as $file) {
                     if ($file->getSize() > 5120 * 1024) {
                         return back()->withErrors(['legal_documents' => 'Each legal document must not be larger than 5MB.'])->withInput();
                     }
-                    $path = $file->store('businesses/legal-documents', config('filesystems.default'));
+                    $docNumber = count($currentLegalDocs) + 1;
+                    $docFilename = $businessSlug . '_legal_' . $docNumber . '_' . time() . '.' . $file->getClientOriginalExtension();
+                    $path = $file->storeAs('businesses/legal-documents', $docFilename, config('filesystems.default'));
                     $currentLegalDocs[] = [
                         'file_path' => $path,
                         'original_name' => $file->getClientOriginalName(),
@@ -401,11 +463,14 @@ class BusinessController extends Controller
             
             // Add new certifications
             if ($request->hasFile('product_certifications')) {
+                $businessSlug = $businessSlug ?? Str::slug($business->name, '_');
                 foreach ($request->file('product_certifications') as $file) {
                     if ($file->getSize() > 5120 * 1024) {
                         return back()->withErrors(['product_certifications' => 'Each certification file must not be larger than 5MB.'])->withInput();
                     }
-                    $path = $file->store('businesses/certifications', config('filesystems.default'));
+                    $certNumber = count($currentCertifications) + 1;
+                    $certFilename = $businessSlug . '_cert_' . $certNumber . '_' . time() . '.' . $file->getClientOriginalExtension();
+                    $path = $file->storeAs('businesses/certifications', $certFilename, config('filesystems.default'));
                     $currentCertifications[] = [
                         'file_path' => $path,
                         'original_name' => $file->getClientOriginalName(),
@@ -417,6 +482,19 @@ class BusinessController extends Controller
 
             // Remove these from validated array
             unset($validated['remove_legal_docs'], $validated['remove_certifications']);
+
+            // Move extra fields into additional_data JSON (merge with existing)
+            $additionalDataKeys = ['phone', 'email', 'website', 'instagram_handle', 'whatsapp_number',
+                'product_name', 'product_description', 'unique_value_proposition', 'target_market',
+                'customer_base_size', 'establishment_date', 'operational_status'];
+            $additionalData = $business->additional_data ?? [];
+            foreach ($additionalDataKeys as $key) {
+                if (array_key_exists($key, $validated)) {
+                    $additionalData[$key] = $validated[$key];
+                    unset($validated[$key]);
+                }
+            }
+            $validated['additional_data'] = $additionalData;
 
             $business->update($validated);
 

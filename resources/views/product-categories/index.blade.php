@@ -2,7 +2,7 @@
     <div class="max-w-5xl mx-auto">
         {{-- Page Header --}}
         <div class="mb-6 flex items-center gap-3">
-            <a href="{{ url()->previous() }}" 
+            <a href="{{ route('business-types.show', $businessType) }}" 
                class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-800 transition duration-150">
                 <i class="bi bi-arrow-left text-lg"></i>
             </a>

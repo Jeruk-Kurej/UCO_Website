@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class BusinessPhotoController extends Controller
 {
@@ -79,12 +80,15 @@ class BusinessPhotoController extends Controller
                     return back()->withErrors(['photo' => 'Photo must not be larger than 10MB.'])->withInput();
                 }
                 
-                $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                $businessSlug = Str::slug($business->name, '_');
+                $nextNumber = $business->photos()->count() + 1;
+                $filename = $businessSlug . '_photo_' . $nextNumber . '_' . time() . '.' . $file->getClientOriginalExtension();
                 
                 // Store to Cloudinary (default disk)
                 $path = $file->storeAs(
                     "businesses/{$business->id}/photos",
-                    $filename
+                    $filename,
+                    config('filesystems.default')
                 );
                 
                 $validated['photo_url'] = $path;

@@ -77,32 +77,22 @@
                 {{-- Profile Photo --}}
                 <div class="mb-6">
                     <label class="block text-sm font-semibold text-gray-700 mb-3">Profile Photo</label>
-                    <div class="flex items-center gap-6">
-                        <div class="relative">
-                            @php
-                                $profilePhoto = $user->profile_photo_url ?? null;
-                                $profilePhotoUrl = $profilePhoto ? (storage_image_url($profilePhoto, ['width' => 256, 'height' => 256, 'crop' => 'thumb', 'quality' => 'auto', 'fetch_format' => 'auto']) . '?t=' . ($user->updated_at?->timestamp ?? time())) : null;
-                            @endphp
-                            @if($profilePhotoUrl)
-                                <img id="profile-photo-preview" 
-                                     src="{{ $profilePhotoUrl }}" 
-                                     alt="Profile Photo" 
-                                     class="w-24 h-24 rounded-full object-cover border-4 border-gray-200 shadow-md">
-                            @else
-                                <div id="profile-photo-preview" class="w-24 h-24 rounded-full bg-gradient-to-br from-uco-orange to-uco-yellow flex items-center justify-center border-4 border-gray-200 shadow-md">
-                                    <span class="text-white text-3xl font-bold">{{ strtoupper(substr($user->name, 0, 1)) }}</span>
-                                </div>
-                            @endif
-                        </div>
-                        <div class="flex-1">
-                            <label for="profile_photo" class="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
-                                <i class="bi bi-camera"></i>
-                                Choose Photo
-                            </label>
-                            <input id="profile_photo" name="profile_photo" type="file" accept="image/*" class="hidden" onchange="validateAndPreviewPhoto(event)">
-                            <p class="text-xs text-gray-500 mt-2">JPG, PNG or GIF (Max 10MB)</p>
-                        </div>
-                    </div>
+                    @php
+                        $profilePhoto = $user->profile_photo_url ?? null;
+                        $profilePhotoUrl = $profilePhoto ? (storage_image_url($profilePhoto, ['width' => 256, 'height' => 256, 'crop' => 'thumb', 'quality' => 'auto', 'fetch_format' => 'auto']) . '?t=' . ($user->updated_at?->timestamp ?? time())) : null;
+                    @endphp
+                    <input id="profile_photo" name="profile_photo" type="file" accept="image/*" class="hidden">
+                    <x-image-preview
+                        input-id="profile_photo"
+                        preview-id="edit-profile-preview"
+                        :max-size="10"
+                        shape="circle"
+                        :side-by-side="true"
+                        :current-image="$profilePhotoUrl"
+                        current-label="Current"
+                        new-label="New Photo"
+                        hint="JPG, PNG or GIF — max 10MB"
+                    />
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -311,26 +301,7 @@
         </form>
     </div>
 
-    {{-- JavaScript for Photo Preview --}}
-    <script>
-        function validateAndPreviewPhoto(event) {
-            const file = event.target.files[0];
-            const maxSize = 10 * 1024 * 1024; // 10MB
-            
-            if (file && file.size > maxSize) {
-                alert('Profile photo must not be larger than 10MB. Please choose a smaller file.');
-                event.target.value = '';
-                return;
-            }
-            
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const preview = document.getElementById('profile-photo-preview');
-                    preview.innerHTML = `<img src="${e.target.result}" alt="Profile Photo" class="w-24 h-24 rounded-full object-cover border-4 border-gray-200 shadow-md">`;
-                }
-                reader.readAsDataURL(file);
-            }
-        }
+<script>
+        document.addEventListener('DOMContentLoaded', () => ucoInitImagePreview('profile_photo', 'edit-profile-preview', 10, true));
     </script>
 </x-app-layout>

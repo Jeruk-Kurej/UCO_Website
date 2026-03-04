@@ -254,31 +254,29 @@
                     </div>
                 </div>
 
-                {{-- Logo Upload - FULLY CLICKABLE --}}
+                {{-- Logo Upload --}}
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">Logo Business</label>
-                    @if($business->logo)
-                        <div class="mb-3">
-                            <p class="text-sm text-slate-600 mb-2">Current Logo:</p>
-                            <img src="{{ storage_image_url($business->logo) }}" alt="Current Logo" class="max-w-xs rounded-lg shadow-md">
-                        </div>
-                    @endif
-                    <input type="file" name="logo" id="logo" accept="image/*" class="hidden" onchange="previewLogo(event)">
-                    <label for="logo" class="block border-2 border-dashed border-slate-300 rounded-lg p-8 text-center hover:border-soft-gray-900 hover:bg-slate-50 transition cursor-pointer">
-                        <div class="text-slate-400 mb-3">
-                            <svg class="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                            </svg>
-                        </div>
-                        <p class="text-sm text-slate-600 font-medium">Klik area ini untuk upload logo baru</p>
-                        <p class="text-xs text-slate-400 mt-1">PNG, JPG up to 2MB</p>
-                    </label>
-                    <div id="logoPreview" class="mt-4 hidden">
-                        <img src="" alt="Logo Preview" class="max-w-xs rounded-lg shadow-md mx-auto">
-                    </div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-3">Logo Business</label>
+                    @php
+                        $currentLogoUrl = $business->logo
+                            ? storage_image_url($business->logo, ['width' => 160, 'height' => 160, 'crop' => 'fill', 'quality' => 'auto', 'fetch_format' => 'auto'])
+                            : null;
+                    @endphp
+                    <input type="file" name="logo" id="logo" accept="image/*" class="hidden">
                     @error('logo')
-                        <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
+                        <p class="mb-2 text-sm text-red-600">{{ $message }}</p>
                     @enderror
+                    <x-image-preview
+                        input-id="logo"
+                        preview-id="edit-logo-preview"
+                        :max-size="2"
+                        shape="square"
+                        :side-by-side="true"
+                        :current-image="$currentLogoUrl"
+                        current-label="Current"
+                        new-label="New Logo"
+                        hint="PNG, JPG, SVG — max 2MB"
+                    />
                 </div>
 
                 {{-- Website --}}
@@ -673,26 +671,8 @@
 
     {{-- JavaScript for File Previews and Dynamic Fields --}}
     <script>
-        function previewLogo(event) {
-            const file = event.target.files[0];
-            const maxSize = 10 * 1024 * 1024; // 10MB
-            
-            if (file) {
-                if (file.size > maxSize) {
-                    alert('Logo must not be larger than 10MB. Please choose a smaller file.');
-                    event.target.value = '';
-                    return;
-                }
-                
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const preview = document.getElementById('logoPreview');
-                    preview.querySelector('img').src = e.target.result;
-                    preview.classList.remove('hidden');
-                };
-                reader.readAsDataURL(file);
-            }
-        }
+        // Logo preview
+        document.addEventListener('DOMContentLoaded', () => ucoInitImagePreview('logo', 'edit-logo-preview', 2, true));
 
         function previewLegalDocs(event) {
             const files = event.target.files;

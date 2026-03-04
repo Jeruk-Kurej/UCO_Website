@@ -105,18 +105,7 @@
                                         </div>
                                     </div>
                                     
-                                    {{-- Actions --}}
-                                    <div class="flex items-center justify-end pt-3 border-t border-gray-100 mt-auto">
-                                        @auth
-                                            @if(auth()->id() === $business->user_id || auth()->user()->isAdmin())
-                                                <button onclick="event.preventDefault(); event.stopPropagation(); window.location.href='{{ route('businesses.edit', $business) }}'" 
-                                                   class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 transition">
-                                                    <i class="bi bi-pencil"></i>
-                                                    Edit
-                                                </button>
-                                            @endif
-                                        @endauth
-                                    </div>
+
                                 </div>
                             </div>
                         </a>

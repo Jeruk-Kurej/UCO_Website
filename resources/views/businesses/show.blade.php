@@ -4,11 +4,11 @@
     {{-- Hero Section with Elegant Back Button --}}
     <div class="mb-8 px-4 sm:px-0">
         <div class="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
-            <button onclick="window.history.back()" 
+            <a href="{{ route('businesses.index') }}" 
                class="group inline-flex items-center justify-center sm:justify-start gap-2.5 px-4 py-2.5 bg-white hover:bg-gray-900 border border-gray-200 hover:border-gray-900 text-gray-700 hover:text-white rounded-xl font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200">
                 <i class="bi bi-arrow-left text-base group-hover:-translate-x-0.5 transition-transform duration-200"></i>
                 <span>Back</span>
-            </button>
+            </a>
             <div class="flex-1">
                 <div class="flex flex-wrap items-center gap-2 mb-2">
                     <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-soft-gray-100 text-soft-gray-700 text-xs font-semibold rounded-lg">
@@ -75,23 +75,66 @@
             {{-- Business Info Section --}}
             <div class="p-4 sm:p-6 lg:p-8">
                 {{-- Owner Info - PROMINENT with Avatar --}}
-                <div class="flex flex-col sm:flex-row items-start gap-4 mb-6 pb-6 border-b-2 border-soft-gray-100">
-                    @php $ownerPhoto = $business->user->profile_photo_url; @endphp
-                        @if($ownerPhoto)
-                               <img src="{{ storage_image_url($ownerPhoto, 'profile_thumb') }}" 
-                                 alt="{{ $business->user->name }}" 
-                                 loading="lazy" decoding="async"
-                                 class="flex-shrink-0 w-16 h-16 rounded-2xl object-cover shadow-lg">
-                        @else
+                @php
+                    $owner       = $business->user;
+                    $ownerPhoto  = $owner->profile_photo_url;
+                    $ownerAcad   = $owner->academic_data ?? [];
+                    $ownerGrad   = $owner->graduation_data ?? [];
+                    $ownerPerso  = $owner->personal_data ?? [];
+                    $ownerMajor  = $owner->Major ?? null;
+                    $ownerNis    = $owner->extended_data['nis'] ?? ($ownerAcad['nis'] ?? null);
+                    $ownerYear   = $ownerAcad['Angkatan'] ?? ($ownerAcad['angkatan'] ?? null);
+                    $ownerCgpa   = $owner->CGPA ?? null;
+                    $ownerRole   = match($owner->role ?? '') {
+                        'admin'   => 'Admin',
+                        'alumni'  => 'Alumni',
+                        'student' => 'Student',
+                        default   => ucfirst($owner->role ?? 'User'),
+                    };
+                    $ownerBizCount = $owner->businesses()->count();
+                    $ownerPhotoUrl = $ownerPhoto
+                        ? storage_image_url($ownerPhoto, ['width'=>256,'height'=>256,'crop'=>'thumb','quality'=>'auto','fetch_format'=>'auto'])
+                        : null;
+                    $ownerPhotoBig = $ownerPhoto
+                        ? storage_image_url($ownerPhoto, ['width'=>400,'height'=>400,'crop'=>'thumb','quality'=>'auto','fetch_format'=>'auto'])
+                        : null;
+                @endphp
+
+                <div x-data="{ open: false, tab: 'basic' }"
+                     x-init="open = false"
+                     @keydown.escape.window="open = false"
+                     class="flex flex-col sm:flex-row items-start gap-4 mb-6 pb-6 border-b-2 border-soft-gray-100">
+
+                    {{-- Avatar --}}
+                    @if($ownerPhotoUrl)
+                        <img src="{{ $ownerPhotoUrl }}"
+                             alt="{{ $owner->name }}"
+                             loading="lazy" decoding="async"
+                             class="flex-shrink-0 w-16 h-16 rounded-2xl object-cover shadow-lg">
+                    @else
                         <div class="flex-shrink-0 w-16 h-16 rounded-2xl bg-gradient-to-br from-uco-orange-500 to-uco-yellow-500 flex items-center justify-center text-white text-2xl font-bold shadow-lg">
-                            {{ strtoupper(substr($business->user->name, 0, 1)) }}
+                            {{ strtoupper(substr($owner->name, 0, 1)) }}
                         </div>
                     @endif
-                    <div class="flex-1">
+
+                    <div class="flex-1 min-w-0">
                         <p class="text-xs font-semibold text-soft-gray-500 uppercase tracking-wider mb-1">Business Added By</p>
-                        <h3 class="text-xl font-bold text-soft-gray-900 mb-1">{{ $business->user->name }}</h3>
+
+                        {{-- Name + Eye Toggle --}}
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <h3 class="text-xl font-bold text-soft-gray-900">{{ $owner->name }}</h3>
+                            <button @click="open = !open; if(open) tab = 'basic'"
+                                    :class="open ? 'bg-uco-orange-100 text-uco-orange-600 border-uco-orange-300' : 'bg-soft-gray-100 text-soft-gray-500 border-soft-gray-200 hover:bg-uco-orange-50 hover:text-uco-orange-500 hover:border-uco-orange-200'"
+                                    class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs font-semibold transition-all duration-200"
+                                    title="View profile info">
+                                <i x-show="!open" class="bi bi-eye text-sm"></i>
+                                <i x-show="open"  class="bi bi-eye-slash text-sm"></i>
+                                <span x-text="open ? 'Hide' : 'View Info'"></span>
+                            </button>
+                        </div>
+
                         @if($business->position)
-                            <div class="flex items-center gap-2">
+                            <div class="flex items-center gap-2 mt-1.5">
                                 <div class="flex items-center gap-1.5 px-3 py-1.5 bg-soft-gray-100 text-soft-gray-700 rounded-lg">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
@@ -101,6 +144,210 @@
                             </div>
                         @endif
                     </div>
+
+                    {{-- ============================================ --}}
+                    {{-- POPUP CARD                                   --}}
+                    {{-- ============================================ --}}
+                    <template x-if="open">
+                    <div>
+
+                    {{-- Backdrop --}}
+                    <div x-transition:enter="transition ease-out duration-200"
+                         x-transition:enter-start="opacity-0"
+                         x-transition:enter-end="opacity-100"
+                         x-transition:leave="transition ease-in duration-150"
+                         x-transition:leave-start="opacity-100"
+                         x-transition:leave-end="opacity-0"
+                         @click="open = false"
+                         class="fixed inset-0 z-40 bg-black/60"></div>
+
+                    {{-- Card --}}
+                    <div x-transition:enter="transition ease-out duration-200"
+                         x-transition:enter-start="opacity-0 scale-95 translate-y-1"
+                         x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                         x-transition:leave="transition ease-in duration-150"
+                         x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                         x-transition:leave-end="opacity-0 scale-95 translate-y-1"
+                         @click.stop
+                         class="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-72">
+                        <div class="bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
+
+                            {{-- Top color strip --}}
+                            <div class="h-14 bg-gradient-to-r
+                                {{ $owner->role === 'admin'   ? 'from-red-500 to-red-400' :
+                                   ($owner->role === 'alumni' ? 'from-uco-orange-500 to-uco-yellow-400' :
+                                   'from-blue-500 to-blue-400') }}
+                                relative">
+                                <button @click="open = false"
+                                        class="absolute top-2 right-2 w-6 h-6 rounded-lg bg-black/20 hover:bg-black/30 text-white flex items-center justify-center transition-colors duration-150">
+                                    <i class="bi bi-x text-sm leading-none"></i>
+                                </button>
+                            </div>
+
+                            {{-- Avatar centered, overlapping strip --}}
+                            <div class="flex justify-center -mt-8 mb-2 relative z-10">
+                                @if($ownerPhotoBig)
+                                    <img src="{{ $ownerPhotoBig }}" alt="{{ $owner->name }}"
+                                         class="w-16 h-16 rounded-2xl object-cover border-[3px] border-white shadow-lg">
+                                @else
+                                    <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-uco-orange-500 to-uco-yellow-500 border-[3px] border-white shadow-lg flex items-center justify-center text-white text-2xl font-bold">
+                                        {{ strtoupper(substr($owner->name, 0, 1)) }}
+                                    </div>
+                                @endif
+                            </div>
+
+                            {{-- Name + role + meta --}}
+                            <div class="text-center px-4 pb-3">
+                                <p class="text-sm font-bold text-gray-900 leading-tight">{{ $owner->name }}</p>
+                                <p class="text-xs text-gray-400 mt-0.5">{{ $owner->username }}</p>
+                                <div class="flex items-center justify-center gap-1.5 mt-2 flex-wrap">
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wide
+                                        {{ $owner->role === 'admin'   ? 'bg-red-100 text-red-600' :
+                                           ($owner->role === 'alumni' ? 'bg-uco-orange-100 text-uco-orange-600' :
+                                           'bg-blue-100 text-blue-600') }}">
+                                        {{ $ownerRole }}
+                                    </span>
+                                    @if($ownerCgpa)
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-gray-100 text-gray-600">
+                                            <i class="bi bi-award text-[10px]"></i> {{ number_format((float)$ownerCgpa, 2) }}
+                                        </span>
+                                    @endif
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-gray-100 text-gray-600">
+                                        <i class="bi bi-shop text-[10px]"></i> {{ $ownerBizCount }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {{-- Tabs nav --}}
+                            <div class="flex border-t border-b border-gray-100">
+                                @php
+                                    $popupTabs = [
+                                        ['id' => 'basic',    'icon' => 'bi-person',      'title' => 'Basic'],
+                                        ['id' => 'personal', 'icon' => 'bi-telephone',   'title' => 'Contact'],
+                                        ['id' => 'academic', 'icon' => 'bi-mortarboard', 'title' => 'Academic'],
+                                        ['id' => 'parents',  'icon' => 'bi-people',      'title' => 'Parents'],
+                                        ['id' => 'business', 'icon' => 'bi-briefcase',   'title' => 'Work'],
+                                    ];
+                                @endphp
+                                @foreach($popupTabs as $pt)
+                                <button @click="tab = '{{ $pt['id'] }}'"
+                                        :class="tab === '{{ $pt['id'] }}'
+                                            ? 'text-gray-900 bg-gray-50 border-b-2 border-gray-900'
+                                            : 'text-gray-400 hover:text-gray-600 border-b-2 border-transparent'"
+                                        class="flex-1 py-2.5 flex items-center justify-center transition-all duration-150"
+                                        title="{{ $pt['title'] }}">
+                                    <i class="bi {{ $pt['icon'] }} text-sm"></i>
+                                </button>
+                                @endforeach
+                            </div>
+
+                            {{-- Tab panels --}}
+                            <div class="px-3 py-2 h-44 overflow-y-auto">
+
+                                {{-- Basic --}}
+                                <div x-show="tab === 'basic'" style="display:none;">
+                                    @php
+                                        $basicRows = array_filter([
+                                            ['icon' => 'bi-envelope',       'label' => 'Email',  'value' => $owner->email],
+                                            ['icon' => 'bi-shield-check',   'label' => 'Role',   'value' => $ownerRole],
+                                            ['icon' => 'bi-calendar-check', 'label' => 'Joined', 'value' => $owner->created_at?->format('d M Y')],
+                                        ], fn($r) => !empty($r['value']));
+                                    @endphp
+                                    @foreach($basicRows as $row)
+                                        @include('businesses._owner_info_row', $row)
+                                    @endforeach
+                                </div>
+
+                                {{-- Contact --}}
+                                <div x-show="tab === 'personal'" style="display:none;">
+                                    @php
+                                        $personalRows = array_filter([
+                                            ['icon' => 'bi-gender-ambiguous', 'label' => 'Gender',    'value' => $ownerPerso['gender'] ?? null],
+                                            ['icon' => 'bi-telephone',        'label' => 'Phone',     'value' => $owner->phone_number ?? ($ownerPerso['phone'] ?? null)],
+                                            ['icon' => 'bi-whatsapp',         'label' => 'WhatsApp',  'value' => $ownerPerso['whatsapp'] ?? null],
+                                            ['icon' => 'bi-geo-alt',          'label' => 'Address',   'value' => $ownerPerso['address'] ?? null],
+                                            ['icon' => 'bi-instagram',        'label' => 'Instagram', 'value' => $ownerPerso['instagram'] ?? null],
+                                        ], fn($r) => !empty($r['value']));
+                                    @endphp
+                                    @forelse($personalRows as $row)
+                                        @include('businesses._owner_info_row', $row)
+                                    @empty
+                                        <p class="text-[11px] text-gray-400 text-center py-4">No contact info.</p>
+                                    @endforelse
+                                </div>
+
+                                {{-- Academic --}}
+                                <div x-show="tab === 'academic'" style="display:none;">
+                                    @php
+                                        $academicRows = array_filter([
+                                            ['icon' => 'bi-hash',              'label' => 'NIS',       'value' => $ownerNis],
+                                            ['icon' => 'bi-mortarboard',       'label' => 'Major',     'value' => $ownerMajor],
+                                            ['icon' => 'bi-calendar3',         'label' => 'Angkatan',  'value' => $ownerYear],
+                                            ['icon' => 'bi-award',             'label' => 'GPA',       'value' => $ownerCgpa ? number_format((float)$ownerCgpa, 2) : null],
+                                            ['icon' => 'bi-person-check',      'label' => 'Graduate',  'value' => isset($owner->Is_Graduate) ? ($owner->Is_Graduate ? 'Yes' : 'No') : null],
+                                            ['icon' => 'bi-journal-text',      'label' => 'Edu Level', 'value' => $ownerAcad['Edu_Level'] ?? ($ownerAcad['edu_level'] ?? null)],
+                                            ['icon' => 'bi-person-lines-fill', 'label' => 'Advisor',   'value' => $ownerAcad['Academic_Advisor'] ?? ($ownerAcad['academic_advisor'] ?? null)],
+                                        ], fn($r) => !empty($r['value']));
+                                    @endphp
+                                    @forelse($academicRows as $row)
+                                        @include('businesses._owner_info_row', $row)
+                                    @empty
+                                        <p class="text-[11px] text-gray-400 text-center py-4">No academic info.</p>
+                                    @endforelse
+                                </div>
+
+                                {{-- Parents --}}
+                                <div x-show="tab === 'parents'" style="display:none;">
+                                    @php
+                                        $ownerFather = $owner->father_data ?? [];
+                                        $ownerMother = $owner->mother_data ?? [];
+                                        $parentsRows = array_filter([
+                                            ['icon' => 'bi-person',   'label' => 'Father',       'value' => $ownerFather['name']  ?? null],
+                                            ['icon' => 'bi-telephone','label' => 'Father Phone', 'value' => $ownerFather['phone'] ?? null],
+                                            ['icon' => 'bi-briefcase','label' => 'Father Job',   'value' => $ownerFather['job']   ?? null],
+                                            ['icon' => 'bi-person',   'label' => 'Mother',       'value' => $ownerMother['name']  ?? null],
+                                            ['icon' => 'bi-telephone','label' => 'Mother Phone', 'value' => $ownerMother['phone'] ?? null],
+                                            ['icon' => 'bi-briefcase','label' => 'Mother Job',   'value' => $ownerMother['job']   ?? null],
+                                        ], fn($r) => !empty($r['value']));
+                                    @endphp
+                                    @forelse($parentsRows as $row)
+                                        @include('businesses._owner_info_row', $row)
+                                    @empty
+                                        <p class="text-[11px] text-gray-400 text-center py-4">No parent info.</p>
+                                    @endforelse
+                                </div>
+
+                                {{-- Work --}}
+                                <div x-show="tab === 'business'" style="display:none;">
+                                    @php
+                                        $ownerGradStatus = $owner->current_employment_status
+                                            ? $owner->getEmploymentStatusLabel()
+                                            : ($ownerGrad['employment_status'] ?? null);
+                                        $ownerBusinesses = $owner->businesses()->select('id','name')->get();
+                                    @endphp
+                                    @if($ownerGradStatus)
+                                        @include('businesses._owner_info_row', ['icon' => 'bi-briefcase', 'label' => 'Status', 'value' => $ownerGradStatus])
+                                    @endif
+                                    <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mt-2 mb-1">Businesses</p>
+                                    @forelse($ownerBusinesses as $b)
+                                        <a href="{{ route('businesses.show', $b) }}"
+                                           class="flex items-center gap-1.5 py-1.5 px-2 rounded-lg hover:bg-uco-orange-50 text-gray-700 hover:text-uco-orange-700 text-xs font-medium transition-colors group">
+                                            <i class="bi bi-shop text-[11px] text-gray-400 group-hover:text-uco-orange-500 flex-shrink-0"></i>
+                                            <span class="truncate">{{ $b->name }}</span>
+                                            <i class="bi bi-arrow-right text-[10px] ml-auto text-gray-300 group-hover:text-uco-orange-400"></i>
+                                        </a>
+                                    @empty
+                                        <p class="text-[11px] text-gray-400 text-center py-3">No businesses yet.</p>
+                                    @endforelse
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                    {{-- end card --}}
+                    </div>
+                    </template>
+
                 </div>
 
                 {{-- Description --}}

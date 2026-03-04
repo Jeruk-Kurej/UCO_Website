@@ -14,41 +14,64 @@
             <label class="block text-sm font-semibold text-gray-700">
                 Profile Photo
             </label>
-            <div class="flex items-center gap-6">
-                <!-- Current Photo Preview -->
-                <div class="relative">
+            <div class="flex items-center gap-4 flex-wrap">
+                <!-- Current Photo -->
+                <div class="flex flex-col items-center">
+                    <p class="text-xs text-gray-500 mb-2 font-medium">Current</p>
                     @php $profilePhoto = $user->profile_photo_url; @endphp
                     @if($profilePhoto)
-                        <img 
-                            id="profile-photo-preview" 
-                            src="{{ storage_image_url($profilePhoto, ['width' => 256, 'height' => 256, 'crop' => 'thumb', 'quality' => 'auto', 'fetch_format' => 'auto']) }}?t={{ $user->updated_at?->timestamp ?? time() }}" 
-                            alt="Profile Photo" 
+                        <img
+                            src="{{ storage_image_url($profilePhoto, ['width' => 256, 'height' => 256, 'crop' => 'thumb', 'quality' => 'auto', 'fetch_format' => 'auto']) }}?t={{ $user->updated_at?->timestamp ?? time() }}"
+                            alt="Profile Photo"
                             class="w-24 h-24 rounded-full object-cover border-4 border-gray-200 shadow-md"
                         />
                     @else
-                        <div id="profile-photo-preview" class="w-24 h-24 rounded-full bg-gradient-to-br from-uco-orange to-uco-yellow flex items-center justify-center border-4 border-gray-200 shadow-md">
+                        <div class="w-24 h-24 rounded-full bg-gradient-to-br from-uco-orange to-uco-yellow flex items-center justify-center border-4 border-gray-200 shadow-md">
                             <span class="text-white text-3xl font-bold">{{ strtoupper(substr($user->name, 0, 1)) }}</span>
                         </div>
                     @endif
                 </div>
 
+                <!-- Arrow (hidden until new photo selected) -->
+                <div id="partial-preview-arrow" class="hidden flex-col items-center text-gray-400 self-end pb-2">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                    </svg>
+                    <span class="text-xs mt-1">New</span>
+                </div>
+
+                <!-- New Photo Preview (hidden until selected) -->
+                <div id="partial-new-photo-wrapper" class="hidden flex-col items-center">
+                    <p class="text-xs text-gray-500 mb-2 font-medium">New Photo</p>
+                    <div class="relative">
+                        <img id="partial-new-photo-img"
+                             src=""
+                             alt="New Photo Preview"
+                             class="w-24 h-24 rounded-full object-cover border-4 border-uco-orange-300 shadow-md ring-2 ring-uco-orange-400 ring-offset-2">
+                        <span class="absolute -bottom-1 -right-1 bg-uco-orange-500 text-white text-xs px-1.5 py-0.5 rounded-full font-semibold shadow">New</span>
+                    </div>
+                </div>
+
                 <!-- Upload Button -->
-                <div class="flex-1">
+                <div class="flex flex-col gap-2">
                     <label for="profile_photo" class="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                         </svg>
                         Choose Photo
                     </label>
-                    <input 
-                        id="profile_photo" 
-                        name="profile_photo" 
-                        type="file" 
+                    <input
+                        id="profile_photo"
+                        name="profile_photo"
+                        type="file"
                         accept="image/*"
                         class="hidden"
-                        onchange="validateAndPreviewPhoto(event)"
+                        onchange="validateAndPreviewPhotoPartial(event)"
                     />
-                    <p class="text-xs text-gray-500 mt-2">JPG, PNG or GIF (Max 10MB)</p>
+                    <p class="text-xs text-gray-500">JPG, PNG or GIF (Max 10MB)</p>
+                    <button type="button" id="partial-cancel-photo" onclick="cancelPartialPhoto()" class="hidden text-xs text-red-500 hover:text-red-700 underline text-left">
+                        Cancel new photo
+                    </button>
                     <x-input-error class="mt-2" :messages="$errors->get('profile_photo')" />
                 </div>
             </div>
@@ -164,3 +187,48 @@
         </div>
     </form>
 </section>
+
+<script>
+    function validateAndPreviewPhotoPartial(event) {
+        const file = event.target.files[0];
+        const maxSize = 10 * 1024 * 1024;
+
+        if (file && file.size > maxSize) {
+            alert('Profile photo must not be larger than 10MB. Please choose a smaller file.');
+            event.target.value = '';
+            return;
+        }
+
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = document.getElementById('partial-new-photo-img');
+                const wrapper = document.getElementById('partial-new-photo-wrapper');
+                const arrow = document.getElementById('partial-preview-arrow');
+                const cancelBtn = document.getElementById('partial-cancel-photo');
+
+                img.src = e.target.result;
+                wrapper.classList.remove('hidden');
+                wrapper.classList.add('flex');
+                arrow.classList.remove('hidden');
+                arrow.classList.add('flex');
+                cancelBtn.classList.remove('hidden');
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    function cancelPartialPhoto() {
+        document.getElementById('profile_photo').value = '';
+
+        const wrapper = document.getElementById('partial-new-photo-wrapper');
+        const arrow = document.getElementById('partial-preview-arrow');
+        const cancelBtn = document.getElementById('partial-cancel-photo');
+
+        wrapper.classList.add('hidden');
+        wrapper.classList.remove('flex');
+        arrow.classList.add('hidden');
+        arrow.classList.remove('flex');
+        cancelBtn.classList.add('hidden');
+    }
+</script>

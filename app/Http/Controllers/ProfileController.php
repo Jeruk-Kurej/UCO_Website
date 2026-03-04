@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class ProfileController extends Controller
@@ -63,8 +64,8 @@ class ProfileController extends Controller
                 // Delete old photo if exists (from Cloudinary)
                 if (!empty($user->profile_photo_url)) {
                     try {
-                        if (Storage::exists((string)$user->profile_photo_url)) {
-                            Storage::delete((string)$user->profile_photo_url);
+                        if (Storage::disk(config('filesystems.default'))->exists((string)$user->profile_photo_url)) {
+                            Storage::disk(config('filesystems.default'))->delete((string)$user->profile_photo_url);
                         }
                     } catch (\Throwable $e) {
                         // Log and continue - missing Cloudinary resource should not block profile update
@@ -73,7 +74,9 @@ class ProfileController extends Controller
                 }
 
                 // Store new photo to default disk (Cloudinary or local depending on env)
-                $path = $file->store('profile-photos');
+                $slug = Str::slug($user->username ?? $user->name, '_');
+                $filename = $slug . '_' . time() . '.' . $file->getClientOriginalExtension();
+                $path = $file->storeAs('profile-photos', $filename, config('filesystems.default'));
                 $user->profile_photo_url = $path;
             }
 

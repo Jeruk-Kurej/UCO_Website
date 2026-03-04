@@ -240,4 +240,69 @@ class Business extends Model
     {
         return $this->logo_url;
     }
+
+    /**
+     * Accessors for additional_data JSON fields
+     * These fields are stored in the additional_data JSON column
+     */
+    public function getPhoneAttribute(): ?string
+    {
+        return $this->additional_data['phone'] ?? null;
+    }
+
+    public function getEmailAttribute(): ?string
+    {
+        return $this->additional_data['email'] ?? null;
+    }
+
+    public function getWebsiteAttribute(): ?string
+    {
+        return $this->additional_data['website'] ?? null;
+    }
+
+    public function getInstagramHandleAttribute(): ?string
+    {
+        return $this->additional_data['instagram_handle'] ?? null;
+    }
+
+    public function getWhatsappNumberAttribute(): ?string
+    {
+        return $this->additional_data['whatsapp_number'] ?? null;
+    }
+
+    public function getProductNameAttribute(): ?string
+    {
+        return $this->additional_data['product_name'] ?? null;
+    }
+
+    public function getProductDescriptionAttribute(): ?string
+    {
+        return $this->additional_data['product_description'] ?? null;
+    }
+
+    public function getUniqueValuePropositionAttribute(): ?string
+    {
+        return $this->additional_data['unique_value_proposition'] ?? null;
+    }
+
+    public function getTargetMarketAttribute(): ?string
+    {
+        return $this->additional_data['target_market'] ?? null;
+    }
+
+    public function getCustomerBaseSizeAttribute(): ?int
+    {
+        $val = $this->additional_data['customer_base_size'] ?? null;
+        return $val !== null ? (int) $val : null;
+    }
+
+    public function getEstablishmentDateAttribute(): ?string
+    {
+        return $this->additional_data['establishment_date'] ?? null;
+    }
+
+    public function getOperationalStatusAttribute(): ?string
+    {
+        return $this->additional_data['operational_status'] ?? null;
+    }
 }

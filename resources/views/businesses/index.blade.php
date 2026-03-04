@@ -314,19 +314,20 @@
                                     const text = await res.text();
                                     console.error('Toggle featured failed', res.status, text);
                                     showToast('Failed to update featured status.', 'error');
+
+                                    btn.innerHTML = originalHtml;
                                     return;
                                 }
 
                                 const data = await res.json();
 
-                                const i = btn.querySelector('i');
                                 if (data?.is_featured) {
-                                    if (i) i.className = 'bi bi-star-fill text-yellow-500';
+                                    btn.innerHTML = '<i class="bi bi-star-fill text-yellow-500"></i>';
                                     btn.setAttribute('aria-pressed', 'true');
                                     btn.title = 'Unfeature business';
                                     showToast(data.message || 'Business featured', 'success');
                                 } else {
-                                    if (i) i.className = 'bi bi-star text-gray-400';
+                                    btn.innerHTML = '<i class="bi bi-star text-gray-400"></i>';
                                     btn.setAttribute('aria-pressed', 'false');
                                     btn.title = 'Feature business';
                                     showToast(data.message || 'Business unfeatured', 'success');
@@ -334,10 +335,10 @@
                             } catch (err) {
                                 console.error(err);
                                 showToast('Failed to update featured status.', 'error');
+                                btn.innerHTML = originalHtml;
                             } finally {
                                 btn.dataset.loading = '0';
                                 btn.removeAttribute('aria-busy');
-                                btn.innerHTML = originalHtml;
                             }
                         });
                     })();
