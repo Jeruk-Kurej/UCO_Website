@@ -18,19 +18,19 @@
 
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div class="bg-white rounded-lg shadow-sm p-4 border-l-4 border-blue-500">
-                <p class="text-xs font-medium text-gray-500 uppercase">UC Total Analyzed</p>
+                <p class="text-xs font-medium text-gray-500 uppercase">Total Analyzed</p>
                 <p class="text-2xl font-bold text-gray-900 mt-1">{{ $ucTotalCount }}</p>
             </div>
             <div class="bg-white rounded-lg shadow-sm p-4 border-l-4 border-green-500">
-                <p class="text-xs font-medium text-gray-500 uppercase">UC Auto-Approved</p>
+                <p class="text-xs font-medium text-gray-500 uppercase">Auto-Approved</p>
                 <p class="text-2xl font-bold text-green-600 mt-1">{{ $ucApprovedCount }}</p>
             </div>
             <div class="bg-white rounded-lg shadow-sm p-4 border-l-4 border-red-500">
-                <p class="text-xs font-medium text-gray-500 uppercase">UC Needs Review</p>
+                <p class="text-xs font-medium text-gray-500 uppercase">Needs Review</p>
                 <p class="text-2xl font-bold text-gray-900 mt-1">{{ $rejectedCount }}</p>
             </div>
             <div class="bg-white rounded-lg shadow-sm p-4 border-l-4 border-purple-500">
-                <p class="text-xs font-medium text-gray-500 uppercase">UC Approval Rate</p>
+                <p class="text-xs font-medium text-gray-500 uppercase">Approval Rate</p>
                 <p class="text-2xl font-bold text-gray-900 mt-1">{{ $approvalRate }}%</p>
             </div>
         </div>
@@ -156,8 +156,8 @@
                         @empty
                             <tr>
                                 <td colspan="6" class="px-6 py-12 text-center">
-                                    <p class="text-gray-500 text-lg font-medium">No UC AI analyses yet</p>
-                                    <p class="text-sm text-gray-400 mt-1">UC testimonies will be automatically analyzed when submitted</p>
+                                    <p class="text-gray-500 text-lg font-medium">No AI analyses yet</p>
+                                    <p class="text-sm text-gray-400 mt-1">testimonies will be automatically analyzed when submitted</p>
                                 </td>
                             </tr>
                         @endforelse
