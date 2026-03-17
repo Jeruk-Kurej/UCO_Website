@@ -176,25 +176,83 @@
             <div x-show="activeTab === 'all'" x-transition.opacity class="grid grid-cols-1 md:grid-cols-2 gap-6">
             @if ($businesses->count() > 0)
                 @foreach ($businesses as $business)
-                    <div class="bg-white border rounded-lg overflow-hidden hover:shadow-md transition-shadow">
-                        <a href="{{ route('businesses.show', $business) }}" class="block p-4">
-                            <div class="flex items-center gap-4">
+                    <div class="bg-white border rounded-xl overflow-hidden hover:shadow-md transition-all duration-200 relative group"
+                         x-data="{ 
+                            isFeatured: {{ $business->is_featured ? 'true' : 'false' }}, 
+                            isToggling: false,
+                            toggleFeatured() {
+                                if(this.isToggling) return;
+                                this.isToggling = true;
+                                fetch('{{ route('businesses.toggle-featured', $business) }}', {
+                                    method: 'POST',
+                                    headers: {
+                                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                        'Accept': 'application/json'
+                                    }
+                                })
+                                .then(res => res.json())
+                                .then(data => {
+                                    this.isFeatured = data.is_featured;
+                                })
+                                .finally(() => {
+                                    this.isToggling = false;
+                                });
+                            }
+                         }">
+                        
+                        @auth
+                            @if(auth()->user()->isAdmin())
+                                <div class="absolute top-4 right-4 z-10 flex items-center gap-2">
+                                    <span class="text-[10px] font-bold uppercase tracking-wider transition-colors duration-200" :class="isFeatured ? 'text-yellow-600' : 'text-gray-400'">Featured</span>
+                                    <button type="button" 
+                                            @click.prevent="toggleFeatured()"
+                                            :disabled="isToggling"
+                                            :class="isFeatured ? 'bg-yellow-400' : 'bg-gray-200 hover:bg-gray-300'"
+                                            class="relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none shadow-inner disabled:opacity-50">
+                                        <span class="sr-only">Toggle featured</span>
+                                        <span aria-hidden="true" 
+                                              :class="isFeatured ? 'translate-x-4' : 'translate-x-0'"
+                                              class="pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"></span>
+                                    </button>
+                                </div>
+                            @endif
+                        @endauth
+
+                        <a href="{{ route('businesses.show', $business) }}" class="block p-5 h-full">
+                            <div class="flex items-start gap-4">
                                 @php
                                     $logo = $business->logo_url ?? null;
                                     $logoUrl = $logo ? storage_image_url($logo, 'logo_thumb') : null;
                                 @endphp
                                 @if ($logoUrl)
-                                    <img src="{{ $logoUrl }}" alt="{{ $business->name }}" class="w-16 h-16 rounded-md object-cover">
+                                    <img src="{{ $logoUrl }}" alt="{{ $business->name }}" class="w-16 h-16 sm:w-20 sm:h-20 rounded-xl object-cover shadow-sm ring-1 ring-gray-900/5 mt-1">
                                 @else
-                                    <div class="w-16 h-16 bg-gray-100 rounded-md flex items-center justify-center text-gray-400">
-                                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 16 16"><path d="M8 0a2 2 0 00-2 2v1H3a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2V5a2 2 0 00-2-2h-3V2a2 2 0 00-2-2z"/></svg>
+                                    <div class="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl flex items-center justify-center text-gray-400 shadow-sm ring-1 ring-gray-900/5 mt-1">
+                                        <i class="bi bi-building text-2xl sm:text-3xl"></i>
                                     </div>
                                 @endif
 
-                                <div class="flex-1 min-w-0">
-                                    <h3 class="font-semibold text-gray-900 truncate mb-1">{{ $business->name }}</h3>
-                                    <div class="min-h-[2.5rem]">
-                                        <p class="text-sm text-gray-500 line-clamp-2 overflow-hidden">{{ $business->description ?: 'No description provided' }}</p>
+                                <div class="flex-1 min-w-0 pr-20 lg:pr-24">
+                                    <div class="flex items-center gap-2 mb-1.5 flex-wrap">
+                                        <h3 class="font-bold text-gray-900 text-lg truncate group-hover:text-soft-gray-900 transition-colors">{{ $business->name }}</h3>
+                                        @if($business->businessType)
+                                            <span class="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-blue-700 ring-1 ring-inset ring-blue-700/10">
+                                                {{ $business->businessType->name }}
+                                            </span>
+                                        @endif
+                                    </div>
+                                    
+                                    <div class="min-h-[2.5rem] mb-3">
+                                        <p class="text-sm text-gray-600 line-clamp-2 leading-relaxed">{{ $business->description ?: 'No description provided' }}</p>
+                                    </div>
+                                    
+                                    <div class="flex flex-wrap items-center gap-4 text-xs text-gray-500 font-medium mt-auto">
+                                        @if($business->user)
+                                            <div class="flex items-center gap-1.5 text-gray-600 bg-gray-50 px-2 py-1 rounded-lg">
+                                                <i class="bi bi-person-fill text-gray-400"></i>
+                                                <span class="truncate max-w-[120px]">{{ $business->user->name }}</span>
+                                            </div>
+                                        @endif
                                     </div>
                                 </div>
                             </div>
