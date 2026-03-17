@@ -13,14 +13,38 @@ class FeaturedController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Business::with(['user', 'businessType', 'products', 'photos'])
-            ->where('is_featured', true);
+        // Prioritize featured businesses first
+        $featuredBusinesses = Business::with(['businessType', 'photos', 'user'])
+            ->where('is_featured', true)
+            ->latest()
+            ->take(6)
+            ->get();
 
-        $businesses = $query->latest()->paginate(10)->withQueryString();
+        // If less than 6 featured businesses, fill with latest non-featured
+        if ($featuredBusinesses->count() < 6) {
+            $remaining = 6 - $featuredBusinesses->count();
+            $latestBusinesses = Business::with(['businessType', 'photos', 'user'])
+                ->where('is_featured', false)
+                ->latest()
+                ->take($remaining)
+                ->get();
+            
+            $featuredBusinesses = $featuredBusinesses->merge($latestBusinesses);
+        }
 
-        $myBusinesses = collect();
-        $businessTypes = BusinessType::all();
+        // Fetch approved testimonies for homepage
+        $testimonies = \App\Models\UcTestimony::query()
+            ->with('aiAnalysis')
+            ->whereHas('aiAnalysis', function ($query) {
+                $query->where('is_approved', true);
+            })
+            ->latest()
+            ->take(6)
+            ->get();
 
-        return view('businesses.index', compact('businesses', 'myBusinesses', 'businessTypes'));
+        return view('dashboard', [
+            'featuredBusinesses' => $featuredBusinesses,
+            'testimonies' => $testimonies,
+        ]);
     }
 }
