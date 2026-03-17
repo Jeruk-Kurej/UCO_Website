@@ -5,11 +5,7 @@
     {{-- Hero Section with Elegant Back Button --}}
     <div class="mb-8 px-4 sm:px-0">
         <div class="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
-            <button onclick="window.history.back()" 
-               class="group inline-flex items-center justify-center sm:justify-start gap-2.5 px-4 py-2.5 bg-white hover:bg-soft-gray-900 border border-gray-200 hover:border-soft-gray-900 text-gray-700 hover:text-white rounded-xl font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200">
-                <i class="bi bi-arrow-left text-base group-hover:-translate-x-0.5 transition-transform duration-200"></i>
-                <span>Back</span>
-            </button>
+
             <div class="flex-1">
                 <div class="flex flex-wrap items-center gap-2 mb-2">
                     <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-soft-gray-100 text-soft-gray-700 text-xs font-semibold rounded-xl">

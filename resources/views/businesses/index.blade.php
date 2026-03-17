@@ -98,8 +98,8 @@
 
         {{-- Search and Filter Card --}}
         <div class="bg-white border border-gray-200 rounded-xl p-4 mb-6 shadow-sm">
-            <div class="flex flex-col sm:flex-row justify-between gap-4">
-                <div class="w-full sm:w-96" 
+            <div class="flex flex-col sm:flex-row gap-4">
+                <div class="flex-1" 
                      x-data="{
                         search: '{{ request('search') }}',
                         isSearching: false,
@@ -191,9 +191,11 @@
                                     </div>
                                 @endif
 
-                                <div class="flex-1">
-                                    <h3 class="font-semibold">{{ $business->name }}</h3>
-                                    <p class="text-sm text-gray-600">{{ \Illuminate\Support\Str::limit($business->description, 80) }}</p>
+                                <div class="flex-1 min-w-0">
+                                    <h3 class="font-semibold text-gray-900 truncate mb-1">{{ $business->name }}</h3>
+                                    <div class="min-h-[2.5rem]">
+                                        <p class="text-sm text-gray-500 line-clamp-2 overflow-hidden">{{ $business->description ?: 'No description provided' }}</p>
+                                    </div>
                                 </div>
                             </div>
                         </a>
@@ -229,9 +231,11 @@
                                     @else
                                         <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400"><i class="bi bi-briefcase"></i></div>
                                     @endif
-                                    <div class="flex-1">
-                                        <h4 class="font-semibold">{{ $b->name }}</h4>
-                                        <p class="text-sm text-gray-600">{{ \Illuminate\Support\Str::limit($b->description, 80) }}</p>
+                                    <div class="flex-1 min-w-0">
+                                        <h4 class="font-semibold text-gray-900 truncate mb-1">{{ $b->name }}</h4>
+                                        <div class="min-h-[2.5rem]">
+                                            <p class="text-sm text-gray-500 line-clamp-2 overflow-hidden">{{ $b->description ?: 'No description provided' }}</p>
+                                        </div>
                                     </div>
                                 </div>
                             </a>
