@@ -2,7 +2,7 @@
     <div class="max-w-5xl mx-auto">
         {{-- Page Header --}}
         <div class="mb-6 flex items-center gap-3">
-            <a href="{{ url()->previous() }}" 
+            <a href="{{ route('business-types.show', $businessType) }}" 
                class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-800 transition duration-150">
                 <i class="bi bi-arrow-left text-lg"></i>
             </a>
@@ -13,7 +13,7 @@
             {{-- ✅ FIXED: All authenticated users can add --}}
             @auth
                 <a href="{{ route('business-types.product-categories.create', $businessType) }}" 
-                   class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white rounded-lg font-semibold text-sm shadow-sm transition duration-150">
+                   class="inline-flex items-center px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-lg font-semibold text-sm shadow-sm transition duration-150">
                     <i class="bi bi-plus-lg me-2"></i>
                     Add Category
                 </a>
@@ -153,7 +153,7 @@
                     @auth
                         <p class="text-sm text-gray-400 mb-4">Create categories to organize products for this business type</p>
                         <a href="{{ route('business-types.product-categories.create', $businessType) }}" 
-                           class="inline-flex items-center px-4 py-2 bg-orange-600 text-white text-sm rounded-md hover:bg-orange-700 transition duration-150">
+                           class="inline-flex items-center px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium rounded-lg shadow-sm transition duration-150">
                             <i class="bi bi-plus-lg me-2"></i>
                             Create First Category
                         </a>

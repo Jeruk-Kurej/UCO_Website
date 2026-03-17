@@ -6,7 +6,7 @@
                 <div class="flex items-center gap-2.5 mb-4">
                     <img src="{{ asset('images/Logo UCO.png') }}" alt="UCO Logo" class="w-10 h-10 object-contain">
                     <div>
-                        <h3 class="font-bold text-base text-gray-900">UC Online</h3>
+                        <h3 class="font-bold text-base text-gray-900">UC Online Learning</h3>
                         <p class="text-xs text-gray-600">Student & Alumni Community</p>
                     </div>
                 </div>
@@ -25,9 +25,15 @@
                         </a>
                     </li>
                     <li>
-                        <a href="/businesses" class="text-sm text-gray-600 hover:text-gray-900 transition-colors">
-                            Businesses Directory
-                        </a>
+                        @if(auth()->check())
+                            <a href="{{ route('businesses.index') }}" class="text-sm text-gray-600 hover:text-gray-900 transition-colors">
+                                Businesses Directory
+                            </a>
+                        @else
+                            <a href="{{ route('featured') }}" class="text-sm text-gray-600 hover:text-gray-900 transition-colors">
+                                Businesses Directory
+                            </a>
+                        @endif
                     </li>
                     <li>
                         <a href="/business-types" class="text-sm text-gray-600 hover:text-gray-900 transition-colors">
@@ -119,14 +125,10 @@
                 </div>
             </div>
         </div>
-    </div>
-
-    {{-- Bottom Bar --}}
-    <div class="border-t border-gray-200 bg-gray-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <div class="flex flex-col md:flex-row justify-between items-center gap-2 text-sm text-gray-600">
-                <p>&copy; {{ date('Y') }} UCO Student & Alumni Platform. All rights reserved.</p>
-            </div>
+        
+        {{-- Copyright - Center --}}
+        <div class="mt-8 pt-6 border-t border-gray-200 text-center">
+            <p class="text-sm text-gray-600">&copy; {{ date('Y') }} UCO Student & Alumni Platform. All rights reserved.</p>
         </div>
     </div>
 </footer>

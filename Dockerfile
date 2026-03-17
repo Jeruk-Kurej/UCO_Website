@@ -22,6 +22,13 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 # Install PHP extensions (including zip)
 RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip
 
+# Configure PHP for file uploads
+RUN echo "upload_max_filesize = 10M" >> /usr/local/etc/php/php.ini-production && \
+    echo "post_max_size = 12M" >> /usr/local/etc/php/php.ini-production && \
+    echo "memory_limit = 256M" >> /usr/local/etc/php/php.ini-production && \
+    echo "max_execution_time = 300" >> /usr/local/etc/php/php.ini-production && \
+    cp /usr/local/etc/php/php.ini-production /usr/local/etc/php/php.ini
+
 # Get latest Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
@@ -55,6 +62,11 @@ RUN composer dump-autoload --optimize
 # Run Laravel package discovery
 RUN php artisan package:discover --ansi
 
+# Clear and cache Laravel config
+RUN php artisan config:clear && \
+    php artisan route:clear && \
+    php artisan view:clear
+
 # Set permissions
 RUN chmod -R 755 /app/storage /app/bootstrap/cache
 
@@ -64,17 +76,13 @@ EXPOSE 8000
 # Start server - migrations optional, won't crash if DB unavailable
 CMD echo "=== RAILWAY STARTUP ===" && \
     echo "PORT: ${PORT:-8000}" && \
-    echo "DB_HOST: ${DB_HOST:-NOT_SET}" && \
-    echo "DB_DATABASE: ${DB_DATABASE:-NOT_SET}" && \
-    echo "=== Starting PHP Server First ===" && \
-    (php -S 0.0.0.0:${PORT:-8000} -t public &) && \
-    sleep 2 && \
-    echo "=== Server Started, Now Running Migrations ===" && \
-    (php artisan migrate --force || echo "Migration failed, continuing...") && \
-    (php artisan db:seed --class=UserSeeder --force || echo "UserSeeder failed, continuing...") && \
-    (php artisan db:seed --class=BusinessTypeSeeder --force || echo "BusinessTypeSeeder failed, continuing...") && \
-    (php artisan db:seed --class=ProductCategorySeeder --force || echo "ProductCategorySeeder failed, continuing...") && \
-    (php artisan db:seed --class=ContactTypeSeeder --force || echo "ContactTypeSeeder failed, continuing...") && \
-    (php artisan db:seed --class=DummyBusinessSeeder --force || echo "DummyBusinessSeeder failed, continuing...") && \
-    echo "=== Keeping Server Running ===" && \
-    wait
+    echo "APP_ENV: ${APP_ENV:-production}" && \
+    echo "APP_DEBUG: ${APP_DEBUG:-false}" && \
+    php artisan config:clear && \
+    php artisan route:clear && \
+    echo "=== Running migrations ===" && \
+    (php artisan migrate --force 2>&1 || echo "Migration failed or skipped") && \
+    echo "=== Creating storage symlink ===" && \
+    (php artisan storage:link 2>&1 || echo "Storage link already exists") && \
+    echo "=== Starting Laravel Server ===" && \
+    php artisan serve --host=0.0.0.0 --port=${PORT:-8000} --no-reload

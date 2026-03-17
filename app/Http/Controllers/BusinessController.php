@@ -5,9 +5,13 @@ namespace App\Http\Controllers;
 use App\Models\Business;
 use App\Models\User;
 use App\Models\BusinessType;
+use App\Imports\BusinessesImport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Maatwebsite\Excel\Facades\Excel;
 
 class BusinessController extends Controller
 {
@@ -32,7 +36,50 @@ class BusinessController extends Controller
      */
     public function index(Request $request)
     {
+        // If visitor is a guest, show the featured dashboard layout with larger cards
+        if (!Auth::check()) {
+            $featuredBusinesses = Business::with(['businessType', 'photos', 'user'])
+                ->where('is_featured', true)
+                ->latest()
+                ->take(6)
+                ->get();
+
+            if ($featuredBusinesses->count() < 6) {
+                $remaining = 6 - $featuredBusinesses->count();
+                $latestBusinesses = Business::with(['businessType', 'photos', 'user'])
+                    ->where('is_featured', false)
+                    ->latest()
+                    ->take($remaining)
+                    ->get();
+
+                $featuredBusinesses = $featuredBusinesses->merge($latestBusinesses);
+            }
+
+            return view('dashboard', compact('featuredBusinesses'));
+        }
+
+        $search = $request->get('search');
         $query = Business::with(['user', 'businessType', 'products', 'photos']);
+        
+        // Apply search filter
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'LIKE', "%{$search}%")
+                  ->orWhere('description', 'LIKE', "%{$search}%")
+                  ->orWhereHas('user', function($userQuery) use ($search) {
+                      $userQuery->where('name', 'LIKE', "%{$search}%");
+                  })
+                  ->orWhereHas('businessType', function($typeQuery) use ($search) {
+                      $typeQuery->where('name', 'LIKE', "%{$search}%");
+                  });
+            });
+        }
+        
+        // Filter by business type id if provided
+        $type = $request->get('type');
+        if ($type) {
+            $query->where('business_type_id', $type);
+        }
         
         // Filter for "My Businesses" if query param present
         if ($request->get('my') && Auth::check()) {
@@ -41,15 +88,19 @@ class BusinessController extends Controller
             $query->where('user_id', $user->id);
         }
         
-        $businesses = $query->latest()->paginate(15);
+        $businesses = $query->latest()->paginate(10);
         
-        // Prepare my businesses for current user
+        // Always load full list of the authenticated user's businesses so "My Businesses"
+        // tab shows all the user's businesses (not only items on the current page).
         $myBusinesses = collect();
         if (Auth::check()) {
-            $myBusinesses = $businesses->where('user_id', Auth::id());
+            $myBusinesses = Business::where('user_id', Auth::id())->latest()->get();
         }
         
-        return view('businesses.index', compact('businesses', 'myBusinesses'));
+        // Also load business types for the filter bar
+        $businessTypes = BusinessType::all();
+
+        return view('businesses.index', compact('businesses', 'myBusinesses', 'businessTypes'));
     }
 
     /**
@@ -81,74 +132,127 @@ class BusinessController extends Controller
     {
         $this->authorize('create', Business::class);
 
-        $validated = $request->validate([
-            // Basic fields
-            'name' => 'required|string|max:255',
-            'description' => 'required|string',
-            'business_type_id' => 'required|exists:business_types,id',
-            'business_mode' => 'required|in:product,service',
-            'user_id' => 'nullable|exists:users,id',
-            
-            // Enhanced fields
-            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
-            'established_date' => 'nullable|date',
-            'address' => 'nullable|string',
-            'employee_count' => 'nullable|integer|min:0',
-            'revenue_range' => 'nullable|in:Mikro: <= Rp 300 Juta,Kecil: > Rp 300 Juta - Rp 2,5 Milyar,Menengah: > Rp 2,5 Milyar - Rp 50 Milyar,Besar: > Rp 50 Milyar',
-            'is_from_college_project' => 'nullable|boolean',
-            'is_continued_after_graduation' => 'nullable|boolean',
-            'legal_documents.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
-            'product_certifications.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
-            'business_challenges' => 'nullable|array',
-        ]);
+        try {
+            $validated = $request->validate([
+                // Basic fields
+                'name' => 'required|string|max:255',
+                'description' => 'required|string|max:1000',
+                'business_type_id' => 'required|exists:business_types,id',
+                'business_mode' => 'required|in:product,service',
+                'user_id' => 'nullable|exists:users,id',
+                'position' => 'nullable|string|max:255',
 
-        $user = $this->getAuthUser();
+                // Location
+                'city' => 'nullable|string|max:255',
+                'province' => 'nullable|string|max:255',
+                'address' => 'nullable|string',
 
-        // Automatically set user_id to current user unless admin specifies
-        if (!isset($validated['user_id']) || !$user->isAdmin()) {
-            $validated['user_id'] = $user->id;
-        }
+                // Enhanced fields
+                'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:10240',
+                'established_date' => 'nullable|date',
+                'employee_count' => 'nullable|integer|min:0',
+                'revenue_range' => 'nullable|in:Mikro: <= Rp 300 Juta,Kecil: > Rp 300 Juta - Rp 2,5 Milyar,Menengah: > Rp 2,5 Milyar - Rp 50 Milyar,Besar: > Rp 50 Milyar',
+                'is_from_college_project' => 'nullable|boolean',
+                'is_continued_after_graduation' => 'nullable|boolean',
+                'legal_documents.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+                'product_certifications.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+                'business_challenges' => 'nullable|array',
 
-        // Handle logo upload
-        if ($request->hasFile('logo')) {
-            $logoPath = $request->file('logo')->store('businesses/logos', 'public');
-            $validated['logo_url'] = $logoPath;
-        }
-        unset($validated['logo']);
+                // Additional data fields (stored in additional_data JSON)
+                'phone' => 'nullable|string|max:50',
+                'email' => 'nullable|email|max:255',
+                'website' => 'nullable|url|max:255',
+                'instagram_handle' => 'nullable|string|max:100',
+                'whatsapp_number' => 'nullable|string|max:50',
+                'product_name' => 'nullable|string|max:255',
+                'product_description' => 'nullable|string|max:2000',
+                'unique_value_proposition' => 'nullable|string|max:1000',
+                'target_market' => 'nullable|string|max:255',
+                'customer_base_size' => 'nullable|integer|min:0',
+                'establishment_date' => 'nullable|date',
+                'operational_status' => 'nullable|in:active,inactive,seasonal',
+            ]);
 
-        // Handle legal documents upload
-        $legalDocs = [];
-        if ($request->hasFile('legal_documents')) {
-            foreach ($request->file('legal_documents') as $index => $file) {
-                $path = $file->store('businesses/legal-documents', 'public');
-                $legalDocs[] = [
-                    'file_path' => $path,
-                    'original_name' => $file->getClientOriginalName(),
-                    'uploaded_at' => now()->toDateTimeString(),
-                ];
+            $user = $this->getAuthUser();
+
+            // Automatically set user_id to current user unless admin specifies
+            if (!isset($validated['user_id']) || !$user->isAdmin()) {
+                $validated['user_id'] = $user->id;
             }
-        }
-        $validated['legal_documents'] = !empty($legalDocs) ? $legalDocs : null;
 
-        // Handle product certifications upload
-        $certifications = [];
-        if ($request->hasFile('product_certifications')) {
-            foreach ($request->file('product_certifications') as $index => $file) {
-                $path = $file->store('businesses/certifications', 'public');
-                $certifications[] = [
-                    'file_path' => $path,
-                    'original_name' => $file->getClientOriginalName(),
-                    'uploaded_at' => now()->toDateTimeString(),
-                ];
+            // Handle logo upload
+            if ($request->hasFile('logo')) {
+                $logoFile = $request->file('logo');
+                $businessSlug = Str::slug($validated['name'], '_');
+                $logoFilename = $businessSlug . '_logo_' . time() . '.' . $logoFile->getClientOriginalExtension();
+                $logoPath = $logoFile->storeAs('businesses/logos', $logoFilename, config('filesystems.default'));
+                $validated['logo_url'] = $logoPath;
             }
+            unset($validated['logo']);
+
+            // Handle legal documents upload
+            $legalDocs = [];
+            if ($request->hasFile('legal_documents')) {
+                $businessSlug = $businessSlug ?? Str::slug($validated['name'], '_');
+                foreach ($request->file('legal_documents') as $index => $file) {
+                    if ($file->getSize() > 5120 * 1024) {
+                        return back()->withErrors(['legal_documents' => 'Each legal document must not be larger than 5MB.'])->withInput();
+                    }
+                    $docNumber = $index + 1;
+                    $docFilename = $businessSlug . '_legal_' . $docNumber . '_' . time() . '.' . $file->getClientOriginalExtension();
+                    $path = $file->storeAs('businesses/legal-documents', $docFilename, config('filesystems.default'));
+                    $legalDocs[] = [
+                        'file_path' => $path,
+                        'original_name' => $file->getClientOriginalName(),
+                        'uploaded_at' => now()->toDateTimeString(),
+                    ];
+                }
+            }
+            $validated['legal_documents'] = !empty($legalDocs) ? $legalDocs : null;
+
+            // Handle product certifications upload
+            $certifications = [];
+            if ($request->hasFile('product_certifications')) {
+                $businessSlug = $businessSlug ?? Str::slug($validated['name'], '_');
+                foreach ($request->file('product_certifications') as $index => $file) {
+                    if ($file->getSize() > 5120 * 1024) {
+                        return back()->withErrors(['product_certifications' => 'Each certification file must not be larger than 5MB.'])->withInput();
+                    }
+                    $certNumber = $index + 1;
+                    $certFilename = $businessSlug . '_cert_' . $certNumber . '_' . time() . '.' . $file->getClientOriginalExtension();
+                    $path = $file->storeAs('businesses/certifications', $certFilename, config('filesystems.default'));
+                    $certifications[] = [
+                        'file_path' => $path,
+                        'original_name' => $file->getClientOriginalName(),
+                        'uploaded_at' => now()->toDateTimeString(),
+                    ];
+                }
+            }
+            $validated['product_certifications'] = !empty($certifications) ? $certifications : null;
+
+            // Move extra fields into additional_data JSON
+            $additionalDataKeys = ['phone', 'email', 'website', 'instagram_handle', 'whatsapp_number',
+                'product_name', 'product_description', 'unique_value_proposition', 'target_market',
+                'customer_base_size', 'establishment_date', 'operational_status'];
+            $additionalData = [];
+            foreach ($additionalDataKeys as $key) {
+                if (array_key_exists($key, $validated)) {
+                    $additionalData[$key] = $validated[$key];
+                    unset($validated[$key]);
+                }
+            }
+            $validated['additional_data'] = !empty($additionalData) ? $additionalData : null;
+
+            $business = Business::create($validated);
+
+            return redirect()
+                ->route('businesses.show', $business)
+                ->with('success', 'Business created successfully!');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return back()->withErrors($e->errors())->withInput();
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => 'An error occurred while creating the business. Please try again.'])->withInput();
         }
-        $validated['product_certifications'] = !empty($certifications) ? $certifications : null;
-
-        $business = Business::create($validated);
-
-        return redirect()
-            ->route('businesses.show', $business)
-            ->with('success', 'Business created successfully!');
     }
 
     /**
@@ -222,129 +326,186 @@ class BusinessController extends Controller
     {
         $this->authorize('update', $business);
 
-        $validated = $request->validate([
-            // Basic fields
-            'name' => 'required|string|max:255',
-            'description' => 'required|string',
-            'business_type_id' => 'required|exists:business_types,id',
-            'business_mode' => 'required|in:product,service,both',
-            'user_id' => 'nullable|exists:users,id',
+        try {
+            $validated = $request->validate([
+                // Basic fields
+                'name' => 'required|string|max:255',
+                'description' => 'required|string|max:1000',
+                'business_type_id' => 'required|exists:business_types,id',
+                'business_mode' => 'required|in:product,service,both',
+                'user_id' => 'nullable|exists:users,id',
+                'position' => 'nullable|string|max:255',
+
+                // Location
+                'city' => 'nullable|string|max:255',
+                'province' => 'nullable|string|max:255',
+                'address' => 'nullable|string',
+
+                // Enhanced fields
+                'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:10240',
+                'established_date' => 'nullable|date',
+                'employee_count' => 'nullable|integer|min:0',
+                'revenue_range' => 'nullable|in:Mikro: <= Rp 300 Juta,Kecil: > Rp 300 Juta - Rp 2,5 Milyar,Menengah: > Rp 2,5 Milyar - Rp 50 Milyar,Besar: > Rp 50 Milyar',
+                'is_from_college_project' => 'nullable|boolean',
+                'is_continued_after_graduation' => 'nullable|boolean',
+                'legal_documents.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+                'product_certifications.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+                'business_challenges' => 'nullable|array',
+                'remove_legal_docs' => 'nullable|array',
+                'remove_certifications' => 'nullable|array',
+
+                // Additional data fields (stored in additional_data JSON)
+                'phone' => 'nullable|string|max:50',
+                'email' => 'nullable|email|max:255',
+                'website' => 'nullable|url|max:255',
+                'instagram_handle' => 'nullable|string|max:100',
+                'whatsapp_number' => 'nullable|string|max:50',
+                'product_name' => 'nullable|string|max:255',
+                'product_description' => 'nullable|string|max:2000',
+                'unique_value_proposition' => 'nullable|string|max:1000',
+                'target_market' => 'nullable|string|max:255',
+                'customer_base_size' => 'nullable|integer|min:0',
+                'establishment_date' => 'nullable|date',
+                'operational_status' => 'nullable|in:active,inactive,seasonal',
+            ]);
+
+            $user = $this->getAuthUser();
+
+            // Validate business mode change - prevent breaking changes
+            $hasProducts = $business->products()->count() > 0;
+            $hasServices = $business->services()->count() > 0;
             
-            // Enhanced fields
-            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
-            'established_date' => 'nullable|date',
-            'address' => 'nullable|string',
-            'employee_count' => 'nullable|integer|min:0',
-            'revenue_range' => 'nullable|in:Mikro: <= Rp 300 Juta,Kecil: > Rp 300 Juta - Rp 2,5 Milyar,Menengah: > Rp 2,5 Milyar - Rp 50 Milyar,Besar: > Rp 50 Milyar',
-            'is_from_college_project' => 'nullable|boolean',
-            'is_continued_after_graduation' => 'nullable|boolean',
-            'legal_documents.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
-            'product_certifications.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
-            'business_challenges' => 'nullable|array',
-            'remove_legal_docs' => 'nullable|array',
-            'remove_certifications' => 'nullable|array',
-        ]);
-
-        $user = $this->getAuthUser();
-
-        // Validate business mode change - prevent breaking changes
-        $hasProducts = $business->products()->count() > 0;
-        $hasServices = $business->services()->count() > 0;
-        
-        if ($validated['business_mode'] !== $business->business_mode) {
-            // Prevent changing to "service only" if products exist
-            if ($validated['business_mode'] === 'service' && $hasProducts) {
-                return back()->withErrors([
-                    'business_mode' => 'Cannot change to Service Only while products exist. Delete products first or choose "Product & Service".'
-                ])->withInput();
-            }
-            
-            // Prevent changing to "product only" if services exist
-            if ($validated['business_mode'] === 'product' && $hasServices) {
-                return back()->withErrors([
-                    'business_mode' => 'Cannot change to Product Only while services exist. Delete services first or choose "Product & Service".'
-                ])->withInput();
-            }
-        }
-
-        // Only admin can change user_id
-        if (!$user->isAdmin()) {
-            unset($validated['user_id']);
-        }
-
-        // Handle logo upload
-        if ($request->hasFile('logo')) {
-            // Delete old logo if exists
-            if ($business->logo_url && Storage::disk('public')->exists($business->logo_url)) {
-                Storage::disk('public')->delete($business->logo_url);
-            }
-            $logoPath = $request->file('logo')->store('businesses/logos', 'public');
-            $validated['logo_url'] = $logoPath;
-        }
-        unset($validated['logo']);
-
-        // Handle legal documents
-        $currentLegalDocs = $business->legal_documents ?? [];
-        
-        // Remove selected documents
-        if ($request->has('remove_legal_docs')) {
-            foreach ($request->remove_legal_docs as $index) {
-                if (isset($currentLegalDocs[$index]['file_path'])) {
-                    Storage::disk('public')->delete($currentLegalDocs[$index]['file_path']);
-                    unset($currentLegalDocs[$index]);
+            if ($validated['business_mode'] !== $business->business_mode) {
+                // Prevent changing to "service only" if products exist
+                if ($validated['business_mode'] === 'service' && $hasProducts) {
+                    return back()->withErrors([
+                        'business_mode' => 'Cannot change to Service Only while products exist. Delete products first or choose "Product & Service".'
+                    ])->withInput();
+                }
+                
+                // Prevent changing to "product only" if services exist
+                if ($validated['business_mode'] === 'product' && $hasServices) {
+                    return back()->withErrors([
+                        'business_mode' => 'Cannot change to Product Only while services exist. Delete services first or choose "Product & Service".'
+                    ])->withInput();
                 }
             }
-            $currentLegalDocs = array_values($currentLegalDocs); // Re-index array
-        }
-        
-        // Add new documents
-        if ($request->hasFile('legal_documents')) {
-            foreach ($request->file('legal_documents') as $file) {
-                $path = $file->store('businesses/legal-documents', 'public');
-                $currentLegalDocs[] = [
-                    'file_path' => $path,
-                    'original_name' => $file->getClientOriginalName(),
-                    'uploaded_at' => now()->toDateTimeString(),
-                ];
-            }
-        }
-        $validated['legal_documents'] = !empty($currentLegalDocs) ? $currentLegalDocs : null;
 
-        // Handle product certifications
-        $currentCertifications = $business->product_certifications ?? [];
-        
-        // Remove selected certifications
-        if ($request->has('remove_certifications')) {
-            foreach ($request->remove_certifications as $index) {
-                if (isset($currentCertifications[$index]['file_path'])) {
-                    Storage::disk('public')->delete($currentCertifications[$index]['file_path']);
-                    unset($currentCertifications[$index]);
+            // Only admin can change user_id
+            if (!$user->isAdmin()) {
+                unset($validated['user_id']);
+            }
+
+            // Handle logo upload
+            if ($request->hasFile('logo')) {
+                $logoFile = $request->file('logo');
+                if ($logoFile->getSize() > 2048 * 1024) {
+                    return back()->withErrors(['logo' => 'Logo must not be larger than 2MB.'])->withInput();
+                }
+                
+                // Delete old logo if exists
+                if ($business->logo_url && Storage::disk(config('filesystems.default'))->exists($business->logo_url)) {
+                    Storage::disk(config('filesystems.default'))->delete($business->logo_url);
+                }
+                $businessSlug = Str::slug($business->name, '_');
+                $logoFilename = $businessSlug . '_logo_' . time() . '.' . $logoFile->getClientOriginalExtension();
+                $logoPath = $logoFile->storeAs('businesses/logos', $logoFilename, config('filesystems.default'));
+                $validated['logo_url'] = $logoPath;
+            }
+            unset($validated['logo']);
+
+            // Handle legal documents
+            $currentLegalDocs = $business->legal_documents ?? [];
+            
+            // Remove selected documents
+            if ($request->has('remove_legal_docs')) {
+                foreach ($request->remove_legal_docs as $index) {
+                        if (isset($currentLegalDocs[$index]['file_path'])) {
+                        Storage::disk(config('filesystems.default'))->delete($currentLegalDocs[$index]['file_path']);
+                        unset($currentLegalDocs[$index]);
+                    }
+                }
+                $currentLegalDocs = array_values($currentLegalDocs); // Re-index array
+            }
+            
+            // Add new documents
+            if ($request->hasFile('legal_documents')) {
+                $businessSlug = Str::slug($business->name, '_');
+                foreach ($request->file('legal_documents') as $file) {
+                    if ($file->getSize() > 5120 * 1024) {
+                        return back()->withErrors(['legal_documents' => 'Each legal document must not be larger than 5MB.'])->withInput();
+                    }
+                    $docNumber = count($currentLegalDocs) + 1;
+                    $docFilename = $businessSlug . '_legal_' . $docNumber . '_' . time() . '.' . $file->getClientOriginalExtension();
+                    $path = $file->storeAs('businesses/legal-documents', $docFilename, config('filesystems.default'));
+                    $currentLegalDocs[] = [
+                        'file_path' => $path,
+                        'original_name' => $file->getClientOriginalName(),
+                        'uploaded_at' => now()->toDateTimeString(),
+                    ];
                 }
             }
-            $currentCertifications = array_values($currentCertifications); // Re-index array
-        }
-        
-        // Add new certifications
-        if ($request->hasFile('product_certifications')) {
-            foreach ($request->file('product_certifications') as $file) {
-                $path = $file->store('businesses/certifications', 'public');
-                $currentCertifications[] = [
-                    'file_path' => $path,
-                    'original_name' => $file->getClientOriginalName(),
-                    'uploaded_at' => now()->toDateTimeString(),
-                ];
+            $validated['legal_documents'] = !empty($currentLegalDocs) ? $currentLegalDocs : null;
+
+            // Handle product certifications
+            $currentCertifications = $business->product_certifications ?? [];
+            
+            // Remove selected certifications
+            if ($request->has('remove_certifications')) {
+                foreach ($request->remove_certifications as $index) {
+                        if (isset($currentCertifications[$index]['file_path'])) {
+                        Storage::disk(config('filesystems.default'))->delete($currentCertifications[$index]['file_path']);
+                        unset($currentCertifications[$index]);
+                    }
+                }
+                $currentCertifications = array_values($currentCertifications); // Re-index array
             }
+            
+            // Add new certifications
+            if ($request->hasFile('product_certifications')) {
+                $businessSlug = $businessSlug ?? Str::slug($business->name, '_');
+                foreach ($request->file('product_certifications') as $file) {
+                    if ($file->getSize() > 5120 * 1024) {
+                        return back()->withErrors(['product_certifications' => 'Each certification file must not be larger than 5MB.'])->withInput();
+                    }
+                    $certNumber = count($currentCertifications) + 1;
+                    $certFilename = $businessSlug . '_cert_' . $certNumber . '_' . time() . '.' . $file->getClientOriginalExtension();
+                    $path = $file->storeAs('businesses/certifications', $certFilename, config('filesystems.default'));
+                    $currentCertifications[] = [
+                        'file_path' => $path,
+                        'original_name' => $file->getClientOriginalName(),
+                        'uploaded_at' => now()->toDateTimeString(),
+                    ];
+                }
+            }
+            $validated['product_certifications'] = !empty($currentCertifications) ? $currentCertifications : null;
+
+            // Remove these from validated array
+            unset($validated['remove_legal_docs'], $validated['remove_certifications']);
+
+            // Move extra fields into additional_data JSON (merge with existing)
+            $additionalDataKeys = ['phone', 'email', 'website', 'instagram_handle', 'whatsapp_number',
+                'product_name', 'product_description', 'unique_value_proposition', 'target_market',
+                'customer_base_size', 'establishment_date', 'operational_status'];
+            $additionalData = $business->additional_data ?? [];
+            foreach ($additionalDataKeys as $key) {
+                if (array_key_exists($key, $validated)) {
+                    $additionalData[$key] = $validated[$key];
+                    unset($validated[$key]);
+                }
+            }
+            $validated['additional_data'] = $additionalData;
+
+            $business->update($validated);
+
+            return redirect()
+                ->route('businesses.show', $business)
+                ->with('success', 'Business updated successfully!');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return back()->withErrors($e->errors())->withInput();
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => 'An error occurred while updating the business. Please try again.'])->withInput();
         }
-        $validated['product_certifications'] = !empty($currentCertifications) ? $currentCertifications : null;
-
-        // Remove these from validated array
-        unset($validated['remove_legal_docs'], $validated['remove_certifications']);
-
-        $business->update($validated);
-
-        return redirect()
-            ->route('businesses.show', $business)
-            ->with('success', 'Business updated successfully!');
     }
 
     /**
@@ -382,5 +543,55 @@ class BusinessController extends Controller
         return redirect()
             ->route('businesses.index')
             ->with('success', 'Business deleted successfully!');
+    }
+
+    /**
+     * Import businesses from Excel file
+     */
+    public function import(Request $request)
+    {
+        $user = $this->getAuthUser();
+
+        // Only admins can import businesses
+        if (!$user->isAdmin()) {
+            return back()->withErrors(['error' => 'Only administrators can import businesses.']);
+        }
+
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls,csv|max:10240', // Max 10MB
+        ]);
+
+        // Increase execution time and memory limit for large imports
+        set_time_limit(300); // 5 minutes
+        ini_set('memory_limit', '512M');
+
+        try {
+            $import = new BusinessesImport();
+            Excel::import($import, $request->file('file'));
+
+            $results = $import->getResults();
+
+            $message = "Import completed! Success: {$results['success']}, Skipped: {$results['skipped']}";
+            
+            if (!empty($results['errors'])) {
+                $message .= ". Errors: " . count($results['errors']);
+                
+                // Log detailed errors for debugging
+                foreach ($results['errors'] as $error) {
+                    Log::error("Business import error: " . $error);
+                }
+                
+                // Show first few errors to user
+                $errorMessages = array_slice($results['errors'], 0, 5);
+                return back()->with('success', $message)
+                    ->with('import_errors', $errorMessages);
+            }
+
+            return back()->with('success', $message);
+
+        } catch (\Exception $e) {
+            Log::error('Business import exception: ' . $e->getMessage());
+            return back()->withErrors(['error' => 'Error importing file: ' . $e->getMessage()]);
+        }
     }
 }

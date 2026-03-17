@@ -18,11 +18,14 @@ class Business extends Model
         'business_mode',
         'name',
         'description',
+        'position', // User's position in this business
         
         // Enhanced Fields
         'logo_url',
         'established_date',
         'address',
+        'city',
+        'province',
         'employee_count',
         'revenue_range',
         'is_from_college_project',
@@ -30,6 +33,7 @@ class Business extends Model
         'legal_documents',
         'product_certifications',
         'business_challenges',
+        'additional_data',
     ];
 
     protected $casts = [
@@ -39,6 +43,7 @@ class Business extends Model
         'legal_documents' => 'array',
         'product_certifications' => 'array',
         'business_challenges' => 'array',
+        'additional_data' => 'array',
     ];
 
     public function user(): BelongsTo
@@ -226,5 +231,78 @@ class Business extends Model
     public function getChallengesCount(): int
     {
         return !empty($this->business_challenges) ? count($this->business_challenges) : 0;
+    }
+
+    /**
+     * Accessor for logo attribute (maps to logo_url)
+     */
+    public function getLogoAttribute()
+    {
+        return $this->logo_url;
+    }
+
+    /**
+     * Accessors for additional_data JSON fields
+     * These fields are stored in the additional_data JSON column
+     */
+    public function getPhoneAttribute(): ?string
+    {
+        return $this->additional_data['phone'] ?? null;
+    }
+
+    public function getEmailAttribute(): ?string
+    {
+        return $this->additional_data['email'] ?? null;
+    }
+
+    public function getWebsiteAttribute(): ?string
+    {
+        return $this->additional_data['website'] ?? null;
+    }
+
+    public function getInstagramHandleAttribute(): ?string
+    {
+        return $this->additional_data['instagram_handle'] ?? null;
+    }
+
+    public function getWhatsappNumberAttribute(): ?string
+    {
+        return $this->additional_data['whatsapp_number'] ?? null;
+    }
+
+    public function getProductNameAttribute(): ?string
+    {
+        return $this->additional_data['product_name'] ?? null;
+    }
+
+    public function getProductDescriptionAttribute(): ?string
+    {
+        return $this->additional_data['product_description'] ?? null;
+    }
+
+    public function getUniqueValuePropositionAttribute(): ?string
+    {
+        return $this->additional_data['unique_value_proposition'] ?? null;
+    }
+
+    public function getTargetMarketAttribute(): ?string
+    {
+        return $this->additional_data['target_market'] ?? null;
+    }
+
+    public function getCustomerBaseSizeAttribute(): ?int
+    {
+        $val = $this->additional_data['customer_base_size'] ?? null;
+        return $val !== null ? (int) $val : null;
+    }
+
+    public function getEstablishmentDateAttribute(): ?string
+    {
+        return $this->additional_data['establishment_date'] ?? null;
+    }
+
+    public function getOperationalStatusAttribute(): ?string
+    {
+        return $this->additional_data['operational_status'] ?? null;
     }
 }

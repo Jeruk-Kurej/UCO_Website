@@ -22,27 +22,21 @@
 
                     {{-- Photo Upload --}}
                     <div>
-                        <label for="photo" class="block text-sm font-medium text-gray-700 mb-2">
+                        <label class="block text-sm font-semibold text-gray-700 mb-3">
                             Photo <span class="text-red-500">*</span>
                         </label>
-                        <input type="file" 
-                               name="photo" 
-                               id="photo" 
-                               accept="image/*"
-                               required
-                               class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none focus:border-orange-500 focus:ring-orange-500 @error('photo') border-red-500 @enderror">
-                        <p class="mt-1 text-xs text-gray-500">Accepted formats: JPG, PNG, GIF. Max size: 5MB</p>
+                        <input type="file" name="photo" id="photo" accept="image/*" required class="hidden">
                         @error('photo')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            <p class="mb-2 text-sm text-red-600">{{ $message }}</p>
                         @enderror
-                    </div>
-
-                    {{-- Image Preview --}}
-                    <div id="preview-container" class="hidden">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Preview</label>
-                        <div class="border-2 border-dashed border-gray-300 rounded-lg p-4">
-                            <img id="preview-image" class="max-w-full h-auto max-h-96 mx-auto rounded-lg" alt="Preview">
-                        </div>
+                        <x-image-preview
+                            input-id="photo"
+                            preview-id="bp-create"
+                            :max-size="10"
+                            height="h-72"
+                            placeholder="Click or drag & drop your business photo here"
+                            hint="JPG, PNG, GIF — max 10MB"
+                        />
                     </div>
 
                     {{-- Caption --}}
@@ -79,12 +73,12 @@
                     {{-- Submit Buttons --}}
                     <div class="flex items-center justify-between pt-6 border-t border-gray-200">
                         <a href="{{ route('businesses.show', $business) }}" 
-                           class="inline-flex items-center px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition duration-150">
+                           class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition duration-150">
                             <i class="bi bi-x-lg me-2"></i>
                             Cancel
                         </a>
                         <button type="submit" 
-                                class="inline-flex items-center px-6 py-2 bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white font-semibold rounded-md shadow-sm transition duration-150">
+                                class="inline-flex items-center gap-2 px-6 py-2.5 bg-gray-900 hover:bg-gray-800 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200">
                             <i class="bi bi-upload me-2"></i>
                             Upload Photo
                         </button>
@@ -96,20 +90,7 @@
 
     @push('scripts')
     <script>
-        // Image preview
-        document.getElementById('photo').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    const preview = document.getElementById('preview-image');
-                    const container = document.getElementById('preview-container');
-                    preview.src = event.target.result;
-                    container.classList.remove('hidden');
-                };
-                reader.readAsDataURL(file);
-            }
-        });
+        document.addEventListener('DOMContentLoaded', () => ucoInitImagePreview('photo', 'bp-create', 10, false));
     </script>
     @endpush
 </x-app-layout>

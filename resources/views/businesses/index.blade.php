@@ -1,309 +1,499 @@
+@use('Illuminate\Support\Facades\Storage')
+
 <x-app-layout>
     {{-- ✅ REMOVED: <x-slot name="header"> section --}}
 
-    <div x-data="{ activeTab: @auth @if(!auth()->user()->isAdmin()) 'my' @else 'browse' @endif @else 'browse' @endauth }" class="space-y-6">
-        {{-- Tabs Navigation with Admin Button --}}
-        <div class="bg-white shadow-sm sm:rounded-lg">
-            <div class="border-b border-gray-200">
-                <div class="flex justify-between items-center px-6">
-                    {{-- Left: Tabs --}}
-                    <nav class="flex -mb-px">
-                        @auth
-                            @if(!auth()->user()->isAdmin())
-                                {{-- My Businesses Tab FIRST for non-admin --}}
-                                <button @click="activeTab = 'my'" 
-                                        :class="activeTab === 'my' ? 'border-orange-500 text-orange-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
-                                        class="flex items-center gap-2 py-4 px-4 border-b-2 font-medium text-sm transition duration-150">
-                                    <i class="bi bi-briefcase"></i>
-                                    My Businesses
-                                    <span class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-xs">
-                                        {{ $businesses->where('user_id', auth()->id())->count() }}
-                                    </span>
-                                </button>
-                            @endif
-                        @endauth
-
-                        {{-- Browse All Tab --}}
-                        <button @click="activeTab = 'browse'" 
-                                :class="activeTab === 'browse' ? 'border-orange-500 text-orange-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
-                                class="flex items-center gap-2 py-4 px-4 border-b-2 font-medium text-sm transition duration-150">
-                            <i class="bi bi-shop"></i>
-                            Browse All Businesses
-                            <span class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-xs">
-                                {{ $businesses->total() }}
-                            </span>
-                        </button>
-                    </nav>
-
-                    {{-- Right: Admin "Add Business" Button --}}
-                    @auth
-                        @if(auth()->user()->isAdmin())
-                            <div class="py-2">
-                                <a href="/businesses/create"
-                                   class="inline-flex items-center px-4 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors">
-                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                                    </svg>
-                                    Add Business
-                                </a>
-                            </div>
-                        @endif
-                    @endauth
+    {{-- Success/Error Messages --}}
+    @if(session('success'))
+        <div class="bg-green-50 border-l-4 border-green-400 p-4 mb-4 rounded-r-lg">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm text-green-700 font-medium">{{ session('success') }}</p>
                 </div>
             </div>
+        </div>
+    @endif
 
-            {{-- Tab Content: Browse All Businesses --}}
-            <div x-show="activeTab === 'browse'" class="p-6">
-                @if($businesses->count() > 0)
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        @foreach($businesses as $business)
-                            <div class="bg-white border border-gray-200 rounded-lg shadow hover:shadow-lg transition duration-150">
-                                {{-- Business Photo --}}
-                                    @if($business->photos->first())
-                                            <img src="{{ asset('storage/' . $business->photos->first()->photo_url) }}" 
-                                                 alt="{{ $business->name }}" 
-                                                 class="w-full h-48 object-cover rounded-t-lg">
-                                    @else
-                                        <div class="w-full h-48 bg-purple-100 rounded-t-lg flex items-center justify-center">
-                                            <i class="bi bi-briefcase text-6xl text-purple-600"></i>
-                                        </div>
-                                    @endif
-
-                                <div class="p-5">
-                                    <h3 class="text-lg font-bold text-gray-900 mb-2">{{ $business->name }}</h3>
-                                    <p class="text-sm text-gray-600 mb-3 line-clamp-2">{{ $business->description }}</p>
-                                    
-                                        <div class="flex items-center justify-between mb-3">
-                                            <span class="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">
-                                                {{ $business->businessType->name }}
-                                            </span>
-                                            <div class="flex items-center gap-2">
-                                                @if($business->is_featured)
-                                                    <span class="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded flex items-center gap-1">
-                                                        <i class="bi bi-star-fill"></i>
-                                                        Featured
-                                                    </span>
-                                                @endif
-                                                <span class="text-xs text-gray-500">
-                                                    <i class="bi bi-person"></i>
-                                                    {{ $business->user->name }}
-                                                </span>
-                                            </div>
-                                        </div>
-
-                                        <div class="flex items-center justify-between pt-3 border-t border-gray-200">
-                                            <a href="{{ route('businesses.show', $business) }}" 
-                                               class="text-purple-600 hover:text-purple-700 text-sm font-medium flex items-center gap-1">
-                                                View Details
-                                                <i class="bi bi-arrow-right"></i>
-                                            </a>
-
-                                        <div class="flex items-center gap-2">
-                                            @auth
-                                                @if(auth()->user()->isAdmin())
-                                                    <button 
-                                                        onclick="toggleFeatured({{ $business->id }}, this)"
-                                                        class="inline-flex items-center justify-center w-8 h-8 rounded-lg transition-colors {{ $business->is_featured ? 'text-yellow-600 hover:bg-yellow-50' : 'text-gray-400 hover:bg-gray-100' }}"
-                                                        title="{{ $business->is_featured ? 'Remove from Featured' : 'Add to Featured' }}"
-                                                        data-featured="{{ $business->is_featured ? 'true' : 'false' }}">
-                                                        <i class="bi {{ $business->is_featured ? 'bi-star-fill' : 'bi-star' }} text-lg"></i>
-                                                    </button>
-                                                @endif
-                                                @if(auth()->id() === $business->user_id || auth()->user()->isAdmin())
-                                                    <a href="{{ route('businesses.edit', $business) }}" 
-                                                       class="text-gray-500 hover:text-gray-700 text-sm">
-                                                        <i class="bi bi-pencil"></i>
-                                                    </a>
-                                                @endif
-                                            @endauth
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
-
-                    {{-- Pagination --}}
-                    <div class="mt-6">
-                        {{ $businesses->links() }}
-                    </div>
-                @else
-                    <div class="text-center py-12">
-                        <i class="bi bi-inbox text-6xl text-gray-300"></i>
-                        <p class="mt-4 text-gray-500 text-lg font-medium">No businesses found.</p>
-                    </div>
-                @endif
+    @if(session('error'))
+        <div class="bg-red-50 border-l-4 border-red-400 p-4 mb-4 rounded-r-lg">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm text-red-700 font-medium">{{ session('error') }}</p>
+                </div>
             </div>
+        </div>
+    @endif
 
-            {{-- Tab Content: My Businesses (ONLY for Student/Alumni) --}}
-            @auth
-                @if(!auth()->user()->isAdmin())
-                    <div x-show="activeTab === 'my'" class="p-6" style="display: none;">
-                        <div class="mb-6 flex items-center justify-between">
-                            <h3 class="text-lg font-semibold text-gray-900">My Businesses</h3>
-                            <a href="/businesses/create" 
-                               class="inline-flex items-center px-4 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                                </svg>
-                                Add Business
-                            </a>
-                        </div>
-
-                        @if($myBusinesses->count() > 0)
-                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                @foreach($myBusinesses as $business)
-                                    <div class="bg-white border border-gray-200 rounded-lg shadow hover:shadow-lg transition duration-150">
-                                        @if($business->photos->first())
-                                            <img src="{{ asset('storage/' . $business->photos->first()->photo_url) }}" 
-                                                 alt="{{ $business->name }}" 
-                                                 class="w-full h-48 object-cover rounded-t-lg">
-                                        @else
-                                            <div class="w-full h-48 bg-purple-100 rounded-t-lg flex items-center justify-center">
-                                                <i class="bi bi-briefcase text-6xl text-purple-600"></i>
-                                            </div>
-                                        @endif
-
-                                        <div class="p-5">
-                                            <h3 class="text-lg font-bold text-gray-900 mb-2">{{ $business->name }}</h3>
-                                            <p class="text-sm text-gray-600 mb-3 line-clamp-2">{{ $business->description }}</p>
-                                            
-                                            <div class="flex items-center justify-between mb-3">
-                                                <span class="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">
-                                                    {{ $business->businessType->name }}
-                                                </span>
-                                                <div class="flex items-center gap-2">
-                                                    @if($business->is_featured)
-                                                        <span class="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded flex items-center gap-1">
-                                                            <i class="bi bi-star-fill"></i>
-                                                            Featured
-                                                        </span>
-                                                    @endif
-                                                    <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
-                                                        <i class="bi bi-check-circle me-1"></i>
-                                                        My Business
-                                                    </span>
-                                                </div>
-                                            </div>
-
-                                            <div class="flex items-center justify-between pt-3 border-t border-gray-200">
-                                                <a href="{{ route('businesses.show', $business) }}" 
-                                                   class="text-purple-600 hover:text-purple-700 text-sm font-medium flex items-center gap-1">
-                                                    View Details
-                                                    <i class="bi bi-arrow-right"></i>
-                                                </a>
-                                                <a href="{{ route('businesses.edit', $business) }}" 
-                                                   class="inline-flex items-center px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded text-sm transition duration-150">
-                                                    <i class="bi bi-pencil me-1"></i>
-                                                    Edit
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                @endforeach
-                            </div>
-                        @else
-                            <div class="text-center py-12">
-                                <i class="bi bi-inbox text-6xl text-gray-300"></i>
-                                <p class="mt-4 text-gray-500 text-lg font-medium">You have no businesses yet.</p>
-                                <a href="/businesses/create" 
-                                   class="mt-4 inline-flex items-center px-6 py-3 bg-gray-900 text-white rounded-lg font-medium shadow-sm hover:bg-gray-800 transition-colors">
-                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                                    </svg>
-                                    Create Your First Business
-                                </a>
-                            </div>
-                        @endif
+    @if($errors->any())
+        <div class="bg-red-50 border-l-4 border-red-400 p-4 mb-4 rounded-r-lg">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-sm font-medium text-red-800">Validation Errors:</h3>
+                    <div class="mt-2 text-sm text-red-700">
+                        <ul class="list-disc list-inside space-y-1">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
                     </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    {{-- Main Content --}}
+    @php
+        // Default tab: for authenticated non-admin users default to 'my', otherwise 'all'
+        if (auth()->check() && !auth()->user()->isAdmin()) {
+            $initialTab = request('tab', 'my');
+        } else {
+            $initialTab = request('tab', 'all');
+        }
+    @endphp
+    <div x-data="{ activeTab: '{{ $initialTab }}' }" x-cloak>
+
+        {{-- Page Header --}}
+        <div class="flex items-center justify-between mb-5">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900">Business Directory</h1>
+                <p class="text-sm text-gray-600 mt-1">Browse and manage alumni businesses</p>
+            </div>
+            @auth
+                @if(auth()->user()->isAdmin())
+                <div class="flex gap-3">
+                    <button type="button" onclick="document.getElementById('importModal').classList.remove('hidden')"
+                            class="inline-flex items-center px-4 py-2.5 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                        </svg>
+                        Import
+                    </button>
+                    <a href="{{ route('businesses.create') }}"
+                       class="inline-flex items-center px-4 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                        Add Business
+                    </a>
+                </div>
                 @endif
             @endauth
         </div>
-    </div>
 
-    {{-- JavaScript for Toggle Featured --}}
-    @auth
-        @if(auth()->user()->isAdmin())
-            <script>
-                function toggleFeatured(businessId, button) {
-                    // Prevent double clicks
-                    button.disabled = true;
+        {{-- Search Bar --}}
+        <div class="bg-white border border-gray-200 rounded-xl p-4 mb-5"
+             x-data="{
+                search: '{{ request('search') }}',
+                isSearching: false,
+                performSearch() {
+                    this.isSearching = true;
+                    const trimmed = this.search.trim();
+                    const url = trimmed.length > 0
+                        ? '{{ route('businesses.index') }}?search=' + encodeURIComponent(trimmed)
+                        : '{{ route('businesses.index') }}';
+                    window.location.href = url;
+                }
+             }">
+            <div class="flex gap-3">
+                <div class="flex-1">
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                        </div>
+                        <input type="text"
+                               x-model="search"
+                               @input.debounce.500ms="performSearch()"
+                               @keydown.enter="performSearch()"
+                               placeholder="Search by name, description, owner, or type..."
+                               class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        <div x-show="isSearching" class="absolute inset-y-0 right-0 flex items-center pr-3">
+                            <svg class="animate-spin h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+                @if(request('search'))
+                    <button type="button"
+                            @click="search = ''; window.location.href = '{{ route('businesses.index') }}'"
+                            class="inline-flex items-center px-4 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors">
+                        Clear
+                    </button>
+                @endif
+            </div>
+        </div>
 
-                    fetch(`/businesses/${businessId}/toggle-featured`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                            'X-Requested-With': 'XMLHttpRequest'
-                        },
-                        credentials: 'same-origin',
-                        body: JSON.stringify({ _token: '{{ csrf_token() }}' })
-                    })
-                    .then(response => {
-                        if (!response.ok) {
-                            return response.json().then(err => {
-                                const msg = err.message || 'Failed to update featured status';
-                                showToast(msg, true);
-                                throw new Error(msg);
-                            }).catch(() => {
-                                // If response isn't JSON
-                                showToast('Failed to update featured status', true);
-                                throw new Error('Network error');
-                            });
+        {{-- Client-side Tabs for non-admin users: All / My --}}
+        @auth
+            @if(!auth()->user()->isAdmin())
+                <div class="mt-6">
+                    <div role="tablist" class="inline-flex rounded-lg bg-white border border-slate-200 p-2 shadow-sm gap-4">
+                        <button @click="activeTab = 'my'" type="button" role="tab" :aria-selected="activeTab === 'my'" :class="activeTab === 'my' ? 'bg-gray-900 text-white' : 'text-gray-700 hover:bg-gray-50'" class="px-5 py-2 rounded-lg text-sm font-medium">My Businesses</button>
+                        <button @click="activeTab = 'all'" type="button" role="tab" :aria-selected="activeTab === 'all'" :class="activeTab === 'all' ? 'bg-gray-900 text-white' : 'text-gray-700 hover:bg-gray-50'" class="px-5 py-2 rounded-lg text-sm font-medium">All Businesses</button>
+                    </div>
+                </div>
+            @endif
+        @endauth
+
+        @if (session('success'))
+            <div class="mb-4 text-green-700">{{ session('success') }}</div>
+        @endif
+
+        {{-- All Businesses (visible when activeTab === 'all') --}}
+        <div x-show="activeTab === 'all'" x-transition.opacity class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            @forelse($businesses as $business)
+                <a href="{{ route('businesses.show', $business) }}" class="group block bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition duration-200">
+                    <div class="flex flex-col h-full">
+                        {{-- Hero --}}
+                        <div class="relative h-44 bg-gray-50">
+                            @php $hero = $business->photos->first()?->photo_url ?? $business->logo_url ?? null; @endphp
+                            @if($hero)
+                                <img src="{{ storage_image_url($hero, 'hero') }}" alt="{{ $business->name }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+                            @else
+                                <div class="w-full h-full bg-gradient-to-br from-gray-100 to-gray-50 flex items-center justify-center">
+                                    <i class="bi bi-briefcase text-6xl text-gray-300"></i>
+                                </div>
+                            @endif
+
+                            <span class="absolute top-3 left-3 inline-block bg-white/95 text-xs font-semibold px-3 py-1 rounded-full shadow-sm">
+                                {{ $business->businessType?->name ?? 'Other' }}
+                            </span>
+
+                            {{-- Admin toggle star --}}
+                            @auth
+                                @if(auth()->user()->isAdmin())
+                                    <button
+                                        type="button"
+                                        data-url="{{ route('businesses.toggle-featured', $business) }}"
+                                        class="toggle-featured-btn absolute top-3 right-3 inline-flex items-center justify-center w-9 h-9 rounded-full bg-white/90 shadow-sm transition hover:scale-105"
+                                        aria-pressed="{{ $business->is_featured ? 'true' : 'false' }}"
+                                        title="{{ $business->is_featured ? 'Unfeature business' : 'Feature business' }}">
+                                        @if($business->is_featured)
+                                            <i class="bi bi-star-fill text-yellow-500"></i>
+                                        @else
+                                            <i class="bi bi-star text-gray-400"></i>
+                                        @endif
+                                    </button>
+                                @endif
+                            @endauth
+                        </div>
+
+                        {{-- Body --}}
+                        <div class="p-4 flex-1 flex flex-col justify-between">
+                            <div>
+                                <h3 class="text-sm font-semibold text-gray-900 mb-1 line-clamp-2">{{ $business->name }}</h3>
+                                <p class="text-xs text-gray-600 mb-3 line-clamp-3">
+                                    {{ $business->description ? \Illuminate\Support\Str::limit($business->description, 140) : 'No description provided' }}
+                                </p>
+                            </div>
+
+                            <div class="flex items-center justify-between mt-3">
+                                <div class="flex items-center gap-3 text-xs text-gray-500">
+                                    @if($business->user?->profile_photo_url)
+                                        <img src="{{ storage_image_url($business->user->profile_photo_url, 'profile_thumb') }}" alt="{{ $business->user->name }}" class="w-8 h-8 rounded-full object-cover">
+                                    @else
+                                        <div class="w-8 h-8 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center font-medium">{{ strtoupper(substr($business->user?->name ?? 'U',0,1)) }}</div>
+                                    @endif
+                                    <div>
+                                        <div class="text-xs text-gray-800 font-medium">{{ $business->user?->name ?? 'Unknown' }}</div>
+                                        <div class="text-xs text-gray-500">{{ $business->products->count() }} products • {{ $business->services->count() }} services</div>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center gap-2">
+                                    @if($business->is_featured)
+                                        <span class="text-xs inline-flex items-center gap-1 px-2 py-1 rounded-full bg-yellow-100 text-yellow-800">Featured</span>
+                                    @endif
+                                    <span class="text-xs px-2 py-1 rounded bg-gray-100 text-gray-600">{{ $business->businessType?->name ?? 'Other' }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            @empty
+                <div class="col-span-full text-center py-12 text-gray-500">No businesses found.</div>
+            @endforelse
+        </div>
+
+        {{-- Pagination for All Businesses --}}
+        <div x-show="activeTab === 'all'" x-transition.opacity class="mt-6">
+            <div class="flex items-center justify-center">
+                @if(method_exists($businesses, 'links'))
+                    {{ $businesses->withQueryString()->appends(['tab' => 'all'])->links() }}
+                @endif
+            </div>
+        </div>
+
+        {{-- Inline JS for admin toggle (minimal, unobtrusive) --}}
+        @auth
+            @if(auth()->user()->isAdmin())
+                <script>
+                    (function(){
+                        const csrf = '{{ csrf_token() }}';
+
+                        // Ensure a persistent toast container exists
+                        function getToastContainer(){
+                            const id = 'global-toast-container';
+                            let container = document.getElementById(id);
+                            if (!container) {
+                                container = document.createElement('div');
+                                container.id = id;
+                                container.setAttribute('aria-live', 'polite');
+                                container.setAttribute('role', 'status');
+                                container.className = 'fixed top-6 right-6 z-50 flex flex-col gap-3 items-end';
+                                document.body.appendChild(container);
+                            }
+                            return container;
                         }
-                        return response.json();
-                    })
-                    .then(data => {
-                        if (data && data.success) {
-                            // Update button appearance
-                            const icon = button.querySelector('i');
-                            if (data.is_featured) {
-                                button.classList.remove('text-gray-400', 'hover:bg-gray-100');
-                                button.classList.add('text-yellow-600', 'hover:bg-yellow-50');
-                                icon.classList.remove('bi-star');
-                                icon.classList.add('bi-star-fill');
-                                button.setAttribute('title', 'Remove from Featured');
-                                button.setAttribute('data-featured', 'true');
-                            } else {
-                                button.classList.remove('text-yellow-600', 'hover:bg-yellow-50');
-                                button.classList.add('text-gray-400', 'hover:bg-gray-100');
-                                icon.classList.remove('bi-star-fill');
-                                icon.classList.add('bi-star');
-                                button.setAttribute('title', 'Add to Featured');
-                                button.setAttribute('data-featured', 'false');
+
+                        function showToast(message, type = 'info'){
+                            const colors = {
+                                success: 'bg-emerald-600',
+                                error: 'bg-red-600',
+                                info: 'bg-gray-800'
+                            };
+
+                            const container = getToastContainer();
+                            // Deduplicate identical messages: if found, reset its timeout and bring to front
+                            const existing = Array.from(container.children).find(t => t.dataset && t.dataset.msg === message && t.dataset.type === type);
+                            if (existing) {
+                                if (existing.__timeoutId) clearTimeout(existing.__timeoutId);
+                                // bump to top (end)
+                                container.appendChild(existing);
+                                existing.style.opacity = '1';
+                                existing.style.transform = 'translateY(0)';
+                                existing.__timeoutId = setTimeout(() => dismissToast(existing), 3500);
+                                return;
                             }
 
-                            showToast(data.message || 'Updated');
+                            const toast = document.createElement('div');
+                            toast.dataset.msg = message;
+                            toast.dataset.type = type;
+                            toast.className = `max-w-sm w-full text-white px-4 py-2 rounded-lg shadow-lg transform transition-all duration-300 ease-out ${colors[type] || colors.info}`;
+                            toast.style.opacity = '0';
+                            toast.style.transform = 'translateY(-8px)';
+                            toast.setAttribute('role', 'alert');
+                            toast.innerHTML = `<div class="flex items-center justify-between gap-3"><div class="text-sm">${escapeHtml(message)}</div><button type="button" aria-label="Close" class="ml-3 text-white opacity-90 hover:opacity-100 close-toast">&times;</button></div>`;
+
+                            // cap visible toasts (remove oldest if over 4)
+                            while (container.children.length >= 4) {
+                                const oldest = container.children[0];
+                                dismissToast(oldest);
+                            }
+
+                            container.appendChild(toast);
+                            // trigger enter
+                            requestAnimationFrame(() => {
+                                toast.style.opacity = '1';
+                                toast.style.transform = 'translateY(0)';
+                            });
+
+                            // dismiss after timeout
+                            toast.__timeoutId = setTimeout(() => dismissToast(toast), 3500);
+
+                            // click to close
+                            toast.addEventListener('click', (e) => {
+                                if (e.target.closest('.close-toast')) {
+                                    if (toast.__timeoutId) clearTimeout(toast.__timeoutId);
+                                    dismissToast(toast);
+                                }
+                            });
                         }
-                    })
-                    .catch(error => {
-                        console.error('Toggle featured error:', error);
-                    })
-                    .finally(() => {
-                        button.disabled = false;
-                    });
-                }
 
-                function showToast(message, isError = false) {
-                    let toast = document.getElementById('uco-toast');
-                    if (!toast) {
-                        toast = document.createElement('div');
-                        toast.id = 'uco-toast';
-                        toast.className = 'fixed top-6 right-6 z-50 max-w-xs';
-                        document.body.appendChild(toast);
-                    }
+                        function dismissToast(toast){
+                            toast.style.opacity = '0';
+                            toast.style.transform = 'translateY(-8px)';
+                            setTimeout(() => toast.remove(), 300);
+                        }
 
-                    const item = document.createElement('div');
-                    item.className = 'mb-2 px-4 py-2 rounded-lg shadow-sm text-sm text-white ' + (isError ? 'bg-red-600' : 'bg-gray-900');
-                    item.textContent = message;
-                    toast.appendChild(item);
+                        function escapeHtml(unsafe){
+                            return String(unsafe)
+                                .replace(/&/g, '&amp;')
+                                .replace(/</g, '&lt;')
+                                .replace(/>/g, '&gt;')
+                                .replace(/\"/g, '&quot;')
+                                .replace(/'/g, '&#039;');
+                        }
 
-                    setTimeout(() => {
-                        item.classList.add('opacity-0', 'transition', 'duration-300');
-                        setTimeout(() => item.remove(), 300);
-                    }, 2500);
-                }
-            </script>
+                        // Spinner SVG
+                        const spinner = '<svg class="animate-spin w-4 h-4 text-gray-700" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path></svg>';
+
+                        document.addEventListener('click', async (e) => {
+                            const btn = e.target.closest('.toggle-featured-btn');
+                            if (!btn) return;
+                            e.preventDefault();
+                            const url = btn.dataset.url;
+                            if (!url) return;
+
+                            // Prevent double clicks
+                            if (btn.dataset.loading === '1') return;
+                            btn.dataset.loading = '1';
+
+                            const originalHtml = btn.innerHTML;
+                            btn.innerHTML = spinner;
+                            btn.setAttribute('aria-busy', 'true');
+
+                            try {
+                                const res = await fetch(url, {
+                                    method: 'POST',
+                                    headers: {
+                                        'X-CSRF-TOKEN': csrf,
+                                        'Accept': 'application/json',
+                                        'X-Requested-With': 'XMLHttpRequest'
+                                    },
+                                });
+
+                                if (!res.ok) {
+                                    const text = await res.text();
+                                    console.error('Toggle featured failed', res.status, text);
+                                    showToast('Failed to update featured status.', 'error');
+
+                                    btn.innerHTML = originalHtml;
+                                    return;
+                                }
+
+                                const data = await res.json();
+
+                                if (data?.is_featured) {
+                                    btn.innerHTML = '<i class="bi bi-star-fill text-yellow-500"></i>';
+                                    btn.setAttribute('aria-pressed', 'true');
+                                    btn.title = 'Unfeature business';
+                                    showToast(data.message || 'Business featured', 'success');
+                                } else {
+                                    btn.innerHTML = '<i class="bi bi-star text-gray-400"></i>';
+                                    btn.setAttribute('aria-pressed', 'false');
+                                    btn.title = 'Feature business';
+                                    showToast(data.message || 'Business unfeatured', 'success');
+                                }
+                            } catch (err) {
+                                console.error(err);
+                                showToast('Failed to update featured status.', 'error');
+                                btn.innerHTML = originalHtml;
+                            } finally {
+                                btn.dataset.loading = '0';
+                                btn.removeAttribute('aria-busy');
+                            }
+                        });
+                    })();
+                </script>
+            @endif
+        @endauth
+
+        @auth
+            {{-- My Businesses (visible when activeTab === 'my') --}}
+            <div x-show="activeTab === 'my'" x-transition.opacity class="col-span-1 md:col-span-2">
+            <div class="p-10 bg-white border border-slate-200 rounded-xl shadow-sm w-full mt-6">
+                <div class="mb-6 flex items-center justify-between">
+                    <h3 class="text-lg font-semibold text-gray-900">My Businesses</h3>
+                    <a href="{{ route('businesses.create') }}" class="inline-flex items-center px-4 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                        Add Business
+                    </a>
+                </div>
+
+                @if(($myBusinesses ?? collect())->count() > 0)
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        @foreach($myBusinesses as $b)
+                            <a href="{{ route('businesses.show', $b) }}" class="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transform hover:-translate-y-0.5 transition-all duration-200 overflow-hidden block">
+                                <div class="p-6 flex items-center gap-4">
+                                    @php $myLogo = $b->logo_url ?? null; $myLogoUrl = $myLogo ? storage_image_url($myLogo, 'logo_thumb') : null; @endphp
+                                    @if($myLogoUrl)
+                                        <img src="{{ $myLogoUrl }}" alt="{{ $b->name }}" class="w-12 h-12 rounded-md object-cover">
+                                    @else
+                                        <div class="w-12 h-12 bg-gray-100 rounded-md flex items-center justify-center text-gray-400"><i class="bi bi-briefcase"></i></div>
+                                    @endif
+                                    <div class="flex-1">
+                                        <h4 class="font-semibold">{{ $b->name }}</h4>
+                                        <p class="text-sm text-gray-600">{{ \Illuminate\Support\Str::limit($b->description, 80) }}</p>
+                                    </div>
+                                </div>
+                            </a>
+                        @endforeach
+                    </div>
+                @else
+                    <div class="text-center py-8">
+                        <p class="text-gray-600 mb-4">You don't have any businesses yet.</p>
+                        <a href="{{ route('businesses.create') }}" class="inline-flex items-center px-4 py-2 bg-gray-900 text-white rounded-lg">Create Your First Business</a>
+                    </div>
+                @endif
+            </div>
+            </div>
+        @endauth
+    </div>
+
+    {{-- Duplicate 'My Businesses' block removed; kept only the tabbed 'my' section above. --}}
+
+    @auth
+        @if(auth()->user()->isAdmin())
+            <div id="importModal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+                <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20">
+                    <div onclick="document.getElementById('importModal').classList.add('hidden')" class="fixed inset-0 bg-gray-900 bg-opacity-50"></div>
+
+                    <div class="relative bg-white rounded-2xl shadow-2xl max-w-lg w-full border border-soft-gray-200">
+                        <form action="{{ route('businesses.import') }}" method="POST" enctype="multipart/form-data">
+                            @csrf
+
+                            <div class="px-8 pt-8 pb-6 bg-gradient-to-br from-soft-gray-50 to-white border-b border-soft-gray-100">
+                                <div class="flex items-start justify-between">
+                                    <div class="flex items-start gap-4">
+                                        <div class="flex items-center justify-center flex-shrink-0 w-14 h-14 bg-soft-gray-900 rounded-2xl shadow-lg">
+                                            <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <h3 class="text-2xl font-bold text-soft-gray-900 tracking-tight">Import Businesses</h3>
+                                            <p class="text-sm text-soft-gray-600 mt-1">Upload Excel file to bulk import businesses</p>
+                                        </div>
+                                    </div>
+                                    <button type="button" onclick="document.getElementById('importModal').classList.add('hidden')" class="text-soft-gray-400 hover:text-soft-gray-600 transition-colors ml-4">
+                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="px-8 py-6 space-y-5">
+                                <div>
+                                    <label class="block text-sm font-semibold text-soft-gray-900 mb-3">Select Excel File</label>
+                                    <div class="relative">
+                                        <input type="file" name="file" accept=".xlsx,.xls" required class="block w-full text-sm text-soft-gray-900 file:mr-4 file:py-3 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-soft-gray-900 file:text-white hover:file:bg-soft-gray-800 file:cursor-pointer border border-soft-gray-300 rounded-xl cursor-pointer bg-soft-gray-50 focus:outline-none focus:border-soft-gray-900 focus:ring-2 focus:ring-soft-gray-900 focus:ring-opacity-20 transition-all">
+                                    </div>
+                                    <p class="mt-2 text-xs text-soft-gray-500">Supported formats: <span class="font-semibold">.xlsx, .xls</span> • Maximum size: <span class="font-semibold">10MB</span></p>
+                                </div>
+
+                                <div class="flex items-center justify-end gap-3">
+                                    <button type="button" onclick="document.getElementById('importModal').classList.add('hidden')" class="px-4 py-2 bg-white border rounded-lg">Cancel</button>
+                                    <button type="submit" class="px-4 py-2 bg-gray-900 text-white rounded-lg">Upload</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
         @endif
     @endauth
+
 </x-app-layout>

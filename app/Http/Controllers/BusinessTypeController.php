@@ -29,10 +29,20 @@ class BusinessTypeController extends Controller
      * Display a listing of business types.
      * ✅ PUBLIC ACCESS - Everyone can read
      */
-    public function index()
+    public function index(Request $request)
     {
         // ✅ NO AUTHORIZATION - Public access for reading
-        $businessTypes = BusinessType::withCount('businesses')->latest()->paginate(15);
+        $search = $request->get('search');
+        $query = BusinessType::withCount('businesses');
+        
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'LIKE', "%{$search}%")
+                  ->orWhere('description', 'LIKE', "%{$search}%");
+            });
+        }
+        
+        $businessTypes = $query->latest()->paginate(15);
 
         return view('business-types.index', compact('businessTypes'));
     }
