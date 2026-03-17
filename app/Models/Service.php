@@ -10,6 +10,12 @@ class Service extends Model
 {
     use HasFactory;
 
+    /*
+    |--------------------------------------------------------------------------
+    | Mass Assignment
+    |--------------------------------------------------------------------------
+    */
+
     protected $fillable = [
         'business_id',
         'name',
@@ -22,9 +28,12 @@ class Service extends Model
         'price' => 'decimal:2',
     ];
 
-    /**
-     * Get the business that owns this service
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Relationships
+    |--------------------------------------------------------------------------
+    */
+
     public function business(): BelongsTo
     {
         return $this->belongsTo(Business::class);

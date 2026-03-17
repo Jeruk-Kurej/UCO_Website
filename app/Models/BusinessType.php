@@ -10,22 +10,28 @@ class BusinessType extends Model
 {
     use HasFactory;
 
+    /*
+    |--------------------------------------------------------------------------
+    | Mass Assignment
+    |--------------------------------------------------------------------------
+    */
+
     protected $fillable = [
         'name',
         'description',
     ];
 
-    /**
-     * Get all businesses of this type
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Relationships
+    |--------------------------------------------------------------------------
+    */
+
     public function businesses(): HasMany
     {
         return $this->hasMany(Business::class);
     }
 
-    /**
-     * Get all product categories for this business type
-     */
     public function productCategories(): HasMany
     {
         return $this->hasMany(ProductCategory::class);

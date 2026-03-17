@@ -10,6 +10,12 @@ class UcAiAnalysis extends Model
 {
     use HasFactory;
 
+    /*
+    |--------------------------------------------------------------------------
+    | Mass Assignment
+    |--------------------------------------------------------------------------
+    */
+
     protected $fillable = [
         'uc_testimony_id',
         'sentiment_score',
@@ -25,6 +31,12 @@ class UcAiAnalysis extends Model
             'is_approved' => 'boolean',
         ];
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Relationships
+    |--------------------------------------------------------------------------
+    */
 
     public function ucTestimony(): BelongsTo
     {
