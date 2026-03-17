@@ -60,8 +60,8 @@ class ProductController extends Controller
                 ->withErrors(['business_mode' => 'This business is in Service mode. Cannot add products.']);
         }
 
-        // Fetch product categories for this BUSINESS TYPE (not business)
-        $categories = $business->businessType->productCategories;
+        // Fetch product categories for this BUSINESS
+        $categories = $business->productCategories;
 
         return view('products.create', compact('business', 'categories'));
     }
@@ -81,11 +81,11 @@ class ProductController extends Controller
                 'price' => 'required|numeric|min:0',
             ]);
 
-            // Ensure the category belongs to this BUSINESS TYPE
-            $category = $business->businessType->productCategories()->find($validated['product_category_id']);
+            // Ensure the category belongs to this BUSINESS
+            $category = $business->productCategories()->find($validated['product_category_id']);
             
             if (!$category) {
-                return back()->withErrors(['product_category_id' => 'The selected category does not belong to this business type.'])->withInput();
+                return back()->withErrors(['product_category_id' => 'The selected category does not belong to this business.'])->withInput();
             }
 
             $validated['business_id'] = $business->id;
@@ -130,8 +130,8 @@ class ProductController extends Controller
             abort(404);
         }
 
-        // Fetch product categories for this BUSINESS TYPE (not business)
-        $categories = $business->businessType->productCategories;
+        // Fetch product categories for this BUSINESS
+        $categories = $business->productCategories;
 
         return view('products.edit', compact('business', 'product', 'categories'));
     }
@@ -155,11 +155,11 @@ class ProductController extends Controller
             'price' => 'required|numeric|min:0',
         ]);
 
-        // Ensure the category belongs to this BUSINESS TYPE
-        $category = $business->businessType->productCategories()->find($validated['product_category_id']);
+        // Ensure the category belongs to this BUSINESS
+        $category = $business->productCategories()->find($validated['product_category_id']);
         
         if (!$category) {
-            return back()->withErrors(['product_category_id' => 'The selected category does not belong to this business type.']);
+            return back()->withErrors(['product_category_id' => 'The selected category does not belong to this business.']);
         }
 
         $product->update($validated);

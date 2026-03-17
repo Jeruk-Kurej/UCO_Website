@@ -11,9 +11,15 @@ class Product extends Model
 {
     use HasFactory;
 
+    /*
+    |--------------------------------------------------------------------------
+    | Mass Assignment
+    |--------------------------------------------------------------------------
+    */
+
     protected $fillable = [
         'business_id',
-        'product_category_id', // CHANGE FROM business_category_id
+        'product_category_id',
         'name',
         'description',
         'price',
@@ -23,27 +29,25 @@ class Product extends Model
         'price' => 'decimal:2',
     ];
 
-    /**
-     * Get the business that owns this product
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Relationships
+    |--------------------------------------------------------------------------
+    */
+
     public function business(): BelongsTo
     {
         return $this->belongsTo(Business::class);
     }
 
-    /**
-     * Get the category this product belongs to
-     */
-    public function productCategory(): BelongsTo
+    public function category(): BelongsTo
     {
-        return $this->belongsTo(ProductCategory::class);
+        return $this->belongsTo(ProductCategory::class, 'product_category_id');
     }
 
-    /**
-     * Get all photos for this product
-     */
     public function photos(): HasMany
     {
         return $this->hasMany(ProductPhoto::class);
     }
 }
+

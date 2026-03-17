@@ -84,12 +84,10 @@
                         </svg>
                     </div>
                 </div>
-
                 @if(request('search'))
                     <button type="button"
                             @click="search = ''; performSearch()"
-                            class="inline-flex items-center justify-center gap-2 rounded-xl border border-uco-yellow-300 bg-uco-yellow-50 px-4 py-2.5 text-sm font-semibold text-uco-yellow-800 transition hover:border-uco-yellow-400 hover:bg-uco-yellow-100">
-                        <i class="bi bi-x-circle"></i>
+                            class="inline-flex items-center px-4 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors">
                         Clear
                     </button>
                 @endif
@@ -126,62 +124,123 @@
                             </span>
                         </div>
 
-                        <p class="line-clamp-2 text-sm leading-relaxed text-soft-gray-600">
-                            {{ $type->description ?: 'No description provided for this business type yet.' }}
-                        </p>
-
-                        <div class="mt-5 flex flex-wrap items-center gap-2">
-                            <a href="{{ route('businesses.index', ['type' => $type->id]) }}"
-                               class="inline-flex items-center gap-2 rounded-xl bg-uco-orange-500 px-4 py-2 text-xs font-semibold text-white transition hover:bg-uco-orange-600">
-                                View Businesses
-                                <i class="bi bi-arrow-right"></i>
-                            </a>
-
-                            <a href="{{ route('business-types.show', $type) }}"
-                               class="inline-flex items-center gap-2 rounded-xl border border-soft-gray-300 bg-white px-4 py-2 text-xs font-semibold text-soft-gray-700 transition hover:border-uco-yellow-300 hover:text-uco-yellow-700">
-                                Details
-                                <i class="bi bi-eye"></i>
-                            </a>
-
+        {{-- Business Types Table Card --}}
+        <div class="bg-white border border-gray-200 rounded-xl overflow-hidden" id="table-container">
+            <div class="overflow-x-auto">
+                <table class="w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-4 py-3.5 text-left text-xs font-medium text-gray-600 uppercase tracking-wider w-[25%]">
+                                Business Type
+                            </th>
+                            @auth
+                            <th scope="col" class="px-4 py-3.5 text-left text-xs font-medium text-gray-600 uppercase tracking-wider w-[40%]">
+                                Description
+                            </th>
+                            @endauth
+                            <th scope="col" class="px-4 py-3.5 text-center text-xs font-medium text-gray-600 uppercase tracking-wider w-[15%]">
+                                Total Businesses
+                            </th>
                             @auth
                                 @if(auth()->user()->isAdmin())
-                                    <a href="{{ route('business-types.edit', $type) }}"
-                                       class="inline-flex items-center gap-2 rounded-xl border border-soft-gray-300 bg-white px-4 py-2 text-xs font-semibold text-soft-gray-700 transition hover:border-uco-orange-300 hover:text-uco-orange-600">
-                                        Edit
-                                        <i class="bi bi-pencil-square"></i>
-                                    </a>
-
-                                    @if($type->businesses_count == 0)
-                                        <form action="{{ route('business-types.destroy', $type) }}"
-                                              method="POST"
-                                              onsubmit="return confirm('⚠️ Delete {{ $type->name }}?\n\nThis action cannot be undone!');"
-                                              class="inline">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit"
-                                                    class="inline-flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-100">
-                                                Delete
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </form>
-                                    @else
-                                        <span class="inline-flex cursor-not-allowed items-center gap-2 rounded-xl border border-soft-gray-200 bg-soft-gray-100 px-4 py-2 text-xs font-semibold text-soft-gray-400"
-                                              title="Cannot delete - {{ $type->businesses_count }} business(es) using this type">
-                                            Delete Locked
-                                            <i class="bi bi-lock"></i>
-                                        </span>
-                                    @endif
+                                    <th scope="col" class="px-4 py-3.5 text-center text-xs font-medium text-gray-600 uppercase tracking-wider w-[20%]">
+                                        Actions
+                                    </th>
                                 @endif
                             @endauth
-                        </div>
-                    </article>
-                @empty
-                    <div class="col-span-full rounded-2xl border border-dashed border-soft-gray-300 bg-soft-gray-50 p-10 text-center reveal-on-scroll">
-                        <div class="mb-3 text-uco-orange-500"><i class="bi bi-tags text-3xl"></i></div>
-                        <p class="text-lg font-semibold text-soft-gray-700">No business types found</p>
-                        <p class="mt-1 text-sm text-soft-gray-500">Try a different keyword, or create a new category to get started.</p>
-                    </div>
-                @endforelse
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        @forelse($businessTypes as $type)
+                            <tr class="hover:bg-gray-50 transition cursor-pointer" tabindex="0"
+                                onclick="window.location='{{ route('businesses.index', ['type' => $type->id]) }}'"
+                                onkeydown="if(event.key==='Enter'){ window.location='{{ route('businesses.index', ['type' => $type->id]) }}' }">
+                                {{-- Type Name --}}
+                                <td class="px-4 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
+                                            <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                                            </svg>
+                                        </div>
+                                        <div class="min-w-0 flex-1">
+                                            <p class="text-sm font-medium text-gray-900 truncate">{{ $type->name }}</p>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                {{-- Description --}}
+                                @auth
+                                <td class="px-4 py-4">
+                                    <p class="text-sm text-gray-600 line-clamp-2">
+                                        {{ $type->description ?? 'No description provided' }}
+                                    </p>
+                                </td>
+                                @endauth
+
+                                {{-- Businesses Count --}}
+                                <td class="px-4 py-4 text-center">
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium
+                                        {{ $type->businesses_count > 0 ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600' }}">
+                                        {{ $type->businesses_count ?? 0 }}
+                                    </span>
+                                </td>
+
+                                {{-- Actions --}}
+                                @auth
+                                    @if(auth()->user()->isAdmin())
+                                        <td class="px-4 py-4">
+                                            <div class="flex items-center justify-center gap-2">
+                                                                <a href="{{ route('business-types.show', $type) }}" 
+                                                                    class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors"
+                                                                    title="View Details"
+                                                                    onclick="event.stopPropagation()">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                                    </svg>
+                                                </a>
+
+                                                @if($type->businesses_count == 0)
+                                                        <form action="{{ route('business-types.destroy', $type) }}" 
+                                                            method="POST" 
+                                                            onsubmit="event.stopPropagation(); return confirm('⚠️ Delete {{ $type->name }}?\n\nThis action cannot be undone!');"
+                                                            class="inline">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" 
+                                                            class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-red-600 hover:bg-red-50 transition-colors"
+                                                            title="Delete Type"
+                                                            onclick="event.stopPropagation()">
+                                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                            </svg>
+                                                        </button>
+                                                    </form>
+                                                @else
+                                                    <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg text-gray-300 cursor-not-allowed" 
+                                                          title="Cannot delete - {{ $type->businesses_count }} business(es) using this type">
+                                                        <i class="bi bi-trash text-lg"></i>
+                                                    </span>
+                                                @endif
+                                            </div>
+                                        </td>
+                                    @endif
+                                @endauth
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="4" class="px-6 py-12 text-center">
+                                    <div class="flex flex-col items-center justify-center">
+                                        <i class="bi bi-tags text-6xl text-gray-300 mb-3"></i>
+                                        <p class="text-gray-500 text-lg font-medium">No business types found</p>
+                                        <p class="text-gray-400 text-sm">Create your first business type to categorize businesses</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
 
             @if($businessTypes->hasPages())

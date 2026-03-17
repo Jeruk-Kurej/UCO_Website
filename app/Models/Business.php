@@ -34,6 +34,8 @@ class Business extends Model
         'product_certifications',
         'business_challenges',
         'additional_data',
+        'legal_document_path',
+        'certification_path',
     ];
 
     protected $casts = [
@@ -54,6 +56,11 @@ class Business extends Model
     public function businessType(): BelongsTo
     {
         return $this->belongsTo(BusinessType::class);
+    }
+
+    public function productCategories(): HasMany
+    {
+        return $this->hasMany(ProductCategory::class);
     }
 
     public function products(): HasMany

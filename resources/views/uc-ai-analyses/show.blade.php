@@ -5,12 +5,13 @@
                 <div class="p-6 text-gray-900">
                     <div class="flex items-center justify-between">
                         <a href="{{ route('ai-analyses.index') }}" class="text-sm font-semibold text-gray-600 hover:text-gray-900">
-                            ← Back 
+                            ← Back to AI Moderation
                         </a>
                     </div>
 
                     <div class="mt-6">
-                        <h2 class="text-xl font-bold">UCO Testimony Review</h2>
+                        <h2 class="text-xl font-bold">UC-wide Testimony AI Analysis</h2>
+                        <p class="text-sm text-gray-600 mt-1">Universitas Ciputra Online</p>
                     </div>
 
                     <div class="mt-6 grid grid-cols-1 gap-4">
@@ -47,6 +48,42 @@
                             </div>
                         </div>
 
+                        @if(auth()->user()?->isAdmin())
+                            <div class="border border-gray-200 rounded-lg p-4 bg-white">
+                                <div class="flex items-center justify-between gap-4">
+                                    <div>
+                                        <p class="font-semibold text-gray-800">Admin Actions</p>
+                                        <p class="text-sm text-gray-600 mt-1">Approve or reject this UC testimony manually.</p>
+                                    </div>
+
+                                    <div class="flex items-center gap-2">
+                                        {{-- Approve --}}
+                                        @if(!$analysis->is_approved)
+                                            <form method="POST" action="{{ route('uc-ai-analyses.approve', $testimony) }}" onsubmit="return confirm('Approve this testimony?')" class="inline">
+                                                @csrf
+                                                <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-md font-semibold">Approve</button>
+                                            </form>
+                                        @endif
+
+                                        {{-- Reject (ask for optional reason) --}}
+                                        <form method="POST" action="{{ route('uc-ai-analyses.reject', $testimony) }}" class="inline">
+                                            @csrf
+                                            <input type="hidden" name="rejection_reason" value="">
+                                            <button type="button" onclick="
+                                                if (!confirm('Reject this testimony?')) return;
+                                                const reason = prompt('Optional reason for rejection:');
+                                                if (reason === null) {
+                                                    this.closest('form').querySelector('input[name=rejection_reason]').value = 'Rejected by administrator';
+                                                } else {
+                                                    this.closest('form').querySelector('input[name=rejection_reason]').value = reason;
+                                                }
+                                                this.closest('form').submit();
+                                            " class="px-4 py-2 bg-red-600 text-white rounded-md font-semibold">Reject</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
                     </div>
 
                 </div>

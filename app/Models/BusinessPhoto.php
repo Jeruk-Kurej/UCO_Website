@@ -10,15 +10,24 @@ class BusinessPhoto extends Model
 {
     use HasFactory;
 
+    /*
+    |--------------------------------------------------------------------------
+    | Mass Assignment
+    |--------------------------------------------------------------------------
+    */
+
     protected $fillable = [
         'business_id',
         'photo_url',
         'caption',
     ];
 
-    /**
-     * Get the business that owns this photo
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Relationships
+    |--------------------------------------------------------------------------
+    */
+
     public function business(): BelongsTo
     {
         return $this->belongsTo(Business::class);

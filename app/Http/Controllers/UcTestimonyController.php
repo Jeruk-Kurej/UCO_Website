@@ -41,11 +41,21 @@ class UcTestimonyController extends Controller
         }
 
         try {
-            $validated = $request->validate([
-                'customer_name' => 'required|string|max:255',
+            $rules = [
                 'content' => 'required|string|min:10',
                 'rating' => 'required|integer|min:1|max:5',
-            ]);
+            ];
+
+            if (!$user) {
+                $rules['customer_name'] = 'required|string|max:255';
+            }
+
+            $validated = $request->validate($rules);
+
+            if ($user) {
+                $validated['customer_name'] = $user->name;
+                $validated['user_id'] = $user->id;
+            }
 
             $validated['date'] = now()->toDateString();
 

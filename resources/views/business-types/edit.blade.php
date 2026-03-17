@@ -2,18 +2,13 @@
     <div class="max-w-3xl mx-auto">
         {{-- Page Header --}}
         <div class="mb-6 flex items-center gap-4">
-            <a href="{{ route('business-types.index') }}" 
-               class="group inline-flex items-center gap-2.5 px-4 py-2.5 bg-white hover:bg-gray-900 border border-gray-200 hover:border-gray-900 text-gray-700 hover:text-white rounded-xl font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200">
-                <i class="bi bi-arrow-left text-base group-hover:-translate-x-0.5 transition-transform duration-200"></i>
-                <span>Back</span>
-            </a>
             <div class="flex-1">
                 <h1 class="text-2xl font-bold text-gray-900">Edit Business Type</h1>
                 <p class="text-sm text-gray-600">{{ $businessType->name }}</p>
             </div>
         </div>
 
-        <div class="bg-white shadow-sm sm:rounded-lg">
+        <div class="bg-white shadow-sm sm:rounded-xl">
             <div class="p-6">
                 <form method="POST" action="{{ route('business-types.update', $businessType) }}" class="space-y-6">
                     @csrf
@@ -29,7 +24,7 @@
                                id="name" 
                                value="{{ old('name', $businessType->name) }}"
                                required
-                               class="block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm @error('name') border-red-500 @enderror">
+                               class="block w-full rounded-xl border-gray-200 shadow-sm focus:border-soft-gray-900 focus:ring-soft-gray-900 sm:text-sm @error('name') border-red-500 @enderror">
                         @error('name')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
@@ -43,14 +38,14 @@
                         <textarea name="description" 
                                   id="description" 
                                   rows="4" 
-                                  class="block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm @error('description') border-red-500 @enderror">{{ old('description', $businessType->description) }}</textarea>
+                                  class="block w-full rounded-xl border-gray-200 shadow-sm focus:border-soft-gray-900 focus:ring-soft-gray-900 sm:text-sm @error('description') border-red-500 @enderror">{{ old('description', $businessType->description) }}</textarea>
                         @error('description')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
 
                     {{-- Usage Information --}}
-                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
                         <div class="flex items-start gap-3">
                             <i class="bi bi-info-circle text-blue-600 text-xl"></i>
                             <div>
@@ -69,23 +64,21 @@
 
                     {{-- Submit Buttons --}}
                     <div class="flex items-center justify-between pt-6 border-t border-gray-200">
-                        <a href="{{ route('business-types.index') }}" 
-                           class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition duration-150">
-                            <i class="bi bi-x-lg me-2"></i>
-                            Cancel
-                        </a>
+                        <a href="{{ route('business-types.index') }}" class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 hover:text-gray-900 rounded-xl transition duration-150">
+    Cancel
+</a>
                         <div class="flex items-center gap-3">
                             @if($businessType->businesses->count() === 0)
                                 <button type="button" 
                                         onclick="if(confirm('Are you sure you want to delete this business type?')) document.getElementById('delete-form').submit();"
-                                        class="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition duration-150">
+                                        class="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 transition duration-150">
                                     <i class="bi bi-trash me-2"></i>
                                     Delete
                                 </button>
                             @else
                                 <button type="button" 
                                         disabled
-                                        class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-400 rounded-lg cursor-not-allowed"
+                                        class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-400 rounded-xl cursor-not-allowed"
                                         title="Cannot delete - type is in use">
                                     <i class="bi bi-trash me-2"></i>
                                     Delete
@@ -93,7 +86,7 @@
                             @endif
 
                             <button type="submit" 
-                                    class="inline-flex items-center gap-2 px-6 py-2.5 bg-gray-900 hover:bg-gray-800 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200">
+                                    class="inline-flex items-center gap-2 px-6 py-2.5 bg-gray-900 hover:bg-gray-800 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all duration-200">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
                                 </svg>

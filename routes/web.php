@@ -72,8 +72,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::resource('businesses', BusinessController::class)->except(['index', 'show']);
 
-    Route::resource('business-types.product-categories', ProductCategoryController::class)
-        ->scoped(['businessType' => 'id', 'productCategory' => 'id']);
+    Route::resource('businesses.product-categories', ProductCategoryController::class)
+        ->scoped(['business' => 'id', 'productCategory' => 'id']);
 
     Route::resource('businesses.products', ProductController::class)
         ->except(['index'])

@@ -25,20 +25,31 @@
                                 @csrf
 
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700">Your Name</label>
-                                    {{-- ✅ CHANGED: Auto-fill with username if logged in --}}
-                                    <input type="text" 
-                                           name="customer_name" 
-                                           value="{{ old('customer_name', auth()->check() ? auth()->user()->name : '') }}"
-                                           {{ auth()->check() ? 'readonly' : '' }}
-                                           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 {{ auth()->check() ? 'bg-gray-50' : '' }}"
-                                           required>
-                                    @if(auth()->check())
-                                        <p class="text-xs text-gray-500 mt-1">Your name is automatically filled from your account</p>
-                                    @endif
-                                    @error('customer_name')
-                                        <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
-                                    @enderror
+                                    @guest
+                                        <label class="block text-sm font-medium text-gray-700">Your Name</label>
+                                        <input type="text" 
+                                               name="customer_name" 
+                                               value="{{ old('customer_name') }}"
+                                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500"
+                                               required placeholder="Enter your full name">
+                                        @error('customer_name')
+                                            <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
+                                        @enderror
+                                    @else
+                                        <div class="flex items-center gap-3 p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                                            <div class="flex-shrink-0 w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center text-gray-600 font-bold overflow-hidden">
+                                                @if(auth()->user()->profile_photo_url)
+                                                    <img src="{{ storage_image_url(auth()->user()->profile_photo_url) }}" alt="{{ auth()->user()->name }}" class="w-full h-full object-cover">
+                                                @else
+                                                    {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                                                @endif
+                                            </div>
+                                            <div class="flex-1 min-w-0">
+                                                <p class="text-sm text-gray-500 mb-0.5">Anda memberikan testimoni sebagai:</p>
+                                                <p class="text-sm font-semibold text-gray-900 truncate">{{ auth()->user()->name }}</p>
+                                            </div>
+                                        </div>
+                                    @endguest
                                 </div>
 
                                     <div x-data="{
@@ -82,7 +93,7 @@
                                         <button type="submit" class="px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-lg font-semibold shadow-sm transition duration-150">
                                             Submit
                                         </button>
-                                        
+                                        <p class="text-xs text-gray-500">Submissions are AI-moderated.</p>
                                     </div>
                                 </form>
                         </div>

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\BusinessType;
+use App\Models\Business;
 use App\Models\ProductCategory;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -26,51 +26,51 @@ class ProductCategoryController extends Controller
     }
 
     /**
-     * Display a listing of product categories for a business type.
+     * Display a listing of product categories for a business.
      * ✅ CHANGED: Open to all authenticated users
      */
-    public function index(BusinessType $businessType)
+    public function index(Business $business)
     {
         $this->getAuthUser(); // ✅ Just verify authentication, no admin check
 
-        $categories = $businessType->productCategories()
+        $categories = $business->productCategories()
             ->withCount('products')
             ->get();
 
-        return view('product-categories.index', compact('businessType', 'categories'));
+        return view('product-categories.index', compact('business', 'categories'));
     }
 
     /**
      * Show the form for creating a new product category.
      * ✅ CHANGED: Open to all authenticated users
      */
-    public function create(BusinessType $businessType)
+    public function create(Business $business)
     {
         $this->getAuthUser(); // ✅ Just verify authentication
 
-        return view('product-categories.create', compact('businessType'));
+        return view('product-categories.create', compact('business'));
     }
 
     /**
      * Store a newly created product category in storage.
      * ✅ CHANGED: Open to all authenticated users
      */
-    public function store(Request $request, BusinessType $businessType)
+    public function store(Request $request, Business $business)
     {
         $this->getAuthUser(); // ✅ Just verify authentication
 
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:product_categories,name,NULL,id,business_type_id,' . $businessType->id,
+            'name' => 'required|string|max:255|unique:product_categories,name,NULL,id,business_id,' . $business->id,
         ], [
-            'name.unique' => 'This category name already exists for this business type.',
+            'name.unique' => 'This category name already exists for this business.',
         ]);
 
-        $validated['business_type_id'] = $businessType->id;
+        $validated['business_id'] = $business->id;
 
         $category = ProductCategory::create($validated);
 
         return redirect()
-            ->route('business-types.product-categories.index', $businessType)
+            ->route('businesses.product-categories.index', $business)
             ->with('success', 'Product category created successfully!');
     }
 
@@ -78,56 +78,56 @@ class ProductCategoryController extends Controller
      * Display the specified product category.
      * ✅ CHANGED: Open to all authenticated users
      */
-    public function show(BusinessType $businessType, ProductCategory $productCategory)
+    public function show(Business $business, ProductCategory $productCategory)
     {
         $this->getAuthUser(); // ✅ Just verify authentication
 
-        if ($productCategory->business_type_id !== $businessType->id) {
+        if ($productCategory->business_id !== $business->id) {
             abort(404);
         }
 
         $productCategory->load('products.photos');
 
-        return view('product-categories.show', compact('businessType', 'productCategory'));
+        return view('product-categories.show', compact('business', 'productCategory'));
     }
 
     /**
      * Show the form for editing the specified product category.
      * ✅ CHANGED: Open to all authenticated users
      */
-    public function edit(BusinessType $businessType, ProductCategory $productCategory)
+    public function edit(Business $business, ProductCategory $productCategory)
     {
         $this->getAuthUser(); // ✅ Just verify authentication
 
-        if ($productCategory->business_type_id !== $businessType->id) {
+        if ($productCategory->business_id !== $business->id) {
             abort(404);
         }
 
-        return view('product-categories.edit', compact('businessType', 'productCategory'));
+        return view('product-categories.edit', compact('business', 'productCategory'));
     }
 
     /**
      * Update the specified product category in storage.
      * ✅ CHANGED: Open to all authenticated users
      */
-    public function update(Request $request, BusinessType $businessType, ProductCategory $productCategory)
+    public function update(Request $request, Business $business, ProductCategory $productCategory)
     {
         $this->getAuthUser(); // ✅ Just verify authentication
 
-        if ($productCategory->business_type_id !== $businessType->id) {
+        if ($productCategory->business_id !== $business->id) {
             abort(404);
         }
 
         $validated = $request->validate([
-            'name' => 'required|string|max:255|unique:product_categories,name,' . $productCategory->id . ',id,business_type_id,' . $businessType->id,
+            'name' => 'required|string|max:255|unique:product_categories,name,' . $productCategory->id . ',id,business_id,' . $business->id,
         ], [
-            'name.unique' => 'This category name already exists for this business type.',
+            'name.unique' => 'This category name already exists for this business.',
         ]);
 
         $productCategory->update($validated);
 
         return redirect()
-            ->route('business-types.product-categories.index', $businessType)
+            ->route('businesses.product-categories.index', $business)
             ->with('success', 'Product category updated successfully!');
     }
 
@@ -135,25 +135,25 @@ class ProductCategoryController extends Controller
      * Remove the specified product category from storage.
      * ✅ CHANGED: Open to all authenticated users (with safety check)
      */
-    public function destroy(BusinessType $businessType, ProductCategory $productCategory)
+    public function destroy(Business $business, ProductCategory $productCategory)
     {
         $this->getAuthUser(); // ✅ Just verify authentication
 
-        if ($productCategory->business_type_id !== $businessType->id) {
+        if ($productCategory->business_id !== $business->id) {
             abort(404);
         }
 
         // ✅ SAFETY: Prevent deletion if products exist
         if ($productCategory->products()->count() > 0) {
             return redirect()
-                ->route('business-types.product-categories.index', $businessType)
+                ->route('businesses.product-categories.index', $business)
                 ->with('error', 'Cannot delete category that has products. Please delete or reassign products first.');
         }
 
         $productCategory->delete();
 
         return redirect()
-            ->route('business-types.product-categories.index', $businessType)
+            ->route('businesses.product-categories.index', $business)
             ->with('success', 'Product category deleted successfully!');
     }
 }

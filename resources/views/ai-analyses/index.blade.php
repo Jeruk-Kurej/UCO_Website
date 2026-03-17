@@ -3,7 +3,8 @@
         {{-- Page Header --}}
         <div class="flex items-center justify-between">
             <div>
-                <h1 class="text-2xl font-bold text-gray-900">UCO Testimony Review</h1>
+                <h1 class="text-2xl font-bold text-gray-900">AI UC Testimony Moderation Dashboard</h1>
+                <p class="text-sm text-gray-600">Review and manage AI-moderated UC-wide testimonies powered by Google Gemini</p>
             </div>
         </div>
 
@@ -57,6 +58,7 @@
                                     <div class="max-w-xs">
                                         <p class="text-sm font-medium text-gray-900">{{ $analysis->ucTestimony?->customer_name ?? 'Unknown' }}</p>
                                         <p class="text-xs text-gray-600 line-clamp-2 mt-1">{{ $analysis->ucTestimony?->content ?? '' }}</p>
+                                        <p class="text-xs text-gray-500 mt-1">UC-wide</p>
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 text-center">

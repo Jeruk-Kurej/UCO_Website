@@ -74,7 +74,9 @@
                                     </div>
                                     
                                     {{-- Description --}}
-                                    <p class="text-sm text-gray-600 mb-4 line-clamp-2">{{ $business->description }}</p>
+                                    <div class="min-h-[2.5rem] mb-4">
+                                        <p class="text-sm text-gray-600 line-clamp-2 overflow-hidden">{{ $business->description ?: 'No description provided' }}</p>
+                                    </div>
                                     
                                     {{-- Owner Info Card --}}
                                     <div class="bg-slate-50 border border-slate-100 rounded-lg p-3 mb-4">

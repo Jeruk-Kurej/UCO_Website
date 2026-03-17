@@ -2,17 +2,13 @@
     <div class="max-w-3xl mx-auto">
         {{-- Page Header --}}
         <div class="mb-6 flex items-center gap-3">
-            <a href="{{ route('businesses.show', $business) }}" 
-               class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-800 transition duration-150">
-                <i class="bi bi-arrow-left text-lg"></i>
-            </a>
             <div>
                 <h1 class="text-2xl font-bold text-gray-900">Add Contact Information</h1>
                 <p class="text-sm text-gray-600">{{ $business->name }}</p>
             </div>
         </div>
 
-        <div class="bg-white shadow-sm sm:rounded-lg">
+        <div class="bg-white shadow-sm sm:rounded-xl">
             <div class="p-6">
                 <form method="POST" action="{{ route('businesses.contacts.store', $business) }}" class="space-y-6">
                     @csrf
@@ -25,7 +21,7 @@
                         <select name="contact_type_id" 
                                 id="contact_type_id" 
                                 required
-                                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm @error('contact_type_id') border-red-500 @enderror">
+                                class="block w-full rounded-xl border-gray-200 shadow-sm focus:border-soft-gray-900 focus:ring-soft-gray-900 sm:text-sm @error('contact_type_id') border-red-500 @enderror">
                             <option value="">-- Select Contact Type --</option>
                             @foreach($contactTypes as $type)
                                 <option value="{{ $type->id }}" {{ old('contact_type_id') == $type->id ? 'selected' : '' }}>
@@ -49,7 +45,7 @@
                                id="contact_value" 
                                value="{{ old('contact_value') }}"
                                required
-                               class="block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm @error('contact_value') border-red-500 @enderror"
+                               class="block w-full rounded-xl border-gray-200 shadow-sm focus:border-soft-gray-900 focus:ring-soft-gray-900 sm:text-sm @error('contact_value') border-red-500 @enderror"
                                placeholder="e.g., 081234567890, @username, email@example.com">
                         @error('contact_value')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -67,7 +63,7 @@
                                    id="is_primary"
                                    value="1"
                                    {{ old('is_primary') ? 'checked' : '' }}
-                                   class="mt-1 rounded border-gray-300 text-orange-600 focus:ring-orange-500">
+                                   class="mt-1 rounded border-gray-200 text-orange-600 focus:ring-soft-gray-900">
                             <div>
                                 <span class="text-sm font-medium text-gray-700">Set as Primary Contact</span>
                                 <p class="text-xs text-gray-500">This will be the main contact method displayed prominently</p>
@@ -80,13 +76,11 @@
 
                     {{-- Submit Buttons --}}
                     <div class="flex items-center justify-between pt-6 border-t border-gray-200">
-                        <a href="{{ route('businesses.show', $business) }}" 
-                           class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition duration-150">
-                            <i class="bi bi-x-lg me-2"></i>
-                            Cancel
-                        </a>
+                        <a href="{{ route('businesses.show', $business) }}" class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 hover:text-gray-900 rounded-xl transition duration-150">
+    Cancel
+</a>
                         <button type="submit" 
-                                class="inline-flex items-center gap-2 px-6 py-2.5 bg-gray-900 hover:bg-gray-800 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-200">
+                                class="inline-flex items-center gap-2 px-6 py-2.5 bg-gray-900 hover:bg-gray-800 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all duration-200">
                             <i class="bi bi-check-lg me-2"></i>
                             Add Contact
                         </button>

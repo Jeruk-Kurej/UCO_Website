@@ -10,8 +10,10 @@
     <div class="max-w-6xl mx-auto py-8" x-data="{ activeTab: 'basic' }">
         <div class="mb-6 flex items-center justify-between">
             <div class="flex items-center gap-4">
-                <a href="{{ route('users.index') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm">
-                    ← Back
+                <a href="{{ route('users.index') }}" 
+                   class="group inline-flex items-center gap-2.5 px-4 py-2.5 bg-white hover:bg-gray-900 border border-gray-200 hover:border-gray-900 text-gray-700 hover:text-white rounded-xl font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200">
+                    <i class="bi bi-arrow-left text-base group-hover:-translate-x-0.5 transition-transform duration-200"></i>
+                    <span>Back</span>
                 </a>
                 <div>
                     <h1 class="text-2xl font-bold text-gray-900">{{ $user->name }}</h1>
@@ -166,7 +168,7 @@
         {{-- Page Header --}}
         <div class="mb-6 flex items-center justify-between">
             <div class="flex items-center gap-4">
-                <a href="/users" 
+                <a href="{{ route('users.index') }}" 
                    class="group inline-flex items-center gap-2.5 px-4 py-2.5 bg-white hover:bg-gray-900 border border-gray-200 hover:border-gray-900 text-gray-700 hover:text-white rounded-xl font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200">
                     <i class="bi bi-arrow-left text-base group-hover:-translate-x-0.5 transition-transform duration-200"></i>
                     <span>Back</span>

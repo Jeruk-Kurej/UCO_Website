@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+    {{-- ======================================== LAYOUT: APP ======================================== --}}
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -20,7 +21,7 @@
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         
-        {{-- Manual fallback: Read manifest and inject assets --}}
+        {{-- Fallback for built assets (used when Vite manifest exists) --}}
         @php
             $manifestPath = public_path('build/manifest.json');
             if (file_exists($manifestPath)) {
@@ -29,12 +30,12 @@
                 $jsFile = $manifest['resources/js/app.js']['file'] ?? null;
             }
         @endphp
-        
-        @if(isset($cssFile))
+
+        @if(!empty($cssFile))
             <link rel="stylesheet" href="/build/{{ $cssFile }}">
         @endif
-        
-        @if(isset($jsFile))
+
+        @if(!empty($jsFile))
             <script type="module" src="/build/{{ $jsFile }}"></script>
         @endif
 
@@ -44,7 +45,7 @@
 
         @stack('styles')
     </head>
-    {{-- ✅ CHANGED: Soft white background (not harsh white) --}}
+    {{-- Layout body: keep background subtle and readable --}}
     <body class="font-sans antialiased bg-soft-white">
         <div class="min-h-screen flex flex-col">
             {{-- Navigation --}}

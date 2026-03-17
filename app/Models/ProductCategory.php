@@ -11,22 +11,28 @@ class ProductCategory extends Model
 {
     use HasFactory;
 
+    /*
+    |--------------------------------------------------------------------------
+    | Mass Assignment
+    |--------------------------------------------------------------------------
+    */
+
     protected $fillable = [
-        'business_type_id', // CHANGED from business_id
+        'business_id',
         'name',
     ];
 
-    /**
-     * Get the business type that owns this category
-     */
-    public function businessType(): BelongsTo
+    /*
+    |--------------------------------------------------------------------------
+    | Relationships
+    |--------------------------------------------------------------------------
+    */
+
+    public function business(): BelongsTo
     {
-        return $this->belongsTo(BusinessType::class);
+        return $this->belongsTo(Business::class);
     }
 
-    /**
-     * Get all products in this category
-     */
     public function products(): HasMany
     {
         return $this->hasMany(Product::class);

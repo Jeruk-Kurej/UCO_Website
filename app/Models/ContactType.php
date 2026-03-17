@@ -10,14 +10,23 @@ class ContactType extends Model
 {
     use HasFactory;
 
+    /*
+    |--------------------------------------------------------------------------
+    | Mass Assignment
+    |--------------------------------------------------------------------------
+    */
+
     protected $fillable = [
         'platform_name',
         'icon_class',
     ];
 
-    /**
-     * Get all business contacts using this contact type
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Relationships
+    |--------------------------------------------------------------------------
+    */
+
     public function businessContacts(): HasMany
     {
         return $this->hasMany(BusinessContact::class);
