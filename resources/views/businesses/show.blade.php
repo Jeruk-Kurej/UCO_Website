@@ -5,19 +5,19 @@
     <div class="mb-8 px-4 sm:px-0">
         <div class="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
             <button onclick="window.history.back()" 
-               class="group inline-flex items-center justify-center sm:justify-start gap-2.5 px-4 py-2.5 bg-white hover:bg-gray-900 border border-gray-200 hover:border-gray-900 text-gray-700 hover:text-white rounded-xl font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200">
+               class="group inline-flex items-center justify-center sm:justify-start gap-2.5 px-4 py-2.5 bg-white hover:bg-soft-gray-900 border border-gray-200 hover:border-soft-gray-900 text-gray-700 hover:text-white rounded-xl font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200">
                 <i class="bi bi-arrow-left text-base group-hover:-translate-x-0.5 transition-transform duration-200"></i>
                 <span>Back</span>
             </button>
             <div class="flex-1">
                 <div class="flex flex-wrap items-center gap-2 mb-2">
-                    <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-soft-gray-100 text-soft-gray-700 text-xs font-semibold rounded-lg">
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-soft-gray-100 text-soft-gray-700 text-xs font-semibold rounded-xl">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
                         </svg>
                         {{ $business->businessType->name }}
                     </span>
-                    <span class="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-lg
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-xl
                         {{ $business->isBothMode() ? 'bg-purple-100 text-purple-700' : ($business->isProductMode() ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700') }}">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             @if($business->isBothMode())
@@ -92,7 +92,7 @@
                         <h3 class="text-xl font-bold text-soft-gray-900 mb-1">{{ $business->user->name }}</h3>
                         @if($business->position)
                             <div class="flex items-center gap-2">
-                                <div class="flex items-center gap-1.5 px-3 py-1.5 bg-soft-gray-100 text-soft-gray-700 rounded-lg">
+                                <div class="flex items-center gap-1.5 px-3 py-1.5 bg-soft-gray-100 text-soft-gray-700 rounded-xl">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                                     </svg>
@@ -172,12 +172,12 @@
                         @if(auth()->id() === $business->user_id || auth()->user()->isAdmin())
                             <div class="flex items-center gap-2">
                                 <a href="{{ route('business-types.product-categories.index', $business->businessType) }}" 
-                                   class="inline-flex items-center px-3 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition duration-150">
+                                   class="inline-flex items-center px-3 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-50 transition duration-150">
                                     <i class="bi bi-tags me-2"></i>
                                     Manage Categories
                                 </a>
                                 <a href="{{ route('businesses.products.create', $business) }}" 
-                                   class="inline-flex items-center px-3 py-2 bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium rounded-lg shadow-sm transition duration-150">
+                                   class="inline-flex items-center px-3 py-2 bg-soft-gray-900 hover:bg-soft-gray-800 text-white text-sm font-medium rounded-xl shadow-sm transition duration-150">
                                     <i class="bi bi-plus-lg me-2"></i>
                                     Add Product
                                 </a>
@@ -261,7 +261,7 @@
                             @if(auth()->id() === $business->user_id || auth()->user()->isAdmin())
                                 <p class="text-sm text-gray-400 mb-4">Start adding products to showcase your offerings</p>
                                 <a href="{{ route('businesses.products.create', $business) }}" 
-                                   class="inline-flex items-center px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium rounded-lg shadow-sm transition duration-150">
+                                   class="inline-flex items-center px-4 py-2 bg-soft-gray-900 hover:bg-soft-gray-800 text-white text-sm font-medium rounded-xl shadow-sm transition duration-150">
                                     <i class="bi bi-plus-lg me-2"></i>
                                     Add Your First Product
                                 </a>
@@ -338,7 +338,7 @@
                             @if(auth()->id() === $business->user_id || auth()->user()->isAdmin())
                                 <p class="text-sm text-gray-400 mb-4">Add services to showcase what you offer</p>
                                 <a href="{{ route('businesses.services.create', $business) }}" 
-                                   class="inline-flex items-center px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium rounded-lg shadow-sm transition duration-150">
+                                   class="inline-flex items-center px-4 py-2 bg-soft-gray-900 hover:bg-soft-gray-800 text-white text-sm font-medium rounded-xl shadow-sm transition duration-150">
                                     <i class="bi bi-plus-lg me-2"></i>
                                     Add Your First Service
                                 </a>
@@ -412,7 +412,7 @@
                             @if(auth()->id() === $business->user_id || auth()->user()->isAdmin())
                                 <p class="text-sm text-gray-400 mb-4">Upload photos to showcase your business</p>
                                 <a href="{{ route('businesses.photos.create', $business) }}" 
-                                   class="inline-flex items-center px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium rounded-lg shadow-sm transition duration-150">
+                                   class="inline-flex items-center px-4 py-2 bg-soft-gray-900 hover:bg-soft-gray-800 text-white text-sm font-medium rounded-xl shadow-sm transition duration-150">
                                     <i class="bi bi-upload me-2"></i>
                                     Upload Your First Photo
                                 </a>
@@ -490,7 +490,7 @@
                             @if(auth()->id() === $business->user_id || auth()->user()->isAdmin())
                                 <p class="text-sm text-gray-400 mb-4">Add contact methods so customers can reach you</p>
                                 <a href="{{ route('businesses.contacts.create', $business) }}" 
-                                   class="inline-flex items-center px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium rounded-lg shadow-sm transition duration-150">
+                                   class="inline-flex items-center px-4 py-2 bg-soft-gray-900 hover:bg-soft-gray-800 text-white text-sm font-medium rounded-xl shadow-sm transition duration-150">
                                     <i class="bi bi-plus-lg me-2"></i>
                                     Add Your First Contact
                                 </a>

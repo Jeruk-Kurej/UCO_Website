@@ -205,12 +205,12 @@
         {{-- Import Modal - Elegant Professional Design --}}
         <div x-show="showImportModal" 
              x-cloak
-             class="fixed inset-0 z-50 overflow-y-auto" 
+             class="fixed inset-0 z-[100] overflow-y-auto" 
              aria-labelledby="modal-title" 
              role="dialog" 
              aria-modal="true">
             <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-                {{-- Background overlay --}}
+                {{-- Background overlay with blur --}}
                 <div x-show="showImportModal"
                      x-transition:enter="ease-out duration-300"
                      x-transition:enter-start="opacity-0"
@@ -219,46 +219,68 @@
                      x-transition:leave-start="opacity-100"
                      x-transition:leave-end="opacity-0"
                      @click="showImportModal = false"
-                     class="fixed inset-0 transition-opacity bg-gray-900 bg-opacity-50" 
+                     class="fixed inset-0 transition-opacity bg-gray-900/60 backdrop-blur-sm" 
                      aria-hidden="true"></div>
 
                 <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
 
                 {{-- Modal panel --}}
                 <div x-show="showImportModal"
-                     x-transition:enter="ease-out duration-300"
-                     x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                     x-transition:enter="ease-out duration-300 transform"
+                     x-transition:enter-start="opacity-0 translate-y-8 sm:translate-y-0 sm:scale-95"
                      x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
-                     x-transition:leave="ease-in duration-200"
+                     x-transition:leave="ease-in duration-200 transform"
                      x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
-                     x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                     class="inline-block overflow-hidden text-left align-bottom transition-all transform bg-white rounded-2xl shadow-2xl sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border border-soft-gray-200">
+                     x-transition:leave-end="opacity-0 translate-y-8 sm:translate-y-0 sm:scale-95"
+                     class="inline-block overflow-hidden text-left align-bottom transition-all transform bg-white rounded-2xl shadow-2xl sm:my-8 sm:align-middle sm:max-w-xl sm:w-full border border-gray-100">
                     
-                    <form action="/users/import" method="POST" enctype="multipart/form-data">
+                    <form action="/users/import" method="POST" enctype="multipart/form-data"
+                          x-data="{ 
+                              isDragging: false, 
+                              fileName: null,
+                              fileSize: null,
+                              handleDrop(e) {
+                                  this.isDragging = false;
+                                  if (e.dataTransfer.files.length > 0) {
+                                      const file = e.dataTransfer.files[0];
+                                      this.updateFileInfo(file);
+                                      document.getElementById('fileInputUsers').files = e.dataTransfer.files;
+                                  }
+                              },
+                              handleFileSelect(e) {
+                                  if (e.target.files.length > 0) {
+                                      this.updateFileInfo(e.target.files[0]);
+                                  }
+                              },
+                              updateFileInfo(file) {
+                                  this.fileName = file.name;
+                                  this.fileSize = (file.size / 1024 / 1024).toFixed(2) + ' MB';
+                              }
+                          }">
                         @csrf
                         
                         {{-- Modal Header --}}
-                        <div class="px-8 pt-8 pb-6 bg-gradient-to-br from-soft-gray-50 to-white border-b border-soft-gray-100">
+                        <div class="px-8 pt-8 pb-6 bg-gradient-to-br from-soft-gray-50 to-white border-b border-gray-100">
                             <div class="flex items-start justify-between">
                                 <div class="flex items-start gap-4">
-                                    <div class="flex items-center justify-center flex-shrink-0 w-14 h-14 bg-soft-gray-900 rounded-2xl shadow-lg">
-                                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <div class="flex items-center justify-center flex-shrink-0 w-12 h-12 bg-white rounded-xl shadow-sm border border-gray-100">
+                                        <svg class="w-6 h-6 text-soft-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
                                         </svg>
                                     </div>
                                     <div>
-                                        <h3 class="text-2xl font-bold text-soft-gray-900 tracking-tight" id="modal-title">
+                                        <h3 class="text-xl font-bold text-gray-900 tracking-tight" id="modal-title">
                                             Import Users
                                         </h3>
-                                        <p class="text-sm text-soft-gray-600 mt-1">
-                                            Upload Excel file to bulk import users
+                                        <p class="text-sm text-gray-500 mt-1">
+                                            Upload your Excel file to bulk import data
                                         </p>
                                     </div>
                                 </div>
                                 <button type="button" 
                                         @click="showImportModal = false"
-                                        class="text-soft-gray-400 hover:text-soft-gray-600 transition-colors ml-4">
-                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        class="text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-2 rounded-xl transition-colors">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                                     </svg>
                                 </button>
@@ -266,37 +288,71 @@
                         </div>
 
                         {{-- Modal Body --}}
-                        <div class="px-8 py-6 space-y-5">
-                            {{-- File Upload --}}
+                        <div class="px-8 py-6 space-y-6">
+                            {{-- Drag & Drop File Upload --}}
                             <div>
-                                <label class="block text-sm font-semibold text-soft-gray-900 mb-3">
-                                    Select Excel File
+                                <label class="block text-sm font-semibold text-gray-900 mb-3">
+                                    Upload File
                                 </label>
-                                <div class="relative">
-                                    <input type="file" 
-                                           name="file" 
-                                           accept=".xlsx,.xls"
-                                           required
-                                           class="block w-full text-sm text-soft-gray-900 file:mr-4 file:py-3 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-soft-gray-900 file:text-white hover:file:bg-soft-gray-800 file:cursor-pointer border border-soft-gray-300 rounded-xl cursor-pointer bg-soft-gray-50 focus:outline-none focus:border-soft-gray-900 focus:ring-2 focus:ring-soft-gray-900 focus:ring-opacity-20 transition-all">
+                                <div class="relative group">
+                                    <div @dragover.prevent="isDragging = true"
+                                         @dragleave.prevent="isDragging = false"
+                                         @drop.prevent="handleDrop($event)"
+                                         :class="isDragging ? 'border-soft-gray-900 bg-soft-gray-50 ring-4 ring-soft-gray-900/10' : 'border-gray-300 hover:border-soft-gray-400 bg-gray-50 hover:bg-gray-100/50'"
+                                         class="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-xl cursor-pointer transition-all duration-200 ease-in-out relative overflow-hidden">
+                                        
+                                        <div class="flex flex-col items-center justify-center pt-5 pb-6 text-center px-4">
+                                            <template x-if="!fileName">
+                                                <div class="flex flex-col items-center transition-all">
+                                                    <div class="p-3 bg-white rounded-full shadow-sm border border-gray-100 mb-3 group-hover:scale-110 transition-transform duration-200">
+                                                        <svg class="w-6 h-6 text-soft-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                        </svg>
+                                                    </div>
+                                                    <p class="mb-1 text-sm font-semibold text-gray-700">Click to upload or drag and drop</p>
+                                                    <p class="text-xs text-gray-500 font-medium bg-white px-2 py-1 rounded-md border border-gray-200 shadow-sm mt-2">XLS, XLSX (Max. 10MB)</p>
+                                                </div>
+                                            </template>
+
+                                            <template x-if="fileName">
+                                                <div class="flex flex-col items-center w-full transition-all">
+                                                    <div class="p-3 bg-green-50 rounded-full border border-green-100 mb-3">
+                                                        <svg class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                                        </svg>
+                                                    </div>
+                                                    <p class="mb-1 text-sm font-bold text-gray-900 truncate max-w-xs" x-text="fileName"></p>
+                                                    <p class="text-xs text-gray-500 font-medium" x-text="fileSize"></p>
+                                                </div>
+                                            </template>
+                                        </div>
+
+                                        <input type="file" 
+                                               id="fileInputUsers"
+                                               name="file" 
+                                               accept=".xlsx,.xls"
+                                               class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                               required
+                                               @change="handleFileSelect($event)">
+                                    </div>
                                 </div>
-                                <p class="mt-2 text-xs text-soft-gray-500">
-                                    Supported formats: <span class="font-semibold">.xlsx, .xls</span> • Maximum size: <span class="font-semibold">10MB</span>
-                                </p>
                             </div>
 
                             {{-- Required Columns Info --}}
-                            <div class="bg-soft-gray-50 border-l-4 border-soft-gray-900 rounded-r-xl p-4">
+                            <div class="bg-gray-50 border border-gray-200 rounded-xl p-4">
                                 <div class="flex gap-3">
-                                    <svg class="w-5 h-5 text-soft-gray-700 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                    </svg>
+                                    <div class="flex-shrink-0 mt-0.5">
+                                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                    </div>
                                     <div class="flex-1">
-                                        <p class="text-sm font-semibold text-soft-gray-900 mb-2">Required Excel Columns:</p>
+                                        <p class="text-sm font-semibold text-gray-900 mb-2">Required Excel Columns:</p>
                                         <div class="flex flex-wrap gap-2">
-                                            <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-mono font-medium bg-white border border-soft-gray-200 text-soft-gray-700">Nama</span>
-                                            <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-mono font-medium bg-white border border-soft-gray-200 text-soft-gray-700">Email</span>
-                                            <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-mono font-medium bg-white border border-soft-gray-200 text-soft-gray-700">Role</span>
-                                            <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-mono font-medium bg-white border border-soft-gray-200 text-soft-gray-700">Status</span>
+                                            <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-mono font-medium bg-white border border-gray-200 text-gray-700 shadow-sm">Nama</span>
+                                            <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-mono font-medium bg-white border border-gray-200 text-gray-700 shadow-sm">Email</span>
+                                            <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-mono font-medium bg-white border border-gray-200 text-gray-700 shadow-sm">Role</span>
+                                            <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-mono font-medium bg-white border border-gray-200 text-gray-700 shadow-sm">Status</span>
                                         </div>
                                     </div>
                                 </div>
@@ -304,24 +360,18 @@
 
                             {{-- Important Notes --}}
                             <div class="space-y-2">
-                                <p class="text-xs font-semibold text-soft-gray-700 uppercase tracking-wider">Important Notes:</p>
-                                <ul class="space-y-1.5 text-xs text-soft-gray-600">
+                                <p class="text-xs font-bold text-gray-500 uppercase tracking-wider">Important Notes:</p>
+                                <ul class="space-y-1.5 text-xs text-gray-600 font-medium">
                                     <li class="flex items-start gap-2">
-                                        <svg class="w-4 h-4 text-soft-gray-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                                        </svg>
+                                        <span class="text-gray-400 mt-0.5">•</span>
                                         <span>Existing emails will be skipped to prevent duplicates</span>
                                     </li>
                                     <li class="flex items-start gap-2">
-                                        <svg class="w-4 h-4 text-soft-gray-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                                        </svg>
-                                        <span>Missing passwords will default to <span class="font-mono font-semibold">password123</span></span>
+                                        <span class="text-gray-400 mt-0.5">•</span>
+                                        <span>Missing passwords will default to <span class="font-mono font-bold bg-gray-100 px-1.5 py-0.5 rounded text-gray-700">password123</span></span>
                                     </li>
                                     <li class="flex items-start gap-2">
-                                        <svg class="w-4 h-4 text-soft-gray-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                                        </svg>
+                                        <span class="text-gray-400 mt-0.5">•</span>
                                         <span>All data will be validated before import</span>
                                     </li>
                                 </ul>
@@ -329,14 +379,14 @@
                         </div>
 
                         {{-- Modal Footer --}}
-                        <div class="px-8 py-5 bg-soft-gray-50 border-t border-soft-gray-100 flex justify-end gap-3">
+                        <div class="px-8 py-5 bg-gray-50 border-t border-gray-100 flex justify-end gap-3 rounded-b-2xl">
                             <button type="button"
                                     @click="showImportModal = false"
-                                    class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-soft-gray-700 bg-white border border-soft-gray-300 rounded-xl hover:bg-soft-gray-50 hover:border-soft-gray-400 transition-all duration-200">
+                                    class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 shadow-sm">
                                 Cancel
                             </button>
                             <button type="submit"
-                                    class="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-semibold text-white bg-soft-gray-900 rounded-xl hover:bg-soft-gray-800 shadow-md hover:shadow-lg transition-all duration-200">
+                                    class="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-semibold text-white bg-soft-gray-900 rounded-xl hover:bg-soft-gray-800 shadow-md hover:shadow-lg transition-all duration-200 transform hover:-translate-y-0.5">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
                                 </svg>

@@ -32,7 +32,7 @@
         <div class="bg-white border border-slate-200 rounded-xl shadow-sm px-4 sm:px-8 py-6 sm:py-10 mb-8">
             <div class="flex flex-col sm:flex-row sm:items-center gap-4">
                 <a href="{{ route('businesses.show', $business) }}" 
-                   class="group inline-flex items-center justify-center sm:justify-start gap-2.5 px-4 py-2.5 bg-white hover:bg-gray-900 border border-gray-200 hover:border-gray-900 text-gray-700 hover:text-white rounded-xl font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200">
+                   class="group inline-flex items-center justify-center sm:justify-start gap-2.5 px-4 py-2.5 bg-white hover:bg-soft-gray-900 border border-gray-200 hover:border-soft-gray-900 text-gray-700 hover:text-white rounded-xl font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200">
                     <i class="bi bi-arrow-left text-base group-hover:-translate-x-0.5 transition-transform duration-200"></i>
                     <span>Back</span>
                 </a>
@@ -542,7 +542,7 @@
                     </div>
                     <button type="button" 
                             onclick="addChallenge()"
-                            class="mt-3 px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition text-sm font-medium">
+                            class="mt-3 px-4 py-2 bg-slate-100 text-slate-700 rounded-xl hover:bg-slate-200 transition text-sm font-medium">
                         + Tambah Tantangan
                     </button>
                     @error('business_challenges')
@@ -652,10 +652,10 @@
 
             {{-- Submit Buttons --}}
             <div class="flex gap-4 pt-4">
-                <button type="submit" class="flex-1 bg-soft-gray-900 hover:bg-soft-gray-800 text-white font-semibold py-4 px-6 rounded-lg shadow-md transition duration-200">
+                <button type="submit" class="flex-1 bg-soft-gray-900 hover:bg-soft-gray-800 text-white font-semibold py-4 px-6 rounded-xl shadow-md transition duration-200">
                     Update Business
                 </button>
-                <a href="{{ route('businesses.show', $business) }}" class="flex-1 bg-slate-400 hover:bg-slate-500 text-white font-semibold py-4 px-6 rounded-lg shadow-md transition duration-200 text-center flex items-center justify-center">
+                <a href="{{ route('businesses.show', $business) }}" class="flex-1 bg-slate-400 hover:bg-slate-500 text-white font-semibold py-4 px-6 rounded-xl shadow-md transition duration-200 text-center flex items-center justify-center">
                     Batal
                 </a>
             </div>
@@ -665,7 +665,7 @@
         <form method="POST" action="{{ route('businesses.destroy', $business) }}" class="mt-8" onsubmit="return confirm('Are you sure you want to delete this business? This action cannot be undone.');">
             @csrf
             @method('DELETE')
-            <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition duration-200">
+            <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-6 rounded-xl shadow-md transition duration-200">
                 Delete Business
             </button>
         </form>
@@ -795,7 +795,7 @@
                        placeholder="Masukkan tantangan">
                 <button type="button" 
                         onclick="this.parentElement.remove()"
-                        class="px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition">
+                        class="px-4 py-2 bg-red-100 text-red-700 rounded-xl hover:bg-red-200 transition">
                     ✖
                 </button>
             `;
