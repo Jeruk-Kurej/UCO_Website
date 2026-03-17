@@ -10,7 +10,22 @@
         @method('patch')
 
         <!-- Profile Photo Upload -->
-        <div class="space-y-3">
+        <div class="space-y-3" x-data="{ 
+            photoPreview: null,
+            fileSelected(event) {
+                const file = event.target.files[0];
+                if(file) {
+                    if(file.size > 10 * 1024 * 1024) {
+                        alert('Photo must not exceed 10MB');
+                        this.$refs.photoInput.value = '';
+                        return;
+                    }
+                    const reader = new FileReader();
+                    reader.onload = (e) => { this.photoPreview = e.target.result; };
+                    reader.readAsDataURL(file);
+                }
+            }
+        }">
             <label class="block text-sm font-semibold text-gray-700">
                 Profile Photo
             </label>
@@ -18,36 +33,37 @@
                 <!-- Current Photo Preview -->
                 <div class="relative">
                     @php $profilePhoto = $user->profile_photo_url; @endphp
-                    @if($profilePhoto)
-                        <img 
-                            id="profile-photo-preview" 
-                            src="{{ storage_image_url($profilePhoto, ['width' => 256, 'height' => 256, 'crop' => 'thumb', 'quality' => 'auto', 'fetch_format' => 'auto']) }}?t={{ $user->updated_at?->timestamp ?? time() }}" 
-                            alt="Profile Photo" 
-                            class="w-24 h-24 rounded-full object-cover border-4 border-gray-200 shadow-md"
-                        />
-                    @else
-                        <div id="profile-photo-preview" class="w-24 h-24 rounded-full bg-gradient-to-br from-uco-orange to-uco-yellow flex items-center justify-center border-4 border-gray-200 shadow-md">
-                            <span class="text-white text-3xl font-bold">{{ strtoupper(substr($user->name, 0, 1)) }}</span>
+                    
+                    <template x-if="photoPreview">
+                        <img :src="photoPreview" class="w-24 h-24 rounded-full object-cover border-4 border-gray-200 shadow-md">
+                    </template>
+
+                    <template x-if="!photoPreview">
+                        <div>
+                            @if($profilePhoto)
+                                <img 
+                                    src="{{ storage_image_url($profilePhoto, ['width' => 256, 'height' => 256, 'crop' => 'thumb', 'quality' => 'auto', 'fetch_format' => 'auto']) }}?t={{ $user->updated_at?->timestamp ?? time() }}" 
+                                    alt="Profile Photo" 
+                                    class="w-24 h-24 rounded-full object-cover border-4 border-gray-200 shadow-md"
+                                />
+                            @else
+                                <div class="w-24 h-24 rounded-full bg-gradient-to-br from-uco-orange to-uco-yellow flex items-center justify-center border-4 border-gray-200 shadow-md">
+                                    <span class="text-white text-3xl font-bold">{{ strtoupper(substr($user->name, 0, 1)) }}</span>
+                                </div>
+                            @endif
                         </div>
-                    @endif
+                    </template>
                 </div>
 
                 <!-- Upload Button -->
                 <div class="flex-1">
-                    <label for="profile_photo" class="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
+                    <label for="profile_photo" class="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm focus-within:ring-2 focus-within:ring-soft-gray-900 focus-within:border-soft-gray-900">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                         </svg>
                         Choose Photo
+                        <input id="profile_photo" name="profile_photo" type="file" accept="image/*" class="sr-only" x-ref="photoInput" @change="fileSelected">
                     </label>
-                    <input 
-                        id="profile_photo" 
-                        name="profile_photo" 
-                        type="file" 
-                        accept="image/*"
-                        class="hidden"
-                        onchange="validateAndPreviewPhoto(event)"
-                    />
                     <p class="text-xs text-gray-500 mt-2">JPG, PNG or GIF (Max 10MB)</p>
                     <x-input-error class="mt-2" :messages="$errors->get('profile_photo')" />
                 </div>

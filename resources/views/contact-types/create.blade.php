@@ -13,7 +13,7 @@
             </div>
         </div>
 
-        <div class="bg-white shadow-sm sm:rounded-lg">
+        <div class="bg-white shadow-sm sm:rounded-xl">
             <div class="p-6">
                 <form method="POST" action="/contact-types" class="space-y-6" x-data="{ iconClass: '{{ old('icon_class', 'bi bi-telephone') }}' }">
                     @csrf
@@ -28,7 +28,7 @@
                                id="platform_name" 
                                value="{{ old('platform_name') }}"
                                required
-                               class="block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm @error('platform_name') border-red-500 @enderror"
+                               class="block w-full rounded-xl border-gray-200 shadow-sm focus:border-soft-gray-900 focus:ring-soft-gray-900 sm:text-sm @error('platform_name') border-red-500 @enderror"
                                placeholder="e.g., WhatsApp, Instagram, Email">
                         @error('platform_name')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -47,7 +47,7 @@
                                value="{{ old('icon_class') }}"
                                x-model="iconClass"
                                required
-                               class="block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm @error('icon_class') border-red-500 @enderror"
+                               class="block w-full rounded-xl border-gray-200 shadow-sm focus:border-soft-gray-900 focus:ring-soft-gray-900 sm:text-sm @error('icon_class') border-red-500 @enderror"
                                placeholder="e.g., bi bi-whatsapp">
                         @error('icon_class')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -59,7 +59,7 @@
                     </div>
 
                     {{-- Icon Preview --}}
-                    <div class="bg-gray-50 border border-gray-200 rounded-lg p-6">
+                    <div class="bg-gray-50 border border-gray-200 rounded-xl p-6">
                         <label class="block text-sm font-medium text-gray-700 mb-3">Icon Preview</label>
                         <div class="flex items-center justify-center">
                             <div class="w-20 h-20 rounded-full bg-gradient-to-br from-orange-400 to-yellow-400 flex items-center justify-center text-white text-3xl">
@@ -72,7 +72,7 @@
                     </div>
 
                     {{-- Common Icons Quick Reference --}}
-                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <div class="bg-blue-50 border border-blue-200 rounded-xl p-4">
                         <p class="text-sm font-semibold text-blue-900 mb-2">Common Icons:</p>
                         <div class="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs">
                             <button type="button" @click="iconClass = 'bi bi-whatsapp'" class="text-left px-2 py-1 bg-white rounded hover:bg-blue-100 transition">
@@ -99,7 +99,7 @@
                     {{-- Submit Buttons --}}
                     <div class="flex items-center justify-between pt-6 border-t border-gray-200">
                         <a href="/contact-types" 
-                           class="inline-flex items-center px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition duration-150">
+                           class="inline-flex items-center px-4 py-2 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition duration-150">
                             <i class="bi bi-x-lg me-2"></i>
                             Cancel
                         </a>

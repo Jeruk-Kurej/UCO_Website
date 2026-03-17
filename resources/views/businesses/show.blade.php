@@ -1,6 +1,7 @@
 @use('Illuminate\Support\Facades\Storage')
 
 <x-app-layout>
+    <div x-data="{ showUserModal: false }" x-init="$watch('showUserModal', val => document.body.style.overflow = val ? 'hidden' : '')">
     {{-- Hero Section with Elegant Back Button --}}
     <div class="mb-8 px-4 sm:px-0">
         <div class="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
@@ -88,7 +89,15 @@
                         </div>
                     @endif
                     <div class="flex-1">
-                        <p class="text-xs font-semibold text-soft-gray-500 uppercase tracking-wider mb-1">Business Owner</p>
+                        <div class="flex items-center gap-2 mb-1">
+                            <p class="text-xs font-semibold text-soft-gray-500 uppercase tracking-wider">Listed by</p>
+                            <button @click="showUserModal = true" title="View Profile" class="text-soft-gray-400 hover:text-soft-gray-900 transition-colors p-1 rounded-full hover:bg-soft-gray-100 flex items-center justify-center">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                            </button>
+                        </div>
                         <h3 class="text-xl font-bold text-soft-gray-900 mb-1">{{ $business->user->name }}</h3>
                         @if($business->position)
                             <div class="flex items-center gap-2">
@@ -501,5 +510,204 @@
             </div>
 
         </div>
+    </div>
+
+    {{-- User Profile Modal --}}
+    <div x-show="showUserModal" 
+         x-cloak
+         class="fixed inset-0 z-[100] overflow-y-auto" 
+         aria-labelledby="modal-title" 
+         role="dialog" 
+         aria-modal="true">
+        <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+            {{-- Background overlay with blur --}}
+            <div x-show="showUserModal"
+                 x-transition:enter="ease-out duration-300"
+                 x-transition:enter-start="opacity-0"
+                 x-transition:enter-end="opacity-100"
+                 x-transition:leave="ease-in duration-200"
+                 x-transition:leave-start="opacity-100"
+                 x-transition:leave-end="opacity-0"
+                 @click="showUserModal = false"
+                 class="fixed inset-0 transition-opacity bg-gray-900/60 backdrop-blur-sm" 
+                 aria-hidden="true"></div>
+
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+            {{-- Modal panel --}}
+            <div x-show="showUserModal"
+                 x-transition:enter="ease-out duration-300 transform"
+                 x-transition:enter-start="opacity-0 translate-y-8 sm:translate-y-0 sm:scale-95"
+                 x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                 x-transition:leave="ease-in duration-200 transform"
+                 x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                 x-transition:leave-end="opacity-0 translate-y-8 sm:translate-y-0 sm:scale-95"
+                 class="inline-block overflow-hidden text-left align-bottom transition-all transform bg-white rounded-2xl shadow-2xl sm:my-8 sm:align-middle sm:max-w-md sm:w-full border border-gray-100">
+                
+                {{-- Modal Header & Avatar --}}
+                <div class="relative bg-gradient-to-br from-soft-gray-50 to-white px-6 pt-8 pb-6 border-b border-gray-100">
+                    <button type="button" 
+                            @click="showUserModal = false"
+                            class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-2 rounded-xl transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                    
+                    <div class="flex flex-col items-center">
+                        @if($business->user->profile_photo_url)
+                            <img src="{{ storage_image_url($business->user->profile_photo_url, 'profile_thumb') }}" 
+                                 alt="{{ $business->user->name }}" 
+                                 class="w-24 h-24 rounded-2xl object-cover shadow-lg mb-4 border-2 border-white">
+                        @else
+                            <div class="w-24 h-24 rounded-2xl bg-gradient-to-br from-uco-orange-500 to-uco-yellow-500 flex items-center justify-center text-white text-3xl font-bold shadow-lg mb-4 border-2 border-white">
+                                {{ strtoupper(substr($business->user->name, 0, 1)) }}
+                            </div>
+                        @endif
+                        <h3 class="text-xl font-bold text-gray-900">{{ $business->user->name }}</h3>
+                        <p class="text-sm font-medium text-gray-500 mt-1">
+                            @if($business->user->role === 'student') Student
+                            @elseif($business->user->role === 'alumni') Alumni
+                            @elseif($business->user->role === 'admin') Administrator
+                            @else User
+                            @endif
+                        </p>
+                    </div>
+                </div>
+
+                {{-- Modal Body: Tabbed Content --}}
+                <div x-data="{ userTab: 'basic' }" class="bg-gray-50 rounded-b-2xl">
+                    <div class="flex border-b border-gray-200">
+                        <button @click="userTab = 'basic'" 
+                                :class="userTab === 'basic' ? 'border-soft-gray-900 text-soft-gray-900 bg-white' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 hover:bg-gray-100/50'"
+                                class="flex-1 py-3 px-4 border-b-2 font-semibold text-sm transition-colors text-center">
+                            Basic Info
+                        </button>
+                        <button @click="userTab = 'personal'" 
+                                :class="userTab === 'personal' ? 'border-soft-gray-900 text-soft-gray-900 bg-white' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 hover:bg-gray-100/50'"
+                                class="flex-1 py-3 px-4 border-b-2 font-semibold text-sm transition-colors text-center">
+                            Personal
+                        </button>
+                        <button @click="userTab = 'academic'" 
+                                :class="userTab === 'academic' ? 'border-soft-gray-900 text-soft-gray-900 bg-white' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 hover:bg-gray-100/50'"
+                                class="flex-1 py-3 px-4 border-b-2 font-semibold text-sm transition-colors text-center">
+                            Academic
+                        </button>
+                    </div>
+                    
+                    <div class="p-6">
+                        {{-- Basic Tab --}}
+                        <div x-show="userTab === 'basic'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 transform translate-y-2" x-transition:enter-end="opacity-100 transform translate-y-0" class="space-y-4 text-left">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Username</p>
+                                    <p class="text-sm font-medium text-gray-900">{{ '@' . $business->user->username }}</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Full Name</p>
+                                    <p class="text-sm font-medium text-gray-900">{{ $business->user->name }}</p>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Email Address</p>
+                                <a href="mailto:{{ $business->user->email }}" class="inline-flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors bg-blue-50 px-3 py-1.5 rounded-lg hover:bg-blue-100">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                                    </svg>
+                                    {{ $business->user->email }}
+                                </a>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4 pt-2">
+                                <div>
+                                    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Phone/Mobile</p>
+                                    <p class="text-sm font-medium text-gray-900">{{ $business->user->mobile_number ?? $business->user->phone_number ?? '-' }}</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">WhatsApp</p>
+                                    @if($business->user->whatsapp)
+                                        <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $business->user->whatsapp) }}" target="_blank" class="inline-flex items-center gap-1.5 text-sm font-medium text-green-600 hover:text-green-800 transition-colors">
+                                            <i class="bi bi-whatsapp"></i> {{ $business->user->whatsapp }}
+                                        </a>
+                                    @else
+                                        <p class="text-sm font-medium text-gray-900">-</p>
+                                    @endif
+                                </div>
+                            </div>
+
+                            <div class="pt-2 border-t border-gray-200">
+                                <p class="text-xs text-gray-400 mt-2">Joined {{ $business->user->created_at->format('M Y') }}</p>
+                            </div>
+                        </div>
+
+                        {{-- Personal Tab --}}
+                        <div x-show="userTab === 'personal'" x-cloak x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 transform translate-y-2" x-transition:enter-end="opacity-100 transform translate-y-0" class="space-y-4 text-left">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Birth City</p>
+                                    <p class="text-sm font-medium text-gray-900">{{ $business->user->birth_city ?? '-' }}</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Birth Date</p>
+                                    <p class="text-sm font-medium text-gray-900">{{ $business->user->birth_date ? $business->user->birth_date->format('d M Y') : '-' }}</p>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Religion</p>
+                                <p class="text-sm font-medium text-gray-900">{{ $business->user->religion ?? '-' }}</p>
+                            </div>
+
+                            @if($business->user->bio ?? false)
+                                <div class="pt-2">
+                                    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Bio</p>
+                                    <p class="text-sm text-gray-700 leading-relaxed">{{ $business->user->bio }}</p>
+                                </div>
+                            @endif
+                        </div>
+
+                        {{-- Academic Tab --}}
+                        <div x-show="userTab === 'academic'" x-cloak x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 transform translate-y-2" x-transition:enter-end="opacity-100 transform translate-y-0" class="space-y-4 text-left">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">NIS (Student ID)</p>
+                                    <p class="text-sm font-mono font-medium text-gray-900">{{ $business->user->NIS ?? '-' }}</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Class/Year</p>
+                                    <p class="text-sm font-medium text-gray-900">{{ $business->user->Student_Year ?? '-' }}</p>
+                                </div>
+                            </div>
+
+                            <div>
+                                <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Major/Study Program</p>
+                                <p class="text-sm font-medium text-gray-900">{{ $business->user->Major ?? '-' }}</p>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">CGPA</p>
+                                    <p class="text-sm font-medium text-gray-900">{{ $business->user->CGPA ? number_format($business->user->CGPA, 2) : '-' }}</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Status</p>
+                                    @if($business->user->Is_Graduate)
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-md bg-green-100 text-green-800">
+                                            <i class="bi bi-mortarboard-fill"></i> Graduated
+                                        </span>
+                                    @else
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-md bg-blue-100 text-blue-800">
+                                            <i class="bi bi-book-half"></i> Active Student
+                                        </span>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     </div>
 </x-app-layout>

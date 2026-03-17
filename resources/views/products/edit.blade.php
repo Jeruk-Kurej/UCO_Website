@@ -13,7 +13,7 @@
             </div>
         </div>
 
-        <div class="bg-white shadow-sm sm:rounded-lg">
+        <div class="bg-white shadow-sm sm:rounded-xl">
             <div class="p-6">
                 <form method="POST" action="{{ route('businesses.products.update', [$business, $product]) }}" class="space-y-6">
                     @csrf
@@ -27,7 +27,7 @@
                         <select name="product_category_id" 
                                 id="product_category_id" 
                                 required
-                                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm @error('product_category_id') border-red-500 @enderror">
+                                class="block w-full rounded-xl border-gray-200 shadow-sm focus:border-soft-gray-900 focus:ring-soft-gray-900 sm:text-sm @error('product_category_id') border-red-500 @enderror">
                             @foreach($categories as $category)
                                 <option value="{{ $category->id }}" {{ old('product_category_id', $product->product_category_id) == $category->id ? 'selected' : '' }}>
                                     {{ $category->name }}
@@ -49,7 +49,7 @@
                                id="name" 
                                value="{{ old('name', $product->name) }}"
                                required
-                               class="block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm @error('name') border-red-500 @enderror">
+                               class="block w-full rounded-xl border-gray-200 shadow-sm focus:border-soft-gray-900 focus:ring-soft-gray-900 sm:text-sm @error('name') border-red-500 @enderror">
                         @error('name')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
@@ -64,7 +64,7 @@
                                   id="description" 
                                   rows="4" 
                                   required
-                                  class="block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm @error('description') border-red-500 @enderror">{{ old('description', $product->description) }}</textarea>
+                                  class="block w-full rounded-xl border-gray-200 shadow-sm focus:border-soft-gray-900 focus:ring-soft-gray-900 sm:text-sm @error('description') border-red-500 @enderror">{{ old('description', $product->description) }}</textarea>
                         @error('description')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
@@ -84,7 +84,7 @@
                                    min="0"
                                    step="0.01"
                                    required
-                                   class="block w-full pl-10 rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 sm:text-sm @error('price') border-red-500 @enderror">
+                                   class="block w-full pl-10 rounded-xl border-gray-200 shadow-sm focus:border-soft-gray-900 focus:ring-soft-gray-900 sm:text-sm @error('price') border-red-500 @enderror">
                         </div>
                         @error('price')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>

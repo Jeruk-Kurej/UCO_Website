@@ -121,9 +121,9 @@
                             .then(html => {
                                 const parser = new DOMParser();
                                 const doc = parser.parseFromString(html, 'text/html');
-                                const newContent = doc.querySelector('.businesses-wrapper');
+                                const newContent = doc.querySelector('#content-container');
                                 if (newContent) {
-                                    document.querySelector('.businesses-wrapper').innerHTML = newContent.innerHTML;
+                                    document.querySelector('#content-container').innerHTML = newContent.innerHTML;
                                     window.history.pushState({}, '', url);
                                 }
                                 this.isSearching = false;
@@ -171,8 +171,9 @@
             <div class="mb-4 text-green-700">{{ session('success') }}</div>
         @endif
 
-        {{-- All Businesses (visible when activeTab === 'all') --}}
-        <div x-show="activeTab === 'all'" x-transition.opacity class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div id="content-container">
+            {{-- All Businesses (visible when activeTab === 'all') --}}
+            <div x-show="activeTab === 'all'" x-transition.opacity class="grid grid-cols-1 md:grid-cols-2 gap-6">
             @if ($businesses->count() > 0)
                 @foreach ($businesses as $business)
                     <div class="bg-white border rounded-lg overflow-hidden hover:shadow-md transition-shadow">
@@ -245,6 +246,7 @@
             </div>
             </div>
         @endauth
+        </div>
 
     {{-- Duplicate 'My Businesses' block removed; kept only the tabbed 'my' section above. --}}
 

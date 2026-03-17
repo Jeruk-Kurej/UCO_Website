@@ -157,9 +157,9 @@
                     .then(html => {
                         const parser = new DOMParser();
                         const doc = parser.parseFromString(html, 'text/html');
-                        const newContent = doc.querySelector('.space-y-6');
+                        const newContent = doc.querySelector('#table-container');
                         if (newContent) {
-                            document.querySelector('.space-y-6').innerHTML = newContent.innerHTML;
+                            document.querySelector('#table-container').innerHTML = newContent.innerHTML;
                             window.history.pushState({}, '', url);
                         }
                         this.isSearching = false;
@@ -192,13 +192,6 @@
                         </div>
                     </div>
                 </div>
-                @if(request('search'))
-                    <button type="button"
-                            @click="search = ''; performSearch()"
-                            class="inline-flex items-center px-4 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors">
-                        Clear
-                    </button>
-                @endif
             </div>
         </div>
 
@@ -399,7 +392,7 @@
         </div>
 
         {{-- Users Table Card --}}
-        <div class="bg-white border border-gray-200 rounded-xl overflow-hidden">
+        <div class="bg-white border border-gray-200 rounded-xl overflow-hidden" id="table-container">
             {{-- Table Container --}}
             <div class="overflow-x-auto">
                 <table class="w-full divide-y divide-gray-200">
