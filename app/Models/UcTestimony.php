@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class UcTestimony extends Model
@@ -21,6 +22,7 @@ class UcTestimony extends Model
         'content',
         'rating',
         'date',
+        'user_id',
     ];
 
     protected $casts = [
@@ -37,5 +39,10 @@ class UcTestimony extends Model
     public function aiAnalysis(): HasOne
     {
         return $this->hasOne(UcAiAnalysis::class);
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 }
