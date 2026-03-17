@@ -38,11 +38,6 @@ $graduationData = $userToEdit->graduation_data ?? [];
 
         {{-- Page Header --}}
         <div class="mb-6 flex items-center gap-4">
-            <a href="{{ route('users.show', $userToEdit->id) }}" 
-               class="group inline-flex items-center gap-2.5 px-4 py-2.5 bg-white hover:bg-gray-900 border border-gray-200 hover:border-gray-900 text-gray-700 hover:text-white rounded-xl font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200">
-                <i class="bi bi-arrow-left text-base group-hover:-translate-x-0.5 transition-transform duration-200"></i>
-                <span>Back</span>
-            </a>
             <div class="flex-1">
                 <h1 class="text-2xl font-bold text-gray-900">Edit User</h1>
                 <p class="text-sm text-gray-600">{{ $userToEdit->name }} ({{ $userToEdit->username }})</p>
@@ -589,11 +584,9 @@ $graduationData = $userToEdit->graduation_data ?? [];
 
             {{-- Action Buttons --}}
             <div class="flex items-center justify-between pb-6">
-                <a href="{{ route('users.show', $userToEdit->id) }}" 
-                   class="inline-flex items-center px-6 py-2.5 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 font-medium transition duration-150">
-                    <i class="bi bi-x-lg me-2"></i>
-                    Cancel
-                </a>
+                <a href="{{ route('users.show', $userToEdit->id) }}" class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 hover:text-gray-900 rounded-xl transition duration-150">
+    Cancel
+</a>
                                 @if(auth()->id() !== $userToEdit->id)
                     <button type="button" 
                             onclick="if(confirm('Are you sure you want to delete this user?')) document.getElementById('delete-form').submit();"

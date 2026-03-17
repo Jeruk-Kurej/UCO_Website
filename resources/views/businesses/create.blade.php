@@ -31,11 +31,6 @@
         {{-- Page Header --}}
         <div class="bg-white border border-slate-200 rounded-xl shadow-sm px-4 sm:px-8 py-6 sm:py-10 mb-8">
             <div class="flex flex-col sm:flex-row sm:items-center gap-4">
-                <a href="{{ route('businesses.index') }}" 
-                   class="group inline-flex items-center justify-center sm:justify-start gap-2.5 px-4 py-2.5 bg-white hover:bg-soft-gray-900 border border-gray-200 hover:border-soft-gray-900 text-gray-700 hover:text-white rounded-xl font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200">
-                    <i class="bi bi-arrow-left text-base group-hover:-translate-x-0.5 transition-transform duration-200"></i>
-                    <span>Back</span>
-                </a>
                 <div class="flex-1 text-center sm:text-left">
                     <h1 class="text-2xl sm:text-3xl font-bold text-slate-800">Tambah Business Baru</h1>
                     <p class="text-slate-600 mt-2 text-sm sm:text-base">Lengkapi informasi business Anda dengan detail</p>
@@ -376,20 +371,78 @@
                 </div>
 
                 @if(auth()->user()->role === 'admin')
-                <div>
-                    <label for="user_id" class="block text-sm font-medium text-gray-700 mb-2">
+                <div x-data="{
+                        search: '',
+                        open: false,
+                        selectedId: '{{ old('user_id') }}',
+                        selectedText: 'Select Owner',
+                        users: [
+                            @foreach($users as $user)
+                            { id: '{{ $user->id }}', name: '{{ addslashes($user->name) }} ({{ addslashes($user->email) }})' },
+                            @endforeach
+                        ],
+                        get filteredUsers() {
+                            if (this.search === '') return this.users;
+                            return this.users.filter(u => u.name.toLowerCase().includes(this.search.toLowerCase()));
+                        },
+                        init() {
+                            let match = this.users.find(u => u.id == this.selectedId);
+                            if (match) this.selectedText = match.name;
+                        },
+                        select(id, name) {
+                            this.selectedId = id;
+                            this.selectedText = name;
+                            this.open = false;
+                            this.search = '';
+                        }
+                    }" 
+                    @click.away="open = false"
+                    class="relative">
+                    
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
                         Owner (Admin Only)
                     </label>
-                    <select name="user_id" 
-                            id="user_id"
-                            class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('user_id') border-gray-200 @enderror transition">
-                        <option value="">Select Owner</option>
-                        @foreach($users as $user)
-                            <option value="{{ $user->id }}" {{ old('user_id') == $user->id ? 'selected' : '' }}>
-                                {{ $user->name }} ({{ $user->email }})
-                            </option>
-                        @endforeach
-                    </select>
+                    <input type="hidden" name="user_id" :value="selectedId">
+                    
+                    <button type="button" @click="open = !open" 
+                            class="flex w-full items-center justify-between px-4 py-3 border rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 transition bg-white text-left @error('user_id') border-red-500 @else border-gray-200 hover:border-soft-gray-400 @enderror">
+                        <span x-text="selectedText" :class="selectedId ? 'text-gray-900' : 'text-gray-500'" class="block truncate"></span>
+                        <svg class="h-5 w-5 text-gray-400 shrink-0 transform transition-transform duration-200" :class="open ? 'rotate-180' : ''" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+
+                    <div x-show="open" 
+                         x-transition:enter="transition ease-out duration-100"
+                         x-transition:enter-start="opacity-0 scale-95"
+                         x-transition:enter-end="opacity-100 scale-100"
+                         x-transition:leave="transition ease-in duration-75"
+                         x-transition:leave-start="opacity-100 scale-100"
+                         x-transition:leave-end="opacity-0 scale-95"
+                         style="display: none;"
+                         class="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-60 rounded-xl py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm">
+                        <div class="px-3 py-2 border-b border-gray-100 flex items-center sticky top-0 bg-white z-20">
+                            <i class="bi bi-search text-gray-400 mr-2 shrink-0"></i>
+                            <input type="text" x-model="search" @click.stop class="w-full border-0 focus:ring-0 p-0 text-gray-900 sm:text-sm" placeholder="Search owner...">
+                        </div>
+                        
+                        <ul class="pt-1">
+                            <li x-show="filteredUsers.length === 0" class="text-gray-500 px-4 py-2 cursor-default text-sm">No users found</li>
+                            <template x-for="user in filteredUsers" :key="user.id">
+                                <li @click="select(user.id, user.name)"
+                                    class="text-gray-900 cursor-pointer select-none relative py-2.5 pl-4 pr-9 hover:bg-gray-100 transition-colors"
+                                    :class="selectedId == user.id ? 'bg-gray-50 font-medium' : ''">
+                                    <span x-text="user.name" class="block truncate"></span>
+                                    
+                                    <span x-show="selectedId == user.id" 
+                                          class="text-gray-900 absolute inset-y-0 right-0 flex items-center pr-4">
+                                        <i class="bi bi-check-lg text-lg"></i>
+                                    </span>
+                                </li>
+                            </template>
+                        </ul>
+                    </div>
+
                     @error('user_id')
                         <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -744,14 +797,14 @@
             </div>
 
             {{-- Submit Buttons --}}
-            <div class="flex gap-4 pt-4">
-                <button type="submit" class="flex-1 bg-soft-gray-900 hover:bg-soft-gray-800 text-white font-semibold py-4 px-6 rounded-xl shadow-md transition duration-200">
+            <div class="flex items-center justify-between pt-6 border-t border-gray-200 mt-6">
+    <a href="{{ route('businesses.index') }}" class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 hover:text-gray-900 rounded-xl transition duration-150">
+    Cancel
+</a>
+    <button type="submit" class="inline-flex items-center gap-2 px-6 py-2.5 bg-soft-gray-900 hover:bg-soft-gray-800 text-white font-semibold rounded-xl shadow-md transition duration-200">
                     Simpan Business
                 </button>
-                <a href="{{ route('businesses.index') }}" class="flex-1 bg-slate-400 hover:bg-slate-500 text-white font-semibold py-4 px-6 rounded-xl shadow-md transition duration-200 text-center flex items-center justify-center">
-                    Batal
-                </a>
-            </div>
+</div>
         </form>
     </div>
 

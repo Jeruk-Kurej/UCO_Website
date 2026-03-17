@@ -2,10 +2,6 @@
     <div class="max-w-3xl mx-auto">
         {{-- Page Header --}}
         <div class="mb-6 flex items-center gap-3">
-            <a href="{{ route('businesses.show', $business) }}" 
-               class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-800 transition duration-150">
-                <i class="bi bi-arrow-left text-lg"></i>
-            </a>
             <div>
                 <h1 class="text-2xl font-bold text-gray-900">Edit Product Category</h1>
                 <p class="text-sm text-gray-600">{{ $business->name }}</p>
@@ -59,11 +55,9 @@
 
                     {{-- Submit Buttons --}}
                     <div class="flex items-center justify-between pt-6 border-t border-gray-200">
-                        <a href="{{ route('businesses.show', $business) }}" 
-                           class="inline-flex items-center px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition duration-150">
-                            <i class="bi bi-x-lg me-2"></i>
-                            Cancel
-                        </a>
+                        <a href="{{ route('businesses.show', $business) }}" class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 hover:text-gray-900 rounded-xl transition duration-150">
+    Cancel
+</a>
                         <div class="flex items-center gap-3">
                             @if($productCategory->products->count() === 0)
                                 <button type="button" 

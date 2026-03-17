@@ -2,11 +2,6 @@
     <div class="max-w-3xl mx-auto">
         {{-- Page Header --}}
         <div class="mb-6 flex items-center gap-4">
-            <a href="/contact-types" 
-               class="group inline-flex items-center gap-2.5 px-4 py-2.5 bg-white hover:bg-gray-900 border border-gray-200 hover:border-gray-900 text-gray-700 hover:text-white rounded-xl font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200">
-                <i class="bi bi-arrow-left text-base group-hover:-translate-x-0.5 transition-transform duration-200"></i>
-                <span>Back</span>
-            </a>
             <div class="flex-1">
                 <h1 class="text-2xl font-bold text-gray-900">Create Contact Type</h1>
                 <p class="text-sm text-gray-600">Add a new contact platform</p>
@@ -98,11 +93,9 @@
 
                     {{-- Submit Buttons --}}
                     <div class="flex items-center justify-between pt-6 border-t border-gray-200">
-                        <a href="/contact-types" 
-                           class="inline-flex items-center px-4 py-2 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition duration-150">
-                            <i class="bi bi-x-lg me-2"></i>
-                            Cancel
-                        </a>
+                        <a href="/contact-types" class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 hover:text-gray-900 rounded-xl transition duration-150">
+    Cancel
+</a>
                         <button type="submit" 
                                 class="inline-flex items-center gap-2 px-6 py-2.5 bg-soft-gray-900 hover:bg-soft-gray-800 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all duration-200">
                             <i class="bi bi-check-lg me-2"></i>
