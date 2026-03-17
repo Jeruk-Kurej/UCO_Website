@@ -18,7 +18,7 @@ class ProductCategory extends Model
     */
 
     protected $fillable = [
-        'business_type_id',
+        'business_id',
         'name',
     ];
 
@@ -28,9 +28,9 @@ class ProductCategory extends Model
     |--------------------------------------------------------------------------
     */
 
-    public function businessType(): BelongsTo
+    public function business(): BelongsTo
     {
-        return $this->belongsTo(BusinessType::class);
+        return $this->belongsTo(Business::class);
     }
 
     public function products(): HasMany

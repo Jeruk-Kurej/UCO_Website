@@ -58,6 +58,11 @@ class Business extends Model
         return $this->belongsTo(BusinessType::class);
     }
 
+    public function productCategories(): HasMany
+    {
+        return $this->hasMany(ProductCategory::class);
+    }
+
     public function products(): HasMany
     {
         return $this->hasMany(Product::class);

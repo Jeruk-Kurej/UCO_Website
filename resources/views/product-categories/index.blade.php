@@ -2,17 +2,17 @@
     <div class="max-w-5xl mx-auto">
         {{-- Page Header --}}
         <div class="mb-6 flex items-center gap-3">
-            <a href="{{ route('business-types.index') }}" 
+            <a href="{{ route('businesses.show', $business) }}" 
                class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-800 transition duration-150">
                 <i class="bi bi-arrow-left text-lg"></i>
             </a>
             <div class="flex-1">
                 <h1 class="text-2xl font-bold text-gray-900">Product Categories</h1>
-                <p class="text-sm text-gray-600">{{ $businessType->name }}</p>
+                <p class="text-sm text-gray-600">{{ $business->name }}</p>
             </div>
             {{-- ✅ FIXED: All authenticated users can add --}}
             @auth
-                <a href="{{ route('business-types.product-categories.create', $businessType) }}" 
+                <a href="{{ route('businesses.product-categories.create', $business) }}" 
                    class="inline-flex items-center px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-lg font-semibold text-sm shadow-sm transition duration-150">
                     <i class="bi bi-plus-lg me-2"></i>
                     Add Category
@@ -20,16 +20,7 @@
             @endauth
         </div>
 
-        {{-- Info Banner --}}
-        <div class="mb-6 bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-200 rounded-lg p-4">
-            <div class="flex gap-3">
-                <i class="bi bi-info-circle text-blue-600 text-xl flex-shrink-0"></i>
-                <div class="text-sm text-blue-800">
-                    <p class="font-semibold mb-1">About Product Categories</p>
-                    <p class="text-xs">These categories are specific to <strong>{{ $businessType->name }}</strong> businesses. When users create products for this business type, they can choose from these categories.</p>
-                </div>
-            </div>
-        </div>
+
 
         {{-- Categories List --}}
         <div class="bg-white shadow-sm sm:rounded-lg">
@@ -75,14 +66,14 @@
                                     @auth
                                         <td class="px-6 py-4 whitespace-nowrap text-right">
                                             <div class="flex items-center justify-end gap-2">
-                                                <a href="{{ route('business-types.product-categories.edit', [$businessType, $category]) }}" 
+                                                <a href="{{ route('businesses.product-categories.edit', [$business, $category]) }}" 
                                                    class="inline-flex items-center justify-center w-9 h-9 bg-orange-50 text-orange-600 rounded hover:bg-orange-100 transition duration-150"
                                                    title="Edit Category">
                                                     <i class="bi bi-pencil"></i>
                                                 </a>
 
                                                 @if($category->products_count == 0)
-                                                    <form action="{{ route('business-types.product-categories.destroy', [$businessType, $category]) }}" 
+                                                    <form action="{{ route('businesses.product-categories.destroy', [$business, $category]) }}" 
                                                           method="POST" 
                                                           onsubmit="return confirm('Delete category {{ $category->name }}?');"
                                                           class="inline">
@@ -151,8 +142,8 @@
                     <p class="text-gray-500 text-lg font-medium mb-2">No categories yet</p>
                     {{-- ✅ FIXED: All authenticated users can create --}}
                     @auth
-                        <p class="text-sm text-gray-400 mb-4">Create categories to organize products for this business type</p>
-                        <a href="{{ route('business-types.product-categories.create', $businessType) }}" 
+                        <p class="text-sm text-gray-400 mb-4">Create categories to organize products for this business</p>
+                        <a href="{{ route('businesses.product-categories.create', $business) }}" 
                            class="inline-flex items-center px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium rounded-lg shadow-sm transition duration-150">
                             <i class="bi bi-plus-lg me-2"></i>
                             Create First Category

@@ -31,9 +31,4 @@ class BusinessType extends Model
     {
         return $this->hasMany(Business::class);
     }
-
-    public function productCategories(): HasMany
-    {
-        return $this->hasMany(ProductCategory::class);
-    }
 }
