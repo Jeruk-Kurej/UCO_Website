@@ -115,7 +115,45 @@
                 {{-- Description --}}
                 <div>
                     <h4 class="text-sm font-bold text-soft-gray-900 uppercase tracking-wider mb-3">About This Business</h4>
-                    <p class="text-base text-soft-gray-700 leading-relaxed">{{ $business->description }}</p>
+                    <p class="text-base text-soft-gray-700 leading-relaxed max-w-4xl">{{ $business->description }}</p>
+
+                    @if($business->legal_document_path || $business->certification_path)
+                        <div class="mt-6 pt-5 border-t border-soft-gray-100 flex flex-col sm:flex-row gap-4">
+                            @if($business->legal_document_path)
+                                <div class="flex items-center gap-3">
+                                    <div class="p-2.5 bg-red-50 text-red-600 rounded-xl">
+                                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8zm1-13h-2v6h6v-2h-4V7z"/>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-sm font-bold text-gray-900 mb-0.5">Dokumen Legalitas</h4>
+                                        <a href="{{ Storage::url($business->legal_document_path) }}" target="_blank" class="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline transition-colors">
+                                            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                                            Lihat / Unduh Dokumen (PDF)
+                                        </a>
+                                    </div>
+                                </div>
+                            @endif
+
+                            @if($business->certification_path)
+                                <div class="flex items-center gap-3">
+                                    <div class="p-2.5 bg-blue-50 text-blue-600 rounded-xl">
+                                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8zm1-13h-2v6h6v-2h-4V7z"/>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-sm font-bold text-gray-900 mb-0.5">Sertifikasi Produk</h4>
+                                        <a href="{{ Storage::url($business->certification_path) }}" target="_blank" class="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline transition-colors">
+                                            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                                            Lihat / Unduh Sertifikat (PDF)
+                                        </a>
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>

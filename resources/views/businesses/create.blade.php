@@ -578,40 +578,166 @@
 
             {{-- TAB 4: DOCUMENTS & CERTIFICATIONS --}}
             <div x-show="activeTab === 'documents'" class="bg-white border-x border-b border-slate-200 rounded-b-xl shadow-sm p-8 space-y-6">
-                {{-- Legal Documents Upload - FULLY CLICKABLE --}}
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Dokumen Legal (Optional)</label>
-                    <input type="file" name="legal_documents[]" id="legal_documents" multiple accept=".pdf,image/*" class="hidden" onchange="previewLegalDocs(event)">
-                    <label for="legal_documents" class="block border-2 border-dashed border-gray-200 rounded-xl p-8 text-center hover:border-soft-gray-900 hover:bg-slate-50 transition cursor-pointer">
-                        <div class="text-slate-400 mb-3">
-                            <svg class="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
-                        </div>
-                        <p class="text-sm text-slate-600 font-medium">Klik area ini untuk upload dokumen</p>
-                        <p class="text-xs text-slate-400 mt-1">PDF, Image up to 5MB per file</p>
-                    </label>
-                    <div id="legalDocsPreview" class="mt-4 grid grid-cols-3 gap-4"></div>
-                    @error('legal_documents')
+                {{-- Single Legal Document PDF Upload via Alpine.js --}}
+                <div x-data="{ 
+                        fileName: null,
+                        fileSize: null,
+                        isDragging: false,
+                        fileSelected(event) {
+                            const file = event.target.files[0];
+                            if (file) {
+                                if(file.type !== 'application/pdf') {
+                                    alert('Only PDF files are allowed.');
+                                    this.removeFile();
+                                    return;
+                                }
+                                if(file.size > 5 * 1024 * 1024) {
+                                    alert('Document must not be larger than 5MB.');
+                                    this.removeFile();
+                                    return;
+                                }
+                                this.fileName = file.name;
+                                this.fileSize = (file.size / (1024 * 1024)).toFixed(2) + ' MB';
+                            }
+                        },
+                        removeFile() {
+                            this.fileName = null;
+                            this.fileSize = null;
+                            this.$refs.fileInput.value = '';
+                        },
+                        handleDrop(event) {
+                            this.isDragging = false;
+                            const file = event.dataTransfer.files[0];
+                            if (file) {
+                                this.$refs.fileInput.files = event.dataTransfer.files;
+                                this.fileSelected({ target: this.$refs.fileInput });
+                            }
+                        }
+                    }">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Dokumen Legal (PDF, Max 5MB)</label>
+                    <div class="relative group mt-2" 
+                         @dragover.prevent="isDragging = true" 
+                         @dragleave.prevent="isDragging = false" 
+                         @drop.prevent="handleDrop($event)">
+                        
+                        <input type="file" name="legal_document_path" id="legal_document_path" accept=".pdf" class="hidden" x-ref="fileInput" @change="fileSelected">
+                        
+                        <template x-if="!fileName">
+                            <label for="legal_document_path" 
+                                   :class="isDragging ? 'border-soft-gray-900 bg-soft-gray-50' : 'border-gray-200 bg-white hover:border-soft-gray-400 hover:bg-gray-50'" 
+                                   class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-xl cursor-pointer transition-all duration-200">
+                                <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                                    <div class="p-3 bg-white rounded-full shadow-sm border border-gray-100 mb-2 group-hover:scale-110 transition-transform duration-200">
+                                        <svg class="mx-auto h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                        </svg>
+                                    </div>
+                                    <p class="text-sm text-gray-600 font-medium">Klik untuk upload data legal / seret file</p>
+                                    <p class="text-xs text-gray-400 mt-1">Hanya PDF hingga 5MB</p>
+                                </div>
+                            </label>
+                        </template>
+
+                        <template x-if="fileName">
+                            <div class="flex items-center justify-between p-4 bg-gray-50 border border-gray-200 rounded-xl">
+                                <div class="flex items-center space-x-3 overflow-hidden">
+                                    <div class="p-2 bg-red-100 text-red-600 rounded-lg shrink-0">
+                                        <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8zm1-13h-2v6h6v-2h-4V7z"/></svg>
+                                    </div>
+                                    <div class="min-w-0">
+                                        <p class="text-sm font-medium text-gray-900 truncate" x-text="fileName"></p>
+                                        <p class="text-xs text-gray-500" x-text="fileSize"></p>
+                                    </div>
+                                </div>
+                                <button type="button" @click="removeFile()" class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors focus:outline-none shrink-0" title="Remove file">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                                </button>
+                            </div>
+                        </template>
+                    </div>
+                    @error('legal_document_path')
                         <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
 
-                {{-- Product Certifications Upload - FULLY CLICKABLE --}}
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Sertifikasi Produk (Optional)</label>
-                    <input type="file" name="product_certifications[]" id="product_certifications" multiple accept=".pdf,image/*" class="hidden" onchange="previewCertifications(event)">
-                    <label for="product_certifications" class="block border-2 border-dashed border-gray-200 rounded-xl p-8 text-center hover:border-soft-gray-900 hover:bg-slate-50 transition cursor-pointer">
-                        <div class="text-slate-400 mb-3">
-                            <svg class="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-                            </svg>
-                        </div>
-                        <p class="text-sm text-slate-600 font-medium">Klik area ini untuk upload sertifikat</p>
-                        <p class="text-xs text-slate-400 mt-1">PDF, Image up to 5MB per file</p>
-                    </label>
-                    <div id="certificationsPreview" class="mt-4 grid grid-cols-3 gap-4"></div>
-                    @error('product_certifications')
+                {{-- Product Certifications Upload via Alpine.js --}}
+                <div x-data="{ 
+                        fileName: null,
+                        fileSize: null,
+                        isDragging: false,
+                        fileSelected(event) {
+                            const file = event.target.files[0];
+                            if (file) {
+                                if(file.type !== 'application/pdf') {
+                                    alert('Only PDF files are allowed.');
+                                    this.removeFile();
+                                    return;
+                                }
+                                if(file.size > 5 * 1024 * 1024) {
+                                    alert('Document must not be larger than 5MB.');
+                                    this.removeFile();
+                                    return;
+                                }
+                                this.fileName = file.name;
+                                this.fileSize = (file.size / (1024 * 1024)).toFixed(2) + ' MB';
+                            }
+                        },
+                        removeFile() {
+                            this.fileName = null;
+                            this.fileSize = null;
+                            this.$refs.fileInput.value = '';
+                        },
+                        handleDrop(event) {
+                            this.isDragging = false;
+                            const file = event.dataTransfer.files[0];
+                            if (file) {
+                                this.$refs.fileInput.files = event.dataTransfer.files;
+                                this.fileSelected({ target: this.$refs.fileInput });
+                            }
+                        }
+                    }">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Sertifikasi Produk (PDF, Max 5MB)</label>
+                    <div class="relative group mt-2" 
+                         @dragover.prevent="isDragging = true" 
+                         @dragleave.prevent="isDragging = false" 
+                         @drop.prevent="handleDrop($event)">
+                        
+                        <input type="file" name="certification_path" id="certification_path" accept=".pdf" class="hidden" x-ref="fileInput" @change="fileSelected">
+                        
+                        <template x-if="!fileName">
+                            <label for="certification_path" 
+                                   :class="isDragging ? 'border-soft-gray-900 bg-soft-gray-50' : 'border-gray-200 bg-white hover:border-soft-gray-400 hover:bg-gray-50'" 
+                                   class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-xl cursor-pointer transition-all duration-200">
+                                <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                                    <div class="p-3 bg-white rounded-full shadow-sm border border-gray-100 mb-2 group-hover:scale-110 transition-transform duration-200">
+                                        <svg class="mx-auto h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                                        </svg>
+                                    </div>
+                                    <p class="text-sm text-gray-600 font-medium">Klik untuk upload data sertifikasi / seret file</p>
+                                    <p class="text-xs text-gray-400 mt-1">Hanya PDF hingga 5MB</p>
+                                </div>
+                            </label>
+                        </template>
+
+                        <template x-if="fileName">
+                            <div class="flex items-center justify-between p-4 bg-gray-50 border border-gray-200 rounded-xl">
+                                <div class="flex items-center space-x-3 overflow-hidden">
+                                    <div class="p-2 bg-blue-100 text-blue-600 rounded-lg shrink-0">
+                                        <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8zm1-13h-2v6h6v-2h-4V7z"/></svg>
+                                    </div>
+                                    <div class="min-w-0">
+                                        <p class="text-sm font-medium text-gray-900 truncate" x-text="fileName"></p>
+                                        <p class="text-xs text-gray-500" x-text="fileSize"></p>
+                                    </div>
+                                </div>
+                                <button type="button" @click="removeFile()" class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors focus:outline-none shrink-0" title="Remove file">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                                </button>
+                            </div>
+                        </template>
+                    </div>
+                    @error('certification_path')
                         <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>

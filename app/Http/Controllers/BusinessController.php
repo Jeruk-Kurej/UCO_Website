@@ -149,6 +149,8 @@ class BusinessController extends Controller
                 'revenue_range' => 'nullable|in:Mikro: <= Rp 300 Juta,Kecil: > Rp 300 Juta - Rp 2,5 Milyar,Menengah: > Rp 2,5 Milyar - Rp 50 Milyar,Besar: > Rp 50 Milyar',
                 'is_from_college_project' => 'nullable|boolean',
                 'is_continued_after_graduation' => 'nullable|boolean',
+                'legal_document_path' => 'nullable|file|mimes:pdf|max:5120',
+                'certification_path' => 'nullable|file|mimes:pdf|max:5120',
                 'legal_documents.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
                 'product_certifications.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
                 'business_challenges' => 'nullable|array',
@@ -168,7 +170,7 @@ class BusinessController extends Controller
             }
             unset($validated['logo']);
 
-            // Handle legal documents upload
+            // Handle legal documents (array) upload
             $legalDocs = [];
             if ($request->hasFile('legal_documents')) {
                 foreach ($request->file('legal_documents') as $index => $file) {
@@ -185,7 +187,13 @@ class BusinessController extends Controller
             }
             $validated['legal_documents'] = !empty($legalDocs) ? $legalDocs : null;
 
-            // Handle product certifications upload
+            // Handle legal document path (single PDF)
+            if ($request->hasFile('legal_document_path')) {
+                $docPath = $request->file('legal_document_path')->store('businesses/documents', 'public');
+                $validated['legal_document_path'] = $docPath;
+            }
+
+            // Handle product certifications (array) upload
             $certifications = [];
             if ($request->hasFile('product_certifications')) {
                 foreach ($request->file('product_certifications') as $index => $file) {
@@ -201,6 +209,12 @@ class BusinessController extends Controller
                 }
             }
             $validated['product_certifications'] = !empty($certifications) ? $certifications : null;
+
+            // Handle certification path (single PDF)
+            if ($request->hasFile('certification_path')) {
+                $certPath = $request->file('certification_path')->store('businesses/documents', 'public');
+                $validated['certification_path'] = $certPath;
+            }
 
             $business = Business::create($validated);
 
@@ -304,6 +318,8 @@ class BusinessController extends Controller
                 'revenue_range' => 'nullable|in:Mikro: <= Rp 300 Juta,Kecil: > Rp 300 Juta - Rp 2,5 Milyar,Menengah: > Rp 2,5 Milyar - Rp 50 Milyar,Besar: > Rp 50 Milyar',
                 'is_from_college_project' => 'nullable|boolean',
                 'is_continued_after_graduation' => 'nullable|boolean',
+                'legal_document_path' => 'nullable|file|mimes:pdf|max:5120',
+                'certification_path' => 'nullable|file|mimes:pdf|max:5120',
                 'legal_documents.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
                 'product_certifications.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
                 'business_challenges' => 'nullable|array',
@@ -354,7 +370,7 @@ class BusinessController extends Controller
             }
             unset($validated['logo']);
 
-            // Handle legal documents
+            // Handle legal documents (array)
             $currentLegalDocs = $business->legal_documents ?? [];
             
             // Remove selected documents
@@ -384,7 +400,22 @@ class BusinessController extends Controller
             }
             $validated['legal_documents'] = !empty($currentLegalDocs) ? $currentLegalDocs : null;
 
-            // Handle product certifications
+            // Handle legal_document_path (single PDF)
+            if ($request->hasFile('legal_document_path')) {
+                // Delete old document if exists
+                if ($business->legal_document_path && Storage::disk('public')->exists($business->legal_document_path)) {
+                    Storage::disk('public')->delete($business->legal_document_path);
+                }
+                $docPath = $request->file('legal_document_path')->store('businesses/documents', 'public');
+                $validated['legal_document_path'] = $docPath;
+            } elseif ($request->boolean('remove_legal_document')) {
+                if ($business->legal_document_path && Storage::disk('public')->exists($business->legal_document_path)) {
+                    Storage::disk('public')->delete($business->legal_document_path);
+                }
+                $validated['legal_document_path'] = null;
+            }
+
+            // Handle product certifications (array)
             $currentCertifications = $business->product_certifications ?? [];
             
             // Remove selected certifications
@@ -413,6 +444,21 @@ class BusinessController extends Controller
                 }
             }
             $validated['product_certifications'] = !empty($currentCertifications) ? $currentCertifications : null;
+
+            // Handle certification_path (single PDF)
+            if ($request->hasFile('certification_path')) {
+                // Delete old certification if exists
+                if ($business->certification_path && Storage::disk('public')->exists($business->certification_path)) {
+                    Storage::disk('public')->delete($business->certification_path);
+                }
+                $certPath = $request->file('certification_path')->store('businesses/documents', 'public');
+                $validated['certification_path'] = $certPath;
+            } elseif ($request->boolean('remove_certification')) {
+                if ($business->certification_path && Storage::disk('public')->exists($business->certification_path)) {
+                    Storage::disk('public')->delete($business->certification_path);
+                }
+                $validated['certification_path'] = null;
+            }
 
             // Remove these from validated array
             unset($validated['remove_legal_docs'], $validated['remove_certifications']);
