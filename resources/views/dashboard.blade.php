@@ -122,7 +122,7 @@
                 @endif
 
         {{-- What They Say About UCO Section --}}
-        @if($testimonies->count() > 0)
+        @if(($testimonies ?? collect())->count() > 0)
             <div class="relative">
                 {{-- Subtle Background Accent --}}
                 <div class="absolute top-0 left-0 w-96 h-96 bg-gradient-to-br from-uco-yellow-50 to-uco-orange-50 rounded-full blur-3xl opacity-40 -z-10"></div>

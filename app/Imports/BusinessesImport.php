@@ -476,10 +476,15 @@ class BusinessesImport implements ToModel, WithHeadingRow, WithValidation, WithC
 
                     // Resolve public URL if available
                     try {
-                        $publicUrl = Storage::disk($disk)->url($storedPath);
+                        $publicUrl = Storage::url($storedPath);
                     } catch (\Exception $e) {
-                        // Fallback to stored path
-                        $publicUrl = $storedPath;
+                        // Fallback: for Cloudinary, $storedPath is already the public URL
+                        // For local storage, construct url manually
+                        if ($disk === 'cloudinary') {
+                            $publicUrl = $storedPath;
+                        } else {
+                            $publicUrl = asset('storage/' . $storedPath);
+                        }
                     }
 
                     // Determine if this column is likely a logo

@@ -457,7 +457,7 @@ class UsersImport implements ToModel, WithHeadingRow, WithValidation, WithChunkR
                     if (!$storedPath) continue;
 
                     try {
-                        $publicUrl = Storage::disk($disk)->url($storedPath);
+                        $publicUrl = Storage::url($storedPath);
                     } catch (\Exception $e) {
                         $publicUrl = $storedPath;
                     }

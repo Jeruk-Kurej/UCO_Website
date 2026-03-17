@@ -112,7 +112,7 @@ class MigrateImagesToCloudinary extends Command
                         continue;
                     }
 
-                    $newUrl = Storage::disk($disk)->url($targetPath);
+                    $newUrl = Storage::url($targetPath);
                     DB::table($table)->where('id', $id)->update([$column => $newUrl]);
                     $this->info("Stored and updated id={$id} -> {$newUrl}");
 
