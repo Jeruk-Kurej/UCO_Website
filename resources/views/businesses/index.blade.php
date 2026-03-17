@@ -65,30 +65,82 @@
             $initialTab = request('tab', 'all');
         }
     @endphp
-    <div x-data="{ activeTab: '{{ $initialTab }}' }" x-cloak class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div x-data="{ activeTab: '{{ $initialTab }}' }" x-cloak>
+
+        {{-- Page Header --}}
         <div class="flex items-center justify-between mb-5">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900">Business Directory</h1>
+                <p class="text-sm text-gray-600 mt-1">Browse and manage alumni businesses</p>
+            </div>
+            @auth
+                @if(auth()->user()->isAdmin())
+                <div class="flex gap-3">
+                    <button type="button" onclick="document.getElementById('importModal').classList.remove('hidden')"
+                            class="inline-flex items-center px-4 py-2.5 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                        </svg>
+                        Import
+                    </button>
+                    <a href="{{ route('businesses.create') }}"
+                       class="inline-flex items-center px-4 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                        Add Business
+                    </a>
+                </div>
+                @endif
+            @endauth
+        </div>
 
-            <div class="flex items-center gap-3">
-
-                @auth
-                    @if(auth()->user()->isAdmin())
-                        <a href="{{ route('businesses.create') }}" class="inline-flex items-center px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+        {{-- Search Bar --}}
+        <div class="bg-white border border-gray-200 rounded-xl p-4 mb-5"
+             x-data="{
+                search: '{{ request('search') }}',
+                isSearching: false,
+                performSearch() {
+                    this.isSearching = true;
+                    const trimmed = this.search.trim();
+                    const url = trimmed.length > 0
+                        ? '{{ route('businesses.index') }}?search=' + encodeURIComponent(trimmed)
+                        : '{{ route('businesses.index') }}';
+                    window.location.href = url;
+                }
+             }">
+            <div class="flex gap-3">
+                <div class="flex-1">
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                             </svg>
-                            Add Business
-                        </a>
-
-                        <button type="button" onclick="document.getElementById('importModal').classList.remove('hidden')" class="inline-flex items-center px-4 py-2 bg-white border text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14m7-7H5"></path>
+                        </div>
+                        <input type="text"
+                               x-model="search"
+                               @input.debounce.500ms="performSearch()"
+                               @keydown.enter="performSearch()"
+                               placeholder="Search by name, description, owner, or type..."
+                               class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        <div x-show="isSearching" class="absolute inset-y-0 right-0 flex items-center pr-3">
+                            <svg class="animate-spin h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
-                            Import
-                        </button>
-                    @endif
-                @endauth
+                        </div>
+                    </div>
+                </div>
+                @if(request('search'))
+                    <button type="button"
+                            @click="search = ''; window.location.href = '{{ route('businesses.index') }}'"
+                            class="inline-flex items-center px-4 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors">
+                        Clear
+                    </button>
+                @endif
             </div>
         </div>
+
         {{-- Client-side Tabs for non-admin users: All / My --}}
         @auth
             @if(!auth()->user()->isAdmin())
