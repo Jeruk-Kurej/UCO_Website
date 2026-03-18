@@ -43,18 +43,60 @@
                                         </span>
                                     </div>
                                     
-                                    {{-- Business Photo Background --}}
-                                    @if($business->photos->first())
-                                    <img src="{{ storage_image_url($business->photos->first()->photo_url) }}" 
-                                             alt="{{ $business->name }}" 
-                                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
-                                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
-                                    @else
-                                        <div class="w-full h-full bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center">
-                                            <i class="bi bi-briefcase text-6xl text-slate-400"></i>
-                                        </div>
-                                        <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent"></div>
-                                    @endif
+                                    {{-- Business Photo Carousel (Modern & Clean) --}}
+                                    @php $photosCount = $business->photos->count(); @endphp
+                                    <div class="absolute inset-0 w-full h-full overflow-hidden" 
+                                         x-data="{ 
+                                            activeSlide: 0, 
+                                            slidesCount: {{ $photosCount }},
+                                            timer: null,
+                                            startTimer() {
+                                                if (this.slidesCount > 1) {
+                                                    this.timer = setInterval(() => {
+                                                        this.activeSlide = (this.activeSlide + 1) % this.slidesCount;
+                                                    }, 4000);
+                                                }
+                                            },
+                                            stopTimer() {
+                                                if(this.timer) clearInterval(this.timer);
+                                            }
+                                         }"
+                                         x-init="startTimer()"
+                                         @mouseenter="stopTimer()"
+                                         @mouseleave="startTimer()">
+                                        
+                                        @forelse($business->photos as $index => $photo)
+                                            <div x-show="activeSlide === {{ $index }}"
+                                                 x-transition:enter="transition ease-out duration-700"
+                                                 x-transition:enter-start="opacity-0 scale-105"
+                                                 x-transition:enter-end="opacity-100 scale-100"
+                                                 x-transition:leave="transition ease-in duration-700"
+                                                 x-transition:leave-start="opacity-100"
+                                                 x-transition:leave-end="opacity-0"
+                                                 class="absolute inset-0 w-full h-full">
+                                                <img src="{{ storage_image_url($photo->photo_url) }}" 
+                                                     alt="{{ $business->name }} - Photo {{ $index + 1 }}" 
+                                                     class="w-full h-full object-cover">
+                                                <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+                                            </div>
+                                        @empty
+                                            <div class="w-full h-full bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center">
+                                                <i class="bi bi-briefcase text-6xl text-slate-400"></i>
+                                            </div>
+                                            <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent"></div>
+                                        @endforelse
+
+                                        {{-- Dots indicator (only if > 1 photo) --}}
+                                        @if($photosCount > 1)
+                                            <div class="absolute bottom-3 right-3 flex gap-1.5 z-20">
+                                                @foreach($business->photos as $index => $photo)
+                                                    <div class="h-1 rounded-full transition-all duration-300"
+                                                         :class="activeSlide === {{ $index }} ? 'w-5 bg-white' : 'w-1.5 bg-white/40'"></div>
+                                                @endforeach
+                                            </div>
+                                        @endif
+                                    </div>
+
                                     
                                     {{-- Logo & Featured Badge Overlay --}}
                                     <div class="absolute bottom-4 left-4 flex items-end gap-4">

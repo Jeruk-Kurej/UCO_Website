@@ -49,25 +49,62 @@
     <div class="space-y-6">
         {{-- Business Overview Card - Professional Design --}}
         <div class="bg-white shadow-lg sm:rounded-2xl overflow-hidden border border-soft-gray-100">
-            {{-- Hero Image with Overlay --}}
-            <div class="relative h-56">
-                @php $firstPhoto = $business->photos->first()?->photo_url; @endphp
-                @if($firstPhoto)
-                    <img src="{{ storage_image_url($firstPhoto, 'hero') }}" 
-                        alt="{{ $business->name }}" 
-                        loading="lazy" decoding="async"
-                        onload="this.classList.remove('blur-sm')"
-                        class="w-full h-full object-cover blur-sm">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent"></div>
-                @else
+            {{-- Hero Photo Carousel (Dynamic & Premium) --}}
+            <div class="relative h-64 sm:h-72 lg:h-80 overflow-hidden"
+                 @php $heroPhotosCount = $business->photos->count(); @endphp
+                 x-data="{ 
+                    activeHeroSlide: 0, 
+                    heroSlidesCount: {{ $heroPhotosCount }},
+                    heroTimer: null,
+                    startHeroTimer() {
+                        if (this.heroSlidesCount > 1) {
+                            this.heroTimer = setInterval(() => {
+                                this.activeHeroSlide = (this.activeHeroSlide + 1) % this.heroSlidesCount;
+                            }, 5000);
+                        }
+                    },
+                    stopHeroTimer() {
+                        if(this.heroTimer) clearInterval(this.heroTimer);
+                    }
+                 }"
+                 x-init="startHeroTimer()"
+                 @mouseenter="stopHeroTimer()"
+                 @mouseleave="startHeroTimer()">
+                
+                @forelse($business->photos as $index => $photo)
+                    <div x-show="activeHeroSlide === {{ $index }}"
+                         x-transition:enter="transition ease-out duration-1000"
+                         x-transition:enter-start="opacity-0 scale-105"
+                         x-transition:enter-end="opacity-100 scale-100"
+                         x-transition:leave="transition ease-in duration-1000"
+                         x-transition:leave-start="opacity-100"
+                         x-transition:leave-end="opacity-0"
+                         class="absolute inset-0 w-full h-full">
+                        <img src="{{ storage_image_url($photo->photo_url, 'hero') }}" 
+                             alt="{{ $business->name }} - Hero Photo {{ $index + 1 }}" 
+                             class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+                    </div>
+                @empty
                     <div class="w-full h-full bg-gradient-to-br from-soft-gray-100 via-soft-gray-50 to-soft-gray-100 flex items-center justify-center relative">
                         <svg class="w-24 h-24 text-soft-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
                         </svg>
                         <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-black/5 to-transparent"></div>
                     </div>
+                @endforelse
+
+                {{-- Hero Dots indicator --}}
+                @if($heroPhotosCount > 1)
+                    <div class="absolute bottom-6 right-6 flex gap-2 z-20">
+                        @foreach($business->photos as $index => $photo)
+                            <div class="h-1.5 rounded-full transition-all duration-500 shadow-sm"
+                                 :class="activeHeroSlide === {{ $index }} ? 'w-8 bg-white' : 'w-2 bg-white/30 backdrop-blur-md'"></div>
+                        @endforeach
+                    </div>
                 @endif
             </div>
+
 
             {{-- Business Info Section --}}
             <div class="p-4 sm:p-6 lg:p-8">
