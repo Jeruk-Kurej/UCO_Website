@@ -1,4 +1,21 @@
 <x-app-layout>
+    @php
+        $getPlatformColor = function($name) {
+            $name = strtolower($name);
+            if (str_contains($name, 'whatsapp')) return ['bg' => 'bg-emerald-50', 'text' => 'text-emerald-600'];
+            if (str_contains($name, 'instagram')) return ['bg' => 'bg-pink-50', 'text' => 'text-pink-600'];
+            if (str_contains($name, 'facebook')) return ['bg' => 'bg-blue-50', 'text' => 'text-blue-700'];
+            if (str_contains($name, 'twitter') || str_contains($name, ' x ')) return ['bg' => 'bg-sky-50', 'text' => 'text-sky-500'];
+            if (str_contains($name, 'email') || str_contains($name, 'gmail') || str_contains($name, 'surat')) return ['bg' => 'bg-red-50', 'text' => 'text-red-500'];
+            if (str_contains($name, 'phone') || str_contains($name, 'telepon') || str_contains($name, 'mobile') || str_contains($name, 'hp')) return ['bg' => 'bg-blue-50', 'text' => 'text-blue-600'];
+            if (str_contains($name, 'website') || str_contains($name, 'url') || str_contains($name, 'link')) return ['bg' => 'bg-slate-50', 'text' => 'text-slate-600'];
+            if (str_contains($name, 'telegram')) return ['bg' => 'bg-sky-50', 'text' => 'text-sky-400'];
+            if (str_contains($name, 'tiktok')) return ['bg' => 'bg-gray-100', 'text' => 'text-gray-900'];
+            if (str_contains($name, 'linkedin')) return ['bg' => 'bg-blue-50', 'text' => 'text-blue-800'];
+            if (str_contains($name, 'youtube')) return ['bg' => 'bg-red-50', 'text' => 'text-red-700'];
+            return ['bg' => 'bg-orange-50', 'text' => 'text-orange-600'];
+        };
+    @endphp
     <div class="space-y-6">
         {{-- Page Header --}}
         <div class="flex items-center justify-between">
@@ -49,7 +66,8 @@
                                 {{-- Icon Preview --}}
                                 <td class="px-4 py-4">
                                     <div class="flex items-center justify-center">
-                                        <div class="w-12 h-12 rounded-lg bg-purple-100 flex items-center justify-center text-purple-600 text-xl">
+                                        @php $colors = $getPlatformColor($type->platform_name); @endphp
+                                        <div class="w-12 h-12 rounded-lg {{ $colors['bg'] }} flex items-center justify-center {{ $colors['text'] }} text-xl shadow-sm border {{ str_replace('bg-', 'border-', $colors['bg']) }}">
                                             <i class="{{ $type->icon_class }}"></i>
                                         </div>
                                     </div>
@@ -131,35 +149,41 @@
 
         {{-- Stats Summary --}}
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div class="bg-white rounded-lg shadow-sm p-4 border-l-4 border-purple-500">
+            <div class="bg-white rounded-xl shadow-sm p-4 border-l-4 border-orange-500 hover:shadow-md transition">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-xs font-medium text-gray-500 uppercase">Total Contact Types</p>
+                        <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Total Type</p>
                         <p class="text-2xl font-bold text-gray-900">{{ $contactTypes->total() }}</p>
                     </div>
-                    <i class="bi bi-telephone text-3xl text-purple-200"></i>
+                    <div class="w-12 h-12 rounded-full bg-orange-50 flex items-center justify-center">
+                        <i class="bi bi-telephone text-2xl text-orange-400"></i>
+                    </div>
                 </div>
             </div>
 
-            <div class="bg-white rounded-lg shadow-sm p-4 border-l-4 border-blue-500">
+            <div class="bg-white rounded-xl shadow-sm p-4 border-l-4 border-blue-500 hover:shadow-md transition">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-xs font-medium text-gray-500 uppercase">Total Contacts</p>
+                        <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Total Contact</p>
                         <p class="text-2xl font-bold text-gray-900">{{ $contactTypes->sum('business_contacts_count') }}</p>
                     </div>
-                    <i class="bi bi-link-45deg text-3xl text-blue-200"></i>
+                    <div class="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center">
+                        <i class="bi bi-link-45deg text-2xl text-blue-400"></i>
+                    </div>
                 </div>
             </div>
 
-            <div class="bg-white rounded-lg shadow-sm p-4 border-l-4 border-green-500">
+            <div class="bg-white rounded-xl shadow-sm p-4 border-l-4 border-emerald-500 hover:shadow-md transition">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-xs font-medium text-gray-500 uppercase">Avg per Type</p>
+                        <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Avg per Type</p>
                         <p class="text-2xl font-bold text-gray-900">
                             {{ $contactTypes->count() > 0 ? round($contactTypes->sum('business_contacts_count') / $contactTypes->count(), 1) : 0 }}
                         </p>
                     </div>
-                    <i class="bi bi-bar-chart text-3xl text-green-200"></i>
+                    <div class="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center">
+                        <i class="bi bi-bar-chart text-2xl text-emerald-400"></i>
+                    </div>
                 </div>
             </div>
         </div>

@@ -1,4 +1,14 @@
 <x-app-layout>
+    @php
+        $colors = [
+            ['bg' => 'bg-orange-50', 'text' => 'text-orange-600', 'border' => 'border-orange-100'],
+            ['bg' => 'bg-blue-50', 'text' => 'text-blue-600', 'border' => 'border-blue-100'],
+            ['bg' => 'bg-emerald-50', 'text' => 'text-emerald-600', 'border' => 'border-emerald-100'],
+            ['bg' => 'bg-amber-50', 'text' => 'text-amber-600', 'border' => 'border-amber-100'],
+            ['bg' => 'bg-indigo-50', 'text' => 'text-indigo-600', 'border' => 'border-indigo-100'],
+            ['bg' => 'bg-rose-50', 'text' => 'text-rose-600', 'border' => 'border-rose-100'],
+        ];
+    @endphp
     <div class="space-y-6">
         {{-- Page Header --}}
         <div class="flex items-center justify-between">
@@ -73,7 +83,7 @@
                                @input.debounce.500ms="performSearch()"
                                @keydown.enter="performSearch()"
                                placeholder="Search by category name or description..." 
-                               class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                               class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 focus:border-transparent transition duration-150">
                         <div x-show="isSearching" class="absolute inset-y-0 right-0 flex items-center pr-3">
                             <svg class="animate-spin h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -119,8 +129,9 @@
                                 {{-- Type Name --}}
                                 <td class="px-4 py-4">
                                     <div class="flex items-center gap-3">
-                                        <div class="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
-                                            <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        @php $color = $colors[$loop->index % count($colors)]; @endphp
+                                        <div class="w-10 h-10 rounded-lg {{ $color['bg'] }} flex items-center justify-center flex-shrink-0 border {{ $color['border'] }} shadow-sm">
+                                            <svg class="w-5 h-5 {{ $color['text'] }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
                                             </svg>
                                         </div>
@@ -215,35 +226,41 @@
         {{-- Stats Summary (only visible to authenticated users) --}}
         @auth
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div class="bg-white rounded-lg shadow-sm p-4 border-l-4 border-orange-500">
+                <div class="bg-white rounded-xl shadow-sm p-4 border-l-4 border-orange-500 hover:shadow-md transition">
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-xs font-medium text-gray-500 uppercase">Total Types</p>
+                            <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Total Types</p>
                             <p class="text-2xl font-bold text-gray-900">{{ $businessTypes->total() }}</p>
                         </div>
-                        <i class="bi bi-tags text-3xl text-orange-200"></i>
+                        <div class="w-12 h-12 rounded-full bg-orange-50 flex items-center justify-center">
+                            <i class="bi bi-tags text-2xl text-orange-400"></i>
+                        </div>
                     </div>
                 </div>
 
-                <div class="bg-white rounded-lg shadow-sm p-4 border-l-4 border-blue-500">
+                <div class="bg-white rounded-xl shadow-sm p-4 border-l-4 border-blue-500 hover:shadow-md transition">
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-xs font-medium text-gray-500 uppercase">Total Businesses</p>
+                            <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Total Businesses</p>
                             <p class="text-2xl font-bold text-gray-900">{{ $businessTypes->sum('businesses_count') }}</p>
                         </div>
-                        <i class="bi bi-briefcase text-3xl text-blue-200"></i>
+                        <div class="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center">
+                            <i class="bi bi-briefcase text-2xl text-blue-400"></i>
+                        </div>
                     </div>
                 </div>
 
-                <div class="bg-white rounded-lg shadow-sm p-4 border-l-4 border-green-500">
+                <div class="bg-white rounded-xl shadow-sm p-4 border-l-4 border-emerald-500 hover:shadow-md transition">
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-xs font-medium text-gray-500 uppercase">Avg per Type</p>
+                            <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Avg per Type</p>
                             <p class="text-2xl font-bold text-gray-900">
                                 {{ $businessTypes->count() > 0 ? round($businessTypes->sum('businesses_count') / $businessTypes->count(), 1) : 0 }}
                             </p>
                         </div>
-                        <i class="bi bi-bar-chart text-3xl text-green-200"></i>
+                        <div class="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center">
+                            <i class="bi bi-bar-chart text-2xl text-emerald-400"></i>
+                        </div>
                     </div>
                 </div>
             </div>
