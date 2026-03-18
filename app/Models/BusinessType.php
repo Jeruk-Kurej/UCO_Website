@@ -31,4 +31,12 @@ class BusinessType extends Model
     {
         return $this->hasMany(Business::class);
     }
+
+    /**
+     * Get all product categories associated with businesses of this type.
+     */
+    public function productCategories(): \Illuminate\Database\Eloquent\Relations\HasManyThrough
+    {
+        return $this->hasManyThrough(ProductCategory::class, Business::class);
+    }
 }

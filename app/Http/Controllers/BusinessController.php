@@ -68,11 +68,13 @@ class BusinessController extends Controller
         
         $businesses = $query->latest()->paginate(10);
         
-        // Always load full list of the authenticated user's businesses so "My Businesses"
-        // tab shows all the user's businesses (not only items on the current page).
+        // Prepare my businesses for current user - independent of pagination
         $myBusinesses = collect();
         if (Auth::check()) {
-            $myBusinesses = Business::where('user_id', Auth::id())->latest()->get();
+            $myBusinesses = Business::with(['businessType', 'photos'])
+                ->where('user_id', Auth::id())
+                ->latest()
+                ->get();
         }
         
         // Also load business types for the filter bar

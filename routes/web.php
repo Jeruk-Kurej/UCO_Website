@@ -43,7 +43,9 @@ Route::get('/', function () {
 // Public featured page for guests
 Route::get('/featured', [FeaturedController::class, 'index'])->name('featured');
 
-// Businesses index: public listing
+use Illuminate\Http\Request as HttpRequest;
+
+// Businesses index: Everyone can see the full listing
 Route::get('/businesses', [BusinessController::class, 'index'])->name('businesses.index');
 Route::get('/business-types', [BusinessTypeController::class, 'index'])->name('business-types.index');
 Route::get('/contact-types', [ContactTypeController::class, 'index'])->name('contact-types.index');
