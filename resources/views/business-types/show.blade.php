@@ -45,14 +45,6 @@
                         </span>
                     </p>
                 </div>
-                <div>
-                    <p class="text-sm font-medium text-gray-500">Total Product Categories</p>
-                    <p class="mt-1">
-                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                            {{ $businessType->productCategories->count() }} categories
-                        </span>
-                    </p>
-                </div>
             </div>
         </div>
 
@@ -74,23 +66,6 @@
                                 {{ $business->products->count() }} products
                             </p>
                         </a>
-                    @endforeach
-                </div>
-            </div>
-        @endif
-
-        {{-- Product Categories --}}
-        @if($businessType->productCategories->count() > 0)
-            <div class="bg-white shadow-sm sm:rounded-lg p-6">
-                <h2 class="text-lg font-semibold text-gray-900 mb-4">Product Categories ({{ $businessType->productCategories->count() }})</h2>
-                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                    @foreach($businessType->productCategories as $category)
-                        <div class="border border-gray-200 rounded-lg p-3 text-center">
-                            <div class="w-10 h-10 mx-auto mb-2 rounded-full bg-gradient-to-br from-orange-400 to-yellow-400 flex items-center justify-center text-white">
-                                <i class="bi bi-tag"></i>
-                            </div>
-                            <p class="text-sm font-medium text-gray-900">{{ $category->name }}</p>
-                        </div>
                     @endforeach
                 </div>
             </div>

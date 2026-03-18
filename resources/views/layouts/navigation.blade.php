@@ -65,6 +65,7 @@
                 @else
                     {{-- Guest navigation --}}
                     <a href="{{ route('featured') }}" class="text-sm font-medium {{ request()->routeIs('featured') ? 'text-soft-gray-900 font-semibold' : 'text-soft-gray-600 hover:text-soft-gray-900' }}">Featured</a>
+                    <a href="{{ route('businesses.index') }}" class="text-sm font-medium {{ request()->routeIs('businesses.*') ? 'text-soft-gray-900 font-semibold' : 'text-soft-gray-600 hover:text-soft-gray-900' }}">Businesses</a>
                     <a href="{{ route('business-types.index') }}" class="text-sm font-medium {{ request()->routeIs('business-types.*') ? 'text-soft-gray-900 font-semibold' : 'text-soft-gray-600 hover:text-soft-gray-900' }}">Business Types</a>
                     <a href="{{ route('uc-testimonies.index') }}" class="text-sm font-medium {{ request()->routeIs('uc-testimonies.*') ? 'text-soft-gray-900 font-semibold' : 'text-soft-gray-600 hover:text-soft-gray-900' }}">Testimonies</a>
                     <div class="flex items-center gap-2">
@@ -127,6 +128,7 @@
             @else
                 {{-- Guest mobile --}}
                 <a href="{{ route('featured') }}" class="block py-2.5 px-3 text-sm font-medium rounded-lg {{ request()->routeIs('featured') ? 'bg-soft-gray-100 text-soft-gray-900' : 'text-soft-gray-700 hover:bg-soft-gray-50' }}">Featured</a>
+                <a href="{{ route('businesses.index') }}" class="block py-2.5 px-3 text-sm font-medium rounded-lg {{ request()->routeIs('businesses.*') ? 'bg-soft-gray-100 text-soft-gray-900' : 'text-soft-gray-700 hover:bg-soft-gray-50' }}">Businesses</a>
                 <a href="{{ route('business-types.index') }}" class="block py-2.5 px-3 text-sm font-medium rounded-lg {{ request()->routeIs('business-types.*') ? 'bg-soft-gray-100 text-soft-gray-900' : 'text-soft-gray-700 hover:bg-soft-gray-50' }}">Business Types</a>
                 <a href="{{ route('uc-testimonies.index') }}" class="block py-2.5 px-3 text-sm font-medium rounded-lg {{ request()->routeIs('uc-testimonies.*') ? 'bg-soft-gray-100 text-soft-gray-900' : 'text-soft-gray-700 hover:bg-soft-gray-50' }}">Testimonies</a>
                 <div class="pt-2 mt-2 border-t border-soft-gray-100 space-y-2">
