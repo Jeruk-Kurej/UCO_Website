@@ -89,41 +89,74 @@
                             reader.onload = (e) => { this.photoPreview = e.target.result; };
                             reader.readAsDataURL(file);
                         }
+                    },
+                    clearPhoto() {
+                        this.photoPreview = null;
+                        this.$refs.photoInput.value = '';
                     }
                 }">
                     <label class="block text-sm font-semibold text-gray-700 mb-3">Profile Photo</label>
-                    <div class="flex items-center gap-6">
-                        <div class="relative">
-                            @php
-                                $profilePhoto = $user->profile_photo_url ?? null;
-                                $profilePhotoUrl = $profilePhoto ? (storage_image_url($profilePhoto, ['width' => 256, 'height' => 256, 'crop' => 'thumb', 'quality' => 'auto', 'fetch_format' => 'auto']) . '?t=' . ($user->updated_at?->timestamp ?? time())) : null;
-                            @endphp
-                            
-                            {{-- Alpine Preview --}}
-                            <template x-if="photoPreview">
-                                <img :src="photoPreview" class="w-24 h-24 rounded-full object-cover border-4 border-gray-200 shadow-md">
-                            </template>
-
-                            {{-- Current Default --}}
-                            <template x-if="!photoPreview">
+                    <div class="flex flex-col sm:flex-row sm:items-center gap-6">
+                        <!-- Photo Previews Area -->
+                        <div class="flex items-center gap-4 p-4 bg-gray-50 border border-gray-100 rounded-2xl">
+                            <!-- Current Photo -->
+                            <div class="flex flex-col items-center gap-2">
+                                <span class="text-[10px] font-bold tracking-wider text-gray-400 uppercase">Current Photo</span>
+                                @php
+                                    $profilePhoto = $user->profile_photo_url ?? null;
+                                    $profilePhotoUrl = $profilePhoto ? (storage_image_url($profilePhoto, ['width' => 256, 'height' => 256, 'crop' => 'thumb', 'quality' => 'auto', 'fetch_format' => 'auto']) . '?t=' . ($user->updated_at?->timestamp ?? time())) : null;
+                                @endphp
                                 <div>
                                     @if($profilePhotoUrl)
-                                        <img src="{{ $profilePhotoUrl }}" class="w-24 h-24 rounded-full object-cover border-4 border-gray-200 shadow-md">
+                                        <img src="{{ $profilePhotoUrl }}" class="w-24 h-24 rounded-full object-cover border-4 border-white shadow-sm">
                                     @else
-                                        <div class="w-24 h-24 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center border-4 border-gray-100 shadow-sm">
+                                        <div class="w-24 h-24 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center border-4 border-white shadow-sm">
                                             <span class="text-gray-500 text-3xl font-bold">{{ strtoupper(substr($user->name, 0, 1)) }}</span>
                                         </div>
                                     @endif
                                 </div>
+                            </div>
+
+                            <!-- Arrow icon when there's a new photo -->
+                            <template x-if="photoPreview">
+                                <div class="flex flex-col items-center justify-center pt-5">
+                                    <svg class="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                                    </svg>
+                                </div>
+                            </template>
+
+                            <!-- New Photo Preview -->
+                            <template x-if="photoPreview">
+                                <div class="flex flex-col items-center gap-2">
+                                    <span class="text-[10px] font-bold tracking-wider text-blue-500 uppercase">New Photo</span>
+                                    <div class="relative group">
+                                        <img :src="photoPreview" class="w-24 h-24 rounded-full object-cover border-4 border-blue-500/30 shadow-md transition-all duration-300">
+                                        
+                                        <!-- Cancel/Remove Button -->
+                                        <button type="button" @click="clearPhoto" 
+                                                class="absolute -top-1 -right-1 bg-red-500 hover:bg-red-600 text-white p-1.5 rounded-full shadow-lg transform transition-all hover:scale-110 focus:outline-none" 
+                                                title="Cancel new photo">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
                             </template>
                         </div>
-                        <div class="flex-1">
-                            <label for="profile_photo" class="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm focus-within:ring-2 focus-within:ring-soft-gray-900 focus-within:border-soft-gray-900">
-                                <i class="bi bi-camera"></i>
-                                Choose Photo
-                                <input id="profile_photo" name="profile_photo" type="file" accept="image/*" class="sr-only" x-ref="photoInput" @change="fileSelected">
+
+                        <!-- Upload Actions -->
+                        <div class="flex-1 flex flex-col items-start gap-2">
+                            <label for="profile_photo" class="cursor-pointer inline-flex items-center gap-2 px-5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all shadow-sm focus-within:ring-2 focus-within:ring-soft-gray-900 focus-within:border-soft-gray-900">
+                                <i class="bi bi-camera text-gray-500 text-lg"></i>
+                                <span x-text="photoPreview ? 'Change Selection' : 'Upload New Photo'"></span>
+                                <input id="profile_photo" name="profile_photo" type="file" accept="image/jpeg, image/png, image/jpg, image/gif" class="sr-only" x-ref="photoInput" @change="fileSelected">
                             </label>
-                            <p class="text-xs text-gray-500 mt-2">JPG, PNG or GIF (Max 10MB)</p>
+                            <div class="text-[11px] text-gray-500 font-medium">
+                                <p>Recommended size: 500x500px.</p>
+                                <p>Allowed formats: JPG, PNG, GIF (Max 10MB).</p>
+                            </div>
                         </div>
                     </div>
                 </div>
