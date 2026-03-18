@@ -10,11 +10,6 @@
                         </div>
                     </div>
 
-                    @if (session('success'))
-                        <div class="mt-4 rounded-md bg-green-50 p-4 text-green-800 text-sm">
-                            {{ session('success') }}
-                        </div>
-                    @endif
 
                     {{-- ✅ CHANGED: Show form to everyone except admins --}}
                     @if(!auth()->check() || !auth()->user()->isAdmin())
