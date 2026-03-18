@@ -55,7 +55,7 @@
 
                     {{-- Submit Buttons --}}
                     <div class="flex items-center justify-between pt-6 border-t border-gray-200">
-                        <a href="{{ route('businesses.show', $business) }}" class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 hover:text-gray-900 rounded-xl transition duration-150">
+                        <a href="{{ route('businesses.product-categories.index', $business) }}" class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 hover:text-gray-900 rounded-xl transition duration-150">
     Cancel
 </a>
                         <div class="flex items-center gap-3">

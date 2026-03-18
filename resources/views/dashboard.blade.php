@@ -86,11 +86,22 @@
                                             <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent"></div>
                                         @endforelse
 
-                                        {{-- Dots indicator (only if > 1 photo) --}}
+                                        {{-- Carousel Controls (only if multiple) --}}
                                         @if($photosCount > 1)
-                                            <div class="absolute bottom-3 right-3 flex gap-1.5 z-20">
+                                            {{-- Arrows --}}
+                                            <button @click.prevent="activeSlide = (activeSlide - 1 + {{ $photosCount }}) % {{ $photosCount }}" 
+                                                    class="absolute left-2.5 top-1/2 -translate-y-1/2 z-20 w-9 h-9 flex items-center justify-center rounded-full bg-black/20 hover:bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-all duration-300 backdrop-blur-sm border border-white/5">
+                                                <i class="bi bi-chevron-left text-sm"></i>
+                                            </button>
+                                            <button @click.prevent="activeSlide = (activeSlide + 1) % {{ $photosCount }}" 
+                                                    class="absolute right-2.5 top-1/2 -translate-y-1/2 z-20 w-9 h-9 flex items-center justify-center rounded-full bg-black/20 hover:bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-all duration-300 backdrop-blur-sm border border-white/5">
+                                                <i class="bi bi-chevron-right text-sm"></i>
+                                            </button>
+
+                                            {{-- Dots indicator (centered) --}}
+                                            <div class="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5 z-20">
                                                 @foreach($business->photos as $index => $photo)
-                                                    <div class="h-1 rounded-full transition-all duration-300"
+                                                    <div class="h-1 rounded-full transition-all duration-300 shadow-sm"
                                                          :class="activeSlide === {{ $index }} ? 'w-5 bg-white' : 'w-1.5 bg-white/40'"></div>
                                                 @endforeach
                                             </div>

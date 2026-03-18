@@ -4,17 +4,17 @@
     <div class="max-w-6xl mx-auto">
         {{-- Page Header --}}
         <div class="mb-6 flex items-center gap-3">
-            <a href="{{ route('businesses.show', $product->business) }}#products" 
+            <a href="{{ route('businesses.show', $business) }}#photos" 
                class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-800 transition duration-150">
                 <i class="bi bi-arrow-left text-lg"></i>
             </a>
             <div class="flex-1">
-                <h1 class="text-2xl font-bold text-gray-900">Product Photos</h1>
-                <p class="text-sm text-gray-600">{{ $product->name }} &mdash; {{ $product->business->name }}</p>
+                <h1 class="text-2xl font-bold text-gray-900">Business Photos</h1>
+                <p class="text-sm text-gray-600">{{ $business->name }} Gallery Management</p>
             </div>
             @auth
-                @if(auth()->id() === $product->business->user_id || auth()->user()->isAdmin())
-                    <a href="{{ route('products.photos.create', $product) }}" 
+                @if(auth()->id() === $business->user_id || auth()->user()->isAdmin())
+                    <a href="{{ route('businesses.photos.create', $business) }}" 
                        class="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-xl font-semibold text-sm shadow-sm transition duration-150">
                         <i class="bi bi-upload"></i>
                         Upload Photo
@@ -47,19 +47,19 @@
             </div>
         @endif
 
-        {{-- Product Info Card --}}
+        {{-- Business Info Card --}}
         <div class="mb-6 bg-white border border-slate-200 shadow-sm rounded-xl p-4">
             <div class="flex items-center gap-4">
-                <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-orange-400 to-yellow-400 flex items-center justify-center text-white flex-shrink-0 shadow-sm">
-                    <i class="bi bi-box-seam text-2xl"></i>
+                <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-400 to-indigo-400 flex items-center justify-center text-white flex-shrink-0 shadow-sm">
+                    <i class="bi bi-building text-2xl"></i>
                 </div>
                 <div class="flex-1 min-w-0">
-                    <h3 class="font-semibold text-gray-900 truncate">{{ $product->name }}</h3>
-                    <p class="text-sm text-gray-500">{{ $product->productCategory->name }} &bull; Rp {{ number_format($product->price, 0, ',', '.') }}</p>
+                    <h3 class="font-semibold text-gray-900 truncate">{{ $business->name }}</h3>
+                    <p class="text-sm text-gray-500">{{ $business->businessType->name }} &bull; {{ $business->address ?? 'No address set' }}</p>
                 </div>
                 <div class="text-right flex-shrink-0">
-                    <p class="text-xs text-gray-400 uppercase tracking-wider">Total Foto</p>
-                    <p class="text-2xl font-bold text-orange-500">{{ $photos->count() }}</p>
+                    <p class="text-xs text-gray-400 uppercase tracking-wider">Total Foto Gallery</p>
+                    <p class="text-2xl font-bold text-blue-500">{{ $photos->count() }}</p>
                 </div>
             </div>
         </div>
@@ -122,7 +122,7 @@
                                         <img 
                                             src="{{ storage_image_url($photoUrl, 'lqip') }}"
                                             data-src="{{ storage_image_url($photoUrl, 'gallery_full') }}"
-                                            alt="{{ $product->name }} photo"
+                                            alt="{{ $business->name }} photo"
                                             loading="lazy"
                                             class="w-full h-52 object-cover blur-lg transition duration-300 ease-out">
                                     @else
@@ -131,11 +131,9 @@
                                         </div>
                                     @endif
 
-                                    {{-- Caption overlay --}}
-
                                     {{-- Hover actions (owner only) --}}
                                     @auth
-                                        @if(auth()->id() === $product->business->user_id || auth()->user()->isAdmin())
+                                        @if(auth()->id() === $business->user_id || auth()->user()->isAdmin())
                                             <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-200 rounded-t-2xl"></div>
                                             <div class="absolute top-2.5 right-2.5 flex gap-2 opacity-0 group-hover:opacity-100 transition-all duration-200">
                                                 {{-- Update button --}}
@@ -153,7 +151,7 @@
                                                 </button>
 
                                                 {{-- Delete button --}}
-                                                <form action="{{ route('products.photos.destroy', [$product, $photo]) }}"
+                                                <form action="{{ route('businesses.photos.destroy', [$business, $photo]) }}"
                                                       method="POST"
                                                       onsubmit="return confirm('Hapus foto ini permanen?');"
                                                       class="inline">
@@ -172,7 +170,7 @@
 
                                 {{-- Inline Update Panel --}}
                                 @auth
-                                    @if(auth()->id() === $product->business->user_id || auth()->user()->isAdmin())
+                                    @if(auth()->id() === $business->user_id || auth()->user()->isAdmin())
                                         <div x-show="showUpdate"
                                              x-transition:enter="transition ease-out duration-200"
                                              x-transition:enter-start="opacity-0 -translate-y-2"
@@ -182,7 +180,7 @@
                                              x-transition:leave-end="opacity-0 -translate-y-2"
                                              class="border-t border-blue-100 bg-blue-50/50">
                                             <form method="POST"
-                                                  action="{{ route('products.photos.update', [$product, $photo]) }}"
+                                                  action="{{ route('businesses.photos.update', [$business, $photo]) }}"
                                                   enctype="multipart/form-data"
                                                   class="p-4 space-y-3">
                                                 @csrf
@@ -193,7 +191,7 @@
                                                     <div class="w-6 h-6 bg-blue-100 rounded-lg flex items-center justify-center">
                                                         <i class="bi bi-pencil text-blue-600 text-xs"></i>
                                                     </div>
-                                                    <p class="text-sm font-semibold text-blue-800">Update Foto</p>
+                                                    <p class="text-sm font-semibold text-blue-800">Update Foto Bisnis</p>
                                                 </div>
 
                                                 {{-- Before / After Preview --}}
@@ -204,7 +202,7 @@
                                                         <div class="flex flex-col items-center gap-1">
                                                             <span class="text-[9px] font-bold tracking-widest text-gray-400 uppercase">Saat Ini</span>
                                                             <div class="w-16 h-16 rounded-lg bg-white border border-gray-200 flex items-center justify-center overflow-hidden shadow-sm">
-                                                                <img :src="currentImage" alt="{{ $product->name . ' photo' }}" class="w-full h-full object-cover">
+                                                                <img :src="currentImage" alt="{{ $business->name . ' photo' }}" class="w-full h-full object-cover">
                                                             </div>
                                                         </div>
 
@@ -268,9 +266,6 @@
                                                     <span x-text="'(' + newImageSize + ')'" class="text-blue-400 flex-shrink-0"></span>
                                                 </div>
 
-                                                {{-- Caption field --}}
-                                                
-
                                                 {{-- Action buttons --}}
                                                 <div class="flex items-center justify-between pt-1">
                                                     <button type="button"
@@ -296,14 +291,14 @@
                 </div>
             @else
                 <div class="p-16 text-center">
-                    <div class="w-20 h-20 bg-orange-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <i class="bi bi-images text-4xl text-orange-300"></i>
+                    <div class="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="bi bi-images text-4xl text-blue-300"></i>
                     </div>
-                    <p class="text-gray-500 text-lg font-semibold mb-1">Belum ada foto</p>
+                    <p class="text-gray-500 text-lg font-semibold mb-1">Belum ada foto gallery</p>
                     @auth
-                        @if(auth()->id() === $product->business->user_id || auth()->user()->isAdmin())
-                            <p class="text-sm text-gray-400 mb-5">Upload foto untuk menampilkan product ini</p>
-                            <a href="{{ route('products.photos.create', $product) }}"
+                        @if(auth()->id() === $business->user_id || auth()->user()->isAdmin())
+                            <p class="text-sm text-gray-400 mb-5">Upload foto untuk melengkapi profil bisnis ini</p>
+                            <a href="{{ route('businesses.photos.create', $business) }}"
                                class="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-900 hover:bg-gray-800 text-white text-sm font-semibold rounded-xl shadow-sm transition duration-150">
                                 <i class="bi bi-upload"></i>
                                 Upload Foto Pertama

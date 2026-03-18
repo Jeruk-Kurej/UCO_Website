@@ -94,7 +94,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->scoped(['business' => 'id', 'service' => 'id']);
 
     Route::resource('businesses.photos', BusinessPhotoController::class)
-        ->except(['index'])
         ->scoped(['business' => 'id', 'photo' => 'id']);
 
     Route::resource('businesses.contacts', BusinessContactController::class)

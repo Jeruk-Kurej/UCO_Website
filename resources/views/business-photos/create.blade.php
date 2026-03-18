@@ -97,20 +97,6 @@
                         @enderror
                     </div>
 
-                    {{-- Caption --}}
-                    <div>
-                        <label for="caption" class="block text-sm font-medium text-gray-700 mb-2">
-                            Caption <span class="text-gray-400 text-xs">(Optional)</span>
-                        </label>
-                        <textarea name="caption" 
-                                  id="caption" 
-                                  rows="3"
-                                  class="block w-full rounded-xl border-gray-200 shadow-sm focus:border-soft-gray-900 focus:ring-soft-gray-900 sm:text-sm @error('caption') border-red-500 @enderror"
-                                  placeholder="Add a description for this photo...">{{ old('caption') }}</textarea>
-                        @error('caption')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
 
                     {{-- Info Card --}}
                     <div class="bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-200 rounded-xl p-4">
