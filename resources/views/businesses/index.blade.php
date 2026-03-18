@@ -171,8 +171,7 @@
         <div id="content-container">
             {{-- All Businesses (visible when activeTab === 'all') --}}
             <div x-show="activeTab === 'all'" x-transition.opacity class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            @if ($businesses->count() > 0)
-                @foreach ($businesses as $business)
+                @forelse ($businesses as $business)
                     <div class="bg-white border rounded-xl overflow-hidden hover:shadow-md transition-all duration-200 relative group"
                          x-data="{ 
                             isFeatured: {{ $business->is_featured ? 'true' : 'false' }}, 
@@ -253,13 +252,12 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </a>
                     </div>
-                </a>
-            @empty
-                <div class="col-span-full text-center py-12 text-gray-500">No businesses found.</div>
-            @endforelse
-        </div>
+                @empty
+                    <div class="col-span-full text-center py-12 text-gray-500">No businesses found.</div>
+                @endforelse
+            </div>
 
         {{-- Pagination for All Businesses --}}
         <div x-show="activeTab === 'all'" x-transition.opacity class="mt-6">
