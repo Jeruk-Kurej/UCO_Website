@@ -50,39 +50,47 @@
                             Photo <span class="text-red-500">*</span>
                         </label>
                         
-                        <div class="relative group"
-                             @dragover.prevent="isDragging = true"
-                             @dragleave.prevent="isDragging = false"
-                             @drop.prevent="handleDrop($event)">
-                             
-                            <input type="file" name="photo" id="photo" accept="image/*" required class="hidden" x-ref="fileInput" @change="fileSelected">
-                            
-                            <template x-if="!imagePreview">
-                                <label for="photo" 
-                                       :class="isDragging ? 'border-soft-gray-900 bg-soft-gray-50' : 'border-gray-200 bg-white hover:border-soft-gray-400 hover:bg-gray-50'"
-                                       class="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-xl cursor-pointer transition-all duration-200 ease-in-out">
-                                    <div class="flex flex-col items-center justify-center pt-5 pb-6">
-                                        <div class="p-3 bg-white rounded-full shadow-sm border border-gray-100 mb-3 group-hover:scale-110 transition-transform duration-200">
-                                            <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                            </svg>
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-4 mt-2 mb-4">
+                            <!-- Photo Preview Area -->
+                            <div class="flex items-center gap-3 p-3 bg-gray-50/80 border border-gray-200/60 rounded-xl" x-show="imagePreview">
+                                <template x-if="imagePreview">
+                                    <div class="flex flex-col items-center gap-1.5">
+                                        <span class="text-[10px] font-bold tracking-wider text-blue-500 uppercase">New</span>
+                                        <div class="relative group">
+                                            <div class="w-20 h-20 rounded-lg bg-blue-50 border-2 border-blue-400 flex items-center justify-center overflow-hidden shadow-md transition-all duration-300 p-1.5">
+                                                <img :src="imagePreview" class="max-w-full max-h-full object-contain">
+                                            </div>
+                                            <button type="button" @click="removeFile()" 
+                                                    class="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white p-1 rounded-full shadow-lg transform transition-all hover:scale-110 focus:outline-none" 
+                                                    title="Cancel new selection">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+                                                </svg>
+                                            </button>
                                         </div>
-                                        <p class="mb-1 text-sm font-medium text-gray-700">Click to upload or drag and drop</p>
-                                        <p class="text-xs text-gray-500">Accepted formats: JPG, PNG, GIF. Max: 10MB</p>
                                     </div>
-                                </label>
-                            </template>
+                                </template>
+                            </div>
 
-                            <template x-if="imagePreview">
-                                <div class="relative w-full h-auto rounded-xl border border-gray-200 overflow-hidden shadow-sm bg-gray-50 p-2">
-                                    <img :src="imagePreview" alt="Preview" class="w-full h-auto object-contain max-h-96 rounded-lg pointer-events-none">
-                                    <button type="button" @click="removeFile()" class="absolute top-4 right-4 p-2 bg-white text-red-500 rounded-lg shadow-md hover:bg-red-50 transition-colors z-10 focus:outline-none">
-                                        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                        </svg>
-                                    </button>
+                            <!-- Upload Actions -->
+                            <div class="flex-1 flex flex-col items-start gap-2"
+                                 @dragover.prevent="isDragging = true" 
+                                 @dragleave.prevent="isDragging = false" 
+                                 @drop.prevent="handleDrop($event)">
+                                <label for="photo" 
+                                       :class="isDragging ? 'bg-blue-50 border-blue-400' : 'bg-white hover:bg-gray-50 border-gray-300'"
+                                       class="cursor-pointer inline-flex items-center gap-2 px-5 py-2.5 border rounded-xl text-sm font-semibold text-gray-700 transition-all shadow-sm focus-within:ring-2 focus-within:ring-soft-gray-900 focus-within:border-soft-gray-900">
+                                    <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                                    </svg>
+                                    <span x-text="imagePreview ? 'Change Selection' : 'Upload Photo'"></span>
+                                    <input type="file" name="photo" id="photo" accept="image/*" required class="sr-only" x-ref="fileInput" @change="fileSelected">
+                                </label>
+                                <div class="text-[11px] text-gray-500 font-medium">
+                                    <p>Click to select or drag & drop.</p>
+                                    <p>JPG, PNG, GIF allowed (Max 10MB).</p>
                                 </div>
-                            </template>
+                            </div>
                         </div>
                         @error('photo')
                             <p class="mb-2 text-sm text-red-600">{{ $message }}</p>
@@ -97,20 +105,6 @@
                         />
                     </div>
 
-                    {{-- Caption --}}
-                    <div>
-                        <label for="caption" class="block text-sm font-medium text-gray-700 mb-2">
-                            Caption <span class="text-gray-400 text-xs">(Optional)</span>
-                        </label>
-                        <textarea name="caption" 
-                                  id="caption" 
-                                  rows="3"
-                                  class="block w-full rounded-xl border-gray-200 shadow-sm focus:border-soft-gray-900 focus:ring-soft-gray-900 sm:text-sm @error('caption') border-red-500 @enderror"
-                                  placeholder="Add a description for this product photo...">{{ old('caption') }}</textarea>
-                        @error('caption')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
 
                     {{-- Info Card --}}
                     <div class="bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-200 rounded-xl p-4">

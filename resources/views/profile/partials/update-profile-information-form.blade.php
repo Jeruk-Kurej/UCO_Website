@@ -10,7 +10,7 @@
         @method('patch')
 
         <!-- Profile Photo Upload -->
-        <div class="space-y-3" x-data="{ 
+        <div class="space-y-4" x-data="{ 
             photoPreview: null,
             fileSelected(event) {
                 const file = event.target.files[0];
@@ -24,80 +24,80 @@
                     reader.onload = (e) => { this.photoPreview = e.target.result; };
                     reader.readAsDataURL(file);
                 }
+            },
+            clearPhoto() {
+                this.photoPreview = null;
+                this.$refs.photoInput.value = '';
             }
         }">
             <label class="block text-sm font-semibold text-gray-700">
                 Profile Photo
             </label>
-            <div class="flex items-center gap-4 flex-wrap">
-                <!-- Current Photo -->
-                <div class="flex flex-col items-center">
-                    <p class="text-xs text-gray-500 mb-2 font-medium">Current</p>
-                    @php $profilePhoto = $user->profile_photo_url; @endphp
-                    
-                    <template x-if="photoPreview">
-                        <img :src="photoPreview" class="w-24 h-24 rounded-full object-cover border-4 border-gray-200 shadow-md">
-                    </template>
-
-                    <template x-if="!photoPreview">
+            <div class="flex flex-col sm:flex-row sm:items-center gap-6">
+                <!-- Photo Previews Area -->
+                <div class="flex items-center gap-4 p-4 bg-gray-50 border border-gray-100 rounded-2xl">
+                    <!-- Current Photo -->
+                    <div class="flex flex-col items-center gap-2">
+                        <span class="text-[10px] font-bold tracking-wider text-gray-400 uppercase">Current Photo</span>
+                        @php $profilePhoto = $user->profile_photo_url; @endphp
                         <div>
                             @if($profilePhoto)
                                 <img 
                                     src="{{ storage_image_url($profilePhoto, ['width' => 256, 'height' => 256, 'crop' => 'thumb', 'quality' => 'auto', 'fetch_format' => 'auto']) }}?t={{ $user->updated_at?->timestamp ?? time() }}" 
                                     alt="Profile Photo" 
-                                    class="w-24 h-24 rounded-full object-cover border-4 border-gray-200 shadow-md"
+                                    class="w-24 h-24 rounded-full object-cover border-4 border-white shadow-sm"
                                 />
                             @else
-                                <div class="w-24 h-24 rounded-full bg-gradient-to-br from-uco-orange to-uco-yellow flex items-center justify-center border-4 border-gray-200 shadow-md">
+                                <div class="w-24 h-24 rounded-full bg-gradient-to-br from-uco-orange to-uco-yellow flex items-center justify-center border-4 border-white shadow-sm">
                                     <span class="text-white text-3xl font-bold">{{ strtoupper(substr($user->name, 0, 1)) }}</span>
                                 </div>
                             @endif
                         </div>
+                    </div>
+
+                    <!-- Arrow icon when there's a new photo -->
+                    <template x-if="photoPreview">
+                        <div class="flex flex-col items-center justify-center pt-5">
+                            <svg class="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                            </svg>
+                        </div>
+                    </template>
+
+                    <!-- New Photo Preview -->
+                    <template x-if="photoPreview">
+                        <div class="flex flex-col items-center gap-2">
+                            <span class="text-[10px] font-bold tracking-wider text-uco-orange uppercase">New Photo</span>
+                            <div class="relative group">
+                                <img :src="photoPreview" class="w-24 h-24 rounded-full object-cover border-4 border-uco-orange/30 shadow-md transition-all duration-300">
+                                
+                                <!-- Cancel/Remove Button -->
+                                <button type="button" @click="clearPhoto" 
+                                        class="absolute -top-1 -right-1 bg-red-500 hover:bg-red-600 text-white p-1.5 rounded-full shadow-lg transform transition-all hover:scale-110 focus:outline-none" 
+                                        title="Cancel new photo">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
                     </template>
                 </div>
 
-                <!-- Arrow (hidden until new photo selected) -->
-                <div id="partial-preview-arrow" class="hidden flex-col items-center text-gray-400 self-end pb-2">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
-                    </svg>
-                    <span class="text-xs mt-1">New</span>
-                </div>
-
-                <!-- New Photo Preview (hidden until selected) -->
-                <div id="partial-new-photo-wrapper" class="hidden flex-col items-center">
-                    <p class="text-xs text-gray-500 mb-2 font-medium">New Photo</p>
-                    <div class="relative">
-                        <img id="partial-new-photo-img"
-                             src=""
-                             alt="New Photo Preview"
-                             class="w-24 h-24 rounded-full object-cover border-4 border-uco-orange-300 shadow-md ring-2 ring-uco-orange-400 ring-offset-2">
-                        <span class="absolute -bottom-1 -right-1 bg-uco-orange-500 text-white text-xs px-1.5 py-0.5 rounded-full font-semibold shadow">New</span>
-                    </div>
-                </div>
-
-                <!-- Upload Button -->
-                <div class="flex-1">
-                    <label for="profile_photo" class="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm focus-within:ring-2 focus-within:ring-soft-gray-900 focus-within:border-soft-gray-900">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                <!-- Upload Actions -->
+                <div class="flex-1 flex flex-col items-start gap-2">
+                    <label for="profile_photo" class="cursor-pointer inline-flex items-center gap-2 px-5 py-2.5 bg-white border border-gray-300 rounded-xl text-sm font-semibold text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all shadow-sm focus-within:ring-2 focus-within:ring-uco-orange focus-within:border-uco-orange">
+                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
                         </svg>
-                        Choose Photo
-                        <input id="profile_photo" name="profile_photo" type="file" accept="image/*" class="sr-only" x-ref="photoInput" @change="fileSelected">
+                        <span x-text="photoPreview ? 'Change Selection' : 'Upload New Photo'"></span>
+                        <input id="profile_photo" name="profile_photo" type="file" accept="image/jpeg, image/png, image/jpg, image/gif" class="sr-only" x-ref="photoInput" @change="fileSelected">
                     </label>
-                    <input
-                        id="profile_photo"
-                        name="profile_photo"
-                        type="file"
-                        accept="image/*"
-                        class="hidden"
-                        onchange="validateAndPreviewPhotoPartial(event)"
-                    />
-                    <p class="text-xs text-gray-500">JPG, PNG or GIF (Max 10MB)</p>
-                    <button type="button" id="partial-cancel-photo" onclick="cancelPartialPhoto()" class="hidden text-xs text-red-500 hover:text-red-700 underline text-left">
-                        Cancel new photo
-                    </button>
-                    <x-input-error class="mt-2" :messages="$errors->get('profile_photo')" />
+                    <div class="text-[11px] text-gray-500 font-medium">
+                        <p>Recommended size: 500x500px.</p>
+                        <p>Allowed formats: JPG, PNG, GIF (Max 10MB).</p>
+                    </div>
+                    <x-input-error class="mt-1" :messages="$errors->get('profile_photo')" />
                 </div>
             </div>
         </div>

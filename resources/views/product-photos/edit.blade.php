@@ -51,47 +51,65 @@
                         <label class="block text-sm font-medium text-gray-700 mb-2">Photo</label>
                         
                         {{-- Before / After Preview --}}
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4" x-show="newImagePreview" x-cloak>
-                            {{-- Current Image (Faded) --}}
-                            <div>
-                                <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Current</p>
-                                <div class="border border-gray-200 rounded-xl p-2 bg-gray-50/50 h-full flex items-center justify-center">
-                                    <img :src="currentImage" class="max-w-full h-auto object-contain max-h-64 rounded-lg opacity-50 grayscale transition-all">
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-4 mt-2 mb-4">
+                            <!-- Photo Previews Area -->
+                            <div class="flex items-center gap-3 p-3 bg-gray-50/80 border border-gray-200/60 rounded-xl">
+                                <!-- Current Photo -->
+                                <div class="flex flex-col items-center gap-1.5">
+                                    <span class="text-[10px] font-bold tracking-wider text-gray-400 uppercase">Current</span>
+                                    <div class="w-20 h-20 rounded-lg bg-white border border-gray-200 flex items-center justify-center overflow-hidden shadow-sm p-1.5">
+                                        <img :src="currentImage" alt="{{ $photo->caption }}" class="max-w-full max-h-full object-contain">
+                                    </div>
+                                </div>
+
+                                <!-- Arrow icon -->
+                                <template x-if="newImagePreview">
+                                    <div class="flex items-center justify-center px-1 pt-4">
+                                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                                        </svg>
+                                    </div>
+                                </template>
+
+                                <!-- New Photo Preview -->
+                                <template x-if="newImagePreview">
+                                    <div class="flex flex-col items-center gap-1.5">
+                                        <span class="text-[10px] font-bold tracking-wider text-blue-500 uppercase">New</span>
+                                        <div class="relative group">
+                                            <div class="w-20 h-20 rounded-lg bg-blue-50 border-2 border-blue-400 flex items-center justify-center overflow-hidden shadow-md transition-all duration-300 p-1.5">
+                                                <img :src="newImagePreview" class="max-w-full max-h-full object-contain">
+                                            </div>
+                                            <button type="button" @click="removeFile()" 
+                                                    class="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white p-1 rounded-full shadow-lg transform transition-all hover:scale-110 focus:outline-none" 
+                                                    title="Cancel new selection">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+
+                            <!-- Upload Actions -->
+                            <div class="flex-1 flex flex-col items-start gap-2"
+                                 @dragover.prevent="isDragging = true" 
+                                 @dragleave.prevent="isDragging = false" 
+                                 @drop.prevent="handleDrop($event)">
+                                <label for="photo" 
+                                       :class="isDragging ? 'bg-blue-50 border-blue-400' : 'bg-white hover:bg-gray-50 border-gray-300'"
+                                       class="cursor-pointer inline-flex items-center gap-2 px-5 py-2.5 border rounded-xl text-sm font-semibold text-gray-700 transition-all shadow-sm focus-within:ring-2 focus-within:ring-soft-gray-900 focus-within:border-soft-gray-900">
+                                    <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                                    </svg>
+                                    <span x-text="newImagePreview ? 'Change Selection' : 'Upload New Photo'"></span>
+                                    <input type="file" name="photo" id="photo" accept="image/*" class="sr-only" x-ref="fileInput" @change="fileSelected">
+                                </label>
+                                <div class="text-[11px] text-gray-500 font-medium">
+                                    <p>Click to replace or drag & drop.</p>
+                                    <p>JPG, PNG, GIF allowed (Max 10MB).</p>
                                 </div>
                             </div>
-                            
-                            {{-- New Image --}}
-                            <div class="relative">
-                                <p class="text-xs font-semibold text-blue-600 uppercase tracking-wider mb-2">New Selection</p>
-                                <div class="relative w-full h-full rounded-xl border-2 border-blue-200 overflow-hidden shadow-sm bg-blue-50/50 p-2 flex items-center justify-center">
-                                    <img :src="newImagePreview" class="max-w-full h-auto object-contain max-h-64 rounded-lg">
-                                    <button type="button" @click="removeFile()" class="absolute top-4 right-4 p-2 bg-white text-red-500 rounded-lg shadow-md hover:bg-red-50 transition-colors z-10 focus:outline-none">
-                                        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        {{-- Current Image Only --}}
-                        <div x-show="!newImagePreview" class="mb-4">
-                            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Current Photo</p>
-                            <img :src="currentImage" alt="{{ $photo->caption }}" class="max-w-xs h-auto rounded-xl shadow-sm border border-gray-200">
-                        </div>
-
-                        {{-- Upload Area --}}
-                        <div class="relative group mt-4" 
-                             @dragover.prevent="isDragging = true" 
-                             @dragleave.prevent="isDragging = false" 
-                             @drop.prevent="handleDrop($event)">
-                            <input type="file" name="photo" id="photo" accept="image/*" class="hidden" x-ref="fileInput" @change="fileSelected">
-                            <label for="photo" 
-                                   :class="isDragging ? 'border-soft-gray-900 bg-soft-gray-50' : 'border-gray-200 bg-white hover:border-soft-gray-400 hover:bg-gray-50'" 
-                                   class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-xl cursor-pointer transition-all duration-200">
-                                <div class="flex flex-col items-center justify-center pt-5 pb-6">
-                                    <p class="mb-1 text-sm font-medium text-gray-700">Click to replace photo or drag and drop</p>
-                                    <p class="text-xs text-gray-500">Accepted formats: JPG, PNG, GIF. Max: 10MB</p>
-                                </div>
-                            </label>
                         </div>
                         @error('photo')
                             <p class="mb-2 text-sm text-red-600">{{ $message }}</p>

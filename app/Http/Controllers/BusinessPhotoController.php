@@ -45,7 +45,10 @@ class BusinessPhotoController extends Controller
      */
     public function index(Business $business)
     {
-        return redirect()->route('businesses.show', $business)->with('activeTab', 'photos');
+        $this->authorizeBusinessAccess($business);
+        
+        $photos = $business->photos()->latest()->get();
+        return view('business-photos.index', compact('business', 'photos'));
     }
 
     /**

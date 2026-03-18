@@ -245,7 +245,8 @@ class BusinessController extends Controller
         $business->load([
             'user',
             'businessType',
-            'productCategories.products.photos',
+            'products.productCategory',
+            'products.photos',
             'services',
             'photos',
             'contacts.contactType'

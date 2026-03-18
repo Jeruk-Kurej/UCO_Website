@@ -68,7 +68,7 @@
             </div>
         </div>
 
-        <form method="POST" action="{{ route('businesses.store') }}" enctype="multipart/form-data">
+        <form method="POST" action="{{ route('businesses.store') }}" enctype="multipart/form-data" id="businessCreateForm">
             @csrf
 
             {{-- TAB 1: BASIC INFORMATION --}}
@@ -284,34 +284,48 @@
                          @dragleave.prevent="isDragging = false" 
                          @drop.prevent="handleDrop($event)">
                         
-                        <input type="file" name="logo" id="logo" accept="image/*" class="hidden" x-ref="fileInput" @change="fileSelected">
-                        
-                        <template x-if="!imagePreview">
-                            <label for="logo" 
-                                   :class="isDragging ? 'border-soft-gray-900 bg-soft-gray-50' : 'border-gray-200 bg-white hover:border-soft-gray-400 hover:bg-gray-50'" 
-                                   class="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-xl cursor-pointer transition-all duration-200">
-                                <div class="flex flex-col items-center justify-center pt-5 pb-6">
-                                    <div class="p-3 bg-white rounded-full shadow-sm border border-gray-100 mb-3 group-hover:scale-110 transition-transform duration-200">
-                                        <svg class="mx-auto h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                        </svg>
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-4 mt-2 mb-4">
+                            <!-- Photo Preview Area -->
+                            <div class="flex items-center gap-3 p-3 bg-gray-50/80 border border-gray-200/60 rounded-xl" x-show="imagePreview">
+                                <template x-if="imagePreview">
+                                    <div class="flex flex-col items-center gap-1.5">
+                                        <span class="text-[10px] font-bold tracking-wider text-blue-500 uppercase">New</span>
+                                        <div class="relative group">
+                                            <div class="w-20 h-20 rounded-lg bg-blue-50 border-2 border-blue-400 flex items-center justify-center overflow-hidden shadow-md transition-all duration-300 p-1.5">
+                                                <img :src="imagePreview" class="max-w-full max-h-full object-contain">
+                                            </div>
+                                            <button type="button" @click="removeFile()" 
+                                                    class="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white p-1 rounded-full shadow-lg transform transition-all hover:scale-110 focus:outline-none" 
+                                                    title="Cancel new selection">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+                                                </svg>
+                                            </button>
+                                        </div>
                                     </div>
-                                    <p class="text-sm text-gray-600 font-medium">Klik area ini untuk upload logo atau seret file</p>
-                                    <p class="text-xs text-gray-400 mt-1">PNG, JPG, SVG up to 10MB</p>
-                                </div>
-                            </label>
-                        </template>
-
-                        <template x-if="imagePreview">
-                            <div class="relative w-full h-auto rounded-xl border border-gray-200 overflow-hidden shadow-sm bg-gray-50 p-2">
-                                <img :src="imagePreview" alt="Preview" class="w-full h-auto object-contain max-h-64 rounded-lg pointer-events-none">
-                                <button type="button" @click="removeFile()" class="absolute top-4 right-4 p-2 bg-white text-red-500 rounded-lg shadow-md hover:bg-red-50 transition-colors z-10 focus:outline-none">
-                                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                    </svg>
-                                </button>
+                                </template>
                             </div>
-                        </template>
+
+                            <!-- Upload Actions -->
+                            <div class="flex-1 flex flex-col items-start gap-2"
+                                 @dragover.prevent="isDragging = true" 
+                                 @dragleave.prevent="isDragging = false" 
+                                 @drop.prevent="handleDrop($event)">
+                                <label for="logo" 
+                                       :class="isDragging ? 'bg-blue-50 border-blue-400' : 'bg-white hover:bg-gray-50 border-gray-300'"
+                                       class="cursor-pointer inline-flex items-center gap-2 px-5 py-2.5 border rounded-xl text-sm font-semibold text-gray-700 transition-all shadow-sm focus-within:ring-2 focus-within:ring-soft-gray-900 focus-within:border-soft-gray-900">
+                                    <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                                    </svg>
+                                    <span x-text="imagePreview ? 'Change Selection' : 'Upload Logo'"></span>
+                                    <input type="file" name="logo" id="logo" accept="image/*" class="sr-only" x-ref="fileInput" @change="fileSelected">
+                                </label>
+                                <div class="text-[11px] text-gray-500 font-medium">
+                                    <p>Click to select or drag & drop.</p>
+                                    <p>PNG, JPG, SVG up to 10MB.</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     @error('logo')
                         <p class="mb-2 text-sm text-red-600">{{ $message }}</p>
@@ -684,40 +698,49 @@
                          @dragleave.prevent="isDragging = false" 
                          @drop.prevent="handleDrop($event)">
                         
-                        <input type="file" name="legal_document_path" id="legal_document_path" accept=".pdf" class="hidden" x-ref="fileInput" @change="fileSelected">
-                        
-                        <template x-if="!fileName">
-                            <label for="legal_document_path" 
-                                   :class="isDragging ? 'border-soft-gray-900 bg-soft-gray-50' : 'border-gray-200 bg-white hover:border-soft-gray-400 hover:bg-gray-50'" 
-                                   class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-xl cursor-pointer transition-all duration-200">
-                                <div class="flex flex-col items-center justify-center pt-5 pb-6">
-                                    <div class="p-3 bg-white rounded-full shadow-sm border border-gray-100 mb-2 group-hover:scale-110 transition-transform duration-200">
-                                        <svg class="mx-auto h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                        </svg>
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-6 mt-2 mb-4">
+                            <div class="flex items-center gap-3 p-3 bg-gray-50/80 border border-gray-200/60 rounded-xl w-full sm:w-auto" x-show="fileName">
+                                <!-- New Document Preview -->
+                                <template x-if="fileName">
+                                    <div class="relative group flex items-center gap-3 p-3 bg-blue-50/50 border border-blue-200 rounded-lg shadow-sm min-w-[200px] max-w-[250px] transition-all">
+                                        <div class="p-2 bg-white rounded-md shadow-sm shrink-0">
+                                            <svg class="h-6 w-6 text-red-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8zm1-13h-2v6h6v-2h-4V7z"/></svg>
+                                        </div>
+                                        <div class="flex flex-col min-w-0 pr-6">
+                                            <span class="text-[10px] font-bold tracking-wider text-blue-500 uppercase mb-0.5">New Selection</span>
+                                            <span class="text-xs font-semibold text-gray-800 truncate" x-text="fileName"></span>
+                                            <span class="text-[10px] text-gray-500 mt-0.5" x-text="fileSize"></span>
+                                        </div>
+                                        
+                                        <!-- Cancel/Remove Button -->
+                                        <button type="button" @click="removeFile()" 
+                                                class="absolute top-2 right-2 text-gray-400 hover:text-red-500 bg-white hover:bg-red-50 p-1.5 rounded-md shadow-sm transition-colors focus:outline-none" 
+                                                title="Cancel new selection">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                            </svg>
+                                        </button>
                                     </div>
-                                    <p class="text-sm text-gray-600 font-medium">Klik untuk upload data legal / seret file</p>
-                                    <p class="text-xs text-gray-400 mt-1">Hanya PDF hingga 5MB</p>
-                                </div>
-                            </label>
-                        </template>
-
-                        <template x-if="fileName">
-                            <div class="flex items-center justify-between p-4 bg-gray-50 border border-gray-200 rounded-xl">
-                                <div class="flex items-center space-x-3 overflow-hidden">
-                                    <div class="p-2 bg-red-100 text-red-600 rounded-lg shrink-0">
-                                        <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8zm1-13h-2v6h6v-2h-4V7z"/></svg>
-                                    </div>
-                                    <div class="min-w-0">
-                                        <p class="text-sm font-medium text-gray-900 truncate" x-text="fileName"></p>
-                                        <p class="text-xs text-gray-500" x-text="fileSize"></p>
-                                    </div>
-                                </div>
-                                <button type="button" @click="removeFile()" class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors focus:outline-none shrink-0" title="Remove file">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
-                                </button>
+                                </template>
                             </div>
-                        </template>
+
+                            <!-- Upload Actions -->
+                            <div class="flex-1 flex flex-col items-start gap-2">
+                                <label for="legal_document_path" 
+                                       :class="isDragging ? 'bg-blue-50 border-blue-400' : 'bg-white hover:bg-gray-50 border-gray-300'"
+                                       class="cursor-pointer inline-flex items-center gap-2 px-5 py-2.5 border rounded-xl text-sm font-semibold text-gray-700 transition-all shadow-sm focus-within:ring-2 focus-within:ring-soft-gray-900 focus-within:border-soft-gray-900">
+                                    <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                                    </svg>
+                                    <span x-text="fileName ? 'Change File' : 'Upload Document'"></span>
+                                    <input type="file" name="legal_document_path" id="legal_document_path" accept=".pdf" class="sr-only" x-ref="fileInput" @change="fileSelected">
+                                </label>
+                                <div class="text-[11px] text-gray-500 font-medium mt-1">
+                                    <p>Click to select or drag & drop.</p>
+                                    <p>PDF files only (Max 5MB).</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     @error('legal_document_path')
                         <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
@@ -766,40 +789,50 @@
                          @dragleave.prevent="isDragging = false" 
                          @drop.prevent="handleDrop($event)">
                         
-                        <input type="file" name="certification_path" id="certification_path" accept=".pdf" class="hidden" x-ref="fileInput" @change="fileSelected">
-                        
-                        <template x-if="!fileName">
-                            <label for="certification_path" 
-                                   :class="isDragging ? 'border-soft-gray-900 bg-soft-gray-50' : 'border-gray-200 bg-white hover:border-soft-gray-400 hover:bg-gray-50'" 
-                                   class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-xl cursor-pointer transition-all duration-200">
-                                <div class="flex flex-col items-center justify-center pt-5 pb-6">
-                                    <div class="p-3 bg-white rounded-full shadow-sm border border-gray-100 mb-2 group-hover:scale-110 transition-transform duration-200">
-                                        <svg class="mx-auto h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-                                        </svg>
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-6 mt-2 mb-4">
+                            <!-- Document Preview Area -->
+                            <div class="flex items-center gap-3 p-3 bg-gray-50/80 border border-gray-200/60 rounded-xl w-full sm:w-auto" x-show="fileName">
+                                <!-- New Document Preview -->
+                                <template x-if="fileName">
+                                    <div class="relative group flex items-center gap-3 p-3 bg-blue-50/50 border border-blue-200 rounded-lg shadow-sm min-w-[200px] max-w-[250px] transition-all">
+                                        <div class="p-2 bg-white rounded-md shadow-sm shrink-0">
+                                            <svg class="h-6 w-6 text-blue-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8zm1-13h-2v6h6v-2h-4V7z"/></svg>
+                                        </div>
+                                        <div class="flex flex-col min-w-0 pr-6">
+                                            <span class="text-[10px] font-bold tracking-wider text-blue-500 uppercase mb-0.5">New Selection</span>
+                                            <span class="text-xs font-semibold text-gray-800 truncate" x-text="fileName"></span>
+                                            <span class="text-[10px] text-gray-500 mt-0.5" x-text="fileSize"></span>
+                                        </div>
+                                        
+                                        <!-- Cancel/Remove Button -->
+                                        <button type="button" @click="removeFile()" 
+                                                class="absolute top-2 right-2 text-gray-400 hover:text-red-500 bg-white hover:bg-red-50 p-1.5 rounded-md shadow-sm transition-colors focus:outline-none" 
+                                                title="Cancel new selection">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                            </svg>
+                                        </button>
                                     </div>
-                                    <p class="text-sm text-gray-600 font-medium">Klik untuk upload data sertifikasi / seret file</p>
-                                    <p class="text-xs text-gray-400 mt-1">Hanya PDF hingga 5MB</p>
-                                </div>
-                            </label>
-                        </template>
-
-                        <template x-if="fileName">
-                            <div class="flex items-center justify-between p-4 bg-gray-50 border border-gray-200 rounded-xl">
-                                <div class="flex items-center space-x-3 overflow-hidden">
-                                    <div class="p-2 bg-blue-100 text-blue-600 rounded-lg shrink-0">
-                                        <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8zm1-13h-2v6h6v-2h-4V7z"/></svg>
-                                    </div>
-                                    <div class="min-w-0">
-                                        <p class="text-sm font-medium text-gray-900 truncate" x-text="fileName"></p>
-                                        <p class="text-xs text-gray-500" x-text="fileSize"></p>
-                                    </div>
-                                </div>
-                                <button type="button" @click="removeFile()" class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors focus:outline-none shrink-0" title="Remove file">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
-                                </button>
+                                </template>
                             </div>
-                        </template>
+
+                            <!-- Upload Actions -->
+                            <div class="flex-1 flex flex-col items-start gap-2">
+                                <label for="certification_path" 
+                                       :class="isDragging ? 'bg-blue-50 border-blue-400' : 'bg-white hover:bg-gray-50 border-gray-300'"
+                                       class="cursor-pointer inline-flex items-center gap-2 px-5 py-2.5 border rounded-xl text-sm font-semibold text-gray-700 transition-all shadow-sm focus-within:ring-2 focus-within:ring-soft-gray-900 focus-within:border-soft-gray-900">
+                                    <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                                    </svg>
+                                    <span x-text="fileName ? 'Change File' : 'Upload Certification'"></span>
+                                    <input type="file" name="certification_path" id="certification_path" accept=".pdf" class="sr-only" x-ref="fileInput" @change="fileSelected">
+                                </label>
+                                <div class="text-[11px] text-gray-500 font-medium mt-1">
+                                    <p>Click to select or drag & drop.</p>
+                                    <p>PDF files only (Max 5MB).</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     @error('certification_path')
                         <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
@@ -807,113 +840,38 @@
                 </div>
             </div>
 
+            {{-- Validation Error Toast (hidden by default) --}}
+            <div id="validationToast" class="hidden fixed top-6 right-6 z-[200] max-w-sm w-full bg-red-50 border border-red-200 rounded-xl shadow-xl p-4 transform transition-all duration-300 translate-y-[-20px] opacity-0">
+                <div class="flex items-start gap-3">
+                    <div class="p-1.5 bg-red-100 rounded-lg shrink-0">
+                        <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+                        </svg>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-semibold text-red-800">Ada field yang belum diisi</p>
+                        <p id="validationToastMsg" class="text-xs text-red-600 mt-0.5">Silakan lengkapi field yang bertanda merah.</p>
+                    </div>
+                    <button type="button" onclick="hideValidationToast()" class="text-red-400 hover:text-red-600 p-1 rounded-md transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+            </div>
+
             {{-- Submit Buttons --}}
             <div class="flex items-center justify-between pt-6 border-t border-gray-200 mt-6">
-    <a href="{{ route('businesses.index') }}" class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 hover:text-gray-900 rounded-xl transition duration-150">
-    Cancel
-</a>
-    <button type="submit" class="inline-flex items-center gap-2 px-6 py-2.5 bg-soft-gray-900 hover:bg-soft-gray-800 text-white font-semibold rounded-xl shadow-md transition duration-200">
+                <a href="{{ route('businesses.index') }}" class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 hover:text-gray-900 rounded-xl transition duration-150">
+                    Cancel
+                </a>
+                <button type="submit" class="inline-flex items-center gap-2 px-6 py-2.5 bg-soft-gray-900 hover:bg-soft-gray-800 text-white font-semibold rounded-xl shadow-md transition duration-200">
                     Simpan Business
                 </button>
-</div>
+            </div>
         </form>
     </div>
 
-    {{-- JavaScript for File Previews and Dynamic Fields --}}
+    {{-- JavaScript for Dynamic Fields and Client-Side Validation --}}
     <script>
-        // Logo preview
-        document.addEventListener('DOMContentLoaded', () => ucoInitImagePreview('logo', 'create-logo-preview', 2, true));
-
-        function previewLegalDocs(event) {
-            const files = event.target.files;
-            const maxSize = 5 * 1024 * 1024; // 5MB per file
-            const container = document.getElementById('legalDocsPreview');
-            container.innerHTML = '';
-            
-            // Validate file sizes
-            for (let file of files) {
-                if (file.size > maxSize) {
-                    alert(`File "${file.name}" is too large. Each file must not exceed 5MB.`);
-                    event.target.value = '';
-                    return;
-                }
-            }
-            
-            Array.from(files).forEach((file, index) => {
-                const div = document.createElement('div');
-                div.className = 'border border-slate-200 rounded-xl p-3 bg-slate-50';
-                
-                if (file.type.startsWith('image/')) {
-                    const img = document.createElement('img');
-                    img.className = 'w-full h-32 object-cover rounded mb-2';
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        img.src = e.target.result;
-                    };
-                    reader.readAsDataURL(file);
-                    div.appendChild(img);
-                } else {
-                    div.innerHTML = `<div class="h-32 flex items-center justify-center text-slate-400">
-                        <svg class="h-16 w-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                        </svg>
-                    </div>`;
-                }
-                
-                const name = document.createElement('p');
-                name.className = 'text-xs text-slate-600 truncate mt-2';
-                name.textContent = file.name;
-                div.appendChild(name);
-                
-                container.appendChild(div);
-            });
-        }
-
-        function previewCertifications(event) {
-            const files = event.target.files;
-            const maxSize = 5 * 1024 * 1024; // 5MB per file
-            const container = document.getElementById('certificationsPreview');
-            container.innerHTML = '';
-            
-            // Validate file sizes
-            for (let file of files) {
-                if (file.size > maxSize) {
-                    alert(`File "${file.name}" is too large. Each file must not exceed 5MB.`);
-                    event.target.value = '';
-                    return;
-                }
-            }
-            
-            Array.from(files).forEach((file, index) => {
-                const div = document.createElement('div');
-                div.className = 'border border-slate-200 rounded-xl p-3 bg-slate-50';
-                
-                if (file.type.startsWith('image/')) {
-                    const img = document.createElement('img');
-                    img.className = 'w-full h-32 object-cover rounded mb-2';
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        img.src = e.target.result;
-                    };
-                    reader.readAsDataURL(file);
-                    div.appendChild(img);
-                } else {
-                    div.innerHTML = `<div class="h-32 flex items-center justify-center text-slate-400">
-                        <svg class="h-16 w-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                        </svg>
-                    </div>`;
-                }
-                
-                const name = document.createElement('p');
-                name.className = 'text-xs text-slate-600 truncate mt-2';
-                name.textContent = file.name;
-                div.appendChild(name);
-                
-                container.appendChild(div);
-            });
-        }
-
         function addChallenge() {
             const container = document.getElementById('challengesContainer');
             const newChallenge = document.createElement('div');
@@ -931,5 +889,107 @@
             `;
             container.appendChild(newChallenge);
         }
+
+        // Client-side form validation
+        let toastTimeout = null;
+
+        function showValidationToast(msg) {
+            const toast = document.getElementById('validationToast');
+            const toastMsg = document.getElementById('validationToastMsg');
+            if (msg) toastMsg.textContent = msg;
+            toast.classList.remove('hidden');
+            requestAnimationFrame(() => {
+                toast.classList.remove('translate-y-[-20px]', 'opacity-0');
+                toast.classList.add('translate-y-0', 'opacity-100');
+            });
+            if (toastTimeout) clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => hideValidationToast(), 6000);
+        }
+
+        function hideValidationToast() {
+            const toast = document.getElementById('validationToast');
+            toast.classList.remove('translate-y-0', 'opacity-100');
+            toast.classList.add('translate-y-[-20px]', 'opacity-0');
+            setTimeout(() => toast.classList.add('hidden'), 300);
+        }
+
+        document.getElementById('businessCreateForm').addEventListener('submit', function(e) {
+            // Remove previous error styling
+            this.querySelectorAll('.validation-error-border').forEach(el => {
+                el.classList.remove('validation-error-border', 'border-red-400', 'ring-2', 'ring-red-100');
+            });
+            this.querySelectorAll('.validation-error-msg').forEach(el => el.remove());
+
+            const requiredFields = this.querySelectorAll('[required]');
+            let firstInvalid = null;
+            const emptyLabels = [];
+
+            requiredFields.forEach(field => {
+                if (field.type === 'file') return;
+                const val = (field.value || '').trim();
+                if (!val || (field.tagName === 'SELECT' && val === '')) {
+                    field.classList.add('validation-error-border', 'border-red-400', 'ring-2', 'ring-red-100');
+                    
+                    const wrapper = field.closest('div');
+                    const label = wrapper ? wrapper.querySelector('label') : null;
+                    const labelText = label ? label.textContent.replace('*', '').trim() : field.name;
+                    emptyLabels.push(labelText);
+
+                    if (wrapper && !wrapper.querySelector('.validation-error-msg')) {
+                        const errMsg = document.createElement('p');
+                        errMsg.className = 'validation-error-msg mt-1.5 text-sm text-red-600 flex items-center gap-1.5';
+                        errMsg.innerHTML = '<svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg> <span>' + labelText + ' wajib diisi</span>';
+                        field.insertAdjacentElement('afterend', errMsg);
+                    }
+
+                    if (!firstInvalid) firstInvalid = field;
+
+                    field.addEventListener('input', function handler() {
+                        this.classList.remove('validation-error-border', 'border-red-400', 'ring-2', 'ring-red-100');
+                        const nextErr = this.parentElement.querySelector('.validation-error-msg') || (this.nextElementSibling && this.nextElementSibling.classList.contains('validation-error-msg') ? this.nextElementSibling : null);
+                        if (nextErr) nextErr.remove();
+                        this.removeEventListener('input', handler);
+                    }, { once: true });
+
+                    field.addEventListener('change', function handler() {
+                        this.classList.remove('validation-error-border', 'border-red-400', 'ring-2', 'ring-red-100');
+                        const nextErr = this.parentElement.querySelector('.validation-error-msg') || (this.nextElementSibling && this.nextElementSibling.classList.contains('validation-error-msg') ? this.nextElementSibling : null);
+                        if (nextErr) nextErr.remove();
+                        this.removeEventListener('change', handler);
+                    }, { once: true });
+                }
+            });
+
+            if (firstInvalid) {
+                e.preventDefault();
+
+                // Find which tab the field belongs to and switch to it
+                const tabPanel = firstInvalid.closest('[x-show]');
+                let tabSwitched = false;
+                if (tabPanel) {
+                    const xShow = tabPanel.getAttribute('x-show');
+                    const match = xShow.match(/activeTab\s*===\s*'([\w]+)'/);
+                    if (match) {
+                        const targetTab = match[1];
+                        // Alpine v3: find the root x-data element and use Alpine.$data()
+                        const rootEl = document.querySelector('[x-data*="activeTab"]');
+                        if (rootEl && window.Alpine) {
+                            Alpine.$data(rootEl).activeTab = targetTab;
+                            tabSwitched = true;
+                        }
+                    }
+                }
+
+                // Wait for tab to become visible before scrolling
+                const scrollDelay = tabSwitched ? 350 : 100;
+                setTimeout(() => {
+                    firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    firstInvalid.focus();
+                }, scrollDelay);
+
+                const count = emptyLabels.length;
+                showValidationToast('Ada ' + count + ' field wajib yang belum diisi: ' + emptyLabels.slice(0, 3).join(', ') + (count > 3 ? '...' : ''));
+            }
+        });
     </script>
 </x-app-layout>

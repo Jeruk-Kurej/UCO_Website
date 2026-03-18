@@ -18,6 +18,15 @@
                                 A curated selection of standout businesses from our community
                             </p>
                         </div>
+                        @auth
+                            <a href="{{ route('businesses.index') }}" 
+                               class="hidden sm:inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-soft-gray-700 hover:text-soft-gray-900 border border-soft-gray-200 rounded-lg hover:border-soft-gray-300 hover:shadow-sm transition-all">
+                                View All
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                </svg>
+                            </a>
+                        @endauth
                     </div>
 
                     {{-- Business Cards - Modern Professional Grid with 2 Columns --}}
@@ -34,18 +43,71 @@
                                         </span>
                                     </div>
                                     
-                                    {{-- Business Photo Background --}}
-                                    @if($business->photos->first())
-                                    <img src="{{ storage_image_url($business->photos->first()->photo_url) }}" 
-                                             alt="{{ $business->name }}" 
-                                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
-                                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
-                                    @else
-                                        <div class="w-full h-full bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center">
-                                            <i class="bi bi-briefcase text-6xl text-slate-400"></i>
-                                        </div>
-                                        <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent"></div>
-                                    @endif
+                                    {{-- Business Photo Carousel (Modern & Clean) --}}
+                                    @php $photosCount = $business->photos->count(); @endphp
+                                    <div class="absolute inset-0 w-full h-full overflow-hidden" 
+                                         x-data="{ 
+                                            activeSlide: 0, 
+                                            slidesCount: {{ $photosCount }},
+                                            timer: null,
+                                            startTimer() {
+                                                if (this.slidesCount > 1) {
+                                                    this.timer = setInterval(() => {
+                                                        this.activeSlide = (this.activeSlide + 1) % this.slidesCount;
+                                                    }, 4000);
+                                                }
+                                            },
+                                            stopTimer() {
+                                                if(this.timer) clearInterval(this.timer);
+                                            }
+                                         }"
+                                         x-init="startTimer()"
+                                         @mouseenter="stopTimer()"
+                                         @mouseleave="startTimer()">
+                                        
+                                        @forelse($business->photos as $index => $photo)
+                                            <div x-show="activeSlide === {{ $index }}"
+                                                 x-transition:enter="transition ease-out duration-700"
+                                                 x-transition:enter-start="opacity-0 scale-105"
+                                                 x-transition:enter-end="opacity-100 scale-100"
+                                                 x-transition:leave="transition ease-in duration-700"
+                                                 x-transition:leave-start="opacity-100"
+                                                 x-transition:leave-end="opacity-0"
+                                                 class="absolute inset-0 w-full h-full">
+                                                <img src="{{ storage_image_url($photo->photo_url) }}" 
+                                                     alt="{{ $business->name }} - Photo {{ $index + 1 }}" 
+                                                     class="w-full h-full object-cover">
+                                                <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+                                            </div>
+                                        @empty
+                                            <div class="w-full h-full bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center">
+                                                <i class="bi bi-briefcase text-6xl text-slate-400"></i>
+                                            </div>
+                                            <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent"></div>
+                                        @endforelse
+
+                                        {{-- Carousel Controls (only if multiple) --}}
+                                        @if($photosCount > 1)
+                                            {{-- Arrows --}}
+                                            <button @click.prevent="activeSlide = (activeSlide - 1 + {{ $photosCount }}) % {{ $photosCount }}" 
+                                                    class="absolute left-2.5 top-1/2 -translate-y-1/2 z-20 w-9 h-9 flex items-center justify-center rounded-full bg-black/20 hover:bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-all duration-300 backdrop-blur-sm border border-white/5">
+                                                <i class="bi bi-chevron-left text-sm"></i>
+                                            </button>
+                                            <button @click.prevent="activeSlide = (activeSlide + 1) % {{ $photosCount }}" 
+                                                    class="absolute right-2.5 top-1/2 -translate-y-1/2 z-20 w-9 h-9 flex items-center justify-center rounded-full bg-black/20 hover:bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-all duration-300 backdrop-blur-sm border border-white/5">
+                                                <i class="bi bi-chevron-right text-sm"></i>
+                                            </button>
+
+                                            {{-- Dots indicator (centered) --}}
+                                            <div class="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5 z-20">
+                                                @foreach($business->photos as $index => $photo)
+                                                    <div class="h-1 rounded-full transition-all duration-300 shadow-sm"
+                                                         :class="activeSlide === {{ $index }} ? 'w-5 bg-white' : 'w-1.5 bg-white/40'"></div>
+                                                @endforeach
+                                            </div>
+                                        @endif
+                                    </div>
+
                                     
                                     {{-- Logo & Featured Badge Overlay --}}
                                     <div class="absolute bottom-4 left-4 flex items-end gap-4">

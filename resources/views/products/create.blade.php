@@ -82,7 +82,7 @@
                                    id="price" 
                                    value="{{ old('price') }}"
                                    min="0"
-                                   step="0.01"
+                                   step="1000"
                                    required
                                    class="block w-full pl-10 rounded-xl border-gray-200 shadow-sm focus:border-soft-gray-900 focus:ring-soft-gray-900 sm:text-sm @error('price') border-red-500 @enderror"
                                    placeholder="15000">

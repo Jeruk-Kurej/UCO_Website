@@ -53,25 +53,74 @@
     <div class="space-y-6">
         {{-- Business Overview Card - Professional Design --}}
         <div class="bg-white shadow-lg sm:rounded-2xl overflow-hidden border border-soft-gray-100">
-            {{-- Hero Image with Overlay --}}
-            <div class="relative h-56">
-                @php $firstPhoto = $business->photos->first()?->photo_url; @endphp
-                @if($firstPhoto)
-                    <img src="{{ storage_image_url($firstPhoto, 'hero') }}" 
-                        alt="{{ $business->name }}" 
-                        loading="lazy" decoding="async"
-                        onload="this.classList.remove('blur-sm')"
-                        class="w-full h-full object-cover blur-sm">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent"></div>
-                @else
+            {{-- Hero Photo Carousel (Dynamic & Premium) --}}
+            <div class="relative h-64 sm:h-72 lg:h-80 overflow-hidden"
+                 @php $heroPhotosCount = $business->photos->count(); @endphp
+                 x-data="{ 
+                    activeHeroSlide: 0, 
+                    heroSlidesCount: {{ $heroPhotosCount }},
+                    heroTimer: null,
+                    startHeroTimer() {
+                        if (this.heroSlidesCount > 1) {
+                            this.heroTimer = setInterval(() => {
+                                this.activeHeroSlide = (this.activeHeroSlide + 1) % this.heroSlidesCount;
+                            }, 5000);
+                        }
+                    },
+                    stopHeroTimer() {
+                        if(this.heroTimer) clearInterval(this.heroTimer);
+                    }
+                 }"
+                 x-init="startHeroTimer()"
+                 @mouseenter="stopHeroTimer()"
+                 @mouseleave="startHeroTimer()">
+                
+                @forelse($business->photos as $index => $photo)
+                    <div x-show="activeHeroSlide === {{ $index }}"
+                         x-transition:enter="transition ease-out duration-1000"
+                         x-transition:enter-start="opacity-0 scale-105"
+                         x-transition:enter-end="opacity-100 scale-100"
+                         x-transition:leave="transition ease-in duration-1000"
+                         x-transition:leave-start="opacity-100"
+                         x-transition:leave-end="opacity-0"
+                         class="absolute inset-0 w-full h-full">
+                        <img src="{{ storage_image_url($photo->photo_url, 'hero') }}" 
+                             alt="{{ $business->name }} - Hero Photo {{ $index + 1 }}" 
+                             class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+                    </div>
+                @empty
                     <div class="w-full h-full bg-gradient-to-br from-soft-gray-100 via-soft-gray-50 to-soft-gray-100 flex items-center justify-center relative">
                         <svg class="w-24 h-24 text-soft-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
                         </svg>
                         <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-black/5 to-transparent"></div>
                     </div>
+                @endforelse
+
+                {{-- Hero Controls (only if multiple) --}}
+                @if($heroPhotosCount > 1)
+                    {{-- Arrows --}}
+                    <button @click="activeHeroSlide = (activeHeroSlide - 1 + {{ $heroPhotosCount }}) % {{ $heroPhotosCount }}" 
+                            class="absolute left-6 top-1/2 -translate-y-1/2 z-20 w-12 h-12 flex items-center justify-center rounded-full bg-black/20 hover:bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-all duration-300 backdrop-blur-sm border border-white/10">
+                        <i class="bi bi-chevron-left text-2xl"></i>
+                    </button>
+                    <button @click="activeHeroSlide = (activeHeroSlide + 1) % {{ $heroPhotosCount }}" 
+                            class="absolute right-6 top-1/2 -translate-y-1/2 z-20 w-12 h-12 flex items-center justify-center rounded-full bg-black/20 hover:bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-all duration-300 backdrop-blur-sm border border-white/10">
+                        <i class="bi bi-chevron-right text-2xl"></i>
+                    </button>
+
+                    {{-- Hero Dots indicator (centered) --}}
+                    <div class="absolute bottom-8 left-0 right-0 flex justify-center gap-2.5 z-20">
+                        @foreach($business->photos as $index => $photo)
+                            <button @click="activeHeroSlide = {{ $index }}"
+                                    class="h-1.5 rounded-full transition-all duration-500 shadow-lg"
+                                    :class="activeHeroSlide === {{ $index }} ? 'w-10 bg-white' : 'w-2.5 bg-white/40 hover:bg-white/60 backdrop-blur-sm'"></button>
+                        @endforeach
+                    </div>
                 @endif
             </div>
+
 
             {{-- Business Info Section --}}
             <div class="p-4 sm:p-6 lg:p-8">
@@ -392,7 +441,7 @@
         </div>
 
         {{-- Tabs Navigation - Elegant Design --}}
-        <div x-data="{ 
+        <div id="business-tabs" x-data="{ 
             activeTab: '{{ session('activeTab', $business->isProductMode() ? 'products' : 'services') }}'
         }" class="bg-white shadow-lg sm:rounded-2xl border border-soft-gray-100">
             <div class="border-b-2 border-soft-gray-100">
@@ -470,19 +519,74 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         @foreach($business->products as $product)
                             <div class="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition duration-150">
-                                {{-- Product Image --}}
-                                @php $prodPhoto = $product->photos->first()?->photo_url; @endphp
-                                @if($prodPhoto)
-                                     <img src="{{ storage_image_url($prodPhoto, 'gallery_thumb') }}" 
-                                         alt="{{ $product->name }}" 
-                                         loading="lazy" decoding="async"
-                                         onload="this.classList.remove('blur-sm')"
-                                         class="w-full h-40 object-cover blur-sm">
-                                @else
-                                    <div class="w-full h-40 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
-                                        <i class="bi bi-image text-5xl text-gray-400"></i>
-                                    </div>
-                                @endif
+                                {{-- Product Image / Carousel --}}
+                                <div class="relative overflow-hidden group" 
+                                     x-data="{ 
+                                        currentIndex: 0, 
+                                        total: {{ $product->photos->count() }},
+                                        timer: null,
+                                        startTimer() {
+                                            if (this.total > 1) {
+                                                this.timer = setInterval(() => {
+                                                    this.currentIndex = (this.currentIndex + 1) % this.total;
+                                                }, 4000);
+                                            }
+                                        },
+                                        stopTimer() {
+                                            if (this.timer) clearInterval(this.timer);
+                                        }
+                                     }"
+                                     x-init="startTimer()"
+                                     @mouseenter="stopTimer()"
+                                     @mouseleave="startTimer()">
+                                    
+                                    @if($product->photos->count() > 0)
+                                        {{-- Image Container --}}
+                                        <div class="relative h-48 bg-gray-100">
+                                            @foreach($product->photos as $index => $photo)
+                                                <div x-show="currentIndex === {{ $index }}"
+                                                     x-transition:enter="transition ease-out duration-500"
+                                                     x-transition:enter-start="opacity-0 scale-105"
+                                                     x-transition:enter-end="opacity-100 scale-100"
+                                                     x-transition:leave="transition ease-in duration-300"
+                                                     x-transition:leave-start="opacity-100"
+                                                     x-transition:leave-end="opacity-0"
+                                                     class="absolute inset-0">
+                                                    <img src="{{ storage_image_url($photo->photo_url, 'gallery_thumb') }}" 
+                                                         alt="{{ $product->name }}" 
+                                                         class="w-full h-full object-cover">
+                                                </div>
+                                            @endforeach
+
+                                            {{-- Navigation Controls (only if multiple) --}}
+                                            @if($product->photos->count() > 1)
+                                                {{-- Arrows --}}
+                                                <button @click="currentIndex = (currentIndex - 1 + total) % total" 
+                                                        class="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-full bg-black/30 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-black/50">
+                                                    <i class="bi bi-chevron-left"></i>
+                                                </button>
+                                                <button @click="currentIndex = (currentIndex + 1) % total" 
+                                                        class="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-full bg-black/30 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-black/50">
+                                                    <i class="bi bi-chevron-right"></i>
+                                                </button>
+
+                                                {{-- Indicator Dots --}}
+                                                <div class="absolute bottom-2 left-0 right-0 flex justify-center gap-1.5">
+                                                    @foreach($product->photos as $index => $photo)
+                                                        <button @click="currentIndex = {{ $index }}" 
+                                                                :class="currentIndex === {{ $index }} ? 'bg-white w-4' : 'bg-white/50 w-1.5'"
+                                                                class="h-1.5 rounded-full transition-all duration-300 shadow-sm">
+                                                        </button>
+                                                    @endforeach
+                                                </div>
+                                            @endif
+                                        </div>
+                                    @else
+                                        <div class="w-full h-48 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                                            <i class="bi bi-image text-5xl text-gray-400"></i>
+                                        </div>
+                                    @endif
+                                </div>
 
                                 {{-- Product Info --}}
                                 <div class="p-4">
@@ -491,7 +595,7 @@
                                             <h4 class="font-semibold text-gray-900 mb-1">{{ $product->name }}</h4>
                                             <p class="text-xs text-gray-500 mb-2">
                                                 <i class="bi bi-tag me-1"></i>
-                                                {{ $product->productCategory->name }}
+                                                {{ $product->productCategory?->name ?? 'Uncategorized' }}
                                             </p>
                                         </div>
                                         <span class="text-orange-600 font-bold text-lg">
@@ -635,11 +739,18 @@
                     <h3 class="text-lg font-semibold text-gray-900">Business Photo Gallery</h3>
                     @auth
                         @if(auth()->id() === $business->user_id || auth()->user()->isAdmin())
-                            <a href="{{ route('businesses.photos.create', $business) }}" 
-                               class="inline-flex items-center px-3 py-2 bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium rounded-lg shadow-sm transition duration-150">
-                                <i class="bi bi-upload me-2"></i>
-                                Upload Photo
-                            </a>
+                            <div class="flex items-center gap-2">
+                                <a href="{{ route('businesses.photos.index', $business) }}" 
+                                   class="inline-flex items-center px-3 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition duration-150">
+                                    <i class="bi bi-images me-2"></i>
+                                    Manage Photos
+                                </a>
+                                <a href="{{ route('businesses.photos.create', $business) }}" 
+                                   class="inline-flex items-center px-3 py-2 bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium rounded-lg shadow-sm transition duration-150">
+                                    <i class="bi bi-upload me-2"></i>
+                                    Upload Photo
+                                </a>
+                            </div>
                         @endif
                     @endauth
                 </div>
@@ -653,34 +764,13 @@
                                     @php $gphotoUrl = storage_image_url($gphoto, 'gallery_thumb'); @endphp
                                 @endif
                                 @if($gphotoUrl)
-                                    <img src="{{ $gphotoUrl }}" alt="{{ $photo->caption }}" loading="lazy" decoding="async" onload="this.classList.remove('blur-sm')" class="w-full h-48 object-cover rounded-lg blur-sm">
+                                    <img src="{{ $gphotoUrl }}" alt="{{ $business->name }} photo" loading="lazy" decoding="async" onload="this.classList.remove('blur-sm')" class="w-full h-48 object-cover rounded-lg blur-sm">
                                 @else
                                     <div class="w-full h-48 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center rounded-lg">
                                         <i class="bi bi-image text-4xl text-gray-400"></i>
                                     </div>
                                 @endif
-                                @if($photo->caption)
-                                    <div class="absolute bottom-0 left-0 right-0 bg-black bg-opacity-60 text-white text-xs p-2 rounded-b-lg">
-                                        {{ $photo->caption }}
-                                    </div>
-                                @endif
 
-                                {{-- Delete Button --}}
-                                @auth
-                                    @if(auth()->id() === $business->user_id || auth()->user()->isAdmin())
-                                        <form action="{{ route('businesses.photos.destroy', [$business, $photo]) }}" 
-                                              method="POST" 
-                                              onsubmit="return confirm('Delete this photo?');"
-                                              class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition duration-150">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" 
-                                                    class="inline-flex items-center justify-center w-8 h-8 bg-red-600 text-white rounded-full hover:bg-red-700 shadow-lg">
-                                                <i class="bi bi-trash text-sm"></i>
-                                            </button>
-                                        </form>
-                                    @endif
-                                @endauth
                             </div>
                         @endforeach
                     </div>
@@ -981,4 +1071,37 @@
         </div>
     </div>
     </div>
+    
+    {{-- Smart Scroll Restoration Script --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Restore scroll position after a reload/redirect if stored
+            const scrollPos = sessionStorage.getItem('uco_business_scroll_pos');
+            if (scrollPos) {
+                // Use setTimeout to ensure all dynamic elements are rendered
+                setTimeout(() => {
+                    window.scrollTo({
+                        top: parseInt(scrollPos),
+                        behavior: 'instant'
+                    });
+                    sessionStorage.removeItem('uco_business_scroll_pos');
+                }, 50);
+            }
+
+            // Store scroll position on form submissions or specific actions
+            const saveScrollPos = () => {
+                sessionStorage.setItem('uco_business_scroll_pos', window.scrollY);
+            };
+
+            // Global listener for forms and action buttons that redirect back
+            document.querySelectorAll('form, .btn-save-scroll').forEach(el => {
+                el.addEventListener('submit', saveScrollPos);
+                el.addEventListener('click', (e) => {
+                    if (e.currentTarget.tagName === 'A' || e.currentTarget.tagName === 'BUTTON') {
+                        saveScrollPos();
+                    }
+                });
+            });
+        });
+    </script>
 </x-app-layout>
