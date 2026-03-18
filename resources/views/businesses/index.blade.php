@@ -1,9 +1,6 @@
 @use('Illuminate\Support\Facades\Storage')
 
 <x-app-layout>
-    {{-- ✅ REMOVED: <x-slot name="header"> section --}}
-
-    {{-- Success/Error Messages --}}
     @if(session('success'))
         <div class="bg-green-50 border-l-4 border-green-400 p-4 mb-4 rounded-r-lg">
             <div class="flex">

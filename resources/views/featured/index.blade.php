@@ -7,18 +7,44 @@
             <div class="uco-float-orb uco-float-orb--two"></div>
 
             <div class="relative z-10 grid grid-cols-1 gap-8 lg:grid-cols-2 lg:items-center">
-                <div x-data="{ words: ['Innovative', 'Local', 'Student-Led', 'Alumni-Built'], current: 0 }"
-                     x-init="setInterval(() => current = (current + 1) % words.length, 2200)"
+                <div x-data="{
+                        words: ['Innovative', 'Local', 'Student-Led', 'Alumni-Built'],
+                        current: 0,
+                        timer: null,
+                        reducedMotion: window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+                        startRotation() {
+                            if (this.reducedMotion) return;
+                            this.timer = setInterval(() => {
+                                this.current = (this.current + 1) % this.words.length;
+                            }, 3400);
+                        },
+                        stopRotation() {
+                            if (this.timer) clearInterval(this.timer);
+                        }
+                     }"
+                     x-init="startRotation(); window.addEventListener('beforeunload', () => stopRotation(), { once: true })"
                      class="space-y-6 reveal-on-scroll">
                     <span class="inline-flex items-center rounded-full border border-uco-orange-200 bg-uco-orange-50 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-uco-orange-700">
                         UCO Business Showcase
                     </span>
 
                     <div class="space-y-3">
-                        <h1 class="text-4xl font-extrabold leading-tight text-soft-gray-900 md:text-5xl">
-                            Discover
-                            <span class="text-uco-orange-600" x-text="words[current]"></span>
-                            Businesses from UCO Students & Alumni
+                        <h1 class="text-4xl font-extrabold text-soft-gray-900 md:text-5xl">
+                            <span class="block leading-tight">Discover</span>
+                            <span class="relative mt-1 block h-[1.05em] min-w-[12ch] overflow-hidden leading-none text-uco-orange-600 md:min-w-[13ch]">
+                                <template x-for="(word, index) in words" :key="word">
+                                    <span x-show="index === current"
+                                          x-transition:enter="transition ease-out duration-420"
+                                          x-transition:enter-start="opacity-0 translate-y-2 blur-[1px]"
+                                          x-transition:enter-end="opacity-100 translate-y-0 blur-0"
+                                          x-transition:leave="transition ease-in duration-300"
+                                          x-transition:leave-start="opacity-100 translate-y-0 blur-0"
+                                          x-transition:leave-end="opacity-0 -translate-y-2 blur-[1px]"
+                                          class="absolute inset-0 leading-none"
+                                          x-text="word"></span>
+                                </template>
+                            </span>
+                            <span class="mt-1 block leading-tight">Businesses from UCO Students & Alumni</span>
                         </h1>
                         <p class="max-w-2xl text-base leading-relaxed text-soft-gray-600 md:text-lg">
                             Explore a vibrant ecosystem of product and service ventures built by our community — from first launch to growing brands.
