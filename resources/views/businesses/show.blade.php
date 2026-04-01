@@ -54,7 +54,7 @@
         {{-- Business Overview Card - Professional Design --}}
         <div class="bg-white shadow-lg sm:rounded-2xl overflow-hidden border border-soft-gray-100">
             {{-- Hero Photo Carousel (Dynamic & Premium) --}}
-            <div class="relative h-64 sm:h-72 lg:h-80 overflow-hidden"
+            <div class="relative h-64 sm:h-72 lg:h-80 overflow-hidden group"
                  @php $heroPhotosCount = $business->photos->count(); @endphp
                  x-data="{ 
                     activeHeroSlide: 0, 
@@ -102,11 +102,11 @@
                 @if($heroPhotosCount > 1)
                     {{-- Arrows --}}
                     <button @click="activeHeroSlide = (activeHeroSlide - 1 + {{ $heroPhotosCount }}) % {{ $heroPhotosCount }}" 
-                            class="absolute left-6 top-1/2 -translate-y-1/2 z-20 w-12 h-12 flex items-center justify-center rounded-full bg-black/20 hover:bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-all duration-300 backdrop-blur-sm border border-white/10">
+                            class="absolute left-6 top-1/2 -translate-y-1/2 z-20 w-12 h-12 flex items-center justify-center rounded-full bg-black/30 hover:bg-black/60 text-white opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-300 backdrop-blur-md border border-white/20 hover:scale-110">
                         <i class="bi bi-chevron-left text-2xl"></i>
                     </button>
                     <button @click="activeHeroSlide = (activeHeroSlide + 1) % {{ $heroPhotosCount }}" 
-                            class="absolute right-6 top-1/2 -translate-y-1/2 z-20 w-12 h-12 flex items-center justify-center rounded-full bg-black/20 hover:bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-all duration-300 backdrop-blur-sm border border-white/10">
+                            class="absolute right-6 top-1/2 -translate-y-1/2 z-20 w-12 h-12 flex items-center justify-center rounded-full bg-black/30 hover:bg-black/60 text-white opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-300 backdrop-blur-md border border-white/20 hover:scale-110">
                         <i class="bi bi-chevron-right text-2xl"></i>
                     </button>
 
@@ -562,11 +562,11 @@
                                             @if($product->photos->count() > 1)
                                                 {{-- Arrows --}}
                                                 <button @click="currentIndex = (currentIndex - 1 + total) % total" 
-                                                        class="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-full bg-black/30 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-black/50">
+                                                        class="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-full bg-black/40 text-white opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-200 hover:bg-black/60 backdrop-blur-sm hover:scale-110">
                                                     <i class="bi bi-chevron-left"></i>
                                                 </button>
                                                 <button @click="currentIndex = (currentIndex + 1) % total" 
-                                                        class="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-full bg-black/30 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-black/50">
+                                                        class="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-full bg-black/40 text-white opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-200 hover:bg-black/60 backdrop-blur-sm hover:scale-110">
                                                     <i class="bi bi-chevron-right"></i>
                                                 </button>
 
