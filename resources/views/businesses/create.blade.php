@@ -166,35 +166,49 @@
                 </div>
 
                 {{-- Location Fields --}}
+                @php
+                    $selectedProvinceName = old('province');
+                    $selectedProvinceId = $selectedProvinceName ? optional($provinces->firstWhere('name', $selectedProvinceName))->id : null;
+                    $selectedCityName = old('city');
+                @endphp
                 <div class="grid md:grid-cols-2 gap-5">
                     <div>
-                        <label for="city" class="block text-sm font-medium text-gray-700 mb-2">
-                            Kota <span class="text-red-500">*</span>
+                        <label for="province" class="block text-sm font-medium text-gray-700 mb-2">
+                            Provinsi <span class="text-red-500">*</span>
                         </label>
-                        <input type="text" 
-                               name="city" 
-                               id="city" 
-                               value="{{ old('city') }}"
+                        <select name="province"
+                                id="province"
                                required
-                               class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('city') border-gray-200 @enderror transition"
-                               placeholder="e.g., Jakarta">
-                        @error('city')
+                               class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('province') border-gray-200 @enderror transition">
+                            <option value="">Pilih Provinsi</option>
+                            @foreach($provinces as $province)
+                                <option value="{{ $province->name }}" data-id="{{ $province->id }}" {{ old('province') === $province->name ? 'selected' : '' }}>
+                                    {{ $province->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('province')
                             <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
 
                     <div>
-                        <label for="province" class="block text-sm font-medium text-gray-700 mb-2">
-                            Provinsi <span class="text-red-500">*</span>
+                        <label for="city" class="block text-sm font-medium text-gray-700 mb-2">
+                            Kota <span class="text-red-500">*</span>
                         </label>
-                        <input type="text" 
-                               name="province" 
-                               id="province" 
-                               value="{{ old('province') }}"
-                               required
-                               class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('province') border-gray-200 @enderror transition"
-                               placeholder="e.g., DKI Jakarta">
-                        @error('province')
+                        <select name="city"
+                                id="city"
+                                required
+                                data-selected-city="{{ $selectedCityName }}"
+                                data-selected-province-id="{{ $selectedProvinceId }}"
+                                class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('city') border-gray-200 @enderror transition"
+                                {{ $selectedProvinceId ? '' : 'disabled' }}>
+                            <option value="">Pilih Kota/Kabupaten</option>
+                            @if($selectedCityName)
+                                <option value="{{ $selectedCityName }}" selected>{{ $selectedCityName }}</option>
+                            @endif
+                        </select>
+                        @error('city')
                             <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
@@ -396,79 +410,38 @@
                 </div>
 
                 @if(auth()->user()->role === 'admin')
-                <div x-data="{
-                        search: '',
-                        open: false,
-                        selectedId: '{{ old('user_id') }}',
-                        selectedText: 'Select Owner',
-                        users: [
-                            @foreach($users as $user)
-                            { id: '{{ $user->id }}', name: '{{ addslashes($user->name) }} ({{ addslashes($user->email) }})' },
-                            @endforeach
-                        ],
-                        get filteredUsers() {
-                            if (this.search === '') return this.users;
-                            return this.users.filter(u => u.name.toLowerCase().includes(this.search.toLowerCase()));
-                        },
-                        init() {
-                            let match = this.users.find(u => u.id == this.selectedId);
-                            if (match) this.selectedText = match.name;
-                        },
-                        select(id, name) {
-                            this.selectedId = id;
-                            this.selectedText = name;
-                            this.open = false;
-                            this.search = '';
-                        }
-                    }" 
-                    @click.away="open = false"
-                    class="relative">
-                    
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Owner (Admin Only)
+                <div>
+                    <label for="user_id" class="block text-sm font-medium text-gray-700 mb-2">
+                        Primary Owner (Admin Only)
                     </label>
-                    <input type="hidden" name="user_id" :value="selectedId">
-                    
-                    <button type="button" @click="open = !open" 
-                            class="flex w-full items-center justify-between px-4 py-3 border rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 transition bg-white text-left @error('user_id') border-red-500 @else border-gray-200 hover:border-soft-gray-400 @enderror">
-                        <span x-text="selectedText" :class="selectedId ? 'text-gray-900' : 'text-gray-500'" class="block truncate"></span>
-                        <svg class="h-5 w-5 text-gray-400 shrink-0 transform transition-transform duration-200" :class="open ? 'rotate-180' : ''" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                        </svg>
-                    </button>
-
-                    <div x-show="open" 
-                         x-transition:enter="transition ease-out duration-100"
-                         x-transition:enter-start="opacity-0 scale-95"
-                         x-transition:enter-end="opacity-100 scale-100"
-                         x-transition:leave="transition ease-in duration-75"
-                         x-transition:leave-start="opacity-100 scale-100"
-                         x-transition:leave-end="opacity-0 scale-95"
-                         style="display: none;"
-                         class="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-60 rounded-xl py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm">
-                        <div class="px-3 py-2 border-b border-gray-100 flex items-center sticky top-0 bg-white z-20">
-                            <i class="bi bi-search text-gray-400 mr-2 shrink-0"></i>
-                            <input type="text" x-model="search" @click.stop class="w-full border-0 focus:ring-0 p-0 text-gray-900 sm:text-sm" placeholder="Search owner...">
-                        </div>
-                        
-                        <ul class="pt-1">
-                            <li x-show="filteredUsers.length === 0" class="text-gray-500 px-4 py-2 cursor-default text-sm">No users found</li>
-                            <template x-for="user in filteredUsers" :key="user.id">
-                                <li @click="select(user.id, user.name)"
-                                    class="text-gray-900 cursor-pointer select-none relative py-2.5 pl-4 pr-9 hover:bg-gray-100 transition-colors"
-                                    :class="selectedId == user.id ? 'bg-gray-50 font-medium' : ''">
-                                    <span x-text="user.name" class="block truncate"></span>
-                                    
-                                    <span x-show="selectedId == user.id" 
-                                          class="text-gray-900 absolute inset-y-0 right-0 flex items-center pr-4">
-                                        <i class="bi bi-check-lg text-lg"></i>
-                                    </span>
-                                </li>
-                            </template>
-                        </ul>
-                    </div>
-
+                    <select name="user_id" id="user_id"
+                            class="block w-full px-4 py-3 border rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('user_id') border-red-500 @else border-gray-200 @enderror transition">
+                        <option value="">Select primary owner</option>
+                        @foreach($users as $ownerUser)
+                            <option value="{{ $ownerUser->id }}" @selected(old('user_id') == $ownerUser->id)>
+                                {{ $ownerUser->name }} ({{ $ownerUser->email }})
+                            </option>
+                        @endforeach
+                    </select>
                     @error('user_id')
+                        <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label for="owner_ids" class="block text-sm font-medium text-gray-700 mb-2">
+                        Additional Owners (Optional)
+                    </label>
+                    <select name="owner_ids[]" id="owner_ids" multiple
+                            class="block w-full px-4 py-3 border rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('owner_ids') border-red-500 @else border-gray-200 @enderror transition min-h-[140px]">
+                        @foreach($users as $ownerUser)
+                            <option value="{{ $ownerUser->id }}" @selected(in_array((string) $ownerUser->id, array_map('strval', old('owner_ids', [])), true))>
+                                {{ $ownerUser->name }} ({{ $ownerUser->email }})
+                            </option>
+                        @endforeach
+                    </select>
+                    <p class="mt-1 text-xs text-gray-500">Tip: Hold ⌘ / Ctrl to select multiple owners. Admin users are excluded automatically.</p>
+                    @error('owner_ids')
                         <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
@@ -477,6 +450,86 @@
 
             {{-- TAB 2: PRODUCTS & SERVICES --}}
             <div x-show="activeTab === 'products'" class="bg-white border-x border-b border-slate-200 rounded-b-xl shadow-sm p-8 space-y-5">
+                @php
+                    $oldProducts = old('products', []);
+                    if (empty($oldProducts)) {
+                        $oldProducts = [['name' => '', 'description' => '', 'price' => '']];
+                    }
+
+                    $oldServices = old('services', []);
+                    if (empty($oldServices)) {
+                        $oldServices = [['name' => '', 'description' => '', 'price_type' => 'fixed', 'price' => '']];
+                    }
+                @endphp
+
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+                    <h3 class="text-sm font-semibold text-slate-700">Produk (bisa tambah banyak)</h3>
+                    <p class="text-xs text-slate-500 mt-1">Tambahkan semua produk langsung di sini.</p>
+
+                    <div id="productsContainer" class="space-y-3 mt-4">
+                        @foreach($oldProducts as $index => $product)
+                            <div class="product-item border border-slate-200 rounded-xl p-4 bg-white">
+                                <div class="flex justify-between items-center mb-3">
+                                    <p class="text-xs font-semibold text-slate-500">Produk #{{ $loop->iteration }}</p>
+                                    <button type="button" onclick="this.closest('.product-item').remove()" class="text-xs px-2 py-1 rounded-lg bg-red-50 text-red-600 hover:bg-red-100">Hapus</button>
+                                </div>
+                                <div class="grid md:grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="block text-xs text-slate-600 mb-1">Nama Produk</label>
+                                        <input type="text" name="products[{{ $index }}][name]" value="{{ $product['name'] ?? '' }}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="Contoh: Kopi Arabica 250gr">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs text-slate-600 mb-1">Harga</label>
+                                        <input type="number" step="0.01" min="0" name="products[{{ $index }}][price]" value="{{ $product['price'] ?? '' }}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="50000">
+                                    </div>
+                                </div>
+                                <div class="mt-3">
+                                    <label class="block text-xs text-slate-600 mb-1">Deskripsi</label>
+                                    <textarea name="products[{{ $index }}][description]" rows="2" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="Deskripsi produk...">{{ $product['description'] ?? '' }}</textarea>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+
+                    <button type="button" onclick="addProductRow()" class="mt-3 px-4 py-2 bg-slate-100 text-gray-700 rounded-xl hover:bg-slate-200 transition text-sm font-medium">+ Tambah Produk</button>
+                </div>
+
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+                    <h3 class="text-sm font-semibold text-slate-700">Layanan (bisa tambah banyak)</h3>
+                    <p class="text-xs text-slate-500 mt-1">Tambahkan semua layanan langsung di sini.</p>
+
+                    <div id="servicesContainer" class="space-y-3 mt-4">
+                        @foreach($oldServices as $index => $service)
+                            <div class="service-item border border-slate-200 rounded-xl p-4 bg-white">
+                                <div class="flex justify-between items-center mb-3">
+                                    <p class="text-xs font-semibold text-slate-500">Layanan #{{ $loop->iteration }}</p>
+                                    <button type="button" onclick="this.closest('.service-item').remove()" class="text-xs px-2 py-1 rounded-lg bg-red-50 text-red-600 hover:bg-red-100">Hapus</button>
+                                </div>
+                                <div class="grid md:grid-cols-3 gap-3">
+                                    <div>
+                                        <label class="block text-xs text-slate-600 mb-1">Nama Layanan</label>
+                                        <input type="text" name="services[{{ $index }}][name]" value="{{ $service['name'] ?? '' }}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="Contoh: Konsultasi Branding">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs text-slate-600 mb-1">Tipe Harga</label>
+                                        <input type="text" name="services[{{ $index }}][price_type]" value="{{ $service['price_type'] ?? 'fixed' }}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="fixed / per session / per hour">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs text-slate-600 mb-1">Harga</label>
+                                        <input type="number" step="0.01" min="0" name="services[{{ $index }}][price]" value="{{ $service['price'] ?? '' }}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="150000">
+                                    </div>
+                                </div>
+                                <div class="mt-3">
+                                    <label class="block text-xs text-slate-600 mb-1">Deskripsi</label>
+                                    <textarea name="services[{{ $index }}][description]" rows="2" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="Deskripsi layanan...">{{ $service['description'] ?? '' }}</textarea>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+
+                    <button type="button" onclick="addServiceRow()" class="mt-3 px-4 py-2 bg-slate-100 text-gray-700 rounded-xl hover:bg-slate-200 transition text-sm font-medium">+ Tambah Layanan</button>
+                </div>
+
                 {{-- Product Name --}}
                 <div>
                     <label for="product_name" class="block text-sm font-medium text-gray-700 mb-2">
@@ -656,185 +709,44 @@
 
             {{-- TAB 4: DOCUMENTS & CERTIFICATIONS --}}
             <div x-show="activeTab === 'documents'" class="bg-white border-x border-b border-slate-200 rounded-b-xl shadow-sm p-8 space-y-6">
-                {{-- Single Legal Document PDF Upload via Alpine.js --}}
-                <div x-data="{ 
-                        fileName: null,
-                        fileSize: null,
-                        isDragging: false,
-                        fileSelected(event) {
-                            const file = event.target.files[0];
-                            if (file) {
-                                if(file.type !== 'application/pdf') {
-                                    alert('Only PDF files are allowed.');
-                                    this.removeFile();
-                                    return;
-                                }
-                                if(file.size > 5 * 1024 * 1024) {
-                                    alert('Document must not be larger than 5MB.');
-                                    this.removeFile();
-                                    return;
-                                }
-                                this.fileName = file.name;
-                                this.fileSize = (file.size / (1024 * 1024)).toFixed(2) + ' MB';
-                            }
-                        },
-                        removeFile() {
-                            this.fileName = null;
-                            this.fileSize = null;
-                            this.$refs.fileInput.value = '';
-                        },
-                        handleDrop(event) {
-                            this.isDragging = false;
-                            const file = event.dataTransfer.files[0];
-                            if (file) {
-                                this.$refs.fileInput.files = event.dataTransfer.files;
-                                this.fileSelected({ target: this.$refs.fileInput });
-                            }
-                        }
-                    }">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Dokumen Legal (PDF, Max 5MB)</label>
-                    <div class="relative group mt-2" 
-                         @dragover.prevent="isDragging = true" 
-                         @dragleave.prevent="isDragging = false" 
-                         @drop.prevent="handleDrop($event)">
-                        
-                        <div class="flex flex-col sm:flex-row sm:items-center gap-6 mt-2 mb-4">
-                            <div class="flex items-center gap-3 p-3 bg-gray-50/80 border border-gray-200/60 rounded-xl w-full sm:w-auto" x-show="fileName">
-                                <!-- New Document Preview -->
-                                <template x-if="fileName">
-                                    <div class="relative group flex items-center gap-3 p-3 bg-blue-50/50 border border-blue-200 rounded-lg shadow-sm min-w-[200px] max-w-[250px] transition-all">
-                                        <div class="p-2 bg-white rounded-md shadow-sm shrink-0">
-                                            <svg class="h-6 w-6 text-red-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8zm1-13h-2v6h6v-2h-4V7z"/></svg>
-                                        </div>
-                                        <div class="flex flex-col min-w-0 pr-6">
-                                            <span class="text-[10px] font-bold tracking-wider text-blue-500 uppercase mb-0.5">New Selection</span>
-                                            <span class="text-xs font-semibold text-gray-800 truncate" x-text="fileName"></span>
-                                            <span class="text-[10px] text-gray-500 mt-0.5" x-text="fileSize"></span>
-                                        </div>
-                                        
-                                        <!-- Cancel/Remove Button -->
-                                        <button type="button" @click="removeFile()" 
-                                                class="absolute top-2 right-2 text-gray-400 hover:text-red-500 bg-white hover:bg-red-50 p-1.5 rounded-md shadow-sm transition-colors focus:outline-none" 
-                                                title="Cancel new selection">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                                            </svg>
-                                        </button>
-                                    </div>
-                                </template>
-                            </div>
+                <div>
+                    <label for="legal_documents" class="block text-sm font-medium text-gray-700 mb-2">
+                        Dokumen Legal (Bisa banyak file)
+                    </label>
+                    <input type="file"
+                           name="legal_documents[]"
+                           id="legal_documents"
+                           multiple
+                           accept=".pdf,.jpg,.jpeg,.png"
+                           class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 transition">
+                    <p class="mt-1 text-xs text-gray-500">Pilih beberapa file sekaligus (PDF/JPG/PNG, max 5MB per file).</p>
+                    <ul id="legalDocumentsList" class="mt-2 text-xs text-gray-600 space-y-1"></ul>
 
-                            <!-- Upload Actions -->
-                            <div class="flex-1 flex flex-col items-start gap-2">
-                                <label for="legal_document_path" 
-                                       :class="isDragging ? 'bg-blue-50 border-blue-400' : 'bg-white hover:bg-gray-50 border-gray-300'"
-                                       class="cursor-pointer inline-flex items-center gap-2 px-5 py-2.5 border rounded-xl text-sm font-semibold text-gray-700 transition-all shadow-sm focus-within:ring-2 focus-within:ring-soft-gray-900 focus-within:border-soft-gray-900">
-                                    <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
-                                    </svg>
-                                    <span x-text="fileName ? 'Change File' : 'Upload Document'"></span>
-                                    <input type="file" name="legal_document_path" id="legal_document_path" accept=".pdf" class="sr-only" x-ref="fileInput" @change="fileSelected">
-                                </label>
-                                <div class="text-[11px] text-gray-500 font-medium mt-1">
-                                    <p>Click to select or drag & drop.</p>
-                                    <p>PDF files only (Max 5MB).</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    @error('legal_document_path')
+                    @error('legal_documents')
+                        <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                    @error('legal_documents.*')
                         <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
 
-                {{-- Product Certifications Upload via Alpine.js --}}
-                <div x-data="{ 
-                        fileName: null,
-                        fileSize: null,
-                        isDragging: false,
-                        fileSelected(event) {
-                            const file = event.target.files[0];
-                            if (file) {
-                                if(file.type !== 'application/pdf') {
-                                    alert('Only PDF files are allowed.');
-                                    this.removeFile();
-                                    return;
-                                }
-                                if(file.size > 5 * 1024 * 1024) {
-                                    alert('Document must not be larger than 5MB.');
-                                    this.removeFile();
-                                    return;
-                                }
-                                this.fileName = file.name;
-                                this.fileSize = (file.size / (1024 * 1024)).toFixed(2) + ' MB';
-                            }
-                        },
-                        removeFile() {
-                            this.fileName = null;
-                            this.fileSize = null;
-                            this.$refs.fileInput.value = '';
-                        },
-                        handleDrop(event) {
-                            this.isDragging = false;
-                            const file = event.dataTransfer.files[0];
-                            if (file) {
-                                this.$refs.fileInput.files = event.dataTransfer.files;
-                                this.fileSelected({ target: this.$refs.fileInput });
-                            }
-                        }
-                    }">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Sertifikasi Produk (PDF, Max 5MB)</label>
-                    <div class="relative group mt-2" 
-                         @dragover.prevent="isDragging = true" 
-                         @dragleave.prevent="isDragging = false" 
-                         @drop.prevent="handleDrop($event)">
-                        
-                        <div class="flex flex-col sm:flex-row sm:items-center gap-6 mt-2 mb-4">
-                            <!-- Document Preview Area -->
-                            <div class="flex items-center gap-3 p-3 bg-gray-50/80 border border-gray-200/60 rounded-xl w-full sm:w-auto" x-show="fileName">
-                                <!-- New Document Preview -->
-                                <template x-if="fileName">
-                                    <div class="relative group flex items-center gap-3 p-3 bg-blue-50/50 border border-blue-200 rounded-lg shadow-sm min-w-[200px] max-w-[250px] transition-all">
-                                        <div class="p-2 bg-white rounded-md shadow-sm shrink-0">
-                                            <svg class="h-6 w-6 text-blue-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8zm1-13h-2v6h6v-2h-4V7z"/></svg>
-                                        </div>
-                                        <div class="flex flex-col min-w-0 pr-6">
-                                            <span class="text-[10px] font-bold tracking-wider text-blue-500 uppercase mb-0.5">New Selection</span>
-                                            <span class="text-xs font-semibold text-gray-800 truncate" x-text="fileName"></span>
-                                            <span class="text-[10px] text-gray-500 mt-0.5" x-text="fileSize"></span>
-                                        </div>
-                                        
-                                        <!-- Cancel/Remove Button -->
-                                        <button type="button" @click="removeFile()" 
-                                                class="absolute top-2 right-2 text-gray-400 hover:text-red-500 bg-white hover:bg-red-50 p-1.5 rounded-md shadow-sm transition-colors focus:outline-none" 
-                                                title="Cancel new selection">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                                            </svg>
-                                        </button>
-                                    </div>
-                                </template>
-                            </div>
+                <div>
+                    <label for="product_certifications" class="block text-sm font-medium text-gray-700 mb-2">
+                        Sertifikasi Produk (Bisa banyak file)
+                    </label>
+                    <input type="file"
+                           name="product_certifications[]"
+                           id="product_certifications"
+                           multiple
+                           accept=".pdf,.jpg,.jpeg,.png"
+                           class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 transition">
+                    <p class="mt-1 text-xs text-gray-500">Pilih beberapa file sekaligus (PDF/JPG/PNG, max 5MB per file).</p>
+                    <ul id="productCertificationsList" class="mt-2 text-xs text-gray-600 space-y-1"></ul>
 
-                            <!-- Upload Actions -->
-                            <div class="flex-1 flex flex-col items-start gap-2">
-                                <label for="certification_path" 
-                                       :class="isDragging ? 'bg-blue-50 border-blue-400' : 'bg-white hover:bg-gray-50 border-gray-300'"
-                                       class="cursor-pointer inline-flex items-center gap-2 px-5 py-2.5 border rounded-xl text-sm font-semibold text-gray-700 transition-all shadow-sm focus-within:ring-2 focus-within:ring-soft-gray-900 focus-within:border-soft-gray-900">
-                                    <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
-                                    </svg>
-                                    <span x-text="fileName ? 'Change File' : 'Upload Certification'"></span>
-                                    <input type="file" name="certification_path" id="certification_path" accept=".pdf" class="sr-only" x-ref="fileInput" @change="fileSelected">
-                                </label>
-                                <div class="text-[11px] text-gray-500 font-medium mt-1">
-                                    <p>Click to select or drag & drop.</p>
-                                    <p>PDF files only (Max 5MB).</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    @error('certification_path')
+                    @error('product_certifications')
+                        <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                    @error('product_certifications.*')
                         <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
@@ -872,6 +784,37 @@
 
     {{-- JavaScript for Dynamic Fields and Client-Side Validation --}}
     <script>
+        let productIndex = 0;
+        let serviceIndex = 0;
+
+        async function loadRegenciesByProvince(provinceId, citySelect, selectedCity = null) {
+            citySelect.innerHTML = '<option value="">Pilih Kota/Kabupaten</option>';
+
+            if (!provinceId) {
+                citySelect.disabled = true;
+                return;
+            }
+
+            citySelect.disabled = false;
+
+            try {
+                const response = await fetch(`{{ route('regions.regencies') }}?province_id=${provinceId}`);
+                const regencies = await response.json();
+
+                regencies.forEach((regency) => {
+                    const option = document.createElement('option');
+                    option.value = regency.name;
+                    option.textContent = regency.name;
+                    if (selectedCity && selectedCity === regency.name) {
+                        option.selected = true;
+                    }
+                    citySelect.appendChild(option);
+                });
+            } catch (error) {
+                citySelect.disabled = true;
+            }
+        }
+
         function addChallenge() {
             const container = document.getElementById('challengesContainer');
             const newChallenge = document.createElement('div');
@@ -888,6 +831,84 @@
                 </button>
             `;
             container.appendChild(newChallenge);
+        }
+
+        function addProductRow(data = {}) {
+            const container = document.getElementById('productsContainer');
+            const idx = productIndex++;
+            const element = document.createElement('div');
+            element.className = 'product-item border border-slate-200 rounded-xl p-4 bg-white';
+            element.innerHTML = `
+                <div class="flex justify-between items-center mb-3">
+                    <p class="text-xs font-semibold text-slate-500">Produk Baru</p>
+                    <button type="button" onclick="this.closest('.product-item').remove()" class="text-xs px-2 py-1 rounded-lg bg-red-50 text-red-600 hover:bg-red-100">Hapus</button>
+                </div>
+                <div class="grid md:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs text-slate-600 mb-1">Nama Produk</label>
+                        <input type="text" name="products[${idx}][name]" value="${data.name || ''}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="Contoh: Kopi Arabica 250gr">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-600 mb-1">Harga</label>
+                        <input type="number" step="0.01" min="0" name="products[${idx}][price]" value="${data.price || ''}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="50000">
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <label class="block text-xs text-slate-600 mb-1">Deskripsi</label>
+                    <textarea name="products[${idx}][description]" rows="2" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="Deskripsi produk...">${data.description || ''}</textarea>
+                </div>
+            `;
+            container.appendChild(element);
+        }
+
+        function addServiceRow(data = {}) {
+            const container = document.getElementById('servicesContainer');
+            const idx = serviceIndex++;
+            const element = document.createElement('div');
+            element.className = 'service-item border border-slate-200 rounded-xl p-4 bg-white';
+            element.innerHTML = `
+                <div class="flex justify-between items-center mb-3">
+                    <p class="text-xs font-semibold text-slate-500">Layanan Baru</p>
+                    <button type="button" onclick="this.closest('.service-item').remove()" class="text-xs px-2 py-1 rounded-lg bg-red-50 text-red-600 hover:bg-red-100">Hapus</button>
+                </div>
+                <div class="grid md:grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-xs text-slate-600 mb-1">Nama Layanan</label>
+                        <input type="text" name="services[${idx}][name]" value="${data.name || ''}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="Contoh: Konsultasi Branding">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-600 mb-1">Tipe Harga</label>
+                        <input type="text" name="services[${idx}][price_type]" value="${data.price_type || 'fixed'}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="fixed / per session / per hour">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-600 mb-1">Harga</label>
+                        <input type="number" step="0.01" min="0" name="services[${idx}][price]" value="${data.price || ''}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="150000">
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <label class="block text-xs text-slate-600 mb-1">Deskripsi</label>
+                    <textarea name="services[${idx}][description]" rows="2" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="Deskripsi layanan...">${data.description || ''}</textarea>
+                </div>
+            `;
+            container.appendChild(element);
+        }
+
+        function bindMultiFileList(inputId, listId) {
+            const input = document.getElementById(inputId);
+            const list = document.getElementById(listId);
+            if (!input || !list) return;
+
+            input.addEventListener('change', () => {
+                list.innerHTML = '';
+                if (!input.files || input.files.length === 0) return;
+
+                Array.from(input.files).forEach((file) => {
+                    const li = document.createElement('li');
+                    const sizeMb = (file.size / (1024 * 1024)).toFixed(2);
+                    li.textContent = `${file.name} (${sizeMb} MB)`;
+                    list.appendChild(li);
+                });
+            });
         }
 
         // Client-side form validation
@@ -990,6 +1011,29 @@
                 const count = emptyLabels.length;
                 showValidationToast('Ada ' + count + ' field wajib yang belum diisi: ' + emptyLabels.slice(0, 3).join(', ') + (count > 3 ? '...' : ''));
             }
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            productIndex = document.querySelectorAll('#productsContainer .product-item').length;
+            serviceIndex = document.querySelectorAll('#servicesContainer .service-item').length;
+
+            bindMultiFileList('legal_documents', 'legalDocumentsList');
+            bindMultiFileList('product_certifications', 'productCertificationsList');
+
+            const provinceSelect = document.getElementById('province');
+            const citySelect = document.getElementById('city');
+            const selectedProvinceId = citySelect.dataset.selectedProvinceId;
+            const selectedCity = citySelect.dataset.selectedCity;
+
+            if (selectedProvinceId) {
+                loadRegenciesByProvince(selectedProvinceId, citySelect, selectedCity);
+            }
+
+            provinceSelect.addEventListener('change', function () {
+                const selectedOption = this.options[this.selectedIndex];
+                const provinceId = selectedOption ? selectedOption.dataset.id : null;
+                loadRegenciesByProvince(provinceId, citySelect);
+            });
         });
     </script>
 </x-app-layout>

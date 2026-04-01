@@ -232,8 +232,8 @@
                                     <div class="flex items-center gap-2 mb-1.5 flex-wrap">
                                         <h3 class="font-bold text-gray-900 text-lg truncate group-hover:text-soft-gray-900 transition-colors">{{ $business->name }}</h3>
                                         @if($business->businessType)
-                                            <span class="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-blue-700 ring-1 ring-inset ring-blue-700/10">
-                                                {{ $business->businessType->name }}
+                                            <span class="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-blue-700 ring-1 ring-inset ring-blue-700/10 max-w-[170px]" title="{{ $business->businessType->name }}">
+                                                <span class="truncate">{{ $business->businessType->name }}</span>
                                             </span>
                                         @endif
                                     </div>

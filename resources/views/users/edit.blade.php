@@ -244,17 +244,36 @@ $graduationData = $userToEdit->graduation_data ?? [];
                     </div>
 
                     {{-- Address City --}}
+                    @php
+                        $selectedPersonalProvince = old('personal_data.province', $personalData['province'] ?? '');
+                        $selectedPersonalProvinceId = $selectedPersonalProvince ? optional($provinces->firstWhere('name', $selectedPersonalProvince))->id : null;
+                        $selectedPersonalCity = old('personal_data.address_city', $personalData['address_city'] ?? '');
+                    @endphp
                     <div>
-                        <label for="address_city" class="block text-sm font-medium text-gray-700 mb-2">City</label>
-                        <input type="text" name="personal_data[address_city]" id="address_city" value="{{ old('personal_data.address_city', $personalData['address_city'] ?? '') }}"
-                               class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
+                        <label for="personal_province" class="block text-sm font-medium text-gray-700 mb-2">Province</label>
+                        <select name="personal_data[province]" id="personal_province"
+                                class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
+                            <option value="">Select Province</option>
+                            @foreach($provinces as $province)
+                                <option value="{{ $province->name }}" data-id="{{ $province->id }}" {{ old('personal_data.province', $personalData['province'] ?? '') === $province->name ? 'selected' : '' }}>
+                                    {{ $province->name }}
+                                </option>
+                            @endforeach
+                        </select>
                     </div>
 
-                    {{-- Province --}}
                     <div>
-                        <label for="province" class="block text-sm font-medium text-gray-700 mb-2">Province</label>
-                        <input type="text" name="personal_data[province]" id="province" value="{{ old('personal_data.province', $personalData['province'] ?? '') }}"
-                               class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
+                        <label for="personal_address_city" class="block text-sm font-medium text-gray-700 mb-2">City</label>
+                        <select name="personal_data[address_city]" id="personal_address_city"
+                                data-selected-city="{{ $selectedPersonalCity }}"
+                                data-selected-province-id="{{ $selectedPersonalProvinceId }}"
+                                class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900"
+                                {{ $selectedPersonalProvinceId ? '' : 'disabled' }}>
+                            <option value="">Select City</option>
+                            @if($selectedPersonalCity)
+                                <option value="{{ $selectedPersonalCity }}" selected>{{ $selectedPersonalCity }}</option>
+                            @endif
+                        </select>
                     </div>
 
                     {{-- Country --}}
@@ -616,4 +635,53 @@ $graduationData = $userToEdit->graduation_data ?? [];
                 @method('DELETE')
             </form>
         @endif
+<script>
+    async function loadPersonalRegenciesByProvince(provinceId, citySelect, selectedCity = null) {
+        citySelect.innerHTML = '<option value="">Select City</option>';
+
+        if (!provinceId) {
+            citySelect.disabled = true;
+            return;
+        }
+
+        citySelect.disabled = false;
+
+        try {
+            const response = await fetch(`{{ route('regions.regencies') }}?province_id=${provinceId}`);
+            const regencies = await response.json();
+
+            regencies.forEach((regency) => {
+                const option = document.createElement('option');
+                option.value = regency.name;
+                option.textContent = regency.name;
+                if (selectedCity && selectedCity === regency.name) {
+                    option.selected = true;
+                }
+                citySelect.appendChild(option);
+            });
+        } catch (error) {
+            citySelect.disabled = true;
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const provinceSelect = document.getElementById('personal_province');
+        const citySelect = document.getElementById('personal_address_city');
+
+        if (!provinceSelect || !citySelect) return;
+
+        const selectedProvinceId = citySelect.dataset.selectedProvinceId;
+        const selectedCity = citySelect.dataset.selectedCity;
+
+        if (selectedProvinceId) {
+            loadPersonalRegenciesByProvince(selectedProvinceId, citySelect, selectedCity);
+        }
+
+        provinceSelect.addEventListener('change', function () {
+            const selectedOption = this.options[this.selectedIndex];
+            const provinceId = selectedOption ? selectedOption.dataset.id : null;
+            loadPersonalRegenciesByProvince(provinceId, citySelect);
+        });
+    });
+</script>
 </x-app-layout>

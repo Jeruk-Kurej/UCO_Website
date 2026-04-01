@@ -33,7 +33,7 @@ class BusinessContactController extends Controller
     {
         $user = $this->getAuthUser();
         
-        if ($business->user_id !== $user->id && !$user->isAdmin()) {
+        if (!$business->canBeManagedBy($user)) {
             abort(403, 'Unauthorized action.');
         }
     }

@@ -36,12 +36,12 @@ class BusinessPolicy
 
     public function update(User $user, Business $business): bool
     {
-        return $user->role === 'admin' || $user->id === $business->user_id;
+        return $business->canBeManagedBy($user);
     }
 
     public function delete(User $user, Business $business): bool
     {
-        return $user->role === 'admin' || $user->id === $business->user_id;
+        return $business->canBeManagedBy($user);
     }
 
     public function restore(User $user, Business $business): bool

@@ -149,6 +149,16 @@ class User extends Authenticatable
     }
 
     /**
+     * Get businesses where user is owner/co-founder via pivot
+     */
+    public function ownerBusinesses(): BelongsToMany
+    {
+        return $this->involvedBusinesses()
+            ->wherePivotIn('role_type', ['owner', 'co_founder'])
+            ->wherePivot('is_current', true);
+    }
+
+    /**
      * Get user's employment details (direct pivot access)
      */
     public function employmentDetails(): HasMany
@@ -227,7 +237,7 @@ class User extends Authenticatable
      */
     public function hasBusiness(): bool
     {
-        return $this->businesses()->exists();
+        return $this->businesses()->exists() || $this->ownerBusinesses()->exists();
     }
 
     /**
@@ -235,7 +245,7 @@ class User extends Authenticatable
      */
     public function totalBusinesses(): int
     {
-        return $this->businesses()->count();
+        return $this->businesses()->count() + $this->ownerBusinesses()->count();
     }
 
     /**

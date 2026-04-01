@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Business;
 use App\Models\User;
 use App\Models\BusinessType;
+use App\Models\Province;
+use App\Models\Regency;
 use App\Imports\BusinessesImport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -63,7 +65,12 @@ class BusinessController extends Controller
         if ($request->get('my') && Auth::check()) {
             /** @var User $user */
             $user = Auth::user();
-            $query->where('user_id', $user->id);
+            $query->where(function ($ownerQuery) use ($user) {
+                $ownerQuery->where('user_id', $user->id)
+                    ->orWhereHas('owners', function ($pivotOwnerQuery) use ($user) {
+                        $pivotOwnerQuery->where('users.id', $user->id);
+                    });
+            });
         }
         
         $businesses = $query->latest()->paginate(10);
@@ -71,8 +78,15 @@ class BusinessController extends Controller
         // Prepare my businesses for current user - independent of pagination
         $myBusinesses = collect();
         if (Auth::check()) {
+            /** @var User $user */
+            $user = Auth::user();
             $myBusinesses = Business::with(['businessType', 'photos'])
-                ->where('user_id', Auth::id())
+                ->where(function ($ownerQuery) use ($user) {
+                    $ownerQuery->where('user_id', $user->id)
+                        ->orWhereHas('owners', function ($pivotOwnerQuery) use ($user) {
+                            $pivotOwnerQuery->where('users.id', $user->id);
+                        });
+                })
                 ->latest()
                 ->get();
         }
@@ -95,14 +109,15 @@ class BusinessController extends Controller
 
         // Fetch all business types
         $businessTypes = BusinessType::all();
+        $provinces = Province::orderBy('name')->get(['id', 'name']);
 
         // If admin, allow selecting user
         $users = null;
         if ($user->isAdmin()) {
-            $users = User::whereIn('role', ['student', 'alumni', 'admin'])->get();
+            $users = User::whereIn('role', ['student', 'alumni'])->get();
         }
 
-        return view('businesses.create', compact('businessTypes', 'users'));
+        return view('businesses.create', compact('businessTypes', 'users', 'provinces'));
     }
 
     /**
@@ -118,13 +133,15 @@ class BusinessController extends Controller
                 'name' => 'required|string|max:255',
                 'description' => 'required|string|max:1000',
                 'business_type_id' => 'required|exists:business_types,id',
-                'business_mode' => 'required|in:product,service',
+                'business_mode' => 'required|in:product,service,both',
                 'user_id' => 'nullable|exists:users,id',
+                'owner_ids' => 'nullable|array',
+                'owner_ids.*' => 'integer|exists:users,id',
                 'position' => 'nullable|string|max:255',
 
                 // Location
                 'city' => 'nullable|string|max:255',
-                'province' => 'nullable|string|max:255',
+                'province' => 'nullable|string|max:255|exists:provinces,name',
                 'address' => 'nullable|string',
 
                 // Enhanced fields
@@ -153,7 +170,33 @@ class BusinessController extends Controller
                 'customer_base_size' => 'nullable|integer|min:0',
                 'establishment_date' => 'nullable|date',
                 'operational_status' => 'nullable|in:active,inactive,seasonal',
+
+                // Inline products/services
+                'products' => 'nullable|array',
+                'products.*.id' => 'nullable|integer',
+                'products.*.name' => 'nullable|string|max:255',
+                'products.*.description' => 'nullable|string|max:2000',
+                'products.*.price' => 'nullable|numeric|min:0',
+                'services' => 'nullable|array',
+                'services.*.id' => 'nullable|integer',
+                'services.*.name' => 'nullable|string|max:255',
+                'services.*.description' => 'nullable|string|max:2000',
+                'services.*.price_type' => 'nullable|string|max:255',
+                'services.*.price' => 'nullable|numeric|min:0',
             ]);
+
+            if (!empty($validated['city']) && !empty($validated['province'])) {
+                $provinceId = Province::where('name', $validated['province'])->value('id');
+                $isValidCity = $provinceId
+                    ? Regency::where('province_id', $provinceId)->where('name', $validated['city'])->exists()
+                    : false;
+
+                if (!$isValidCity) {
+                    return back()->withErrors([
+                        'city' => 'Selected city does not belong to the selected province.'
+                    ])->withInput();
+                }
+            }
 
             $user = $this->getAuthUser();
 
@@ -161,6 +204,39 @@ class BusinessController extends Controller
             if (!isset($validated['user_id']) || !$user->isAdmin()) {
                 $validated['user_id'] = $user->id;
             }
+
+            $selectedOwnerIds = [];
+            if ($user->isAdmin()) {
+                $selectedOwnerIds = collect($request->input('owner_ids', []))
+                    ->map(fn ($id) => (int) $id)
+                    ->filter(fn ($id) => $id > 0)
+                    ->unique()
+                    ->values()
+                    ->all();
+
+                if (!empty($selectedOwnerIds)) {
+                    $adminOwnerExists = User::whereIn('id', $selectedOwnerIds)
+                        ->where('role', 'admin')
+                        ->exists();
+
+                    if ($adminOwnerExists) {
+                        return back()->withErrors([
+                            'owner_ids' => 'Admin UCO tidak boleh menjadi owner business.'
+                        ])->withInput();
+                    }
+                }
+
+                if (isset($validated['user_id'])) {
+                    $ownerUser = User::find($validated['user_id']);
+                    if ($ownerUser?->role === 'admin') {
+                        return back()->withErrors([
+                            'user_id' => 'Admin UCO tidak boleh menjadi owner business.'
+                        ])->withInput();
+                    }
+                }
+            }
+
+            unset($validated['owner_ids']);
 
             // Handle logo upload
             if ($request->hasFile('logo')) {
@@ -224,7 +300,36 @@ class BusinessController extends Controller
                 $validated['certification_path'] = $certPath;
             }
 
+            $productRows = $this->normalizeInlineRows($request->input('products', []), 'product');
+            $serviceRows = $this->normalizeInlineRows($request->input('services', []), 'service');
+
+            $inlineErrors = array_merge(
+                $this->validateInlineRows($productRows, 'product'),
+                $this->validateInlineRows($serviceRows, 'service')
+            );
+
+            if ($validated['business_mode'] === 'service' && !empty($productRows)) {
+                $inlineErrors['products'] = 'Business mode Service Only tidak boleh memiliki produk.';
+            }
+            if ($validated['business_mode'] === 'product' && !empty($serviceRows)) {
+                $inlineErrors['services'] = 'Business mode Product Only tidak boleh memiliki layanan.';
+            }
+
+            if (!empty($inlineErrors)) {
+                return back()->withErrors($inlineErrors)->withInput();
+            }
+
             $business = Business::create($validated);
+
+            $this->syncOwnerUsers($business, $selectedOwnerIds, false);
+
+            if (in_array($validated['business_mode'], ['product', 'both'], true)) {
+                $this->syncInlineProducts($business, $productRows, false);
+            }
+
+            if (in_array($validated['business_mode'], ['service', 'both'], true)) {
+                $this->syncInlineServices($business, $serviceRows, false);
+            }
 
             return redirect()
                 ->route('businesses.show', $business)
@@ -268,11 +373,12 @@ class BusinessController extends Controller
 
         // Fetch all business types
         $businessTypes = BusinessType::all();
+        $provinces = Province::orderBy('name')->get(['id', 'name']);
 
         // If admin, allow changing owner
         $users = null;
         if ($user->isAdmin()) {
-            $users = User::whereIn('role', ['student', 'alumni', 'admin'])->get();
+            $users = User::whereIn('role', ['student', 'alumni'])->get();
         }
 
         // Decode JSON fields
@@ -298,7 +404,7 @@ class BusinessController extends Controller
         $hasServices = $business->services()->count() > 0;
         $canChangeMode = !($hasProducts || $hasServices);
 
-        return view('businesses.edit', compact('business', 'businessTypes', 'users', 'legalDocs', 'certifications', 'challenges', 'hasProducts', 'hasServices', 'canChangeMode'));
+        return view('businesses.edit', compact('business', 'businessTypes', 'users', 'provinces', 'legalDocs', 'certifications', 'challenges', 'hasProducts', 'hasServices', 'canChangeMode'));
     }
 
     /**
@@ -316,11 +422,13 @@ class BusinessController extends Controller
                 'business_type_id' => 'required|exists:business_types,id',
                 'business_mode' => 'required|in:product,service,both',
                 'user_id' => 'nullable|exists:users,id',
+                'owner_ids' => 'nullable|array',
+                'owner_ids.*' => 'integer|exists:users,id',
                 'position' => 'nullable|string|max:255',
 
                 // Location
                 'city' => 'nullable|string|max:255',
-                'province' => 'nullable|string|max:255',
+                'province' => 'nullable|string|max:255|exists:provinces,name',
                 'address' => 'nullable|string',
 
                 // Enhanced fields
@@ -351,7 +459,33 @@ class BusinessController extends Controller
                 'customer_base_size' => 'nullable|integer|min:0',
                 'establishment_date' => 'nullable|date',
                 'operational_status' => 'nullable|in:active,inactive,seasonal',
+
+                // Inline products/services
+                'products' => 'nullable|array',
+                'products.*.id' => 'nullable|integer',
+                'products.*.name' => 'nullable|string|max:255',
+                'products.*.description' => 'nullable|string|max:2000',
+                'products.*.price' => 'nullable|numeric|min:0',
+                'services' => 'nullable|array',
+                'services.*.id' => 'nullable|integer',
+                'services.*.name' => 'nullable|string|max:255',
+                'services.*.description' => 'nullable|string|max:2000',
+                'services.*.price_type' => 'nullable|string|max:255',
+                'services.*.price' => 'nullable|numeric|min:0',
             ]);
+
+            if (!empty($validated['city']) && !empty($validated['province'])) {
+                $provinceId = Province::where('name', $validated['province'])->value('id');
+                $isValidCity = $provinceId
+                    ? Regency::where('province_id', $provinceId)->where('name', $validated['city'])->exists()
+                    : false;
+
+                if (!$isValidCity) {
+                    return back()->withErrors([
+                        'city' => 'Selected city does not belong to the selected province.'
+                    ])->withInput();
+                }
+            }
 
             $user = $this->getAuthUser();
 
@@ -379,6 +513,39 @@ class BusinessController extends Controller
             if (!$user->isAdmin()) {
                 unset($validated['user_id']);
             }
+
+            $selectedOwnerIds = [];
+            if ($user->isAdmin()) {
+                $selectedOwnerIds = collect($request->input('owner_ids', []))
+                    ->map(fn ($id) => (int) $id)
+                    ->filter(fn ($id) => $id > 0)
+                    ->unique()
+                    ->values()
+                    ->all();
+
+                if (!empty($selectedOwnerIds)) {
+                    $adminOwnerExists = User::whereIn('id', $selectedOwnerIds)
+                        ->where('role', 'admin')
+                        ->exists();
+
+                    if ($adminOwnerExists) {
+                        return back()->withErrors([
+                            'owner_ids' => 'Admin UCO tidak boleh menjadi owner business.'
+                        ])->withInput();
+                    }
+                }
+
+                if (isset($validated['user_id'])) {
+                    $ownerUser = User::find($validated['user_id']);
+                    if ($ownerUser?->role === 'admin') {
+                        return back()->withErrors([
+                            'user_id' => 'Admin UCO tidak boleh menjadi owner business.'
+                        ])->withInput();
+                    }
+                }
+            }
+
+            unset($validated['owner_ids']);
 
             // Handle logo upload
             if ($request->hasFile('logo')) {
@@ -497,6 +664,25 @@ class BusinessController extends Controller
             // Remove these from validated array
             unset($validated['remove_legal_docs'], $validated['remove_certifications']);
 
+            $productRows = $this->normalizeInlineRows($request->input('products', []), 'product');
+            $serviceRows = $this->normalizeInlineRows($request->input('services', []), 'service');
+
+            $inlineErrors = array_merge(
+                $this->validateInlineRows($productRows, 'product'),
+                $this->validateInlineRows($serviceRows, 'service')
+            );
+
+            if ($validated['business_mode'] === 'service' && !empty($productRows)) {
+                $inlineErrors['products'] = 'Business mode Service Only tidak boleh memiliki produk.';
+            }
+            if ($validated['business_mode'] === 'product' && !empty($serviceRows)) {
+                $inlineErrors['services'] = 'Business mode Product Only tidak boleh memiliki layanan.';
+            }
+
+            if (!empty($inlineErrors)) {
+                return back()->withErrors($inlineErrors)->withInput();
+            }
+
             // Move extra fields into additional_data JSON (merge with existing)
             $additionalDataKeys = ['phone', 'email', 'website', 'instagram_handle', 'whatsapp_number',
                 'product_name', 'product_description', 'unique_value_proposition', 'target_market',
@@ -511,6 +697,16 @@ class BusinessController extends Controller
             $validated['additional_data'] = $additionalData;
 
             $business->update($validated);
+
+            $this->syncOwnerUsers($business, $selectedOwnerIds, true);
+
+            if (in_array($validated['business_mode'], ['product', 'both'], true)) {
+                $this->syncInlineProducts($business, $productRows, true);
+            }
+
+            if (in_array($validated['business_mode'], ['service', 'both'], true)) {
+                $this->syncInlineServices($business, $serviceRows, true);
+            }
 
             return redirect()
                 ->route('businesses.show', $business)
@@ -606,6 +802,220 @@ class BusinessController extends Controller
         } catch (\Exception $e) {
             Log::error('Business import exception: ' . $e->getMessage());
             return back()->withErrors(['error' => 'Error importing file: ' . $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Return regencies by province for dependent selects.
+     */
+    public function regenciesByProvince(Request $request)
+    {
+        $request->validate([
+            'province_id' => 'required|exists:provinces,id',
+        ]);
+
+        $regencies = Regency::where('province_id', $request->integer('province_id'))
+            ->orderBy('name')
+            ->get(['id', 'name']);
+
+        return response()->json($regencies);
+    }
+
+    /**
+     * Normalize rows from inline product/service form arrays.
+     *
+     * @param array<int, array<string, mixed>>|mixed $rows
+     * @return array<int, array<string, mixed>>
+     */
+    private function normalizeInlineRows($rows, string $type): array
+    {
+        if (!is_array($rows)) {
+            return [];
+        }
+
+        $normalized = [];
+
+        foreach ($rows as $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+
+            $name = isset($row['name']) ? trim((string) $row['name']) : '';
+            $description = isset($row['description']) ? trim((string) $row['description']) : '';
+            $priceRaw = $row['price'] ?? null;
+            $price = ($priceRaw === '' || $priceRaw === null) ? null : $priceRaw;
+            $id = isset($row['id']) && is_numeric($row['id']) ? (int) $row['id'] : null;
+
+            $isFilled = $name !== '' || $description !== '' || $price !== null;
+            if ($type === 'service') {
+                $priceType = isset($row['price_type']) ? trim((string) $row['price_type']) : '';
+                $isFilled = $isFilled || $priceType !== '';
+            }
+
+            if (!$isFilled) {
+                continue;
+            }
+
+            $payload = [
+                'id' => $id,
+                'name' => $name,
+                'description' => $description,
+                'price' => $price,
+            ];
+
+            if ($type === 'service') {
+                $payload['price_type'] = isset($row['price_type']) ? trim((string) $row['price_type']) : '';
+            }
+
+            $normalized[] = $payload;
+        }
+
+        return $normalized;
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $rows
+     * @return array<string, string>
+     */
+    private function validateInlineRows(array $rows, string $type): array
+    {
+        $errors = [];
+
+        foreach ($rows as $index => $row) {
+            if (empty($row['name'])) {
+                $errors["{$type}s.{$index}.name"] = ucfirst($type) . ' #' . ($index + 1) . ': nama wajib diisi.';
+            }
+
+            if (empty($row['description'])) {
+                $errors["{$type}s.{$index}.description"] = ucfirst($type) . ' #' . ($index + 1) . ': deskripsi wajib diisi.';
+            }
+
+            if ($row['price'] === null || $row['price'] === '') {
+                $errors["{$type}s.{$index}.price"] = ucfirst($type) . ' #' . ($index + 1) . ': harga wajib diisi.';
+            }
+
+            if ($type === 'service' && empty($row['price_type'])) {
+                $errors["services.{$index}.price_type"] = 'Service #' . ($index + 1) . ': tipe harga wajib diisi.';
+            }
+        }
+
+        return $errors;
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $rows
+     */
+    private function syncInlineProducts(Business $business, array $rows, bool $isUpdate): void
+    {
+        $defaultCategory = $business->productCategories()->firstOrCreate([
+            'name' => 'Umum',
+        ]);
+
+        $keptIds = [];
+
+        foreach ($rows as $row) {
+            $existing = null;
+            if ($isUpdate && !empty($row['id'])) {
+                $existing = $business->products()->where('id', (int) $row['id'])->first();
+            }
+
+            if ($existing) {
+                $existing->update([
+                    'name' => (string) $row['name'],
+                    'description' => (string) $row['description'],
+                    'price' => $row['price'],
+                ]);
+                $keptIds[] = $existing->id;
+            } else {
+                $product = $business->products()->create([
+                    'product_category_id' => $defaultCategory->id,
+                    'name' => (string) $row['name'],
+                    'description' => (string) $row['description'],
+                    'price' => $row['price'],
+                ]);
+                $keptIds[] = $product->id;
+            }
+        }
+
+        if ($isUpdate) {
+            if (!empty($keptIds)) {
+                $business->products()->whereNotIn('id', $keptIds)->delete();
+            } else {
+                $business->products()->delete();
+            }
+        }
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $rows
+     */
+    private function syncInlineServices(Business $business, array $rows, bool $isUpdate): void
+    {
+        $keptIds = [];
+
+        foreach ($rows as $row) {
+            $existing = null;
+            if ($isUpdate && !empty($row['id'])) {
+                $existing = $business->services()->where('id', (int) $row['id'])->first();
+            }
+
+            if ($existing) {
+                $existing->update([
+                    'name' => (string) $row['name'],
+                    'description' => (string) $row['description'],
+                    'price_type' => (string) $row['price_type'],
+                    'price' => $row['price'],
+                ]);
+                $keptIds[] = $existing->id;
+            } else {
+                $service = $business->services()->create([
+                    'name' => (string) $row['name'],
+                    'description' => (string) $row['description'],
+                    'price_type' => (string) $row['price_type'],
+                    'price' => $row['price'],
+                ]);
+                $keptIds[] = $service->id;
+            }
+        }
+
+        if ($isUpdate) {
+            if (!empty($keptIds)) {
+                $business->services()->whereNotIn('id', $keptIds)->delete();
+            } else {
+                $business->services()->delete();
+            }
+        }
+    }
+
+    /**
+     * Sync owners in user_businesses_details while keeping user_id as primary owner.
+     *
+     * @param array<int, int> $selectedOwnerIds
+     */
+    private function syncOwnerUsers(Business $business, array $selectedOwnerIds, bool $isUpdate): void
+    {
+        $primaryOwnerId = (int) $business->user_id;
+
+        $ownerIds = collect($selectedOwnerIds)
+            ->push($primaryOwnerId)
+            ->filter(fn ($id) => (int) $id > 0)
+            ->unique()
+            ->values();
+
+        $syncPayload = [];
+        foreach ($ownerIds as $ownerId) {
+            $syncPayload[(int) $ownerId] = [
+                'role_type' => 'owner',
+                'is_current' => true,
+            ];
+        }
+
+        if ($isUpdate) {
+            $business->teamMembers()->wherePivot('role_type', 'owner')->detach();
+        }
+
+        if (!empty($syncPayload)) {
+            $business->teamMembers()->syncWithoutDetaching($syncPayload);
         }
     }
 }

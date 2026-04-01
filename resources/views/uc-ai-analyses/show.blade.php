@@ -4,8 +4,10 @@
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
                     <div class="flex items-center justify-between">
-                        <a href="{{ route('ai-analyses.index') }}" class="text-sm font-semibold text-gray-600 hover:text-gray-900">
-                            ← Back to AI Moderation
+                        <a href="{{ route('ai-analyses.index') }}"
+                           class="group inline-flex items-center gap-2.5 px-5 py-3 bg-white hover:bg-gray-900 border border-gray-200 hover:border-gray-900 text-gray-700 hover:text-white rounded-xl font-semibold text-base shadow-sm hover:shadow-md transition-all duration-200">
+                            <span class="text-lg leading-none group-hover:-translate-x-0.5 transition-transform duration-200">←</span>
+                            <span>Back to AI Moderation</span>
                         </a>
                     </div>
 

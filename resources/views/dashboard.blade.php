@@ -38,8 +38,8 @@
                                 <div class="relative h-56">
                                     {{-- Category Badge - Top Left --}}
                                     <div class="absolute top-3 left-3 z-10">
-                                        <span class="inline-block text-xs bg-white/95 backdrop-blur-sm text-slate-800 px-3 py-1.5 rounded-full font-semibold shadow-md">
-                                            {{ $business->businessType->name }}
+                                            <span class="inline-flex items-center rounded-full bg-uco-orange-50 px-3 py-1 text-xs font-medium text-uco-orange-700 max-w-[170px]" title="{{ $business->businessType->name }}">
+                                                <span class="truncate">{{ $business->businessType->name }}</span>
                                         </span>
                                     </div>
                                     

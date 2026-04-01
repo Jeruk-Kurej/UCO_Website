@@ -1,6 +1,9 @@
 @use('Illuminate\Support\Facades\Storage')
 
 <x-app-layout>
+    @php
+        $canManageBusiness = auth()->check() && $business->canBeManagedBy(auth()->user());
+    @endphp
     <div class="max-w-6xl mx-auto">
         {{-- Page Header --}}
         <div class="mb-6 flex items-center gap-3">
@@ -13,7 +16,7 @@
                 <p class="text-sm text-gray-600">{{ $business->name }} Gallery Management</p>
             </div>
             @auth
-                @if(auth()->id() === $business->user_id || auth()->user()->isAdmin())
+                @if($canManageBusiness)
                     <a href="{{ route('businesses.photos.create', $business) }}" 
                        class="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-xl font-semibold text-sm shadow-sm transition duration-150">
                         <i class="bi bi-upload"></i>
@@ -133,7 +136,7 @@
 
                                     {{-- Hover actions (owner only) --}}
                                     @auth
-                                        @if(auth()->id() === $business->user_id || auth()->user()->isAdmin())
+                                        @if($canManageBusiness)
                                             <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-200 rounded-t-2xl"></div>
                                             <div class="absolute top-2.5 right-2.5 flex gap-2 opacity-0 group-hover:opacity-100 transition-all duration-200">
                                                 {{-- Update button --}}
@@ -170,7 +173,7 @@
 
                                 {{-- Inline Update Panel --}}
                                 @auth
-                                    @if(auth()->id() === $business->user_id || auth()->user()->isAdmin())
+                                    @if($canManageBusiness)
                                         <div x-show="showUpdate"
                                              x-transition:enter="transition ease-out duration-200"
                                              x-transition:enter-start="opacity-0 -translate-y-2"
@@ -296,7 +299,7 @@
                     </div>
                     <p class="text-gray-500 text-lg font-semibold mb-1">Belum ada foto gallery</p>
                     @auth
-                        @if(auth()->id() === $business->user_id || auth()->user()->isAdmin())
+                        @if($canManageBusiness)
                             <p class="text-sm text-gray-400 mb-5">Upload foto untuk melengkapi profil bisnis ini</p>
                             <a href="{{ route('businesses.photos.create', $business) }}"
                                class="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-900 hover:bg-gray-800 text-white text-sm font-semibold rounded-xl shadow-sm transition duration-150">

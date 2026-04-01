@@ -143,6 +143,14 @@ class Business extends Model
     }
 
     /**
+     * Get all owners (owner + co_founder role)
+     */
+    public function owners(): BelongsToMany
+    {
+        return $this->teamMembers()->wherePivotIn('role_type', ['owner', 'co_founder']);
+    }
+
+    /**
      * Get employees
      */
     public function employees(): BelongsToMany
@@ -182,6 +190,30 @@ class Business extends Model
     public function hasTeamMember(User $user): bool
     {
         return $this->teamMembers()->where('user_id', $user->id)->exists();
+    }
+
+    /**
+     * Check if user is one of the business owners
+     */
+    public function isOwnedBy(User $user): bool
+    {
+        if ($this->user_id === $user->id) {
+            return true;
+        }
+
+        if ($this->relationLoaded('owners')) {
+            return $this->owners->contains('id', $user->id);
+        }
+
+        return $this->owners()->where('users.id', $user->id)->exists();
+    }
+
+    /**
+     * Check whether user can manage this business
+     */
+    public function canBeManagedBy(User $user): bool
+    {
+        return $user->isAdmin() || $this->isOwnedBy($user);
     }
 
     /**

@@ -1,7 +1,21 @@
 @use('Illuminate\Support\Facades\Storage')
 
 <x-app-layout>
-    <div x-data="{ showUserModal: false }" x-init="$watch('showUserModal', val => document.body.style.overflow = val ? 'hidden' : '')">
+    @php
+        $canManageBusiness = auth()->check() && $business->canBeManagedBy(auth()->user());
+    @endphp
+    <div x-data="{
+            showUserModal: false,
+            fullscreenOpen: false,
+            fullscreenSrc: '',
+            fullscreenAlt: '',
+            openFullscreen(src, alt = 'Photo') {
+                this.fullscreenSrc = src;
+                this.fullscreenAlt = alt;
+                this.fullscreenOpen = true;
+            }
+        }"
+        x-init="$watch('showUserModal', val => document.body.style.overflow = val ? 'hidden' : ''); $watch('fullscreenOpen', val => { if (val) { document.body.style.overflow = 'hidden'; } else if (!showUserModal) { document.body.style.overflow = ''; } })">
     {{-- Hero Section with Elegant Back Button --}}
     <div class="mb-8 px-4 sm:px-0">
         <div class="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
@@ -12,11 +26,11 @@
             </a>
             <div class="flex-1">
                 <div class="flex flex-wrap items-center gap-2 mb-2">
-                    <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-soft-gray-100 text-soft-gray-700 text-xs font-semibold rounded-xl">
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-soft-gray-100 text-soft-gray-700 text-xs font-semibold rounded-xl max-w-[220px]" title="{{ $business->businessType->name }}">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
                         </svg>
-                        {{ $business->businessType->name }}
+                        <span class="truncate">{{ $business->businessType->name }}</span>
                     </span>
                     <span class="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-xl
                         {{ $business->isBothMode() ? 'bg-purple-100 text-purple-700' : ($business->isProductMode() ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700') }}">
@@ -36,7 +50,7 @@
                 <h1 class="text-2xl sm:text-3xl font-bold text-soft-gray-900 tracking-tight">{{ $business->name }}</h1>
             </div>
             @auth
-                @if(auth()->id() === $business->user_id || auth()->user()->isAdmin())
+                @if($canManageBusiness)
                     <a href="{{ route('businesses.edit', $business) }}" 
                        class="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-soft-gray-900 hover:bg-soft-gray-800 text-white rounded-xl font-semibold text-sm shadow-md hover:shadow-lg transition-all duration-200">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -184,6 +198,21 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                                     </svg>
                                     <span class="text-sm font-semibold">{{ $business->position }}</span>
+                                </div>
+                            </div>
+                        @endif
+                        @php
+                            $additionalOwners = $business->owners()->where('users.id', '!=', $business->user_id)->get();
+                        @endphp
+                        @if($additionalOwners->isNotEmpty())
+                            <div class="mt-3">
+                                <p class="text-xs font-semibold text-soft-gray-500 uppercase tracking-wider mb-1">Additional Owners</p>
+                                <div class="flex flex-wrap gap-2">
+                                    @foreach($additionalOwners as $additionalOwner)
+                                        <span class="inline-flex items-center rounded-lg bg-soft-gray-100 px-2.5 py-1 text-xs font-medium text-soft-gray-700">
+                                            {{ $additionalOwner->name }}
+                                        </span>
+                                    @endforeach
                                 </div>
                             </div>
                         @endif
@@ -498,7 +527,7 @@
                 <div class="flex items-center justify-between mb-6">
                     <h3 class="text-lg font-semibold text-gray-900">Products</h3>
                     @auth
-                        @if(auth()->id() === $business->user_id || auth()->user()->isAdmin())
+                        @if($canManageBusiness)
                             <div class="flex items-center gap-2">
                                 <a href="{{ route('businesses.product-categories.index', $business) }}" 
                                    class="inline-flex items-center px-3 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-50 transition duration-150">
@@ -551,7 +580,8 @@
                                                      x-transition:leave="transition ease-in duration-300"
                                                      x-transition:leave-start="opacity-100"
                                                      x-transition:leave-end="opacity-0"
-                                                     class="absolute inset-0">
+                                                     class="absolute inset-0 cursor-zoom-in"
+                                                     @click="openFullscreen('{{ storage_image_url($photo->photo_url, 'gallery') }}', '{{ addslashes($product->name) }}')">
                                                     <img src="{{ storage_image_url($photo->photo_url, 'gallery_thumb') }}" 
                                                          alt="{{ $product->name }}" 
                                                          class="w-full h-full object-cover">
@@ -606,7 +636,7 @@
 
                                     {{-- Action Buttons --}}
                                     @auth
-                                        @if(auth()->id() === $business->user_id || auth()->user()->isAdmin())
+                                        @if($canManageBusiness)
                                             <div class="flex items-center gap-2 pt-3 border-t border-gray-200">
                                                 <a href="{{ route('products.photos.index', $product) }}" 
                                                    class="flex-1 inline-flex items-center justify-center px-3 py-1.5 bg-blue-50 text-blue-700 text-xs font-medium rounded hover:bg-blue-100 transition duration-150">
@@ -642,7 +672,7 @@
                         <i class="bi bi-box-seam text-6xl text-gray-300 mb-3"></i>
                         <p class="text-gray-500 text-lg font-medium mb-2">No products yet</p>
                         @auth
-                            @if(auth()->id() === $business->user_id || auth()->user()->isAdmin())
+                            @if($canManageBusiness)
                                 <p class="text-sm text-gray-400 mb-4">Start adding products to showcase your offerings</p>
                                 <a href="{{ route('businesses.products.create', $business) }}" 
                                    class="inline-flex items-center px-4 py-2 bg-soft-gray-900 hover:bg-soft-gray-800 text-white text-sm font-medium rounded-xl shadow-sm transition duration-150">
@@ -662,7 +692,7 @@
                 <div class="flex items-center justify-between mb-6">
                     <h3 class="text-lg font-semibold text-gray-900">Services</h3>
                     @auth
-                        @if(auth()->id() === $business->user_id || auth()->user()->isAdmin())
+                        @if($canManageBusiness)
                             <a href="{{ route('businesses.services.create', $business) }}" 
                                class="inline-flex items-center px-3 py-2 bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium rounded-lg shadow-sm transition duration-150">
                                 <i class="bi bi-plus-lg me-2"></i>
@@ -688,7 +718,7 @@
 
                                     {{-- Action Buttons --}}
                                     @auth
-                                        @if(auth()->id() === $business->user_id || auth()->user()->isAdmin())
+                                        @if($canManageBusiness)
                                             <div class="flex items-center gap-2 ml-4">
                                                 <a href="{{ route('businesses.services.edit', [$business, $service]) }}" 
                                                    class="inline-flex items-center justify-center w-8 h-8 bg-orange-50 text-orange-600 rounded hover:bg-orange-100 transition duration-150"
@@ -719,7 +749,7 @@
                         <i class="bi bi-wrench text-6xl text-gray-300 mb-3"></i>
                         <p class="text-gray-500 text-lg font-medium mb-2">No services yet</p>
                         @auth
-                            @if(auth()->id() === $business->user_id || auth()->user()->isAdmin())
+                            @if($canManageBusiness)
                                 <p class="text-sm text-gray-400 mb-4">Add services to showcase what you offer</p>
                                 <a href="{{ route('businesses.services.create', $business) }}" 
                                    class="inline-flex items-center px-4 py-2 bg-soft-gray-900 hover:bg-soft-gray-800 text-white text-sm font-medium rounded-xl shadow-sm transition duration-150">
@@ -738,7 +768,7 @@
                 <div class="flex items-center justify-between mb-6">
                     <h3 class="text-lg font-semibold text-gray-900">Business Photo Gallery</h3>
                     @auth
-                        @if(auth()->id() === $business->user_id || auth()->user()->isAdmin())
+                        @if($canManageBusiness)
                             <div class="flex items-center gap-2">
                                 <a href="{{ route('businesses.photos.index', $business) }}" 
                                    class="inline-flex items-center px-3 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition duration-150">
@@ -764,7 +794,11 @@
                                     @php $gphotoUrl = storage_image_url($gphoto, 'gallery_thumb'); @endphp
                                 @endif
                                 @if($gphotoUrl)
-                                    <img src="{{ $gphotoUrl }}" alt="{{ $business->name }} photo" loading="lazy" decoding="async" onload="this.classList.remove('blur-sm')" class="w-full h-48 object-cover rounded-lg blur-sm">
+                                    <button type="button"
+                                            @click="openFullscreen('{{ storage_image_url($gphoto, 'gallery') }}', '{{ addslashes($business->name) }} photo')"
+                                            class="block w-full rounded-lg overflow-hidden focus:outline-none focus:ring-2 focus:ring-uco-orange-500">
+                                        <img src="{{ $gphotoUrl }}" alt="{{ $business->name }} photo" loading="lazy" decoding="async" onload="this.classList.remove('blur-sm')" class="w-full h-48 object-cover blur-sm hover:scale-105 transition duration-200">
+                                    </button>
                                 @else
                                     <div class="w-full h-48 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center rounded-lg">
                                         <i class="bi bi-image text-4xl text-gray-400"></i>
@@ -779,7 +813,7 @@
                         <i class="bi bi-images text-6xl text-gray-300 mb-3"></i>
                         <p class="text-gray-500 text-lg font-medium mb-2">No photos yet</p>
                         @auth
-                            @if(auth()->id() === $business->user_id || auth()->user()->isAdmin())
+                            @if($canManageBusiness)
                                 <p class="text-sm text-gray-400 mb-4">Upload photos to showcase your business</p>
                                 <a href="{{ route('businesses.photos.create', $business) }}" 
                                    class="inline-flex items-center px-4 py-2 bg-soft-gray-900 hover:bg-soft-gray-800 text-white text-sm font-medium rounded-xl shadow-sm transition duration-150">
@@ -797,7 +831,7 @@
                 <div class="flex items-center justify-between mb-6">
                     <h3 class="text-lg font-semibold text-gray-900">Contact Information</h3>
                     @auth
-                        @if(auth()->id() === $business->user_id || auth()->user()->isAdmin())
+                        @if($canManageBusiness)
                             <a href="{{ route('businesses.contacts.create', $business) }}" 
                                class="inline-flex items-center px-3 py-2 bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium rounded-lg shadow-sm transition duration-150">
                                 <i class="bi bi-plus-lg me-2"></i>
@@ -827,7 +861,7 @@
 
                                 {{-- Action Buttons --}}
                                 @auth
-                                    @if(auth()->id() === $business->user_id || auth()->user()->isAdmin())
+                                    @if($canManageBusiness)
                                         <div class="flex items-center gap-2">
                                             <a href="{{ route('businesses.contacts.edit', [$business, $contact]) }}" 
                                                class="inline-flex items-center justify-center w-8 h-8 bg-orange-50 text-orange-600 rounded hover:bg-orange-100 transition duration-150"
@@ -857,7 +891,7 @@
                         <i class="bi bi-telephone text-6xl text-gray-300 mb-3"></i>
                         <p class="text-gray-500 text-lg font-medium mb-2">No contact information yet</p>
                         @auth
-                            @if(auth()->id() === $business->user_id || auth()->user()->isAdmin())
+                            @if($canManageBusiness)
                                 <p class="text-sm text-gray-400 mb-4">Add contact methods so customers can reach you</p>
                                 <a href="{{ route('businesses.contacts.create', $business) }}" 
                                    class="inline-flex items-center px-4 py-2 bg-soft-gray-900 hover:bg-soft-gray-800 text-white text-sm font-medium rounded-xl shadow-sm transition duration-150">
@@ -870,6 +904,17 @@
                 @endif
             </div>
 
+        </div>
+    </div>
+
+    {{-- Fullscreen Photo Modal --}}
+    <div x-show="fullscreenOpen" x-cloak class="fixed inset-0 z-[110]">
+        <div class="absolute inset-0 bg-black/90" @click="fullscreenOpen = false"></div>
+        <button type="button" @click="fullscreenOpen = false" class="absolute top-4 right-4 text-white bg-white/10 hover:bg-white/20 rounded-lg px-3 py-2 z-10">
+            <i class="bi bi-x-lg"></i>
+        </button>
+        <div class="absolute inset-0 flex items-center justify-center p-4">
+            <img :src="fullscreenSrc" :alt="fullscreenAlt" class="max-h-[92vh] max-w-[95vw] object-contain rounded-lg shadow-2xl">
         </div>
     </div>
 

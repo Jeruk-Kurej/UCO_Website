@@ -1,7 +1,4 @@
 <nav x-data="{ open: false }" class="bg-white border-b border-soft-gray-100 shadow-sm sticky top-0 z-50">
-    <!-- Subtle Orange Accent Line -->
-    <div class="h-1 bg-gradient-to-r from-uco-orange-500 via-uco-yellow-500 to-uco-orange-500"></div>
-    
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center h-16">
             {{-- Logo & Brand --}}

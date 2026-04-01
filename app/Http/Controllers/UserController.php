@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Business;
+use App\Models\Province;
 use App\Models\User_Businesses_Detail;
 use App\Imports\UsersImport;
 use Illuminate\Http\Request;
@@ -82,8 +83,9 @@ class UserController extends Controller
 
         // Get available businesses for ownership transfer
         $availableBusinesses = Business::with('user', 'businessType')->get();
+        $provinces = Province::orderBy('name')->get(['id', 'name']);
 
-        return view('users.create', compact('availableBusinesses'));
+        return view('users.create', compact('availableBusinesses', 'provinces'));
     }
 
     /**
@@ -245,12 +247,14 @@ class UserController extends Controller
 
         // Get team member details for this user
         $teamMemberDetails = User_Businesses_Detail::where('user_id', $user->id)->get();
+        $provinces = Province::orderBy('name')->get(['id', 'name']);
 
         return view('users.edit', [
             'userToEdit' => $user,
             'availableBusinesses' => $availableBusinesses,
             'ownedBusinesses' => $ownedBusinesses,
-            'teamMemberDetails' => $teamMemberDetails
+            'teamMemberDetails' => $teamMemberDetails,
+            'provinces' => $provinces,
         ]);
     }
 
