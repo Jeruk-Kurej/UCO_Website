@@ -213,7 +213,7 @@ class ProductPhotoController extends Controller
         // Load business relationship to check ownership
         $product->load('business');
         
-        if ($product->business->user_id !== $user->id && !$user->isAdmin()) {
+        if (!$product->business->canBeManagedBy($user)) {
             abort(403, 'Unauthorized action.');
         }
     }
