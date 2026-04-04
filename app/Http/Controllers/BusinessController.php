@@ -73,7 +73,7 @@ class BusinessController extends Controller
             });
         }
         
-        $businesses = $query->latest()->paginate(10);
+        $businesses = $query->latest()->paginate(12);
         
         // Prepare my businesses for current user - independent of pagination
         $myBusinesses = collect();

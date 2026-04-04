@@ -170,7 +170,7 @@
 
         <div id="content-container">
             {{-- All Businesses (visible when activeTab === 'all') --}}
-            <div x-show="activeTab === 'all'" x-transition.opacity class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div x-show="activeTab === 'all'" x-transition.opacity class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 @forelse ($businesses as $business)
                     <div class="bg-white border rounded-xl overflow-hidden hover:shadow-md transition-all duration-200 relative group"
                          x-data="{ 
@@ -438,7 +438,7 @@
                 </div>
 
                 @if(($myBusinesses ?? collect())->count() > 0)
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                         @foreach($myBusinesses as $b)
                             <a href="{{ route('businesses.show', $b) }}" class="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transform hover:-translate-y-0.5 transition-all duration-200 overflow-hidden block">
                                 <div class="p-6 flex items-center gap-4">
