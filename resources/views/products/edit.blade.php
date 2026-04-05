@@ -1,5 +1,5 @@
 <x-app-layout>
-    <div class="max-w-3xl mx-auto">
+    <div class="max-w-5xl mx-auto">
         {{-- Page Header - Elegant Design --}}
         <div class="mb-8 flex items-center gap-4">
             <div class="flex-1">

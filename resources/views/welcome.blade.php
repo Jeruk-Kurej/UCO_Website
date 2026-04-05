@@ -37,7 +37,7 @@
     <div class="h-screen flex flex-col overflow-hidden relative">
         {{-- Main Content --}}
         <main class="flex-1 flex items-center relative overflow-hidden z-10">
-            <div class="max-w-6xl mx-auto px-6 w-full relative z-10">
+            <div class="max-w-[1600px] mx-auto px-6 w-full relative z-10">
                 <div class="grid lg:grid-cols-2 gap-16 items-center">
                     {{-- Left: Content --}}
                     <div class="space-y-6 relative">

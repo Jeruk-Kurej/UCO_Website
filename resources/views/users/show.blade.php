@@ -7,7 +7,7 @@
         $graduationData = $user->graduation_data ?? [];
     @endphp
 
-    <div class="max-w-6xl mx-auto py-8" x-data="{ activeTab: 'basic' }">
+    <div class="max-w-[1600px] mx-auto py-8" x-data="{ activeTab: 'basic' }">
         <div class="mb-6 flex items-center justify-between">
             <div class="flex items-center gap-4">
                 <a href="{{ route('users.index') }}" 

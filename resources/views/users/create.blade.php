@@ -1,5 +1,5 @@
 <x-app-layout>
-    <div class="max-w-6xl mx-auto" x-data="{ activeTab: 'basic' }">
+    <div class="w-full max-w-[1600px] 2xl:max-w-[1720px] mx-auto" x-data="{ activeTab: 'basic' }">
         
         {{-- Success/Error Messages --}}
         @if(session('success'))

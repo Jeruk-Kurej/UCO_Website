@@ -7,12 +7,12 @@
                         <a href="{{ route('ai-analyses.index') }}"
                            class="group inline-flex items-center gap-2.5 px-5 py-3 bg-white hover:bg-gray-900 border border-gray-200 hover:border-gray-900 text-gray-700 hover:text-white rounded-xl font-semibold text-base shadow-sm hover:shadow-md transition-all duration-200">
                             <span class="text-lg leading-none group-hover:-translate-x-0.5 transition-transform duration-200">←</span>
-                            <span>Back to AI Moderation</span>
+                            <span>Back to Testimony Moderation</span>
                         </a>
                     </div>
 
                     <div class="mt-6">
-                        <h2 class="text-xl font-bold">UC-wide Testimony AI Analysis</h2>
+                        <h2 class="text-xl font-bold">Testimony Details</h2>
                         <p class="text-sm text-gray-600 mt-1">Universitas Ciputra Online</p>
                     </div>
 
@@ -30,7 +30,7 @@
 
                         <div class="border border-gray-200 rounded-lg p-4">
                             <div class="flex items-center justify-between">
-                                <h3 class="font-semibold">AI Result</h3>
+                                <h3 class="font-semibold">Moderation Context</h3>
                                 @if($analysis->is_approved)
                                     <span class="inline-flex px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Approved</span>
                                 @else
@@ -61,14 +61,14 @@
                                     <div class="flex items-center gap-2">
                                         {{-- Approve --}}
                                         @if(!$analysis->is_approved)
-                                            <form method="POST" action="{{ route('uc-ai-analyses.approve', $testimony) }}" onsubmit="return confirm('Approve this testimony?')" class="inline">
+                                            <form method="POST" action="{{ route('uc-testimonies.approve', $testimony) }}" onsubmit="return confirm('Approve this testimony?')" class="inline">
                                                 @csrf
                                                 <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-md font-semibold">Approve</button>
                                             </form>
                                         @endif
 
                                         {{-- Reject (ask for optional reason) --}}
-                                        <form method="POST" action="{{ route('uc-ai-analyses.reject', $testimony) }}" class="inline">
+                                        <form method="POST" action="{{ route('uc-testimonies.reject', $testimony) }}" class="inline">
                                             @csrf
                                             <input type="hidden" name="rejection_reason" value="">
                                             <button type="button" onclick="

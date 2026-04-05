@@ -1,5 +1,5 @@
 <x-app-layout>
-    <div class="max-w-5xl mx-auto">
+    <div class="max-w-screen-xl mx-auto">
         {{-- Page Header --}}
         <div class="mb-6 flex items-center gap-3">
             <a href="{{ route('businesses.show', $business) }}" 

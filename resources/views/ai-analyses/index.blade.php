@@ -1,12 +1,18 @@
 <x-app-layout>
     <div class="space-y-6">
         {{-- Page Header --}}
-        <div class="flex items-center justify-between">
-            <div>
-                <h1 class="text-2xl font-bold text-gray-900">AI UC Testimony Moderation Dashboard</h1>
-                <p class="text-sm text-gray-600">Review and manage AI-moderated UC-wide testimonies powered by Google Gemini</p>
+        <section class="relative overflow-hidden rounded-3xl border border-uco-orange-100 bg-white px-6 py-8 shadow-sm md:px-8 md:py-10">
+            <div class="uco-hero-mesh"></div>
+            <div class="relative z-10 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+                <div class="space-y-2 reveal-on-scroll">
+                    <span class="inline-flex items-center rounded-full border border-uco-orange-200 bg-uco-orange-50 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-uco-orange-700">
+                        Admin Dashboard
+                    </span>
+                    <h1 class="text-3xl font-extrabold text-soft-gray-900 md:text-4xl">Testimony Moderation</h1>
+                    <p class="text-sm text-soft-gray-600 mt-1">Review and manage UC-wide testimonies and AI moderation results.</p>
+                </div>
             </div>
-        </div>
+        </section>
 
         {{-- Stats Cards --}}
         @php
@@ -94,7 +100,7 @@
                                 <td class="px-6 py-4 text-center">
                                     <div class="flex items-center justify-center gap-2">
                                         @if($analysis->ucTestimony)
-                                            <a href="{{ route('uc-ai-analyses.show', $analysis->ucTestimony) }}"
+                                            <a href="{{ route('uc-testimonies.detail', $analysis->ucTestimony) }}"
                                                class="inline-flex items-center justify-center w-9 h-9 rounded-lg text-blue-600 hover:bg-blue-50 transition"
                                                title="View Details">
                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -105,7 +111,7 @@
                                             
                                             {{-- Approve (if not approved) --}}
                                             @if(!$analysis->is_approved)
-                                                <form method="POST" action="{{ route('uc-ai-analyses.approve', $analysis->ucTestimony) }}" 
+                                                <form method="POST" action="{{ route('uc-testimonies.approve', $analysis->ucTestimony) }}" 
                                                       onsubmit="return confirm('Approve this testimony?')"
                                                       class="inline">
                                                     @csrf
@@ -120,7 +126,7 @@
                                             @endif
 
                                             {{-- Reject (always available) --}}
-                                            <form method="POST" action="{{ route('uc-ai-analyses.reject', $analysis->ucTestimony) }}" class="inline">
+                                            <form method="POST" action="{{ route('uc-testimonies.reject', $analysis->ucTestimony) }}" class="inline">
                                                 @csrf
                                                 <input type="hidden" name="rejection_reason" value="">
                                                 <button type="button"
@@ -156,8 +162,8 @@
                         @empty
                             <tr>
                                 <td colspan="6" class="px-6 py-12 text-center">
-                                    <p class="text-gray-500 text-lg font-medium">No AI analyses yet</p>
-                                    <p class="text-sm text-gray-400 mt-1">testimonies will be automatically analyzed when submitted</p>
+                                    <p class="text-gray-500 text-lg font-medium">No testimonies to moderate yet</p>
+                                    <p class="text-sm text-gray-400 mt-1">testimonies will appear here automatically when submitted</p>
                                 </td>
                             </tr>
                         @endforelse

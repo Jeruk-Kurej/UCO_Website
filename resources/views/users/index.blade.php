@@ -111,28 +111,33 @@
         @endif
 
         {{-- Page Header --}}
-        <div class="flex items-center justify-between">
-            <div>
-                <h1 class="text-2xl font-bold text-gray-900">User Management</h1>
-                <p class="text-sm text-gray-600 mt-1">Manage platform users and permissions</p>
+        <section class="relative overflow-hidden rounded-3xl border border-uco-orange-100 bg-white px-6 py-8 shadow-sm md:px-8 md:py-10 mb-8">
+            <div class="uco-hero-mesh"></div>
+            <div class="relative z-10 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+                <div class="space-y-2 reveal-on-scroll">
+                    <span class="inline-flex items-center rounded-full border border-uco-orange-200 bg-uco-orange-50 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-uco-orange-700">
+                        Admin Dashboard
+                    </span>
+                    <h1 class="text-3xl font-extrabold text-soft-gray-900 md:text-4xl">User Management</h1>
+                    <p class="text-sm text-soft-gray-600 mt-1">Manage platform users and their specific permissions.</p>
+                </div>
+
+                <div class="flex items-center gap-3 relative z-10 reveal-on-scroll" style="transition-delay: 100ms;">
+                    <button @click="showImportModal = true"
+                            class="inline-flex items-center px-4 py-2.5 bg-white border border-gray-300 text-gray-700 text-sm font-semibold rounded-xl hover:bg-gray-50 transition-colors shadow-sm">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                        </svg>
+                        Import Excel
+                    </button>
+                    <a href="/users/create" 
+                       class="inline-flex items-center gap-2 rounded-xl bg-uco-orange-500 px-5 py-3 text-sm font-semibold text-white shadow-md shadow-uco-orange-200 transition hover:-translate-y-0.5 hover:bg-uco-orange-600">
+                        <i class="bi bi-plus-circle"></i>
+                        Create User
+                    </a>
+                </div>
             </div>
-            <div class="flex gap-3">
-                <button @click="showImportModal = true"
-                        class="inline-flex items-center px-4 py-2.5 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors">
-                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
-                    </svg>
-                    Import Excel
-                </button>
-                <a href="/users/create" 
-                   class="inline-flex items-center px-4 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors">
-                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                    </svg>
-                    Create User
-                </a>
-            </div>
-        </div>
+        </section>
 
         {{-- Search Bar --}}
         <div class="bg-white border border-gray-200 rounded-xl p-4" 

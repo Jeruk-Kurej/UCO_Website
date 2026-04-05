@@ -47,4 +47,13 @@ class DashboardController extends Controller
             'testimonies' => $testimonies,
         ]);
     }
+
+    /**
+     * Track import progress by session ID.
+     */
+    public function importProgress($sessionId)
+    {
+        $progress = session("import_progress_{$sessionId}", ['current' => 0, 'total' => 0, 'status' => 'unknown']);
+        return response()->json($progress);
+    }
 }

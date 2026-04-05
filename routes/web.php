@@ -63,10 +63,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // Import progress tracking endpoint
-    Route::get('/import-progress/{sessionId}', function($sessionId) {
-        $progress = session("import_progress_{$sessionId}", ['current' => 0, 'total' => 0, 'status' => 'unknown']);
-        return response()->json($progress);
-    })->name('import.progress');
+    Route::get('/import-progress/{sessionId}', [DashboardController::class, 'importProgress'])->name('import.progress');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -96,19 +93,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('products.photos', ProductPhotoController::class)
         ->scoped(['product' => 'id', 'photo' => 'id']);
 
-    // Testimony deletion (admin only)
-    Route::delete('/uc-testimonies/{ucTestimony}', [UcTestimonyController::class, 'destroy'])
-        ->name('uc-testimonies.destroy');
-
-    Route::get('/ai-analyses', [AiAnalysisController::class, 'index'])
-        ->name('ai-analyses.index');
-    Route::get('/uc-testimonies/{ucTestimony}/ai-analysis', [AiAnalysisController::class, 'showUc'])
-        ->name('uc-ai-analyses.show');
-    Route::post('/uc-testimonies/{ucTestimony}/approve', [AiAnalysisController::class, 'approve'])
-        ->name('uc-ai-analyses.approve');
-    // Admin can also explicitly reject (or re-reject) a testimony
-    Route::post('/uc-testimonies/{ucTestimony}/reject', [AiAnalysisController::class, 'reject'])
-        ->name('uc-ai-analyses.reject');
 });
 
 // ============================================================
@@ -117,9 +101,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 Route::middleware(['auth', 'verified', 'admin'])->group(function () {
     
+    // Testimony Moderation
+    Route::delete('/uc-testimonies/{ucTestimony}', [UcTestimonyController::class, 'destroy'])->name('uc-testimonies.destroy');
+    Route::get('/ai-analyses', [AiAnalysisController::class, 'index'])->name('ai-analyses.index');
+    Route::get('/uc-testimonies/{ucTestimony}/detail', [AiAnalysisController::class, 'showUc'])->name('uc-testimonies.detail');
+    Route::post('/uc-testimonies/{ucTestimony}/approve', [AiAnalysisController::class, 'approve'])->name('uc-testimonies.approve');
+    Route::post('/uc-testimonies/{ucTestimony}/reject', [AiAnalysisController::class, 'reject'])->name('uc-testimonies.reject');
+
     Route::resource('users', UserController::class);
-    Route::post('users/import', [UserController::class, 'import'])->name('users.import');
-    Route::get('users/template/download', [UserController::class, 'downloadTemplate'])->name('users.template');
+    Route::post('/users/import', [UserController::class, 'import'])->name('users.import');
+    Route::get('/users/template/download', [UserController::class, 'downloadTemplate'])->name('users.template');
 
     Route::resource('business-types', BusinessTypeController::class)->except(['index', 'show']);
     Route::resource('contact-types', ContactTypeController::class)->except(['index', 'show']);
@@ -138,58 +129,47 @@ Route::get('/business-types/{businessType}', [BusinessTypeController::class, 'sh
 Route::get('/contact-types/{contactType}', [ContactTypeController::class, 'show'])->name('contact-types.show');
 
 // ============================================================
+// ============================================================
 // DATABASE RESET ROUTES (TEMPORARY - DELETE AFTER USE)
 // ============================================================
 
-Route::get('/admin/reset-database-confirm', function () {
-    /** @var User $user */
-    $user = Auth::user();
-    
-    if (!Auth::check() || !$user->isAdmin()) {
-        abort(403, 'Only administrators can reset database.');
-    }
-    
-    return view('admin.reset-database');
-})->middleware('auth')->name('admin.reset-database');
+Route::middleware(['auth', 'verified', 'admin'])->group(function () {
+    Route::get('/admin/reset-database-confirm', function () {
+        return view('admin.reset-database');
+    })->name('admin.reset-database');
 
-Route::post('/admin/reset-database-execute', function () {
-    /** @var User $user */
-    $user = Auth::user();
-    
-    if (!Auth::check() || !$user->isAdmin()) {
-        abort(403, 'Only administrators can reset database.');
-    }
-    
-    try {
-        $businessCount = Business::count();
-        Business::query()->delete();
-        
-        BusinessType::query()->delete();
-        ProductCategory::query()->delete();
-        ContactType::query()->delete();
-        
-        $userCount = User::count();
-        User::query()->delete();
-        
-        User::create([
-            'username' => 'admin',
-            'name' => 'Admin UCO',
-            'email' => 'admin@uco.com',
-            'password' => Hash::make('password'),
-            'role' => 'admin',
-            'is_active' => true,
-            'email_verified_at' => now(),
-        ]);
-        
-        Auth::logout();
-        request()->session()->invalidate();
-        request()->session()->regenerateToken();
-        
-        return redirect('/login')->with('success', "✅ Database reset! Deleted {$businessCount} businesses and {$userCount} users. Login as admin@uco.com / password");
-        
-    } catch (\Exception $e) {
-        return back()->with('error', 'Error: ' . $e->getMessage());
-    }
-})->middleware('auth')->name('admin.reset-database.execute');
+    Route::post('/admin/reset-database-execute', function () {
+        try {
+            $businessCount = \App\Models\Business::count();
+            \App\Models\Business::query()->delete();
+            
+            \App\Models\BusinessType::query()->delete();
+            \App\Models\ProductCategory::query()->delete();
+            \App\Models\ContactType::query()->delete();
+            
+            $userCount = \App\Models\User::count();
+            \App\Models\User::query()->delete();
+            
+            \App\Models\User::create([
+                'username' => 'admin',
+                'name' => 'Admin UCO',
+                'email' => 'admin@uco.com',
+                'password' => \Illuminate\Support\Facades\Hash::make('password'),
+                'role' => 'admin',
+                'is_active' => true,
+                'email_verified_at' => now(),
+            ]);
+            
+            \Illuminate\Support\Facades\Auth::logout();
+            request()->session()->invalidate();
+            request()->session()->regenerateToken();
+            
+            return redirect('/login')->with('success', "✅ Database reset! Deleted {$businessCount} businesses and {$userCount} users. Login as admin@uco.com / password");
+            
+        } catch (\Exception $e) {
+            return back()->with('error', 'Error: ' . $e->getMessage());
+        }
+    })->name('admin.reset-database.execute');
+});
 
 require __DIR__.'/auth.php';

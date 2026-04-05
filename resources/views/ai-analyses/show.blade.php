@@ -1,5 +1,5 @@
 <x-app-layout>
-    <div class="max-w-4xl mx-auto space-y-6">
+    <div class="w-full max-w-[1600px] 2xl:max-w-[1720px] mx-auto space-y-6">
         {{-- Back Button --}}
         <div class="flex items-center gap-4">
             <a href="{{ route('ai-analyses.index') }}" 
@@ -8,7 +8,7 @@
                 <span>Back</span>
             </a>
             <div class="flex-1">
-                <h1 class="text-2xl font-bold text-gray-900">AI Analysis Details</h1>
+                <h1 class="text-2xl font-bold text-gray-900">Testimony Details</h1>
                 <p class="text-sm text-gray-600">Review testimony and AI moderation results</p>
             </div>
         </div>
@@ -56,7 +56,7 @@
             </div>
         </div>
 
-        {{-- AI Analysis Card --}}
+        {{-- Moderation Context --}}
         <div class="bg-white shadow-sm rounded-lg p-6">
             <h2 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
                 <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">

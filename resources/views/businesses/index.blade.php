@@ -62,36 +62,40 @@
             $initialTab = request('tab', 'all');
         }
     @endphp
-    <div class="businesses-wrapper max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" x-data="{ activeTab: '{{ $initialTab }}', showImportModal: false }" x-cloak>
+    <div class="businesses-wrapper max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8" x-data="{ activeTab: '{{ $initialTab }}', showImportModal: false }" x-cloak>
         {{-- Page Header --}}
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-            <div>
-                <h1 class="text-2xl font-bold text-gray-900">Businesses</h1>
-                <p class="text-sm text-gray-600 mt-1">Manage and discover businesses</p>
-            </div>
+        <section class="relative overflow-hidden rounded-3xl border border-uco-orange-100 bg-white px-6 py-8 shadow-sm md:px-8 md:py-10 mb-8">
+            <div class="uco-hero-mesh"></div>
+            <div class="relative z-10 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+                <div class="space-y-2 reveal-on-scroll">
+                    <span class="inline-flex items-center rounded-full border border-uco-orange-200 bg-uco-orange-50 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-uco-orange-700">
+                        UCO Directory
+                    </span>
+                    <h1 class="text-3xl font-extrabold text-soft-gray-900 md:text-4xl">Businesses</h1>
+                    <p class="text-sm text-soft-gray-600 mt-1">Manage and discover businesses built by UCO students & alumni</p>
+                </div>
 
-            <div class="flex items-center gap-3">
-                @auth
-                    @if(auth()->user()->isAdmin())
-                        <button type="button" 
-                                @click="showImportModal = true" 
-                                class="inline-flex items-center px-4 py-2.5 bg-white border border-gray-300 text-sm font-medium rounded-xl text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
-                            </svg>
-                            Import Excel
-                        </button>
-                        <a href="{{ route('businesses.create') }}" 
-                           class="inline-flex items-center px-4 py-2.5 bg-soft-gray-900 text-white text-sm font-medium rounded-xl hover:bg-soft-gray-800 transition-colors shadow-sm">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                            </svg>
-                            Add Business
-                        </a>
-                    @endif
-                @endauth
+                <div class="flex items-center gap-3 relative z-10 reveal-on-scroll" style="transition-delay: 100ms;">
+                    @auth
+                        @if(auth()->user()->isAdmin())
+                            <button type="button" 
+                                    @click="showImportModal = true" 
+                                    class="inline-flex items-center px-5 py-3 bg-white border border-gray-300 text-sm font-semibold rounded-xl text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                </svg>
+                                Import Excel
+                            </button>
+                            <a href="{{ route('businesses.create') }}" 
+                               class="inline-flex items-center gap-2 rounded-xl bg-uco-orange-500 px-5 py-3 text-sm font-semibold text-white shadow-md shadow-uco-orange-200 transition hover:-translate-y-0.5 hover:bg-uco-orange-600">
+                                <i class="bi bi-plus-circle"></i>
+                                Add Business
+                            </a>
+                        @endif
+                    @endauth
+                </div>
             </div>
-        </div>
+        </section>
 
         {{-- Search and Filter Card --}}
         <div class="bg-white border border-gray-200 rounded-xl p-4 mb-6 shadow-sm">
@@ -172,7 +176,9 @@
             {{-- All Businesses (visible when activeTab === 'all') --}}
             <div x-show="activeTab === 'all'" x-transition.opacity class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 @forelse ($businesses as $business)
-                    <div class="bg-white border rounded-xl overflow-hidden hover:shadow-md transition-all duration-200 relative group"
+                    @php $delay = ($loop->index % 12) * 50; @endphp
+                    <div class="bg-white border rounded-xl overflow-hidden hover:-translate-y-1 hover:border-uco-orange-300 hover:shadow-xl transition-all duration-300 relative group reveal-on-scroll"
+                         style="transition-delay: {{ $delay }}ms;"
                          x-data="{ 
                             isFeatured: {{ $business->is_featured ? 'true' : 'false' }}, 
                             isToggling: false,
@@ -426,21 +432,27 @@
         @auth
             {{-- My Businesses (visible when activeTab === 'my') --}}
             <div x-show="activeTab === 'my'" x-transition.opacity class="col-span-1 md:col-span-2">
-            <div class="p-10 bg-white border border-slate-200 rounded-xl shadow-sm w-full mt-6">
-                <div class="mb-6 flex items-center justify-between">
-                    <h3 class="text-lg font-semibold text-gray-900">My Businesses</h3>
-                    <a href="{{ route('businesses.create') }}" class="inline-flex items-center px-4 py-2.5 bg-soft-gray-900 text-white text-sm font-medium rounded-xl hover:bg-soft-gray-800 transition-colors">
+            <div class="p-8 md:p-10 bg-white border border-slate-200 rounded-2xl shadow-sm w-full mt-6 reveal-on-scroll">
+                <div class="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-1">My Businesses</h3>
+                        <p class="text-sm text-gray-500">Manage your entrepreneurial ventures</p>
+                    </div>
+                    <a href="{{ route('businesses.create') }}" class="inline-flex items-center justify-center px-5 py-2.5 bg-uco-orange-500 text-white text-sm font-semibold rounded-xl hover:bg-uco-orange-600 hover:-translate-y-0.5 shadow-md shadow-uco-orange-200 transition-all duration-200">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                         </svg>
-                        Add Business
+                        Add New Business
                     </a>
                 </div>
 
                 @if(($myBusinesses ?? collect())->count() > 0)
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                         @foreach($myBusinesses as $b)
-                            <a href="{{ route('businesses.show', $b) }}" class="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transform hover:-translate-y-0.5 transition-all duration-200 overflow-hidden block">
+                            @php $delay = ($loop->index % 12) * 50; @endphp
+                            <a href="{{ route('businesses.show', $b) }}" 
+                               class="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-xl transform hover:-translate-y-1 hover:border-uco-orange-300 transition-all duration-300 overflow-hidden block reveal-on-scroll"
+                               style="transition-delay: {{ $delay }}ms;">
                                 <div class="p-6 flex items-center gap-4">
                                     @php $myLogo = $b->logo_url ?? null; $myLogoUrl = $myLogo ? storage_image_url($myLogo, 'logo_thumb') : null; @endphp
                                     @if($myLogoUrl)
@@ -459,9 +471,16 @@
                         @endforeach
                     </div>
                 @else
-                    <div class="text-center py-8">
-                        <p class="text-gray-600 mb-4">You don't have any businesses yet.</p>
-                        <a href="{{ route('businesses.create') }}" class="inline-flex items-center px-4 py-2 bg-soft-gray-900 text-white rounded-xl hover:bg-soft-gray-800">Create Your First Business</a>
+                    <div class="text-center py-16 px-4 bg-gray-50 border border-dashed border-gray-300 rounded-2xl reveal-on-scroll">
+                        <div class="mb-4 inline-flex items-center justify-center w-16 h-16 bg-white rounded-full shadow-sm text-gray-400">
+                            <i class="bi bi-shop text-2xl"></i>
+                        </div>
+                        <h4 class="text-lg font-bold text-gray-900 mb-2">No Businesses Yet</h4>
+                        <p class="text-gray-500 mb-6 max-w-md mx-auto">Start showcasing your products and services to the UCO community. It only takes a few minutes to set up your portfolio.</p>
+                        <a href="{{ route('businesses.create') }}" class="inline-flex items-center px-6 py-3 bg-uco-orange-500 text-white font-semibold rounded-xl hover:bg-uco-orange-600 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+                            <i class="bi bi-plus-circle mr-2"></i>
+                            Create Your First Business
+                        </a>
                     </div>
                 @endif
             </div>
@@ -650,5 +669,28 @@
         @endif
     @endauth
     </div>
+
+    @push('scripts')
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const revealTargets = document.querySelectorAll('.reveal-on-scroll');
+                
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach((entry) => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('is-visible');
+                            // Ensure the observer stops tracking once it has revealed
+                            observer.unobserve(entry.target);
+                        }
+                    });
+                }, { 
+                    threshold: 0.10,
+                    rootMargin: '0px 0px -40px 0px' 
+                });
+
+                revealTargets.forEach(target => observer.observe(target));
+            });
+        </script>
+    @endpush
 
 </x-app-layout>

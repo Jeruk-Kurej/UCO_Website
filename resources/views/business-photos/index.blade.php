@@ -4,7 +4,7 @@
     @php
         $canManageBusiness = auth()->check() && $business->canBeManagedBy(auth()->user());
     @endphp
-    <div class="max-w-6xl mx-auto">
+    <div class="max-w-[1600px] mx-auto">
         {{-- Page Header --}}
         <div class="mb-6 flex items-center gap-3">
             <a href="{{ route('businesses.show', $business) }}#photos" 

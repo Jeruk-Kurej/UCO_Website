@@ -18,23 +18,30 @@
     @endphp
     <div class="space-y-6">
         {{-- Page Header --}}
-        <div class="flex items-center justify-between">
-            <div>
-                <h1 class="text-2xl font-bold text-gray-900">Contact Type Management</h1>
-                <p class="text-sm text-gray-600 mt-1">Manage available contact platforms and icons</p>
+        <section class="relative overflow-hidden rounded-3xl border border-uco-orange-100 bg-white px-6 py-8 shadow-sm md:px-8 md:py-10 mb-8">
+            <div class="uco-hero-mesh"></div>
+            <div class="relative z-10 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+                <div class="space-y-2 reveal-on-scroll">
+                    <span class="inline-flex items-center rounded-full border border-uco-orange-200 bg-uco-orange-50 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-uco-orange-700">
+                        Admin Dashboard
+                    </span>
+                    <h1 class="text-3xl font-extrabold text-soft-gray-900 md:text-4xl">Contact Type Management</h1>
+                    <p class="text-sm text-soft-gray-600 mt-1">Manage available contact platforms and icons.</p>
+                </div>
+
+                <div class="flex items-center gap-3 relative z-10 reveal-on-scroll" style="transition-delay: 100ms;">
+                    @auth
+                        @if(auth()->user()->isAdmin())
+                            <a href="/contact-types/create" 
+                               class="inline-flex items-center gap-2 rounded-xl bg-uco-orange-500 px-5 py-3 text-sm font-semibold text-white shadow-md shadow-uco-orange-200 transition hover:-translate-y-0.5 hover:bg-uco-orange-600">
+                                <i class="bi bi-plus-circle"></i>
+                                Create Contact Type
+                            </a>
+                        @endif
+                    @endauth
+                </div>
             </div>
-            @auth
-                @if(auth()->user()->isAdmin())
-                    <a href="/contact-types/create" 
-                       class="inline-flex items-center px-4 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                        </svg>
-                        Create Contact Type
-                    </a>
-                @endif
-            @endauth
-        </div>
+        </section>
 
         {{-- Contact Types Table Card --}}
         <div class="bg-white border border-gray-200 rounded-xl overflow-hidden">

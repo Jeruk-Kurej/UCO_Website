@@ -426,7 +426,7 @@
                 {{-- Description --}}
                 <div>
                     <h4 class="text-sm font-bold text-soft-gray-900 uppercase tracking-wider mb-3">About This Business</h4>
-                    <p class="text-base text-soft-gray-700 leading-relaxed max-w-4xl">{{ $business->description }}</p>
+                    <p class="text-base text-soft-gray-700 leading-relaxed w-full max-w-[1600px] 2xl:max-w-[1720px]">{{ $business->description }}</p>
 
                     @if($business->legal_document_path || $business->certification_path)
                         <div class="mt-6 pt-5 border-t border-soft-gray-100 flex flex-col sm:flex-row gap-4">
