@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreBusinessRequest;
+use App\Http\Requests\UpdateBusinessRequest;
 use App\Models\Business;
 use App\Models\User;
 use App\Models\BusinessType;
@@ -41,24 +43,23 @@ class BusinessController extends Controller
         $search = $request->get('search');
         $query = Business::with(['user', 'businessType', 'products', 'photos']);
         
-        // Apply search filter
+        // Optimize search filtering via JOIN instead of slow correlated Subqueries (orWhereHas)
         if ($search) {
-            $query->where(function($q) use ($search) {
-                $q->where('name', 'LIKE', "%{$search}%")
-                  ->orWhere('description', 'LIKE', "%{$search}%")
-                  ->orWhereHas('user', function($userQuery) use ($search) {
-                      $userQuery->where('name', 'LIKE', "%{$search}%");
-                  })
-                  ->orWhereHas('businessType', function($typeQuery) use ($search) {
-                      $typeQuery->where('name', 'LIKE', "%{$search}%");
+            $query->select('businesses.*')
+                  ->leftJoin('users', 'businesses.user_id', '=', 'users.id')
+                  ->leftJoin('business_types', 'businesses.business_type_id', '=', 'business_types.id')
+                  ->where(function($q) use ($search) {
+                      $q->where('businesses.name', 'LIKE', "%{$search}%")
+                        ->orWhere('businesses.description', 'LIKE', "%{$search}%")
+                        ->orWhere('users.name', 'LIKE', "%{$search}%")
+                        ->orWhere('business_types.name', 'LIKE', "%{$search}%");
                   });
-            });
         }
         
         // Filter by business type id if provided
         $type = $request->get('type');
         if ($type) {
-            $query->where('business_type_id', $type);
+            $query->where('businesses.business_type_id', $type);
         }
         
         // Filter for "My Businesses" if query param present
@@ -66,14 +67,15 @@ class BusinessController extends Controller
             /** @var User $user */
             $user = Auth::user();
             $query->where(function ($ownerQuery) use ($user) {
-                $ownerQuery->where('user_id', $user->id)
+                // Pre-pend 'businesses.' since we joined tables to prevent ambiguous column errors
+                $ownerQuery->where('businesses.user_id', $user->id)
                     ->orWhereHas('owners', function ($pivotOwnerQuery) use ($user) {
                         $pivotOwnerQuery->where('users.id', $user->id);
                     });
             });
         }
         
-        $businesses = $query->latest()->paginate(12);
+        $businesses = $query->orderBy('businesses.created_at', 'desc')->paginate(12);
         
         // Prepare my businesses for current user - independent of pagination
         $myBusinesses = collect();
@@ -123,81 +125,10 @@ class BusinessController extends Controller
     /**
      * Store a newly created business in storage.
      */
-    public function store(Request $request)
+    public function store(StoreBusinessRequest $request)
     {
-        $this->authorize('create', Business::class);
-
         try {
-            $validated = $request->validate([
-                // Basic fields
-                'name' => 'required|string|max:255',
-                'description' => 'required|string|max:1000',
-                'business_type_id' => 'required|exists:business_types,id',
-                'business_mode' => 'required|in:product,service,both',
-                'user_id' => 'nullable|exists:users,id',
-                'owner_ids' => 'nullable|array',
-                'owner_ids.*' => 'integer|exists:users,id',
-                'position' => 'nullable|string|max:255',
-
-                // Location
-                'city' => 'nullable|string|max:255',
-                'province' => 'nullable|string|max:255|exists:provinces,name',
-                'address' => 'nullable|string',
-
-                // Enhanced fields
-                'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:10240',
-                'established_date' => 'nullable|date',
-                'employee_count' => 'nullable|integer|min:0',
-                'revenue_range' => 'nullable|in:Mikro: <= Rp 300 Juta,Kecil: > Rp 300 Juta - Rp 2,5 Milyar,Menengah: > Rp 2,5 Milyar - Rp 50 Milyar,Besar: > Rp 50 Milyar',
-                'is_from_college_project' => 'nullable|boolean',
-                'is_continued_after_graduation' => 'nullable|boolean',
-                'legal_document_path' => 'nullable|file|mimes:pdf|max:5120',
-                'certification_path' => 'nullable|file|mimes:pdf|max:5120',
-                'legal_documents.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
-                'product_certifications.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
-                'business_challenges' => 'nullable|array',
-
-                // Additional data fields (stored in additional_data JSON)
-                'phone' => 'nullable|string|max:50',
-                'email' => 'nullable|email|max:255',
-                'website' => 'nullable|url|max:255',
-                'instagram_handle' => 'nullable|string|max:100',
-                'whatsapp_number' => 'nullable|string|max:50',
-                'product_name' => 'nullable|string|max:255',
-                'product_description' => 'nullable|string|max:2000',
-                'unique_value_proposition' => 'nullable|string|max:1000',
-                'target_market' => 'nullable|string|max:255',
-                'customer_base_size' => 'nullable|integer|min:0',
-                'establishment_date' => 'nullable|date',
-                'operational_status' => 'nullable|in:active,inactive,seasonal',
-
-                // Inline products/services
-                'products' => 'nullable|array',
-                'products.*.id' => 'nullable|integer',
-                'products.*.name' => 'nullable|string|max:255',
-                'products.*.description' => 'nullable|string|max:2000',
-                'products.*.price' => 'nullable|numeric|min:0',
-                'services' => 'nullable|array',
-                'services.*.id' => 'nullable|integer',
-                'services.*.name' => 'nullable|string|max:255',
-                'services.*.description' => 'nullable|string|max:2000',
-                'services.*.price_type' => 'nullable|string|max:255',
-                'services.*.price' => 'nullable|numeric|min:0',
-            ]);
-
-            if (!empty($validated['city']) && !empty($validated['province'])) {
-                $provinceId = Province::where('name', $validated['province'])->value('id');
-                $isValidCity = $provinceId
-                    ? Regency::where('province_id', $provinceId)->where('name', $validated['city'])->exists()
-                    : false;
-
-                if (!$isValidCity) {
-                    return back()->withErrors([
-                        'city' => 'Selected city does not belong to the selected province.'
-                    ])->withInput();
-                }
-            }
-
+            $validated = $request->validated();
             $user = $this->getAuthUser();
 
             // Automatically set user_id to current user unless admin specifies
@@ -213,27 +144,6 @@ class BusinessController extends Controller
                     ->unique()
                     ->values()
                     ->all();
-
-                if (!empty($selectedOwnerIds)) {
-                    $adminOwnerExists = User::whereIn('id', $selectedOwnerIds)
-                        ->where('role', 'admin')
-                        ->exists();
-
-                    if ($adminOwnerExists) {
-                        return back()->withErrors([
-                            'owner_ids' => 'Admin UCO tidak boleh menjadi owner business.'
-                        ])->withInput();
-                    }
-                }
-
-                if (isset($validated['user_id'])) {
-                    $ownerUser = User::find($validated['user_id']);
-                    if ($ownerUser?->role === 'admin') {
-                        return back()->withErrors([
-                            'user_id' => 'Admin UCO tidak boleh menjadi owner business.'
-                        ])->withInput();
-                    }
-                }
             }
 
             unset($validated['owner_ids']);
@@ -253,9 +163,6 @@ class BusinessController extends Controller
             if ($request->hasFile('legal_documents')) {
                 $businessSlug = $businessSlug ?? Str::slug($validated['name'], '_');
                 foreach ($request->file('legal_documents') as $index => $file) {
-                    if ($file->getSize() > 5120 * 1024) {
-                        return back()->withErrors(['legal_documents' => 'Each legal document must not be larger than 5MB.'])->withInput();
-                    }
                     $docNumber = $index + 1;
                     $docFilename = $businessSlug . '_legal_' . $docNumber . '_' . time() . '.' . $file->getClientOriginalExtension();
                     $path = $file->storeAs('businesses/legal-documents', $docFilename, config('filesystems.default'));
@@ -279,9 +186,6 @@ class BusinessController extends Controller
             if ($request->hasFile('product_certifications')) {
                 $businessSlug = $businessSlug ?? Str::slug($validated['name'], '_');
                 foreach ($request->file('product_certifications') as $index => $file) {
-                    if ($file->getSize() > 5120 * 1024) {
-                        return back()->withErrors(['product_certifications' => 'Each certification file must not be larger than 5MB.'])->withInput();
-                    }
                     $certNumber = $index + 1;
                     $certFilename = $businessSlug . '_cert_' . $certNumber . '_' . time() . '.' . $file->getClientOriginalExtension();
                     $path = $file->storeAs('businesses/certifications', $certFilename, config('filesystems.default'));
@@ -300,24 +204,9 @@ class BusinessController extends Controller
                 $validated['certification_path'] = $certPath;
             }
 
-            $productRows = $this->normalizeInlineRows($request->input('products', []), 'product');
-            $serviceRows = $this->normalizeInlineRows($request->input('services', []), 'service');
-
-            $inlineErrors = array_merge(
-                $this->validateInlineRows($productRows, 'product'),
-                $this->validateInlineRows($serviceRows, 'service')
-            );
-
-            if ($validated['business_mode'] === 'service' && !empty($productRows)) {
-                $inlineErrors['products'] = 'Business mode Service Only tidak boleh memiliki produk.';
-            }
-            if ($validated['business_mode'] === 'product' && !empty($serviceRows)) {
-                $inlineErrors['services'] = 'Business mode Product Only tidak boleh memiliki layanan.';
-            }
-
-            if (!empty($inlineErrors)) {
-                return back()->withErrors($inlineErrors)->withInput();
-            }
+            $productRows = $validated['products'] ?? [];
+            $serviceRows = $validated['services'] ?? [];
+            unset($validated['products'], $validated['services']);
 
             $business = Business::create($validated);
 
@@ -334,8 +223,6 @@ class BusinessController extends Controller
             return redirect()
                 ->route('businesses.show', $business)
                 ->with('success', 'Business created successfully!');
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            return back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
             return back()->withErrors(['error' => 'An error occurred while creating the business. Please try again.'])->withInput();
         }
@@ -410,104 +297,11 @@ class BusinessController extends Controller
     /**
      * Update the specified business in storage.
      */
-    public function update(Request $request, Business $business)
+    public function update(UpdateBusinessRequest $request, Business $business)
     {
-        $this->authorize('update', $business);
-
         try {
-            $validated = $request->validate([
-                // Basic fields
-                'name' => 'required|string|max:255',
-                'description' => 'required|string|max:1000',
-                'business_type_id' => 'required|exists:business_types,id',
-                'business_mode' => 'required|in:product,service,both',
-                'user_id' => 'nullable|exists:users,id',
-                'owner_ids' => 'nullable|array',
-                'owner_ids.*' => 'integer|exists:users,id',
-                'position' => 'nullable|string|max:255',
-
-                // Location
-                'city' => 'nullable|string|max:255',
-                'province' => 'nullable|string|max:255|exists:provinces,name',
-                'address' => 'nullable|string',
-
-                // Enhanced fields
-                'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:10240',
-                'established_date' => 'nullable|date',
-                'employee_count' => 'nullable|integer|min:0',
-                'revenue_range' => 'nullable|in:Mikro: <= Rp 300 Juta,Kecil: > Rp 300 Juta - Rp 2,5 Milyar,Menengah: > Rp 2,5 Milyar - Rp 50 Milyar,Besar: > Rp 50 Milyar',
-                'is_from_college_project' => 'nullable|boolean',
-                'is_continued_after_graduation' => 'nullable|boolean',
-                'legal_document_path' => 'nullable|file|mimes:pdf|max:5120',
-                'certification_path' => 'nullable|file|mimes:pdf|max:5120',
-                'legal_documents.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
-                'product_certifications.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
-                'business_challenges' => 'nullable|array',
-                'remove_legal_docs' => 'nullable|array',
-                'remove_certifications' => 'nullable|array',
-
-                // Additional data fields (stored in additional_data JSON)
-                'phone' => 'nullable|string|max:50',
-                'email' => 'nullable|email|max:255',
-                'website' => 'nullable|url|max:255',
-                'instagram_handle' => 'nullable|string|max:100',
-                'whatsapp_number' => 'nullable|string|max:50',
-                'product_name' => 'nullable|string|max:255',
-                'product_description' => 'nullable|string|max:2000',
-                'unique_value_proposition' => 'nullable|string|max:1000',
-                'target_market' => 'nullable|string|max:255',
-                'customer_base_size' => 'nullable|integer|min:0',
-                'establishment_date' => 'nullable|date',
-                'operational_status' => 'nullable|in:active,inactive,seasonal',
-
-                // Inline products/services
-                'products' => 'nullable|array',
-                'products.*.id' => 'nullable|integer',
-                'products.*.name' => 'nullable|string|max:255',
-                'products.*.description' => 'nullable|string|max:2000',
-                'products.*.price' => 'nullable|numeric|min:0',
-                'services' => 'nullable|array',
-                'services.*.id' => 'nullable|integer',
-                'services.*.name' => 'nullable|string|max:255',
-                'services.*.description' => 'nullable|string|max:2000',
-                'services.*.price_type' => 'nullable|string|max:255',
-                'services.*.price' => 'nullable|numeric|min:0',
-            ]);
-
-            if (!empty($validated['city']) && !empty($validated['province'])) {
-                $provinceId = Province::where('name', $validated['province'])->value('id');
-                $isValidCity = $provinceId
-                    ? Regency::where('province_id', $provinceId)->where('name', $validated['city'])->exists()
-                    : false;
-
-                if (!$isValidCity) {
-                    return back()->withErrors([
-                        'city' => 'Selected city does not belong to the selected province.'
-                    ])->withInput();
-                }
-            }
-
+            $validated = $request->validated();
             $user = $this->getAuthUser();
-
-            // Validate business mode change - prevent breaking changes
-            $hasProducts = $business->products()->count() > 0;
-            $hasServices = $business->services()->count() > 0;
-            
-            if ($validated['business_mode'] !== $business->business_mode) {
-                // Prevent changing to "service only" if products exist
-                if ($validated['business_mode'] === 'service' && $hasProducts) {
-                    return back()->withErrors([
-                        'business_mode' => 'Cannot change to Service Only while products exist. Delete products first or choose "Product & Service".'
-                    ])->withInput();
-                }
-                
-                // Prevent changing to "product only" if services exist
-                if ($validated['business_mode'] === 'product' && $hasServices) {
-                    return back()->withErrors([
-                        'business_mode' => 'Cannot change to Product Only while services exist. Delete services first or choose "Product & Service".'
-                    ])->withInput();
-                }
-            }
 
             // Only admin can change user_id
             if (!$user->isAdmin()) {
@@ -522,27 +316,6 @@ class BusinessController extends Controller
                     ->unique()
                     ->values()
                     ->all();
-
-                if (!empty($selectedOwnerIds)) {
-                    $adminOwnerExists = User::whereIn('id', $selectedOwnerIds)
-                        ->where('role', 'admin')
-                        ->exists();
-
-                    if ($adminOwnerExists) {
-                        return back()->withErrors([
-                            'owner_ids' => 'Admin UCO tidak boleh menjadi owner business.'
-                        ])->withInput();
-                    }
-                }
-
-                if (isset($validated['user_id'])) {
-                    $ownerUser = User::find($validated['user_id']);
-                    if ($ownerUser?->role === 'admin') {
-                        return back()->withErrors([
-                            'user_id' => 'Admin UCO tidak boleh menjadi owner business.'
-                        ])->withInput();
-                    }
-                }
             }
 
             unset($validated['owner_ids']);
@@ -550,10 +323,6 @@ class BusinessController extends Controller
             // Handle logo upload
             if ($request->hasFile('logo')) {
                 $logoFile = $request->file('logo');
-                if ($logoFile->getSize() > 2048 * 1024) {
-                    return back()->withErrors(['logo' => 'Logo must not be larger than 2MB.'])->withInput();
-                }
-                
                 // Delete old logo if exists
                 if ($business->logo_url && Storage::disk(config('filesystems.default'))->exists($business->logo_url)) {
                     Storage::disk(config('filesystems.default'))->delete($business->logo_url);
@@ -571,7 +340,7 @@ class BusinessController extends Controller
             // Remove selected documents
             if ($request->has('remove_legal_docs')) {
                 foreach ($request->remove_legal_docs as $index) {
-                        if (isset($currentLegalDocs[$index]['file_path'])) {
+                    if (isset($currentLegalDocs[$index]['file_path'])) {
                         Storage::disk(config('filesystems.default'))->delete($currentLegalDocs[$index]['file_path']);
                         unset($currentLegalDocs[$index]);
                     }
@@ -583,9 +352,6 @@ class BusinessController extends Controller
             if ($request->hasFile('legal_documents')) {
                 $businessSlug = Str::slug($business->name, '_');
                 foreach ($request->file('legal_documents') as $file) {
-                    if ($file->getSize() > 5120 * 1024) {
-                        return back()->withErrors(['legal_documents' => 'Each legal document must not be larger than 5MB.'])->withInput();
-                    }
                     $docNumber = count($currentLegalDocs) + 1;
                     $docFilename = $businessSlug . '_legal_' . $docNumber . '_' . time() . '.' . $file->getClientOriginalExtension();
                     $path = $file->storeAs('businesses/legal-documents', $docFilename, config('filesystems.default'));
@@ -619,7 +385,7 @@ class BusinessController extends Controller
             // Remove selected certifications
             if ($request->has('remove_certifications')) {
                 foreach ($request->remove_certifications as $index) {
-                        if (isset($currentCertifications[$index]['file_path'])) {
+                    if (isset($currentCertifications[$index]['file_path'])) {
                         Storage::disk(config('filesystems.default'))->delete($currentCertifications[$index]['file_path']);
                         unset($currentCertifications[$index]);
                     }
@@ -631,9 +397,6 @@ class BusinessController extends Controller
             if ($request->hasFile('product_certifications')) {
                 $businessSlug = $businessSlug ?? Str::slug($business->name, '_');
                 foreach ($request->file('product_certifications') as $file) {
-                    if ($file->getSize() > 5120 * 1024) {
-                        return back()->withErrors(['product_certifications' => 'Each certification file must not be larger than 5MB.'])->withInput();
-                    }
                     $certNumber = count($currentCertifications) + 1;
                     $certFilename = $businessSlug . '_cert_' . $certNumber . '_' . time() . '.' . $file->getClientOriginalExtension();
                     $path = $file->storeAs('businesses/certifications', $certFilename, config('filesystems.default'));
@@ -662,26 +425,11 @@ class BusinessController extends Controller
             }
 
             // Remove these from validated array
-            unset($validated['remove_legal_docs'], $validated['remove_certifications']);
+            unset($validated['remove_legal_docs'], $validated['remove_certifications'], $validated['remove_legal_document'], $validated['remove_certification']);
 
-            $productRows = $this->normalizeInlineRows($request->input('products', []), 'product');
-            $serviceRows = $this->normalizeInlineRows($request->input('services', []), 'service');
-
-            $inlineErrors = array_merge(
-                $this->validateInlineRows($productRows, 'product'),
-                $this->validateInlineRows($serviceRows, 'service')
-            );
-
-            if ($validated['business_mode'] === 'service' && !empty($productRows)) {
-                $inlineErrors['products'] = 'Business mode Service Only tidak boleh memiliki produk.';
-            }
-            if ($validated['business_mode'] === 'product' && !empty($serviceRows)) {
-                $inlineErrors['services'] = 'Business mode Product Only tidak boleh memiliki layanan.';
-            }
-
-            if (!empty($inlineErrors)) {
-                return back()->withErrors($inlineErrors)->withInput();
-            }
+            $productRows = $validated['products'] ?? [];
+            $serviceRows = $validated['services'] ?? [];
+            unset($validated['products'], $validated['services']);
 
             // Move extra fields into additional_data JSON (merge with existing)
             $additionalDataKeys = ['phone', 'email', 'website', 'instagram_handle', 'whatsapp_number',
@@ -711,8 +459,6 @@ class BusinessController extends Controller
             return redirect()
                 ->route('businesses.show', $business)
                 ->with('success', 'Business updated successfully!');
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            return back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
             return back()->withErrors(['error' => 'An error occurred while updating the business. Please try again.'])->withInput();
         }
@@ -821,86 +567,7 @@ class BusinessController extends Controller
         return response()->json($regencies);
     }
 
-    /**
-     * Normalize rows from inline product/service form arrays.
-     *
-     * @param array<int, array<string, mixed>>|mixed $rows
-     * @return array<int, array<string, mixed>>
-     */
-    private function normalizeInlineRows($rows, string $type): array
-    {
-        if (!is_array($rows)) {
-            return [];
-        }
 
-        $normalized = [];
-
-        foreach ($rows as $row) {
-            if (!is_array($row)) {
-                continue;
-            }
-
-            $name = isset($row['name']) ? trim((string) $row['name']) : '';
-            $description = isset($row['description']) ? trim((string) $row['description']) : '';
-            $priceRaw = $row['price'] ?? null;
-            $price = ($priceRaw === '' || $priceRaw === null) ? null : $priceRaw;
-            $id = isset($row['id']) && is_numeric($row['id']) ? (int) $row['id'] : null;
-
-            $isFilled = $name !== '' || $description !== '' || $price !== null;
-            if ($type === 'service') {
-                $priceType = isset($row['price_type']) ? trim((string) $row['price_type']) : '';
-                $isFilled = $isFilled || $priceType !== '';
-            }
-
-            if (!$isFilled) {
-                continue;
-            }
-
-            $payload = [
-                'id' => $id,
-                'name' => $name,
-                'description' => $description,
-                'price' => $price,
-            ];
-
-            if ($type === 'service') {
-                $payload['price_type'] = isset($row['price_type']) ? trim((string) $row['price_type']) : '';
-            }
-
-            $normalized[] = $payload;
-        }
-
-        return $normalized;
-    }
-
-    /**
-     * @param array<int, array<string, mixed>> $rows
-     * @return array<string, string>
-     */
-    private function validateInlineRows(array $rows, string $type): array
-    {
-        $errors = [];
-
-        foreach ($rows as $index => $row) {
-            if (empty($row['name'])) {
-                $errors["{$type}s.{$index}.name"] = ucfirst($type) . ' #' . ($index + 1) . ': nama wajib diisi.';
-            }
-
-            if (empty($row['description'])) {
-                $errors["{$type}s.{$index}.description"] = ucfirst($type) . ' #' . ($index + 1) . ': deskripsi wajib diisi.';
-            }
-
-            if ($row['price'] === null || $row['price'] === '') {
-                $errors["{$type}s.{$index}.price"] = ucfirst($type) . ' #' . ($index + 1) . ': harga wajib diisi.';
-            }
-
-            if ($type === 'service' && empty($row['price_type'])) {
-                $errors["services.{$index}.price_type"] = 'Service #' . ($index + 1) . ': tipe harga wajib diisi.';
-            }
-        }
-
-        return $errors;
-    }
 
     /**
      * @param array<int, array<string, mixed>> $rows

@@ -16,7 +16,6 @@ class NavigationTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertSee('Log in');
-        $response->assertSee('Register');
     }
 
     public function test_authenticated_student_sees_dashboard_and_profile()

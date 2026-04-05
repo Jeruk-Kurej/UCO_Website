@@ -219,8 +219,15 @@ class User extends Authenticatable
      */
     public function totalBusinessesCount(): int
     {
-        return $this->ownedBusinesses()->count() + 
-               $this->currentEmployments()->count();
+        $ownedCount = $this->businesses_count ?? (
+            $this->relationLoaded('businesses') ? $this->businesses->count() : $this->businesses()->count()
+        );
+
+        $involvedCount = $this->current_employments_count ?? (
+            $this->relationLoaded('currentEmployments') ? $this->currentEmployments->count() : $this->currentEmployments()->count()
+        );
+
+        return $ownedCount + $involvedCount;
     }
 
     /**
@@ -237,7 +244,7 @@ class User extends Authenticatable
      */
     public function hasBusiness(): bool
     {
-        return $this->businesses()->exists() || $this->ownerBusinesses()->exists();
+        return $this->totalBusinesses() > 0;
     }
 
     /**
@@ -245,7 +252,15 @@ class User extends Authenticatable
      */
     public function totalBusinesses(): int
     {
-        return $this->businesses()->count() + $this->ownerBusinesses()->count();
+        $directCount = $this->businesses_count ?? (
+            $this->relationLoaded('businesses') ? $this->businesses->count() : $this->businesses()->count()
+        );
+
+        $ownerPivotCount = $this->owner_businesses_count ?? (
+            $this->relationLoaded('ownerBusinesses') ? $this->ownerBusinesses->count() : $this->ownerBusinesses()->count()
+        );
+
+        return $directCount + $ownerPivotCount;
     }
 
     /**
