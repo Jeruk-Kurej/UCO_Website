@@ -206,9 +206,9 @@
                                 required
                                 data-selected-city="{{ $selectedCityName }}"
                                 data-selected-province-id="{{ $selectedProvinceId }}"
-                                class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('city') border-gray-200 @enderror transition"
+                                class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 disabled:bg-gray-50 disabled:text-gray-500 disabled:border-gray-200 disabled:shadow-inner disabled:cursor-not-allowed @error('city') border-gray-200 @enderror transition"
                                 {{ $selectedProvinceId ? '' : 'disabled' }}>
-                            <option value="">Pilih Kota/Kabupaten</option>
+                            <option value="">{{ $selectedProvinceId ? 'Pilih Kota/Kabupaten' : 'Pilih Provinsi terlebih dahulu' }}</option>
                             @if($selectedCityName)
                                 <option value="{{ $selectedCityName }}" selected>{{ $selectedCityName }}</option>
                             @endif
@@ -267,88 +267,12 @@
                     </div>
                 </div>
 
-                {{-- Logo Upload via Alpine.js --}}
-                <div x-data="{ 
-                        imagePreview: null,
-                        isDragging: false,
-                        fileSelected(event) {
-                            const file = event.target.files[0];
-                            if (file) {
-                                if(file.size > 10 * 1024 * 1024) {
-                                    alert('Logo must not be larger than 10MB.');
-                                    this.removeFile();
-                                    return;
-                                }
-                                const reader = new FileReader();
-                                reader.onload = (e) => { this.imagePreview = e.target.result; };
-                                reader.readAsDataURL(file);
-                            }
-                        },
-                        removeFile() {
-                            this.imagePreview = null;
-                            this.$refs.fileInput.value = '';
-                        },
-                        handleDrop(event) {
-                            this.isDragging = false;
-                            const file = event.dataTransfer.files[0];
-                            if (file) {
-                                this.$refs.fileInput.files = event.dataTransfer.files;
-                                this.fileSelected({ target: this.$refs.fileInput });
-                            }
-                        }
-                    }">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Logo Business</label>
-                    <div class="relative group mt-2" 
-                         @dragover.prevent="isDragging = true" 
-                         @dragleave.prevent="isDragging = false" 
-                         @drop.prevent="handleDrop($event)">
-                        
-                        <div class="flex flex-col sm:flex-row sm:items-center gap-4 mt-2 mb-4">
-                            <!-- Photo Preview Area -->
-                            <div class="flex items-center gap-3 p-3 bg-gray-50/80 border border-gray-200/60 rounded-xl" x-show="imagePreview">
-                                <template x-if="imagePreview">
-                                    <div class="flex flex-col items-center gap-1.5">
-                                        <span class="text-[10px] font-bold tracking-wider text-blue-500 uppercase">New</span>
-                                        <div class="relative group">
-                                            <div class="w-20 h-20 rounded-lg bg-blue-50 border-2 border-blue-400 flex items-center justify-center overflow-hidden shadow-md transition-all duration-300 p-1.5">
-                                                <img :src="imagePreview" class="max-w-full max-h-full object-contain">
-                                            </div>
-                                            <button type="button" @click="removeFile()" 
-                                                    class="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white p-1 rounded-full shadow-lg transform transition-all hover:scale-110 focus:outline-none" 
-                                                    title="Cancel new selection">
-                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
-                                                </svg>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </template>
-                            </div>
-
-                            <!-- Upload Actions -->
-                            <div class="flex-1 flex flex-col items-start gap-2"
-                                 @dragover.prevent="isDragging = true" 
-                                 @dragleave.prevent="isDragging = false" 
-                                 @drop.prevent="handleDrop($event)">
-                                <label for="logo" 
-                                       :class="isDragging ? 'bg-blue-50 border-blue-400' : 'bg-white hover:bg-gray-50 border-gray-300'"
-                                       class="cursor-pointer inline-flex items-center gap-2 px-5 py-2.5 border rounded-xl text-sm font-semibold text-gray-700 transition-all shadow-sm focus-within:ring-2 focus-within:ring-soft-gray-900 focus-within:border-soft-gray-900">
-                                    <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
-                                    </svg>
-                                    <span x-text="imagePreview ? 'Change Selection' : 'Upload Logo'"></span>
-                                    <input type="file" name="logo" id="logo" accept="image/*" class="sr-only" x-ref="fileInput" @change="fileSelected">
-                                </label>
-                                <div class="text-[11px] text-gray-500 font-medium">
-                                    <p>Click to select or drag & drop.</p>
-                                    <p>PNG, JPG, SVG up to 10MB.</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    @error('logo')
-                        <p class="mb-2 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
+                {{-- Logo Upload --}}
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-4">Logo Business</label>
+                    
+                    <input type="file" name="logo" id="logo" accept="image/*" class="hidden">
+                    
                     <x-image-preview
                         input-id="logo"
                         preview-id="create-logo-preview"
@@ -360,6 +284,10 @@
                         new-label="Selected"
                         hint="PNG, JPG, SVG — max 2MB"
                     />
+                    
+                    @error('logo')
+                        <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
                 </div>
 
                 {{-- Website --}}
@@ -793,13 +721,13 @@
         let serviceIndex = 0;
 
         async function loadRegenciesByProvince(provinceId, citySelect, selectedCity = null) {
-            citySelect.innerHTML = '<option value="">Pilih Kota/Kabupaten</option>';
-
             if (!provinceId) {
+                citySelect.innerHTML = '<option value="">Pilih Provinsi terlebih dahulu</option>';
                 citySelect.disabled = true;
                 return;
             }
 
+            citySelect.innerHTML = '<option value="">Pilih Kota/Kabupaten</option>';
             citySelect.disabled = false;
 
             try {
@@ -1024,6 +952,9 @@
 
             bindMultiFileList('legal_documents', 'legalDocumentsList');
             bindMultiFileList('product_certifications', 'productCertificationsList');
+
+            // Initialize image preview for Logo
+            ucoInitImagePreview('logo', 'create-logo-preview', 2, true);
 
             const provinceSelect = document.getElementById('province');
             const citySelect = document.getElementById('city');

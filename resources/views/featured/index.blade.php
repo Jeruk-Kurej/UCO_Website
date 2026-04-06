@@ -169,14 +169,7 @@
                                     {{ $business->display_category ?? \Illuminate\Support\Str::limit($business->businessType->name ?? 'Business', 32) }}
                                 </span>
                             </div>
-                            @if($business->is_featured)
-                                <div class="absolute right-4 top-4">
-                                    <span class="inline-flex items-center gap-1 rounded-full bg-uco-orange-500/95 px-3 py-1 text-xs font-semibold text-white shadow-sm">
-                                        <i class="bi bi-star-fill text-[10px]"></i>
-                                        Featured
-                                    </span>
-                                </div>
-                            @endif
+
                         </div>
 
                         <div class="flex flex-1 flex-col justify-between space-y-4 p-5">

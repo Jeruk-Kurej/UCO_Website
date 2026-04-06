@@ -110,7 +110,7 @@
 
             <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
                 @forelse($businessTypes as $type)
-                    <article class="group rounded-2xl border border-soft-gray-200 bg-white p-5 shadow-sm transition duration-300 hover:-translate-y-1 hover:border-uco-orange-200 hover:shadow-lg reveal-on-scroll">
+                    <article class="group flex h-full flex-col rounded-2xl border border-soft-gray-200 bg-white p-5 shadow-sm transition duration-300 hover:-translate-y-1 hover:border-uco-orange-200 hover:shadow-lg reveal-on-scroll">
                         <div class="mb-4 flex items-start justify-between gap-3">
                             <div class="flex min-w-0 items-center gap-3">
                                 <div class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-uco-yellow-100 text-uco-yellow-700">
@@ -121,35 +121,24 @@
                                     <p class="text-xs text-soft-gray-500">Category</p>
                                 </div>
                             </div>
-                            <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold {{ $type->businesses_count > 0 ? 'bg-uco-orange-100 text-uco-orange-700' : 'bg-soft-gray-100 text-soft-gray-600' }}">
+                            <span class="inline-flex flex-shrink-0 items-center whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold {{ $type->businesses_count > 0 ? 'bg-uco-orange-100 text-uco-orange-700' : 'bg-soft-gray-100 text-soft-gray-600' }}">
                                 {{ $type->businesses_count ?? 0 }} business(es)
                             </span>
                         </div>
 
-                        <p class="line-clamp-2 text-sm leading-relaxed text-soft-gray-600">
+                        <p class="line-clamp-2 flex-1 text-sm leading-relaxed text-soft-gray-600">
                             {{ $type->description ?: 'No description provided for this business type yet.' }}
                         </p>
 
                         <div class="mt-5 flex flex-wrap items-center gap-2">
-                            <a href="{{ route('businesses.index', ['type' => $type->id]) }}"
-                               class="inline-flex items-center gap-2 rounded-xl bg-uco-orange-500 px-4 py-2 text-xs font-semibold text-white transition hover:bg-uco-orange-600">
-                                View Businesses
-                                <i class="bi bi-arrow-right"></i>
-                            </a>
-
                             <a href="{{ route('business-types.show', $type) }}"
-                               class="inline-flex items-center gap-2 rounded-xl border border-soft-gray-300 bg-white px-4 py-2 text-xs font-semibold text-soft-gray-700 transition hover:border-uco-yellow-300 hover:text-uco-yellow-700">
+                               class="inline-flex items-center gap-2 rounded-xl bg-uco-orange-500 px-4 py-2 text-xs font-semibold text-white transition hover:bg-uco-orange-600">
                                 Details
                                 <i class="bi bi-eye"></i>
                             </a>
 
                             @auth
                                 @if(auth()->user()->isAdmin())
-                                    <a href="{{ route('business-types.edit', $type) }}"
-                                       class="inline-flex items-center gap-2 rounded-xl border border-soft-gray-300 bg-white px-4 py-2 text-xs font-semibold text-soft-gray-700 transition hover:border-uco-orange-300 hover:text-uco-orange-600">
-                                        Edit
-                                        <i class="bi bi-pencil-square"></i>
-                                    </a>
 
                                     @if($type->businesses_count == 0)
                                         <form action="{{ route('business-types.destroy', $type) }}"
