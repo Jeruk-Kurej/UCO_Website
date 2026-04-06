@@ -145,15 +145,15 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:gap-8">
                 @foreach($featuredBusinesses as $business)
                     <a href="{{ route('businesses.show', $business) }}"
                        x-show="matches('{{ $business->business_mode }}', '{{ $business->business_type_id }}')"
                        x-transition:enter="transition ease-out duration-500"
                        x-transition:enter-start="opacity-0 translate-y-2"
                        x-transition:enter-end="opacity-100 translate-y-0"
-                       class="group overflow-hidden rounded-2xl border border-soft-gray-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:border-uco-orange-200 hover:shadow-xl reveal-on-scroll">
-                        <div class="relative h-56 overflow-hidden">
+                       class="group overflow-hidden rounded-2xl border border-soft-gray-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-uco-orange-300 hover:shadow-xl reveal-on-scroll flex flex-col">
+                        <div class="relative h-48 overflow-hidden sm:h-52">
                             @if($business->photos->first())
                                 <img src="{{ storage_image_url($business->photos->first()->photo_url, 'gallery_full') }}"
                                      alt="{{ $business->name }}"
@@ -179,10 +179,10 @@
                             @endif
                         </div>
 
-                        <div class="flex min-h-[180px] flex-col justify-between space-y-4 p-5">
+                        <div class="flex flex-1 flex-col justify-between space-y-4 p-5">
                             <div>
-                                <h3 class="line-clamp-1 text-xl font-bold text-soft-gray-900">{{ $business->name }}</h3>
-                                <p class="mt-2 line-clamp-2 text-sm leading-relaxed text-soft-gray-600">{{ $business->display_description }}</p>
+                                <h3 class="line-clamp-1 text-lg font-extrabold text-soft-gray-900 md:text-xl">{{ $business->name }}</h3>
+                                <p class="mt-2 line-clamp-3 text-sm leading-relaxed text-soft-gray-600">{{ $business->display_description }}</p>
                             </div>
 
                             <div class="flex items-center justify-between rounded-xl bg-soft-gray-50 px-3 py-2">
@@ -212,10 +212,19 @@
 
             <div x-show="filteredCount() === 0"
                  x-transition
-                 class="rounded-2xl border border-dashed border-soft-gray-300 bg-soft-gray-50 p-8 text-center text-soft-gray-600">
-                <div class="mb-2 text-uco-orange-500"><i class="bi bi-search text-2xl"></i></div>
-                <p class="font-semibold">No businesses match the selected filters.</p>
-                <p class="mt-1 text-sm">Try resetting to <span class="font-semibold">All Modes</span> and <span class="font-semibold">All Categories</span>.</p>
+                 style="display: none;"
+                 class="col-span-full flex flex-col items-center justify-center space-y-4 rounded-3xl border-2 border-dashed border-soft-gray-200 bg-soft-gray-50 p-12 text-center text-soft-gray-600 reveal-on-scroll">
+                <div class="flex h-16 w-16 items-center justify-center rounded-full bg-uco-orange-100 text-uco-orange-500">
+                    <i class="bi bi-search text-2xl"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-soft-gray-900">No businesses match your filters</h3>
+                    <p class="mt-1 text-sm">We couldn't find any ventures matching the selected mode and category.</p>
+                </div>
+                <button type="button" @click="selectedMode = 'all'; selectedType = 'all';" class="mt-2 inline-flex items-center gap-2 rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-soft-gray-700 shadow-sm ring-1 ring-inset ring-soft-gray-300 transition hover:bg-soft-gray-50">
+                    <i class="bi bi-arrow-counterclockwise"></i>
+                    Reset Filters
+                </button>
             </div>
         </section>
 
