@@ -1,5 +1,5 @@
 <x-app-layout>
-    <div class="w-full max-w-[1600px] 2xl:max-w-[1720px] mx-auto py-6 sm:py-12 px-4 sm:px-6 lg:px-8" x-data="{ activeTab: 'basic' }">
+    <div class="w-full max-w-[1600px] 2xl:max-w-[1720px] mx-auto py-6 sm:py-12 px-4 sm:px-6 lg:px-8" x-data="{ activeTab: 'basic', businessMode: '{{ old('business_mode', 'both') }}' }">
         
         {{-- Success/Error Messages --}}
         @if(session('success'))
@@ -140,6 +140,7 @@
                         <select name="business_mode" 
                                 id="business_mode"
                                 required
+                                x-model="businessMode"
                                 class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('business_mode') border-gray-200 @enderror transition">
                             <option value="">Pilih Jenis Offering</option>
                             <option value="product" {{ old('business_mode') == 'product' ? 'selected' : '' }}>Product Only</option>
@@ -385,17 +386,10 @@
             <div x-show="activeTab === 'products'" class="bg-white border-x border-b border-slate-200 rounded-b-xl shadow-sm p-8 space-y-5">
                 @php
                     $oldProducts = old('products', []);
-                    if (empty($oldProducts)) {
-                        $oldProducts = [['name' => '', 'description' => '', 'price' => '']];
-                    }
-
                     $oldServices = old('services', []);
-                    if (empty($oldServices)) {
-                        $oldServices = [['name' => '', 'description' => '', 'price_type' => 'fixed', 'price' => '']];
-                    }
                 @endphp
 
-                <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-4" x-show="['product', 'both'].includes(businessMode)">
                     <h3 class="text-sm font-semibold text-slate-700">Produk (bisa tambah banyak)</h3>
                     <p class="text-xs text-slate-500 mt-1">Tambahkan semua produk langsung di sini.</p>
 
@@ -427,7 +421,7 @@
                     <button type="button" onclick="addProductRow()" class="mt-3 px-4 py-2 bg-slate-100 text-gray-700 rounded-xl hover:bg-slate-200 transition text-sm font-medium">+ Tambah Produk</button>
                 </div>
 
-                <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-4" x-show="['service', 'both'].includes(businessMode)">
                     <h3 class="text-sm font-semibold text-slate-700">Layanan (bisa tambah banyak)</h3>
                     <p class="text-xs text-slate-500 mt-1">Tambahkan semua layanan langsung di sini.</p>
 

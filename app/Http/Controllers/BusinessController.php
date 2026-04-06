@@ -460,6 +460,7 @@ class BusinessController extends Controller
                 ->route('businesses.show', $business)
                 ->with('success', 'Business updated successfully!');
         } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Update error: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
             return back()->withErrors(['error' => 'An error occurred while updating the business. Please try again.'])->withInput();
         }
     }

@@ -1,9 +1,11 @@
 <x-app-layout>
-    <div class="w-full max-w-[1600px] 2xl:max-w-[1720px] mx-auto py-6 sm:py-12 px-4 sm:px-6 lg:px-8" x-data="{ activeTab: 'basic' }">
-        
+    <div class="w-full max-w-[1600px] 2xl:max-w-[1720px] mx-auto py-6 sm:py-12 px-4 sm:px-6 lg:px-8"
+        x-data="{ activeTab: 'basic', businessMode: '{{ old('business_mode', $business->business_mode ?? 'both') }}' }">
+
         {{-- Success/Error Messages --}}
-        @if(session('success'))
-            <div class="mb-6 bg-green-50 border border-green-200 text-green-800 px-4 sm:px-6 py-4 rounded-xl shadow-sm flex items-start gap-3">
+        @if (session('success'))
+            <div
+                class="mb-6 bg-green-50 border border-green-200 text-green-800 px-4 sm:px-6 py-4 rounded-xl shadow-sm flex items-start gap-3">
                 <i class="bi bi-check-circle-fill text-green-600 text-xl flex-shrink-0 mt-0.5"></i>
                 <div class="flex-1">
                     <p class="font-semibold">Success!</p>
@@ -11,38 +13,42 @@
                 </div>
             </div>
         @endif
-
-        @if($errors->any())
-            <div class="mb-6 bg-red-50 border border-red-200 text-red-800 px-6 py-4 rounded-xl shadow-sm">
-                <div class="flex items-start gap-3">
-                    <i class="bi bi-exclamation-triangle-fill text-red-600 text-xl flex-shrink-0 mt-0.5"></i>
-                    <div class="flex-1">
-                        <p class="font-semibold mb-2">Please fix the following errors:</p>
-                        <ul class="list-disc list-inside space-y-1 text-sm">
-                            @foreach($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
+        @if ($errors->any())
+            <div
+                class="mb-6 flex items-start gap-4 rounded-2xl border border-red-200 bg-red-50 p-4 text-red-800 shadow-sm">
+                <i class="bi bi-x-circle-fill mt-0.5 text-xl text-red-500"></i>
+                <div class="flex-1">
+                    <p class="font-bold text-red-900">Validasi Gagal</p>
+                    <ul class="mt-1 list-inside list-disc text-sm">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
                 </div>
             </div>
         @endif
 
         {{-- Page Header --}}
-        <div class="bg-gradient-to-br from-white via-uco-orange-50/30 to-uco-yellow-50/30 border border-slate-200 rounded-2xl shadow-sm px-4 sm:px-8 py-6 sm:py-8 mb-8">
+        <div
+            class="bg-gradient-to-br from-white via-uco-orange-50/30 to-uco-yellow-50/30 border border-slate-200 rounded-2xl shadow-sm px-4 sm:px-8 py-6 sm:py-8 mb-8">
             <div class="flex flex-col sm:flex-row sm:items-center gap-4">
-                <a href="{{ route('businesses.show', $business) }}" 
-                   class="group inline-flex items-center justify-center sm:justify-start gap-2.5 px-4 py-2.5 bg-white hover:bg-gray-900 border border-gray-200 hover:border-gray-900 text-gray-700 hover:text-white rounded-xl font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200 mb-4 sm:mb-0">
-                    <i class="bi bi-arrow-left text-base group-hover:-translate-x-0.5 transition-transform duration-200"></i>
+                <a href="{{ route('businesses.show', $business) }}"
+                    class="group inline-flex items-center justify-center sm:justify-start gap-2.5 px-4 py-2.5 bg-white hover:bg-gray-900 border border-gray-200 hover:border-gray-900 text-gray-700 hover:text-white rounded-xl font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200 mb-4 sm:mb-0">
+                    <i
+                        class="bi bi-arrow-left text-base group-hover:-translate-x-0.5 transition-transform duration-200"></i>
                     <span>Back</span>
                 </a>
                 <div class="flex-1 text-center sm:text-left">
-                    <p class="text-xs uppercase tracking-widest font-semibold text-uco-orange-600">Business Management</p>
+                    <p class="text-xs uppercase tracking-widest font-semibold text-uco-orange-600">Business Management
+                    </p>
                     <h1 class="text-2xl sm:text-3xl font-bold text-slate-800 mt-1">Edit Business</h1>
                     <p class="text-slate-600 mt-2 text-sm sm:text-base">{{ $business->name }}</p>
                     <div class="mt-3 flex flex-wrap gap-2 justify-center sm:justify-start">
-                        <span class="inline-flex items-center px-3 py-1 rounded-lg text-xs font-semibold bg-uco-orange-100 text-uco-orange-700">{{ $business->businessType->name ?? 'Business Type' }}</span>
-                        <span class="inline-flex items-center px-3 py-1 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700">Mode: {{ ucfirst($business->business_mode ?? 'unknown') }}</span>
+                        <span
+                            class="inline-flex items-center px-3 py-1 rounded-lg text-xs font-semibold bg-uco-orange-100 text-uco-orange-700">{{ $business->businessType->name ?? 'Business Type' }}</span>
+                        <span
+                            class="inline-flex items-center px-3 py-1 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700">Mode:
+                            {{ ucfirst($business->business_mode ?? 'unknown') }}</span>
                     </div>
                 </div>
             </div>
@@ -51,55 +57,60 @@
         {{-- Tab Navigation --}}
         <div class="bg-white border border-slate-200 rounded-2xl shadow-sm mb-0 overflow-hidden">
             <div class="grid grid-cols-2 sm:grid-cols-4 bg-slate-50/70 border-b border-slate-200">
-                <button type="button" 
-                        @click="activeTab = 'basic'"
-                        :class="activeTab === 'basic' ? 'bg-white text-uco-orange-700 font-semibold shadow-inner border-b-2 border-uco-orange-500' : 'text-slate-500 hover:text-slate-700'"
-                        class="px-4 sm:px-6 py-4 text-xs sm:text-sm transition-colors whitespace-nowrap">
+                <button type="button" @click="activeTab = 'basic'"
+                    :class="activeTab === 'basic' ?
+                        'bg-white text-uco-orange-700 font-semibold shadow-inner border-b-2 border-uco-orange-500' :
+                        'text-slate-500 hover:text-slate-700'"
+                    class="px-4 sm:px-6 py-4 text-xs sm:text-sm transition-colors whitespace-nowrap">
                     Informasi Dasar
                 </button>
-                <button type="button" 
-                        @click="activeTab = 'products'"
-                        :class="activeTab === 'products' ? 'bg-white text-blue-700 font-semibold shadow-inner border-b-2 border-blue-500' : 'text-slate-500 hover:text-slate-700'"
-                        class="px-4 sm:px-6 py-4 text-xs sm:text-sm transition-colors whitespace-nowrap">
+                <button type="button" @click="activeTab = 'products'"
+                    :class="activeTab === 'products' ?
+                        'bg-white text-blue-700 font-semibold shadow-inner border-b-2 border-blue-500' :
+                        'text-slate-500 hover:text-slate-700'"
+                    class="px-4 sm:px-6 py-4 text-xs sm:text-sm transition-colors whitespace-nowrap">
                     Produk & Layanan
                 </button>
-                <button type="button" 
-                        @click="activeTab = 'development'"
-                        :class="activeTab === 'development' ? 'bg-white text-purple-700 font-semibold shadow-inner border-b-2 border-purple-500' : 'text-slate-500 hover:text-slate-700'"
-                        class="px-4 sm:px-6 py-4 text-xs sm:text-sm transition-colors whitespace-nowrap">
+                <button type="button" @click="activeTab = 'development'"
+                    :class="activeTab === 'development' ?
+                        'bg-white text-purple-700 font-semibold shadow-inner border-b-2 border-purple-500' :
+                        'text-slate-500 hover:text-slate-700'"
+                    class="px-4 sm:px-6 py-4 text-xs sm:text-sm transition-colors whitespace-nowrap">
                     Perkembangan Business
                 </button>
-                <button type="button" 
-                        @click="activeTab = 'documents'"
-                        :class="activeTab === 'documents' ? 'bg-white text-emerald-700 font-semibold shadow-inner border-b-2 border-emerald-500' : 'text-slate-500 hover:text-slate-700'"
-                        class="px-4 sm:px-6 py-4 text-xs sm:text-sm transition-colors whitespace-nowrap">
+                <button type="button" @click="activeTab = 'documents'"
+                    :class="activeTab === 'documents' ?
+                        'bg-white text-emerald-700 font-semibold shadow-inner border-b-2 border-emerald-500' :
+                        'text-slate-500 hover:text-slate-700'"
+                    class="px-4 sm:px-6 py-4 text-xs sm:text-sm transition-colors whitespace-nowrap">
                     Dokumen & Sertifikasi
                 </button>
             </div>
         </div>
 
-        <form method="POST" action="{{ route('businesses.update', $business) }}" enctype="multipart/form-data" id="businessEditForm">
+        <form method="POST" action="{{ route('businesses.update', $business) }}" enctype="multipart/form-data"
+            id="businessEditForm">
             @csrf
             @method('PUT')
 
             {{-- TAB 1: BASIC INFORMATION --}}
-            <div x-show="activeTab === 'basic'" class="bg-white border-x border-b border-slate-200 rounded-b-2xl shadow-sm p-8 space-y-5">
-                <div class="rounded-xl border border-uco-orange-200 bg-uco-orange-50 px-4 py-3 text-sm text-uco-orange-800">
+            <div x-show="activeTab === 'basic'"
+                class="bg-white border-x border-b border-slate-200 rounded-b-2xl shadow-sm p-8 space-y-5">
+                <div
+                    class="rounded-xl border border-uco-orange-200 bg-uco-orange-50 px-4 py-3 text-sm text-uco-orange-800">
                     <p class="font-semibold">Informasi Dasar</p>
-                    <p class="text-xs mt-0.5">Lengkapi identitas business agar mudah ditemukan dan dipahami pengguna.</p>
+                    <p class="text-xs mt-0.5">Lengkapi identitas business agar mudah ditemukan dan dipahami pengguna.
+                    </p>
                 </div>
                 {{-- Business Name --}}
                 <div>
                     <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
                         Nama Business <span class="text-red-500">*</span>
                     </label>
-                    <input type="text" 
-                           name="name" 
-                           id="name" 
-                           value="{{ old('name', $business->name) }}"
-                           required
-                           class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('name') border-gray-200 @enderror transition"
-                           placeholder="e.g., Warung Kopi Senja">
+                    <input type="text" name="name" id="name" value="{{ old('name', $business->name) }}"
+                        required
+                        class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('name') border-gray-200 @enderror transition"
+                        placeholder="e.g., Warung Kopi Senja">
                     @error('name')
                         <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -110,12 +121,10 @@
                     <label for="position" class="block text-sm font-medium text-gray-700 mb-2">
                         Posisi Anda
                     </label>
-                    <input type="text" 
-                           name="position" 
-                           id="position" 
-                           value="{{ old('position', $business->position) }}"
-                           class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('position') border-gray-200 @enderror transition"
-                           placeholder="e.g., CEO, Co-Founder, Marketing Manager, Staff">
+                    <input type="text" name="position" id="position"
+                        value="{{ old('position', $business->position) }}"
+                        class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('position') border-gray-200 @enderror transition"
+                        placeholder="e.g., CEO, Co-Founder, Marketing Manager, Staff">
                     @error('position')
                         <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -127,13 +136,12 @@
                         <label for="business_type_id" class="block text-sm font-medium text-gray-700 mb-2">
                             Kategori Business <span class="text-red-500">*</span>
                         </label>
-                        <select name="business_type_id" 
-                                id="business_type_id"
-                                required
-                                class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('business_type_id') border-gray-200 @enderror transition">
+                        <select name="business_type_id" id="business_type_id" required
+                            class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('business_type_id') border-gray-200 @enderror transition">
                             <option value="">Pilih Kategori</option>
-                            @foreach($businessTypes as $type)
-                                <option value="{{ $type->id }}" {{ (old('business_type_id', $business->business_type_id) == $type->id || $business->business_type_id == $type->id) ? 'selected' : '' }}>
+                            @foreach ($businessTypes as $type)
+                                <option value="{{ $type->id }}"
+                                    {{ old('business_type_id', $business->business_type_id) == $type->id || $business->business_type_id == $type->id ? 'selected' : '' }}>
                                     {{ $type->name }}
                                 </option>
                             @endforeach
@@ -147,14 +155,19 @@
                         <label for="business_mode" class="block text-sm font-medium text-gray-700 mb-2">
                             Jenis Offering <span class="text-red-500">*</span>
                         </label>
-                        <select name="business_mode" 
-                                id="business_mode"
-                                required
-                                class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('business_mode') border-gray-200 @enderror transition">
+                        <select name="business_mode" id="business_mode" required
+                            x-model="businessMode"
+                            class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('business_mode') border-gray-200 @enderror transition">
                             <option value="">Pilih Jenis Offering</option>
-                            <option value="product" {{ (old('business_mode', $business->business_mode) == 'product' || $business->business_mode == 'product') ? 'selected' : '' }}>Product Only</option>
-                            <option value="service" {{ (old('business_mode', $business->business_mode) == 'service' || $business->business_mode == 'service') ? 'selected' : '' }}>Service Only</option>
-                            <option value="both" {{ (old('business_mode', $business->business_mode) == 'both' || $business->business_mode == 'both') ? 'selected' : '' }}>Product & Service</option>
+                            <option value="product"
+                                {{ old('business_mode', $business->business_mode) == 'product' || $business->business_mode == 'product' ? 'selected' : '' }}>
+                                Product Only</option>
+                            <option value="service"
+                                {{ old('business_mode', $business->business_mode) == 'service' || $business->business_mode == 'service' ? 'selected' : '' }}>
+                                Service Only</option>
+                            <option value="both"
+                                {{ old('business_mode', $business->business_mode) == 'both' || $business->business_mode == 'both' ? 'selected' : '' }}>
+                                Product & Service</option>
                         </select>
                         @error('business_mode')
                             <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
@@ -167,13 +180,9 @@
                     <label for="description" class="block text-sm font-medium text-gray-700 mb-2">
                         Deskripsi <span class="text-red-500">*</span>
                     </label>
-                    <textarea name="description" 
-                              id="description" 
-                              rows="4"
-                              maxlength="1000"
-                              required
-                              class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('description') border-gray-200 @enderror transition"
-                              placeholder="Deskripsikan business Anda...">{{ old('description', $business->description) }}</textarea>
+                    <textarea name="description" id="description" rows="4" maxlength="1000" required
+                        class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('description') border-gray-200 @enderror transition"
+                        placeholder="Deskripsikan business Anda...">{{ old('description', $business->description) }}</textarea>
                     <p class="mt-1 text-xs text-gray-500">Max 1000 characters.</p>
                     @error('description')
                         <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
@@ -183,7 +192,9 @@
                 {{-- Location Fields --}}
                 @php
                     $selectedProvinceName = old('province', $business->province);
-                    $selectedProvinceId = $selectedProvinceName ? optional($provinces->firstWhere('name', $selectedProvinceName))->id : null;
+                    $selectedProvinceId = $selectedProvinceName
+                        ? optional($provinces->firstWhere('name', $selectedProvinceName))->id
+                        : null;
                     $selectedCityName = old('city', $business->city);
                 @endphp
                 <div class="grid md:grid-cols-2 gap-5">
@@ -191,13 +202,12 @@
                         <label for="province" class="block text-sm font-medium text-gray-700 mb-2">
                             Provinsi <span class="text-red-500">*</span>
                         </label>
-                        <select name="province"
-                               id="province"
-                               required
-                               class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('province') border-gray-200 @enderror transition">
+                        <select name="province" id="province" required
+                            class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('province') border-gray-200 @enderror transition">
                             <option value="">Pilih Provinsi</option>
-                            @foreach($provinces as $province)
-                                <option value="{{ $province->name }}" data-id="{{ $province->id }}" {{ old('province', $business->province) === $province->name ? 'selected' : '' }}>
+                            @foreach ($provinces as $province)
+                                <option value="{{ $province->name }}" data-id="{{ $province->id }}"
+                                    {{ old('province', $business->province) === $province->name ? 'selected' : '' }}>
                                     {{ $province->name }}
                                 </option>
                             @endforeach
@@ -211,15 +221,14 @@
                         <label for="city" class="block text-sm font-medium text-gray-700 mb-2">
                             Kota <span class="text-red-500">*</span>
                         </label>
-                        <select name="city"
-                                id="city"
-                                required
-                                data-selected-city="{{ $selectedCityName }}"
-                                data-selected-province-id="{{ $selectedProvinceId }}"
-                                class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 disabled:bg-gray-50 disabled:text-gray-500 disabled:border-gray-200 disabled:shadow-inner disabled:cursor-not-allowed @error('city') border-gray-200 @enderror transition"
-                                {{ $selectedProvinceId ? '' : 'disabled' }}>
-                            <option value="">{{ $selectedProvinceId ? 'Pilih Kota/Kabupaten' : 'Pilih Provinsi terlebih dahulu' }}</option>
-                            @if($selectedCityName)
+                        <select name="city" id="city" required data-selected-city="{{ $selectedCityName }}"
+                            data-selected-province-id="{{ $selectedProvinceId }}"
+                            class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 disabled:bg-gray-50 disabled:text-gray-500 disabled:border-gray-200 disabled:shadow-inner disabled:cursor-not-allowed @error('city') border-gray-200 @enderror transition"
+                            {{ $selectedProvinceId ? '' : 'disabled' }}>
+                            <option value="">
+                                {{ $selectedProvinceId ? 'Pilih Kota/Kabupaten' : 'Pilih Provinsi terlebih dahulu' }}
+                            </option>
+                            @if ($selectedCityName)
                                 <option value="{{ $selectedCityName }}" selected>{{ $selectedCityName }}</option>
                             @endif
                         </select>
@@ -234,11 +243,9 @@
                     <label for="address" class="block text-sm font-medium text-gray-700 mb-2">
                         Alamat Lengkap
                     </label>
-                    <textarea name="address" 
-                              id="address" 
-                              rows="3"
-                              class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('address') border-gray-200 @enderror transition"
-                              placeholder="Alamat lengkap business...">{{ old('address', $business->address) }}</textarea>
+                    <textarea name="address" id="address" rows="3"
+                        class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('address') border-gray-200 @enderror transition"
+                        placeholder="Alamat lengkap business...">{{ old('address', $business->address) }}</textarea>
                     @error('address')
                         <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -250,12 +257,10 @@
                         <label for="phone" class="block text-sm font-medium text-gray-700 mb-2">
                             Nomor Telepon
                         </label>
-                        <input type="text" 
-                               name="phone" 
-                               id="phone" 
-                               value="{{ old('phone', $business->phone) }}"
-                               class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('phone') border-gray-200 @enderror transition"
-                               placeholder="e.g., 0812-3456-7890">
+                        <input type="text" name="phone" id="phone"
+                            value="{{ old('phone', $business->phone) }}"
+                            class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('phone') border-gray-200 @enderror transition"
+                            placeholder="e.g., 0812-3456-7890">
                         @error('phone')
                             <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
                         @enderror
@@ -265,12 +270,10 @@
                         <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
                             Email
                         </label>
-                        <input type="email" 
-                               name="email" 
-                               id="email" 
-                               value="{{ old('email', $business->email) }}"
-                               class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('email') border-gray-200 @enderror transition"
-                               placeholder="business@example.com">
+                        <input type="email" name="email" id="email"
+                            value="{{ old('email', $business->email) }}"
+                            class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('email') border-gray-200 @enderror transition"
+                            placeholder="business@example.com">
                         @error('email')
                             <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
                         @enderror
@@ -280,24 +283,16 @@
                 {{-- Logo Upload --}}
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 mb-4">Logo Business</label>
-                    
+
                     <input type="file" name="logo" id="logo" accept="image/*" class="hidden">
-                    
+
                     @php
                         $currentLogoUrl = $business->logo ? storage_image_url($business->logo) : null;
                     @endphp
-                    <x-image-preview
-                        input-id="logo"
-                        preview-id="edit-logo-preview"
-                        :max-size="2"
-                        shape="square"
-                        :side-by-side="true"
-                        :current-image="$currentLogoUrl"
-                        current-label="Current"
-                        new-label="New Logo"
-                        hint="PNG, JPG, SVG — max 2MB"
-                    />
-                    
+                    <x-image-preview input-id="logo" preview-id="edit-logo-preview" :max-size="2" shape="square"
+                        :side-by-side="true" :current-image="$currentLogoUrl" current-label="Current" new-label="New Logo"
+                        hint="PNG, JPG, SVG — max 2MB" />
+
                     @error('logo')
                         <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -308,12 +303,10 @@
                     <label for="website" class="block text-sm font-medium text-gray-700 mb-2">
                         Website
                     </label>
-                    <input type="url" 
-                           name="website" 
-                           id="website" 
-                           value="{{ old('website', $business->website) }}"
-                           class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('website') border-gray-200 @enderror transition"
-                           placeholder="https://example.com">
+                    <input type="url" name="website" id="website"
+                        value="{{ old('website', $business->website) }}"
+                        class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('website') border-gray-200 @enderror transition"
+                        placeholder="https://example.com">
                     @error('website')
                         <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -327,12 +320,10 @@
                         </label>
                         <div class="relative">
                             <span class="absolute left-4 top-3.5 text-slate-400">@</span>
-                            <input type="text" 
-                                   name="instagram_handle" 
-                                   id="instagram_handle" 
-                                   value="{{ old('instagram_handle', $business->instagram_handle) }}"
-                                   class="block w-full pl-8 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('instagram_handle') border-gray-200 @enderror transition"
-                                   placeholder="username">
+                            <input type="text" name="instagram_handle" id="instagram_handle"
+                                value="{{ old('instagram_handle', $business->instagram_handle) }}"
+                                class="block w-full pl-8 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('instagram_handle') border-gray-200 @enderror transition"
+                                placeholder="username">
                         </div>
                         @error('instagram_handle')
                             <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
@@ -343,171 +334,201 @@
                         <label for="whatsapp_number" class="block text-sm font-medium text-gray-700 mb-2">
                             WhatsApp Number
                         </label>
-                        <input type="text" 
-                               name="whatsapp_number" 
-                               id="whatsapp_number" 
-                               value="{{ old('whatsapp_number', $business->whatsapp_number) }}"
-                               class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('whatsapp_number') border-gray-200 @enderror transition"
-                               placeholder="628123456789">
+                        <input type="text" name="whatsapp_number" id="whatsapp_number"
+                            value="{{ old('whatsapp_number', $business->whatsapp_number) }}"
+                            class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('whatsapp_number') border-gray-200 @enderror transition"
+                            placeholder="628123456789">
                         @error('whatsapp_number')
                             <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
                 </div>
 
-                @if(auth()->user()->role === 'admin')
-                @php
-                    $selectedOwnerIds = old(
-                        'owner_ids',
-                        $business->owners()->pluck('users.id')->all()
-                    );
-                @endphp
+                @if (auth()->user()->role === 'admin')
+                    @php
+                        $selectedOwnerIds = old('owner_ids', $business->owners()->pluck('users.id')->all());
+                    @endphp
 
-                <div>
-                    <label for="user_id" class="block text-sm font-medium text-gray-700 mb-2">
-                        Primary Owner (Admin Only)
-                    </label>
-                    <select name="user_id" id="user_id"
+                    <div>
+                        <label for="user_id" class="block text-sm font-medium text-gray-700 mb-2">
+                            Primary Owner (Admin Only)
+                        </label>
+                        <select name="user_id" id="user_id"
                             class="block w-full px-4 py-3 border rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('user_id') border-red-500 @else border-gray-200 @enderror transition">
-                        <option value="">Select primary owner</option>
-                        @foreach($users as $ownerUser)
-                            <option value="{{ $ownerUser->id }}" @selected(old('user_id', $business->user_id) == $ownerUser->id)>
-                                {{ $ownerUser->name }} ({{ $ownerUser->email }})
-                            </option>
-                        @endforeach
-                    </select>
-                    @error('user_id')
-                        <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
+                            <option value="">Select primary owner</option>
+                            @foreach ($users as $ownerUser)
+                                <option value="{{ $ownerUser->id }}" @selected(old('user_id', $business->user_id) == $ownerUser->id)>
+                                    {{ $ownerUser->name }} ({{ $ownerUser->email }})
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('user_id')
+                            <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
 
-                <div>
-                    <label for="owner_ids" class="block text-sm font-medium text-gray-700 mb-2">
-                        Additional Owners (Optional)
-                    </label>
-                    <select name="owner_ids[]" id="owner_ids" multiple
+                    <div>
+                        <label for="owner_ids" class="block text-sm font-medium text-gray-700 mb-2">
+                            Additional Owners (Optional)
+                        </label>
+                        <select name="owner_ids[]" id="owner_ids" multiple
                             class="block w-full px-4 py-3 border rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('owner_ids') border-red-500 @else border-gray-200 @enderror transition min-h-[140px]">
-                        @foreach($users as $ownerUser)
-                            <option value="{{ $ownerUser->id }}" @selected(in_array((string) $ownerUser->id, array_map('strval', $selectedOwnerIds), true))>
-                                {{ $ownerUser->name }} ({{ $ownerUser->email }})
-                            </option>
-                        @endforeach
-                    </select>
-                    <p class="mt-1 text-xs text-gray-500">Tip: Hold ⌘ / Ctrl to select multiple owners. Admin users are excluded automatically.</p>
-                    @error('owner_ids')
-                        <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
+                            @foreach ($users as $ownerUser)
+                                <option value="{{ $ownerUser->id }}" @selected(in_array((string) $ownerUser->id, array_map('strval', $selectedOwnerIds), true))>
+                                    {{ $ownerUser->name }} ({{ $ownerUser->email }})
+                                </option>
+                            @endforeach
+                        </select>
+                        <p class="mt-1 text-xs text-gray-500">Tip: Hold ⌘ / Ctrl to select multiple owners. Admin users
+                            are excluded automatically.</p>
+                        @error('owner_ids')
+                            <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
                 @endif
             </div>
 
             {{-- TAB 2: PRODUCTS & SERVICES --}}
-            <div x-show="activeTab === 'products'" class="bg-white border-x border-b border-slate-200 rounded-b-2xl shadow-sm p-8 space-y-5">
+            <div x-show="activeTab === 'products'"
+                class="bg-white border-x border-b border-slate-200 rounded-b-2xl shadow-sm p-8 space-y-5">
                 <div class="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
                     <p class="font-semibold">Produk & Layanan</p>
-                    <p class="text-xs mt-0.5">Tambahkan semua item penting di sini supaya halaman business Anda langsung lengkap.</p>
+                    <p class="text-xs mt-0.5">Tambahkan semua item penting di sini supaya halaman business Anda
+                        langsung lengkap.</p>
                 </div>
                 @php
                     $existingProducts = old('products');
                     if ($existingProducts === null) {
                         $existingProducts = $business->products
-                            ->map(fn($product) => [
-                                'id' => $product->id,
-                                'name' => $product->name,
-                                'description' => $product->description,
-                                'price' => $product->price,
-                            ])
+                            ->map(
+                                fn($product) => [
+                                    'id' => $product->id,
+                                    'name' => $product->name,
+                                    'description' => $product->description,
+                                    'price' => $product->price,
+                                ],
+                            )
                             ->toArray();
                     }
                     if (empty($existingProducts)) {
-                        $existingProducts = [['name' => '', 'description' => '', 'price' => '']];
+                        $existingProducts = [];
                     }
 
                     $existingServices = old('services');
                     if ($existingServices === null) {
                         $existingServices = $business->services
-                            ->map(fn($service) => [
-                                'id' => $service->id,
-                                'name' => $service->name,
-                                'description' => $service->description,
-                                'price_type' => $service->price_type,
-                                'price' => $service->price,
-                            ])
+                            ->map(
+                                fn($service) => [
+                                    'id' => $service->id,
+                                    'name' => $service->name,
+                                    'description' => $service->description,
+                                    'price_type' => $service->price_type,
+                                    'price' => $service->price,
+                                ],
+                            )
                             ->toArray();
                     }
                     if (empty($existingServices)) {
-                        $existingServices = [['name' => '', 'description' => '', 'price_type' => 'fixed', 'price' => '']];
+                        $existingServices = [];
                     }
                 @endphp
 
-                <div class="bg-gradient-to-br from-blue-50 to-white border border-blue-100 rounded-xl p-4">
+                <div class="bg-gradient-to-br from-blue-50 to-white border border-blue-100 rounded-xl p-4" x-show="['product', 'both'].includes(businessMode)">
                     <h3 class="text-sm font-semibold text-slate-700">Produk (bisa tambah banyak)</h3>
                     <p class="text-xs text-slate-500 mt-1">Edit semua produk langsung di sini.</p>
 
                     <div id="productsContainer" class="space-y-3 mt-4">
-                        @foreach($existingProducts as $index => $product)
+                        @foreach ($existingProducts as $index => $product)
                             <div class="product-item border border-slate-200 rounded-xl p-4 bg-white">
-                                <input type="hidden" name="products[{{ $index }}][id]" value="{{ $product['id'] ?? '' }}">
+                                <input type="hidden" name="products[{{ $index }}][id]"
+                                    value="{{ $product['id'] ?? '' }}">
                                 <div class="flex justify-between items-center mb-3">
                                     <p class="text-xs font-semibold text-slate-500">Produk #{{ $loop->iteration }}</p>
-                                    <button type="button" onclick="this.closest('.product-item').remove()" class="text-xs px-2 py-1 rounded-lg bg-red-50 text-red-600 hover:bg-red-100">Hapus</button>
+                                    <button type="button" onclick="this.closest('.product-item').remove()"
+                                        class="text-xs px-2 py-1 rounded-lg bg-red-50 text-red-600 hover:bg-red-100">Hapus</button>
                                 </div>
                                 <div class="grid md:grid-cols-2 gap-3">
                                     <div>
                                         <label class="block text-xs text-slate-600 mb-1">Nama Produk</label>
-                                        <input type="text" name="products[{{ $index }}][name]" value="{{ $product['name'] ?? '' }}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="Contoh: Kopi Arabica 250gr">
+                                        <input type="text" name="products[{{ $index }}][name]"
+                                            value="{{ $product['name'] ?? '' }}"
+                                            class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm"
+                                            placeholder="Contoh: Kopi Arabica 250gr">
                                     </div>
                                     <div>
                                         <label class="block text-xs text-slate-600 mb-1">Harga</label>
-                                        <input type="number" step="0.01" min="0" name="products[{{ $index }}][price]" value="{{ $product['price'] ?? '' }}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="50000">
+                                        <input type="number" step="0.01" min="0"
+                                            name="products[{{ $index }}][price]"
+                                            value="{{ $product['price'] ?? '' }}"
+                                            class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm"
+                                            placeholder="50000">
                                     </div>
                                 </div>
                                 <div class="mt-3">
                                     <label class="block text-xs text-slate-600 mb-1">Deskripsi</label>
-                                    <textarea name="products[{{ $index }}][description]" rows="2" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="Deskripsi produk...">{{ $product['description'] ?? '' }}</textarea>
+                                    <textarea name="products[{{ $index }}][description]" rows="2"
+                                        class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="Deskripsi produk...">{{ $product['description'] ?? '' }}</textarea>
                                 </div>
                             </div>
                         @endforeach
                     </div>
 
-                    <button type="button" onclick="addProductRow()" class="mt-3 px-4 py-2 bg-slate-100 text-gray-700 rounded-xl hover:bg-slate-200 transition text-sm font-medium">+ Tambah Produk</button>
+                    <button type="button" onclick="addProductRow()"
+                        class="mt-3 px-4 py-2 bg-slate-100 text-gray-700 rounded-xl hover:bg-slate-200 transition text-sm font-medium">+
+                        Tambah Produk</button>
                 </div>
 
-                <div class="bg-gradient-to-br from-emerald-50 to-white border border-emerald-100 rounded-xl p-4">
+                <div class="bg-gradient-to-br from-emerald-50 to-white border border-emerald-100 rounded-xl p-4" x-show="['service', 'both'].includes(businessMode)">
                     <h3 class="text-sm font-semibold text-slate-700">Layanan (bisa tambah banyak)</h3>
                     <p class="text-xs text-slate-500 mt-1">Edit semua layanan langsung di sini.</p>
 
                     <div id="servicesContainer" class="space-y-3 mt-4">
-                        @foreach($existingServices as $index => $service)
+                        @foreach ($existingServices as $index => $service)
                             <div class="service-item border border-slate-200 rounded-xl p-4 bg-white">
-                                <input type="hidden" name="services[{{ $index }}][id]" value="{{ $service['id'] ?? '' }}">
+                                <input type="hidden" name="services[{{ $index }}][id]"
+                                    value="{{ $service['id'] ?? '' }}">
                                 <div class="flex justify-between items-center mb-3">
-                                    <p class="text-xs font-semibold text-slate-500">Layanan #{{ $loop->iteration }}</p>
-                                    <button type="button" onclick="this.closest('.service-item').remove()" class="text-xs px-2 py-1 rounded-lg bg-red-50 text-red-600 hover:bg-red-100">Hapus</button>
+                                    <p class="text-xs font-semibold text-slate-500">Layanan #{{ $loop->iteration }}
+                                    </p>
+                                    <button type="button" onclick="this.closest('.service-item').remove()"
+                                        class="text-xs px-2 py-1 rounded-lg bg-red-50 text-red-600 hover:bg-red-100">Hapus</button>
                                 </div>
                                 <div class="grid md:grid-cols-3 gap-3">
                                     <div>
                                         <label class="block text-xs text-slate-600 mb-1">Nama Layanan</label>
-                                        <input type="text" name="services[{{ $index }}][name]" value="{{ $service['name'] ?? '' }}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="Contoh: Konsultasi Branding">
+                                        <input type="text" name="services[{{ $index }}][name]"
+                                            value="{{ $service['name'] ?? '' }}"
+                                            class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm"
+                                            placeholder="Contoh: Konsultasi Branding">
                                     </div>
                                     <div>
                                         <label class="block text-xs text-slate-600 mb-1">Tipe Harga</label>
-                                        <input type="text" name="services[{{ $index }}][price_type]" value="{{ $service['price_type'] ?? 'fixed' }}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="fixed / per session / per hour">
+                                        <input type="text" name="services[{{ $index }}][price_type]"
+                                            value="{{ $service['price_type'] ?? 'fixed' }}"
+                                            class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm"
+                                            placeholder="fixed / per session / per hour">
                                     </div>
                                     <div>
                                         <label class="block text-xs text-slate-600 mb-1">Harga</label>
-                                        <input type="number" step="0.01" min="0" name="services[{{ $index }}][price]" value="{{ $service['price'] ?? '' }}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="150000">
+                                        <input type="number" step="0.01" min="0"
+                                            name="services[{{ $index }}][price]"
+                                            value="{{ $service['price'] ?? '' }}"
+                                            class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm"
+                                            placeholder="150000">
                                     </div>
                                 </div>
                                 <div class="mt-3">
                                     <label class="block text-xs text-slate-600 mb-1">Deskripsi</label>
-                                    <textarea name="services[{{ $index }}][description]" rows="2" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="Deskripsi layanan...">{{ $service['description'] ?? '' }}</textarea>
+                                    <textarea name="services[{{ $index }}][description]" rows="2"
+                                        class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="Deskripsi layanan...">{{ $service['description'] ?? '' }}</textarea>
                                 </div>
                             </div>
                         @endforeach
                     </div>
 
-                    <button type="button" onclick="addServiceRow()" class="mt-3 px-4 py-2 bg-slate-100 text-gray-700 rounded-xl hover:bg-slate-200 transition text-sm font-medium">+ Tambah Layanan</button>
+                    <button type="button" onclick="addServiceRow()"
+                        class="mt-3 px-4 py-2 bg-slate-100 text-gray-700 rounded-xl hover:bg-slate-200 transition text-sm font-medium">+
+                        Tambah Layanan</button>
                 </div>
 
                 {{-- Product Name --}}
@@ -515,12 +536,10 @@
                     <label for="product_name" class="block text-sm font-medium text-gray-700 mb-2">
                         Nama Produk/Layanan Utama
                     </label>
-                    <input type="text" 
-                           name="product_name" 
-                           id="product_name" 
-                           value="{{ old('product_name', $business->product_name) }}"
-                           class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('product_name') border-gray-200 @enderror transition"
-                           placeholder="e.g., Kopi Arabica Premium">
+                    <input type="text" name="product_name" id="product_name"
+                        value="{{ old('product_name', $business->product_name) }}"
+                        class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('product_name') border-gray-200 @enderror transition"
+                        placeholder="e.g., Kopi Arabica Premium">
                     @error('product_name')
                         <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -531,11 +550,9 @@
                     <label for="product_description" class="block text-sm font-medium text-gray-700 mb-2">
                         Deskripsi Produk/Layanan
                     </label>
-                    <textarea name="product_description" 
-                              id="product_description" 
-                              rows="4"
-                              class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('product_description') border-gray-200 @enderror transition"
-                              placeholder="Jelaskan produk/layanan yang Anda tawarkan...">{{ old('product_description', $business->product_description) }}</textarea>
+                    <textarea name="product_description" id="product_description" rows="4"
+                        class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('product_description') border-gray-200 @enderror transition"
+                        placeholder="Jelaskan produk/layanan yang Anda tawarkan...">{{ old('product_description', $business->product_description) }}</textarea>
                     @error('product_description')
                         <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -546,11 +563,9 @@
                     <label for="unique_value_proposition" class="block text-sm font-medium text-gray-700 mb-2">
                         Keunikan/Nilai Lebih Produk
                     </label>
-                    <textarea name="unique_value_proposition" 
-                              id="unique_value_proposition" 
-                              rows="3"
-                              class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('unique_value_proposition') border-gray-200 @enderror transition"
-                              placeholder="Apa yang membuat produk Anda berbeda dari kompetitor?">{{ old('unique_value_proposition', $business->unique_value_proposition) }}</textarea>
+                    <textarea name="unique_value_proposition" id="unique_value_proposition" rows="3"
+                        class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('unique_value_proposition') border-gray-200 @enderror transition"
+                        placeholder="Apa yang membuat produk Anda berbeda dari kompetitor?">{{ old('unique_value_proposition', $business->unique_value_proposition) }}</textarea>
                     @error('unique_value_proposition')
                         <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -561,12 +576,10 @@
                     <label for="target_market" class="block text-sm font-medium text-gray-700 mb-2">
                         Target Market
                     </label>
-                    <input type="text" 
-                           name="target_market" 
-                           id="target_market" 
-                           value="{{ old('target_market', $business->target_market) }}"
-                           class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('target_market') border-gray-200 @enderror transition"
-                           placeholder="e.g., Milenial, Profesional muda, Pecinta kopi">
+                    <input type="text" name="target_market" id="target_market"
+                        value="{{ old('target_market', $business->target_market) }}"
+                        class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('target_market') border-gray-200 @enderror transition"
+                        placeholder="e.g., Milenial, Profesional muda, Pecinta kopi">
                     @error('target_market')
                         <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -577,13 +590,10 @@
                     <label for="customer_base_size" class="block text-sm font-medium text-gray-700 mb-2">
                         Jumlah Customer Aktif
                     </label>
-                    <input type="number" 
-                           name="customer_base_size" 
-                           id="customer_base_size" 
-                           value="{{ old('customer_base_size', $business->customer_base_size) }}"
-                           min="0"
-                           class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('customer_base_size') border-gray-200 @enderror transition"
-                           placeholder="e.g., 500">
+                    <input type="number" name="customer_base_size" id="customer_base_size"
+                        value="{{ old('customer_base_size', $business->customer_base_size) }}" min="0"
+                        class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('customer_base_size') border-gray-200 @enderror transition"
+                        placeholder="e.g., 500">
                     @error('customer_base_size')
                         <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -591,10 +601,12 @@
             </div>
 
             {{-- TAB 3: BUSINESS DEVELOPMENT --}}
-            <div x-show="activeTab === 'development'" class="bg-white border-x border-b border-slate-200 rounded-b-2xl shadow-sm p-8 space-y-5">
+            <div x-show="activeTab === 'development'"
+                class="bg-white border-x border-b border-slate-200 rounded-b-2xl shadow-sm p-8 space-y-5">
                 <div class="rounded-xl border border-purple-200 bg-purple-50 px-4 py-3 text-sm text-purple-800">
                     <p class="font-semibold">Perkembangan Business</p>
-                    <p class="text-xs mt-0.5">Data ini membantu menampilkan kematangan business Anda secara profesional.</p>
+                    <p class="text-xs mt-0.5">Data ini membantu menampilkan kematangan business Anda secara
+                        profesional.</p>
                 </div>
                 {{-- Establishment Date & Operational Status --}}
                 <div class="grid md:grid-cols-2 gap-5">
@@ -602,11 +614,9 @@
                         <label for="establishment_date" class="block text-sm font-medium text-gray-700 mb-2">
                             Tanggal Berdiri
                         </label>
-                        <input type="date" 
-                               name="establishment_date" 
-                               id="establishment_date" 
-                               value="{{ old('establishment_date', $business->establishment_date) }}"
-                               class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('establishment_date') border-gray-200 @enderror transition">
+                        <input type="date" name="establishment_date" id="establishment_date"
+                            value="{{ old('establishment_date', $business->establishment_date) }}"
+                            class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('establishment_date') border-gray-200 @enderror transition">
                         @error('establishment_date')
                             <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
                         @enderror
@@ -616,13 +626,18 @@
                         <label for="operational_status" class="block text-sm font-medium text-gray-700 mb-2">
                             Status Operasional
                         </label>
-                        <select name="operational_status" 
-                                id="operational_status"
-                                class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('operational_status') border-gray-200 @enderror transition">
+                        <select name="operational_status" id="operational_status"
+                            class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('operational_status') border-gray-200 @enderror transition">
                             <option value="">Pilih Status</option>
-                            <option value="active" {{ (old('operational_status', $business->operational_status) == 'active' || $business->operational_status == 'active') ? 'selected' : '' }}>Aktif</option>
-                            <option value="inactive" {{ (old('operational_status', $business->operational_status) == 'inactive' || $business->operational_status == 'inactive') ? 'selected' : '' }}>Tidak Aktif</option>
-                            <option value="seasonal" {{ (old('operational_status', $business->operational_status) == 'seasonal' || $business->operational_status == 'seasonal') ? 'selected' : '' }}>Musiman</option>
+                            <option value="active"
+                                {{ old('operational_status', $business->operational_status) == 'active' || $business->operational_status == 'active' ? 'selected' : '' }}>
+                                Aktif</option>
+                            <option value="inactive"
+                                {{ old('operational_status', $business->operational_status) == 'inactive' || $business->operational_status == 'inactive' ? 'selected' : '' }}>
+                                Tidak Aktif</option>
+                            <option value="seasonal"
+                                {{ old('operational_status', $business->operational_status) == 'seasonal' || $business->operational_status == 'seasonal' ? 'selected' : '' }}>
+                                Musiman</option>
                         </select>
                         @error('operational_status')
                             <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
@@ -636,13 +651,10 @@
                         <label for="employee_count" class="block text-sm font-medium text-gray-700 mb-2">
                             Jumlah Karyawan
                         </label>
-                        <input type="number" 
-                               name="employee_count" 
-                               id="employee_count" 
-                               value="{{ old('employee_count', $business->employee_count) }}"
-                               min="0"
-                               class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('employee_count') border-gray-200 @enderror transition"
-                               placeholder="e.g., 5">
+                        <input type="number" name="employee_count" id="employee_count"
+                            value="{{ old('employee_count', $business->employee_count) }}" min="0"
+                            class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('employee_count') border-gray-200 @enderror transition"
+                            placeholder="e.g., 5">
                         @error('employee_count')
                             <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
                         @enderror
@@ -652,14 +664,21 @@
                         <label for="revenue_range" class="block text-sm font-medium text-gray-700 mb-2">
                             Range Pendapatan (per bulan)
                         </label>
-                        <select name="revenue_range" 
-                                id="revenue_range"
-                                class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('revenue_range') border-gray-200 @enderror transition">
+                        <select name="revenue_range" id="revenue_range"
+                            class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('revenue_range') border-gray-200 @enderror transition">
                             <option value="">Pilih Range</option>
-                            <option value="< 10jt" {{ (old('revenue_range', $business->revenue_range) == '< 10jt' || $business->revenue_range == '< 10jt') ? 'selected' : '' }}>< 10 Juta</option>
-                            <option value="10jt - 50jt" {{ (old('revenue_range', $business->revenue_range) == '10jt - 50jt' || $business->revenue_range == '10jt - 50jt') ? 'selected' : '' }}>10 - 50 Juta</option>
-                            <option value="50jt - 100jt" {{ (old('revenue_range', $business->revenue_range) == '50jt - 100jt' || $business->revenue_range == '50jt - 100jt') ? 'selected' : '' }}>50 - 100 Juta</option>
-                            <option value="> 100jt" {{ (old('revenue_range', $business->revenue_range) == '> 100jt' || $business->revenue_range == '> 100jt') ? 'selected' : '' }}>> 100 Juta</option>
+                            <option value="< 10jt"
+                                {{ old('revenue_range', $business->revenue_range) == '< 10jt' || $business->revenue_range == '< 10jt' ? 'selected' : '' }}>
+                                < 10 Juta</option>
+                            <option value="10jt - 50jt"
+                                {{ old('revenue_range', $business->revenue_range) == '10jt - 50jt' || $business->revenue_range == '10jt - 50jt' ? 'selected' : '' }}>
+                                10 - 50 Juta</option>
+                            <option value="50jt - 100jt"
+                                {{ old('revenue_range', $business->revenue_range) == '50jt - 100jt' || $business->revenue_range == '50jt - 100jt' ? 'selected' : '' }}>
+                                50 - 100 Juta</option>
+                            <option value="> 100jt"
+                                {{ old('revenue_range', $business->revenue_range) == '> 100jt' || $business->revenue_range == '> 100jt' ? 'selected' : '' }}>
+                                > 100 Juta</option>
                         </select>
                         @error('revenue_range')
                             <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
@@ -673,33 +692,28 @@
                         Tantangan Business
                     </label>
                     <div id="challengesContainer" class="space-y-3">
-                        @if($business->business_challenges && count($business->business_challenges) > 0)
-                            @foreach($business->business_challenges as $challenge)
+                        @if ($business->business_challenges && count($business->business_challenges) > 0)
+                            @foreach ($business->business_challenges as $challenge)
                                 <div class="flex gap-2">
-                                    <input type="text" 
-                                           name="business_challenges[]" 
-                                           value="{{ $challenge }}"
-                                           class="flex-1 px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 transition"
-                                           placeholder="e.g., Keterbatasan modal">
-                                    <button type="button" 
-                                            onclick="this.parentElement.remove()"
-                                            class="px-4 py-2 bg-red-100 text-red-700 rounded-xl hover:bg-red-200 transition">
+                                    <input type="text" name="business_challenges[]" value="{{ $challenge }}"
+                                        class="flex-1 px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 transition"
+                                        placeholder="e.g., Keterbatasan modal">
+                                    <button type="button" onclick="this.parentElement.remove()"
+                                        class="px-4 py-2 bg-red-100 text-red-700 rounded-xl hover:bg-red-200 transition">
                                         ✖
                                     </button>
                                 </div>
                             @endforeach
                         @else
                             <div class="flex gap-2">
-                                <input type="text" 
-                                       name="business_challenges[]" 
-                                       class="flex-1 px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 transition"
-                                       placeholder="e.g., Keterbatasan modal">
+                                <input type="text" name="business_challenges[]"
+                                    class="flex-1 px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 transition"
+                                    placeholder="e.g., Keterbatasan modal">
                             </div>
                         @endif
                     </div>
-                    <button type="button" 
-                            onclick="addChallenge()"
-                            class="mt-3 px-4 py-2 bg-slate-100 text-gray-700 rounded-xl hover:bg-slate-200 transition text-sm font-medium">
+                    <button type="button" onclick="addChallenge()"
+                        class="mt-3 px-4 py-2 bg-slate-100 text-gray-700 rounded-xl hover:bg-slate-200 transition text-sm font-medium">
                         + Tambah Tantangan
                     </button>
                     @error('business_challenges')
@@ -709,104 +723,249 @@
             </div>
 
             {{-- TAB 4: DOCUMENTS & CERTIFICATIONS --}}
-            <div x-show="activeTab === 'documents'" class="bg-white border-x border-b border-slate-200 rounded-b-2xl shadow-sm p-8 space-y-6">
+            <div x-show="activeTab === 'documents'"
+                class="bg-white border-x border-b border-slate-200 rounded-b-2xl shadow-sm p-8 space-y-6">
                 <div class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
                     <p class="font-semibold">Dokumen & Sertifikasi</p>
-                    <p class="text-xs mt-0.5">Upload bukti legalitas dan sertifikasi untuk meningkatkan kepercayaan pengunjung.</p>
+                    <p class="text-xs mt-0.5">Upload bukti legalitas dan sertifikasi untuk meningkatkan kepercayaan
+                        pengunjung.</p>
                 </div>
-                <div>
-                    <label for="legal_documents" class="block text-sm font-medium text-gray-700 mb-2">
-                        Dokumen Legal (Bisa banyak file)
-                    </label>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                    <!-- Dokumen Legal -->
+                    <div x-data="{
+                        files: [],
+                        handleDrop(e) { e.preventDefault(); if (e.dataTransfer.files.length) this.addFiles(Array.from(e.dataTransfer.files)); },
+                        handleSelect(e) { if (e.target.files.length) this.addFiles(Array.from(e.target.files)); },
+                        addFiles(newFiles) {
+                            const validFiles = newFiles.filter(f => f.size <= 20 * 1024 * 1024);
+                            if (newFiles.length !== validFiles.length) {
+                                showValidationToast('Gagal: Beberapa file terlalu besar (Maksimal 20MB per file).');
+                            }
+                            this.files = [...this.files, ...validFiles];
+                            this.syncInput();
+                        },
+                        removeFile(index) {
+                            this.files.splice(index, 1);
+                            this.syncInput();
+                        },
+                        syncInput() {
+                            const dt = new DataTransfer();
+                            this.files.forEach(f => dt.items.add(f));
+                            this.$refs.fileInput.files = dt.files;
+                        },
+                        megabytes(b) { return (b / (1024 * 1024)).toFixed(2) + ' MB'; }
+                    }">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Dokumen Legal (Bisa banyak file)
+                        </label>
 
-                    @if(!empty($legalDocs))
-                        <div class="mb-3 p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
-                            <p class="text-xs font-semibold text-slate-600">Dokumen saat ini:</p>
-                            @foreach($legalDocs as $index => $doc)
-                                <label class="flex items-center justify-between gap-3 text-xs">
-                                    <a href="{{ Storage::disk(config('filesystems.default'))->url($doc['file_path']) }}" target="_blank" class="text-blue-600 hover:underline truncate">
-                                        {{ $doc['original_name'] ?? basename($doc['file_path']) }}
-                                    </a>
-                                    <span class="inline-flex items-center gap-2 shrink-0">
-                                        <input type="checkbox" name="remove_legal_docs[]" value="{{ $index }}" class="rounded border-gray-300 text-red-600">
-                                        <span class="text-red-600">Hapus</span>
-                                    </span>
-                                </label>
-                            @endforeach
+                        @if (!empty($legalDocs))
+                            <div class="mb-3 p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                                <p class="text-xs font-semibold text-slate-600">Dokumen saat ini:</p>
+                                @foreach ($legalDocs as $index => $doc)
+                                    <label class="flex items-center justify-between gap-3 text-xs">
+                                        <a href="{{ Storage::disk(config('filesystems.default'))->url($doc['file_path']) }}"
+                                            target="_blank" class="text-blue-600 hover:underline truncate">
+                                            {{ $doc['original_name'] ?? basename($doc['file_path']) }}
+                                        </a>
+                                        <span class="inline-flex items-center gap-2 shrink-0">
+                                            <input type="checkbox" name="remove_legal_docs[]"
+                                                value="{{ $index }}"
+                                                class="rounded border-gray-300 text-red-600">
+                                            <span class="text-red-600">Hapus</span>
+                                        </span>
+                                    </label>
+                                @endforeach
+                            </div>
+                        @endif
+
+                        <div class="relative group" @dragover.prevent @drop="handleDrop">
+                            <label
+                                class="flex flex-col items-center w-full px-4 py-4 bg-white border-2 border-slate-200 border-dashed rounded-xl cursor-pointer hover:border-uco-orange-500 hover:bg-orange-50/30 transition-all duration-300">
+                                <div class="flex flex-row items-center justify-center gap-3 w-full">
+                                    <div
+                                        class="w-10 h-10 shrink-0 rounded-full bg-slate-50 flex items-center justify-center border border-slate-100 group-hover:bg-uco-orange-100 group-hover:border-uco-orange-200 transition-colors">
+                                        <i
+                                            class="bi bi-cloud-arrow-up text-lg text-slate-400 group-hover:text-uco-orange-600 transition-colors"></i>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p
+                                            class="text-sm font-semibold text-slate-700 group-hover:text-uco-orange-700 truncate">
+                                            Pilih Dokumen
+                                        </p>
+                                        <p class="text-[10px] text-slate-500 truncate">Format PDF/JPG/PNG (Max 20MB)
+                                        </p>
+                                    </div>
+                                    <div
+                                        class="shrink-0 px-3 py-1.5 bg-slate-100 text-slate-600 text-xs font-medium rounded-lg group-hover:bg-uco-orange-500 group-hover:text-white transition-colors shadow-sm">
+                                        Browse
+                                    </div>
+                                </div>
+                                <input type="file" x-ref="fileInput" name="legal_documents[]" multiple
+                                    accept=".pdf,.jpg,.jpeg,.png" class="hidden" @change="handleSelect($event)">
+                            </label>
                         </div>
-                    @endif
+                        <ul x-show="files.length > 0" class="mt-3 space-y-2" x-transition>
+                            <template x-for="(file, index) in files" :key="index">
+                                <li
+                                    class="flex items-center justify-between p-2.5 bg-white border border-slate-200 rounded-xl shadow-sm hover:border-slate-300 transition">
+                                    <div class="flex items-center gap-2.5 overflow-hidden">
+                                        <div
+                                            class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                                            <i class="bi bi-file-earmark-check"></i>
+                                        </div>
+                                        <div class="min-w-0 pr-2">
+                                            <p class="text-xs font-semibold text-slate-700 truncate"
+                                                x-text="file.name"></p>
+                                            <p class="text-[10px] text-slate-500 font-medium"
+                                                x-text="megabytes(file.size)"></p>
+                                        </div>
+                                    </div>
+                                    <button type="button" @click.prevent="removeFile(index)"
+                                        class="shrink-0 w-7 h-7 flex items-center justify-center rounded-lg text-red-400 hover:text-white hover:bg-red-500 transition-colors">
+                                        <i class="bi bi-x-lg text-sm"></i>
+                                    </button>
+                                </li>
+                            </template>
+                        </ul>
 
-                    <input type="file"
-                           name="legal_documents[]"
-                           id="legal_documents"
-                           multiple
-                           accept=".pdf,.jpg,.jpeg,.png"
-                           class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 transition">
-                    <p class="mt-1 text-xs text-gray-500">Pilih beberapa file sekaligus (PDF/JPG/PNG, max 5MB per file).</p>
-                    <ul id="legalDocumentsList" class="mt-2 text-xs text-gray-600 space-y-1"></ul>
+                        @error('legal_documents')
+                            <p class="mt-1.5 text-xs text-red-600">{{ $message }}</p>
+                        @enderror
+                        @error('legal_documents.*')
+                            <p class="mt-1.5 text-xs text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
 
-                    @error('legal_documents')
-                        <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                    @error('legal_documents.*')
-                        <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
+                    <!-- Sertifikasi Produk -->
+                    <div x-data="{
+                        files: [],
+                        handleDrop(e) { e.preventDefault(); if (e.dataTransfer.files.length) this.addFiles(Array.from(e.dataTransfer.files)); },
+                        handleSelect(e) { if (e.target.files.length) this.addFiles(Array.from(e.target.files)); },
+                        addFiles(newFiles) {
+                            const validFiles = newFiles.filter(f => f.size <= 20 * 1024 * 1024);
+                            if (newFiles.length !== validFiles.length) {
+                                showValidationToast('Gagal: Beberapa file terlalu besar (Maksimal 20MB per file).');
+                            }
+                            this.files = [...this.files, ...validFiles];
+                            this.syncInput();
+                        },
+                        removeFile(index) {
+                            this.files.splice(index, 1);
+                            this.syncInput();
+                        },
+                        syncInput() {
+                            const dt = new DataTransfer();
+                            this.files.forEach(f => dt.items.add(f));
+                            this.$refs.fileInput.files = dt.files;
+                        },
+                        megabytes(b) { return (b / (1024 * 1024)).toFixed(2) + ' MB'; }
+                    }">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Sertifikasi Produk (Bisa banyak file)
+                        </label>
 
-                <div>
-                    <label for="product_certifications" class="block text-sm font-medium text-gray-700 mb-2">
-                        Sertifikasi Produk (Bisa banyak file)
-                    </label>
+                        @if (!empty($certifications))
+                            <div class="mb-3 p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                                <p class="text-xs font-semibold text-slate-600">Sertifikasi saat ini:</p>
+                                @foreach ($certifications as $index => $cert)
+                                    <label class="flex items-center justify-between gap-3 text-xs">
+                                        <a href="{{ Storage::disk(config('filesystems.default'))->url($cert['file_path']) }}"
+                                            target="_blank" class="text-blue-600 hover:underline truncate">
+                                            {{ $cert['original_name'] ?? basename($cert['file_path']) }}
+                                        </a>
+                                        <span class="inline-flex items-center gap-2 shrink-0">
+                                            <input type="checkbox" name="remove_certifications[]"
+                                                value="{{ $index }}"
+                                                class="rounded border-gray-300 text-red-600">
+                                            <span class="text-red-600">Hapus</span>
+                                        </span>
+                                    </label>
+                                @endforeach
+                            </div>
+                        @endif
 
-                    @if(!empty($certifications))
-                        <div class="mb-3 p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
-                            <p class="text-xs font-semibold text-slate-600">Sertifikasi saat ini:</p>
-                            @foreach($certifications as $index => $cert)
-                                <label class="flex items-center justify-between gap-3 text-xs">
-                                    <a href="{{ Storage::disk(config('filesystems.default'))->url($cert['file_path']) }}" target="_blank" class="text-blue-600 hover:underline truncate">
-                                        {{ $cert['original_name'] ?? basename($cert['file_path']) }}
-                                    </a>
-                                    <span class="inline-flex items-center gap-2 shrink-0">
-                                        <input type="checkbox" name="remove_certifications[]" value="{{ $index }}" class="rounded border-gray-300 text-red-600">
-                                        <span class="text-red-600">Hapus</span>
-                                    </span>
-                                </label>
-                            @endforeach
+                        <div class="relative group" @dragover.prevent @drop="handleDrop">
+                            <label
+                                class="flex flex-col items-center w-full px-4 py-4 bg-white border-2 border-slate-200 border-dashed rounded-xl cursor-pointer hover:border-uco-orange-500 hover:bg-orange-50/30 transition-all duration-300">
+                                <div class="flex flex-row items-center justify-center gap-3 w-full">
+                                    <div
+                                        class="w-10 h-10 shrink-0 rounded-full bg-slate-50 flex items-center justify-center border border-slate-100 group-hover:bg-uco-orange-100 group-hover:border-uco-orange-200 transition-colors">
+                                        <i
+                                            class="bi bi-cloud-arrow-up text-lg text-slate-400 group-hover:text-uco-orange-600 transition-colors"></i>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p
+                                            class="text-sm font-semibold text-slate-700 group-hover:text-uco-orange-700 truncate">
+                                            Pilih Sertifikasi
+                                        </p>
+                                        <p class="text-[10px] text-slate-500 truncate">Format PDF/JPG/PNG (Max 20MB)
+                                        </p>
+                                    </div>
+                                    <div
+                                        class="shrink-0 px-3 py-1.5 bg-slate-100 text-slate-600 text-xs font-medium rounded-lg group-hover:bg-uco-orange-500 group-hover:text-white transition-colors shadow-sm">
+                                        Browse
+                                    </div>
+                                </div>
+                                <input type="file" x-ref="fileInput" name="product_certifications[]" multiple
+                                    accept=".pdf,.jpg,.jpeg,.png" class="hidden" @change="handleSelect($event)">
+                            </label>
                         </div>
-                    @endif
+                        <ul x-show="files.length > 0" class="mt-3 space-y-2" x-transition>
+                            <template x-for="(file, index) in files" :key="index">
+                                <li
+                                    class="flex items-center justify-between p-2.5 bg-white border border-slate-200 rounded-xl shadow-sm hover:border-slate-300 transition">
+                                    <div class="flex items-center gap-2.5 overflow-hidden">
+                                        <div
+                                            class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                                            <i class="bi bi-file-earmark-check"></i>
+                                        </div>
+                                        <div class="min-w-0 pr-2">
+                                            <p class="text-xs font-semibold text-slate-700 truncate"
+                                                x-text="file.name"></p>
+                                            <p class="text-[10px] text-slate-500 font-medium"
+                                                x-text="megabytes(file.size)"></p>
+                                        </div>
+                                    </div>
+                                    <button type="button" @click.prevent="removeFile(index)"
+                                        class="shrink-0 w-7 h-7 flex items-center justify-center rounded-lg text-red-400 hover:text-white hover:bg-red-500 transition-colors">
+                                        <i class="bi bi-x-lg text-sm"></i>
+                                    </button>
+                                </li>
+                            </template>
+                        </ul>
 
-                    <input type="file"
-                           name="product_certifications[]"
-                           id="product_certifications"
-                           multiple
-                           accept=".pdf,.jpg,.jpeg,.png"
-                           class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 transition">
-                    <p class="mt-1 text-xs text-gray-500">Pilih beberapa file sekaligus (PDF/JPG/PNG, max 5MB per file).</p>
-                    <ul id="productCertificationsList" class="mt-2 text-xs text-gray-600 space-y-1"></ul>
-
-                    @error('product_certifications')
-                        <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                    @error('product_certifications.*')
-                        <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
+                        @error('product_certifications')
+                            <p class="mt-1.5 text-xs text-red-600">{{ $message }}</p>
+                        @enderror
+                        @error('product_certifications.*')
+                            <p class="mt-1.5 text-xs text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
                 </div>
             </div>
 
             {{-- Validation Error Toast (hidden by default) --}}
-            <div id="validationToast" class="hidden fixed top-6 right-6 z-[200] max-w-sm w-full bg-red-50 border border-red-200 rounded-xl shadow-xl p-4 transform transition-all duration-300 translate-y-[-20px] opacity-0">
+            <div id="validationToast"
+                class="hidden fixed top-6 right-6 z-[200] max-w-sm w-full bg-red-50 border border-red-200 rounded-xl shadow-xl p-4 transform transition-all duration-300 translate-y-[-20px] opacity-0">
                 <div class="flex items-start gap-3">
                     <div class="p-1.5 bg-red-100 rounded-lg shrink-0">
                         <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z" />
                         </svg>
                     </div>
                     <div class="flex-1 min-w-0">
                         <p class="text-sm font-semibold text-red-800">Ada field yang belum diisi</p>
-                        <p id="validationToastMsg" class="text-xs text-red-600 mt-0.5">Silakan lengkapi field yang bertanda merah.</p>
+                        <p id="validationToastMsg" class="text-xs text-red-600 mt-0.5">Silakan lengkapi field yang
+                            bertanda merah.</p>
                     </div>
-                    <button type="button" onclick="hideValidationToast()" class="text-red-400 hover:text-red-600 p-1 rounded-md transition-colors">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    <button type="button" onclick="hideValidationToast()"
+                        class="text-red-400 hover:text-red-600 p-1 rounded-md transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12" />
+                        </svg>
                     </button>
                 </div>
             </div>
@@ -815,24 +974,29 @@
 
         {{-- Action Buttons --}}
         <div class="sticky bottom-4 z-40 mt-8">
-            <div class="flex items-center justify-between gap-3 p-3 sm:p-4 rounded-2xl border border-slate-200 bg-white/95 backdrop-blur shadow-lg">
-            <a href="{{ route('businesses.show', $business) }}" class="inline-flex items-center px-4 py-2.5 text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 hover:text-gray-900 rounded-xl transition duration-150">
-                Cancel
-            </a>
+            <div
+                class="flex items-center justify-between gap-3 p-3 sm:p-4 rounded-2xl border border-slate-200 bg-white/95 backdrop-blur shadow-lg">
+                <a href="{{ route('businesses.show', $business) }}"
+                    class="inline-flex items-center px-4 py-2.5 text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 hover:text-gray-900 rounded-xl transition duration-150">
+                    Cancel
+                </a>
 
-            <div class="flex items-center gap-3">
-                <button type="submit" form="businessEditForm" class="inline-flex items-center gap-2 px-6 py-2.5 bg-soft-gray-900 hover:bg-soft-gray-800 text-white font-semibold rounded-xl shadow-md transition duration-200">
-                    Update Business
-                </button>
-
-                <form method="POST" action="{{ route('businesses.destroy', $business) }}" onsubmit="return confirm('Are you sure you want to delete this business? This action cannot be undone.');">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="inline-flex items-center gap-2 px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl shadow-md transition duration-200">
-                        Delete Business
+                <div class="flex items-center gap-3">
+                    <button type="submit" form="businessEditForm"
+                        class="inline-flex items-center gap-2 px-6 py-2.5 bg-soft-gray-900 hover:bg-soft-gray-800 text-white font-semibold rounded-xl shadow-md transition duration-200">
+                        Update Business
                     </button>
-                </form>
-            </div>
+
+                    <form method="POST" action="{{ route('businesses.destroy', $business) }}"
+                        onsubmit="return confirm('Are you sure you want to delete this business? This action cannot be undone.');">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit"
+                            class="inline-flex items-center gap-2 px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl shadow-md transition duration-200">
+                            Delete Business
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
@@ -842,20 +1006,45 @@
         let productIndex = 0;
         let serviceIndex = 0;
 
+        let cityTomSelect = null;
+        let provinceTomSelect = null;
+
         async function loadRegenciesByProvince(provinceId, citySelect, selectedCity = null) {
+            if (cityTomSelect) {
+                cityTomSelect.destroy();
+                cityTomSelect = null;
+            }
+
             if (!provinceId) {
                 citySelect.innerHTML = '<option value="">Pilih Provinsi terlebih dahulu</option>';
                 citySelect.disabled = true;
+                if (false && window.TomSelect) cityTomSelect = new TomSelect(citySelect, {
+                    create: false,
+                    sortField: {
+                        field: "text",
+                        direction: "asc"
+                    }
+                });
                 return;
             }
 
-            citySelect.innerHTML = '<option value="">Pilih Kota/Kabupaten</option>';
+            citySelect.innerHTML = '<option value="">Memuat kota...</option>';
             citySelect.disabled = false;
 
             try {
-                const response = await fetch(`{{ route('regions.regencies') }}?province_id=${provinceId}`);
+                // Use native fetch with correct Laravel Ajax headers
+                // Avoids module race conditions if window.axios is not yet ready
+                const response = await fetch(`/regions/regencies?province_id=${provinceId}`, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                if (!response.ok) throw new Error('Network response was not ok');
                 const regencies = await response.json();
 
+                citySelect.innerHTML = '<option value="">Pilih Kota/Kabupaten</option>';
                 regencies.forEach((regency) => {
                     const option = document.createElement('option');
                     option.value = regency.name;
@@ -866,7 +1055,19 @@
                     citySelect.appendChild(option);
                 });
             } catch (error) {
+                console.error("Fetch regencies error:", error);
+                citySelect.innerHTML = '<option value="">Gagal memuat kota/kabupaten</option>';
                 citySelect.disabled = true;
+            }
+
+            if (false && window.TomSelect) {
+                cityTomSelect = new TomSelect(citySelect, {
+                    create: false,
+                    sortField: {
+                        field: "text",
+                        direction: "asc"
+                    }
+                });
             }
         }
 
@@ -1006,8 +1207,9 @@
                 if (field.type === 'file') return; // skip file inputs
                 const val = (field.value || '').trim();
                 if (!val || (field.tagName === 'SELECT' && val === '')) {
-                    field.classList.add('validation-error-border', 'border-red-400', 'ring-2', 'ring-red-100');
-                    
+                    field.classList.add('validation-error-border', 'border-red-400', 'ring-2',
+                        'ring-red-100');
+
                     // Find label text
                     const wrapper = field.closest('div');
                     const label = wrapper ? wrapper.querySelector('label') : null;
@@ -1017,8 +1219,11 @@
                     // Add inline error message
                     if (wrapper && !wrapper.querySelector('.validation-error-msg')) {
                         const errMsg = document.createElement('p');
-                        errMsg.className = 'validation-error-msg mt-1.5 text-sm text-red-600 flex items-center gap-1.5';
-                        errMsg.innerHTML = '<svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg> <span>' + labelText + ' wajib diisi</span>';
+                        errMsg.className =
+                            'validation-error-msg mt-1.5 text-sm text-red-600 flex items-center gap-1.5';
+                        errMsg.innerHTML =
+                            '<svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg> <span>' +
+                            labelText + ' wajib diisi</span>';
                         field.insertAdjacentElement('afterend', errMsg);
                     }
 
@@ -1026,18 +1231,28 @@
 
                     // Remove error styling on input
                     field.addEventListener('input', function handler() {
-                        this.classList.remove('validation-error-border', 'border-red-400', 'ring-2', 'ring-red-100');
-                        const nextErr = this.parentElement.querySelector('.validation-error-msg') || (this.nextElementSibling && this.nextElementSibling.classList.contains('validation-error-msg') ? this.nextElementSibling : null);
+                        this.classList.remove('validation-error-border', 'border-red-400', 'ring-2',
+                            'ring-red-100');
+                        const nextErr = this.parentElement.querySelector('.validation-error-msg') ||
+                            (this.nextElementSibling && this.nextElementSibling.classList.contains(
+                                'validation-error-msg') ? this.nextElementSibling : null);
                         if (nextErr) nextErr.remove();
                         this.removeEventListener('input', handler);
-                    }, { once: true });
+                    }, {
+                        once: true
+                    });
 
                     field.addEventListener('change', function handler() {
-                        this.classList.remove('validation-error-border', 'border-red-400', 'ring-2', 'ring-red-100');
-                        const nextErr = this.parentElement.querySelector('.validation-error-msg') || (this.nextElementSibling && this.nextElementSibling.classList.contains('validation-error-msg') ? this.nextElementSibling : null);
+                        this.classList.remove('validation-error-border', 'border-red-400', 'ring-2',
+                            'ring-red-100');
+                        const nextErr = this.parentElement.querySelector('.validation-error-msg') ||
+                            (this.nextElementSibling && this.nextElementSibling.classList.contains(
+                                'validation-error-msg') ? this.nextElementSibling : null);
                         if (nextErr) nextErr.remove();
                         this.removeEventListener('change', handler);
-                    }, { once: true });
+                    }, {
+                        once: true
+                    });
                 }
             });
 
@@ -1052,7 +1267,6 @@
                     const match = xShow.match(/activeTab\s*===\s*'([\w]+)'/);
                     if (match) {
                         const targetTab = match[1];
-                        // Alpine v3: find the root x-data element and use Alpine.$data()
                         const rootEl = document.querySelector('[x-data*="activeTab"]');
                         if (rootEl && window.Alpine) {
                             Alpine.$data(rootEl).activeTab = targetTab;
@@ -1061,24 +1275,27 @@
                     }
                 }
 
-                // Wait for tab to become visible before scrolling
                 const scrollDelay = tabSwitched ? 350 : 100;
                 setTimeout(() => {
-                    firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    firstInvalid.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center'
+                    });
                     firstInvalid.focus();
                 }, scrollDelay);
 
                 const count = emptyLabels.length;
-                showValidationToast('Ada ' + count + ' field wajib yang belum diisi: ' + emptyLabels.slice(0, 3).join(', ') + (count > 3 ? '...' : ''));
+                showValidationToast('Ada ' + count + ' field wajib yang belum diisi: ' + emptyLabels.slice(0, 3)
+                    .join(', ') + (count > 3 ? '...' : ''));
             }
         });
+
+        // Permanent Fix: Direct JSON map from server to avoid DOM scraping issues with TomSelect
+        const UCO_PROVINCE_MAP = @json($provinces->pluck('id', 'name'));
 
         document.addEventListener('DOMContentLoaded', () => {
             productIndex = document.querySelectorAll('#productsContainer .product-item').length;
             serviceIndex = document.querySelectorAll('#servicesContainer .service-item').length;
-
-            bindMultiFileList('legal_documents', 'legalDocumentsList');
-            bindMultiFileList('product_certifications', 'productCertificationsList');
 
             // Initialize image preview for Logo
             ucoInitImagePreview('logo', 'edit-logo-preview', 2, true);
@@ -1088,15 +1305,47 @@
             const selectedProvinceId = citySelect.dataset.selectedProvinceId;
             const selectedCity = citySelect.dataset.selectedCity;
 
-            if (selectedProvinceId) {
-                loadRegenciesByProvince(selectedProvinceId, citySelect, selectedCity);
+            // Initialize TomSelect for owners
+            if (document.getElementById('owner_ids') && window.TomSelect) {
+                new TomSelect('#owner_ids', {
+                    plugins: ['remove_button'],
+                    create: false,
+                    placeholder: 'Assign owners...'
+                });
             }
 
-            provinceSelect.addEventListener('change', function () {
-                const selectedOption = this.options[this.selectedIndex];
-                const provinceId = selectedOption ? selectedOption.dataset.id : null;
-                loadRegenciesByProvince(provinceId, citySelect);
-            });
+            // Initial city load
+            if (selectedProvinceId) {
+                loadRegenciesByProvince(selectedProvinceId, citySelect, selectedCity);
+            } else if (false && window.TomSelect) {
+                cityTomSelect = new TomSelect(citySelect, {
+                    create: false,
+                    sortField: {
+                        field: "text",
+                        direction: "asc"
+                    }
+                });
+            }
+
+            // Province TomSelect with reliable onChange using UCO_PROVINCE_MAP
+            if (false && window.TomSelect) {
+                provinceTomSelect = new TomSelect(provinceSelect, {
+                    create: false,
+                    sortField: {
+                        field: "text",
+                        direction: "asc"
+                    },
+                    onChange: function(value) {
+                        const provinceId = UCO_PROVINCE_MAP[value] || null;
+                        loadRegenciesByProvince(provinceId, citySelect);
+                    }
+                });
+            } else {
+                provinceSelect.addEventListener('change', function() {
+                    const provinceId = UCO_PROVINCE_MAP[this.value] || null;
+                    loadRegenciesByProvince(provinceId, citySelect);
+                });
+            }
         });
     </script>
 </x-app-layout>
