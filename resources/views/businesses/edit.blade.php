@@ -138,7 +138,7 @@
                         </label>
                         <select name="business_type_id" id="business_type_id" required
                             class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('business_type_id') border-gray-200 @enderror transition">
-                            <option value="">Pilih Kategori</option>
+                            <option value="" disabled {{ old('business_type_id', $business->business_type_id) ? '' : 'selected' }}>Pilih Kategori</option>
                             @foreach ($businessTypes as $type)
                                 <option value="{{ $type->id }}"
                                     {{ old('business_type_id', $business->business_type_id) == $type->id || $business->business_type_id == $type->id ? 'selected' : '' }}>
@@ -158,7 +158,7 @@
                         <select name="business_mode" id="business_mode" required
                             x-model="businessMode"
                             class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('business_mode') border-gray-200 @enderror transition">
-                            <option value="">Pilih Jenis Offering</option>
+                            <option value="" disabled {{ old('business_mode', $business->business_mode) ? '' : 'selected' }}>Pilih Jenis Offering</option>
                             <option value="product"
                                 {{ old('business_mode', $business->business_mode) == 'product' || $business->business_mode == 'product' ? 'selected' : '' }}>
                                 Product Only</option>
@@ -204,7 +204,7 @@
                         </label>
                         <select name="province" id="province" required
                             class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('province') border-gray-200 @enderror transition">
-                            <option value="">Pilih Provinsi</option>
+                            <option value="" disabled {{ old('province', $business->province) ? '' : 'selected' }}>Pilih Provinsi</option>
                             @foreach ($provinces as $province)
                                 <option value="{{ $province->name }}" data-id="{{ $province->id }}"
                                     {{ old('province', $business->province) === $province->name ? 'selected' : '' }}>
@@ -225,7 +225,7 @@
                             data-selected-province-id="{{ $selectedProvinceId }}"
                             class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 disabled:bg-gray-50 disabled:text-gray-500 disabled:border-gray-200 disabled:shadow-inner disabled:cursor-not-allowed @error('city') border-gray-200 @enderror transition"
                             {{ $selectedProvinceId ? '' : 'disabled' }}>
-                            <option value="">
+                            <option value="" disabled {{ $selectedProvinceId ? '' : 'selected' }}>
                                 {{ $selectedProvinceId ? 'Pilih Kota/Kabupaten' : 'Pilih Provinsi terlebih dahulu' }}
                             </option>
                             @if ($selectedCityName)
@@ -1016,7 +1016,7 @@
             }
 
             if (!provinceId) {
-                citySelect.innerHTML = '<option value="">Pilih Provinsi terlebih dahulu</option>';
+                citySelect.innerHTML = '<option value="" disabled selected>Pilih Provinsi terlebih dahulu</option>';
                 citySelect.disabled = true;
                 if (false && window.TomSelect) cityTomSelect = new TomSelect(citySelect, {
                     create: false,
@@ -1028,7 +1028,7 @@
                 return;
             }
 
-            citySelect.innerHTML = '<option value="">Memuat kota...</option>';
+            citySelect.innerHTML = '<option value="" disabled selected>Memuat kota...</option>';
             citySelect.disabled = false;
 
             try {
@@ -1044,7 +1044,7 @@
                 if (!response.ok) throw new Error('Network response was not ok');
                 const regencies = await response.json();
 
-                citySelect.innerHTML = '<option value="">Pilih Kota/Kabupaten</option>';
+                citySelect.innerHTML = '<option value="" disabled selected>Pilih Kota/Kabupaten</option>';
                 regencies.forEach((regency) => {
                     const option = document.createElement('option');
                     option.value = regency.name;
@@ -1056,7 +1056,7 @@
                 });
             } catch (error) {
                 console.error("Fetch regencies error:", error);
-                citySelect.innerHTML = '<option value="">Gagal memuat kota/kabupaten</option>';
+                citySelect.innerHTML = '<option value="" disabled selected>Gagal memuat kota/kabupaten</option>';
                 citySelect.disabled = true;
             }
 

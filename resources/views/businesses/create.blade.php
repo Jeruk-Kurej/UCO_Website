@@ -121,7 +121,7 @@
                                 id="business_type_id"
                                 required
                                 class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('business_type_id') border-gray-200 @enderror transition">
-                            <option value="">Pilih Kategori</option>
+                            <option value="" disabled selected>Pilih Kategori</option>
                             @foreach($businessTypes as $type)
                                 <option value="{{ $type->id }}" {{ old('business_type_id') == $type->id ? 'selected' : '' }}>
                                     {{ $type->name }}
@@ -142,7 +142,7 @@
                                 required
                                 x-model="businessMode"
                                 class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('business_mode') border-gray-200 @enderror transition">
-                            <option value="">Pilih Jenis Offering</option>
+                            <option value="" disabled selected>Pilih Jenis Offering</option>
                             <option value="product" {{ old('business_mode') == 'product' ? 'selected' : '' }}>Product Only</option>
                             <option value="service" {{ old('business_mode') == 'service' ? 'selected' : '' }}>Service Only</option>
                             <option value="both" {{ old('business_mode') == 'both' ? 'selected' : '' }}>Product & Service</option>
@@ -186,7 +186,7 @@
                                 id="province"
                                required
                                class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('province') border-gray-200 @enderror transition">
-                            <option value="">Pilih Provinsi</option>
+                            <option value="" disabled selected>Pilih Provinsi</option>
                             @foreach($provinces as $province)
                                 <option value="{{ $province->name }}" data-id="{{ $province->id }}" {{ old('province') === $province->name ? 'selected' : '' }}>
                                     {{ $province->name }}
@@ -209,7 +209,7 @@
                                 data-selected-province-id="{{ $selectedProvinceId }}"
                                 class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 disabled:bg-gray-50 disabled:text-gray-500 disabled:border-gray-200 disabled:shadow-inner disabled:cursor-not-allowed @error('city') border-gray-200 @enderror transition"
                                 {{ $selectedProvinceId ? '' : 'disabled' }}>
-                            <option value="">{{ $selectedProvinceId ? 'Pilih Kota/Kabupaten' : 'Pilih Provinsi terlebih dahulu' }}</option>
+                            <option value="" disabled selected>{{ $selectedProvinceId ? 'Pilih Kota/Kabupaten' : 'Pilih Provinsi terlebih dahulu' }}</option>
                             @if($selectedCityName)
                                 <option value="{{ $selectedCityName }}" selected>{{ $selectedCityName }}</option>
                             @endif
@@ -716,12 +716,12 @@
 
         async function loadRegenciesByProvince(provinceId, citySelect, selectedCity = null) {
             if (!provinceId) {
-                citySelect.innerHTML = '<option value="">Pilih Provinsi terlebih dahulu</option>';
+                citySelect.innerHTML = '<option value="" disabled selected>Pilih Provinsi terlebih dahulu</option>';
                 citySelect.disabled = true;
                 return;
             }
 
-            citySelect.innerHTML = '<option value="">Pilih Kota/Kabupaten</option>';
+            citySelect.innerHTML = '<option value="" disabled selected>Pilih Kota/Kabupaten</option>';
             citySelect.disabled = false;
 
             try {
