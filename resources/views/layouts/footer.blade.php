@@ -21,6 +21,11 @@
                 <h4 class="font-medium text-sm text-gray-900 mb-4">Quick Links</h4>
                 <ul class="space-y-2">
                     <li>
+                        <a href="{{ route('about') }}" class="text-sm text-gray-600 hover:text-gray-900 transition-colors">
+                            About Us
+                        </a>
+                    </li>
+                    <li>
                         <a href="/dashboard" class="text-sm text-gray-600 hover:text-gray-900 transition-colors">
                             Dashboard
                         </a>

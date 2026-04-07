@@ -141,7 +141,7 @@
                                     </div>
                                     
                                     {{-- Owner Info Card --}}
-                                    <div class="bg-slate-50 border border-slate-100 rounded-lg p-3 mb-4">
+                                    <div class="bg-white border border-gray-200 rounded-xl p-3 mb-4">
                                         <div class="flex items-center gap-3">
                                             {{-- Owner Avatar --}}
                                             @if($business->user->profile_photo_url ?? false)

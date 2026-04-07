@@ -7,13 +7,14 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
 use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Illuminate\Support\Str;
 
-class UsersImport implements ToModel, WithHeadingRow, WithValidation, WithChunkReading
+class UsersImport implements ToModel, WithHeadingRow, WithValidation, WithChunkReading, ShouldQueue
 {
     protected $errors = [];
     protected $successCount = 0;

@@ -90,6 +90,7 @@
                                   class="block w-full rounded-xl border border-soft-gray-300 px-4 py-3 text-sm text-soft-gray-800 shadow-sm focus:border-uco-orange-300 focus:ring-2 focus:ring-uco-orange-200"
                                   placeholder="Share your learning experience, what helped you most, or what changed after joining..."
                                   required>{{ old('content') }}</textarea>
+                        <p class="mt-1.5 text-xs text-soft-gray-500">Minimum 20 characters and 4 words required to be eligible for the featured homepage.</p>
                         @error('content')
                             <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
                         @enderror

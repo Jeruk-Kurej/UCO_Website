@@ -91,67 +91,17 @@
         </section>
 
         {{-- Featured Businesses --}}
-        <section id="featured-businesses"
-                 x-data="{
-                    selectedMode: 'all',
-                    selectedType: 'all',
-                    items: @js($featuredBusinesses->map(fn($b) => ['mode' => $b->business_mode, 'type' => (string) $b->business_type_id])->values()),
-                    matches(mode, type){
-                        return (this.selectedMode === 'all' || this.selectedMode === mode)
-                            && (this.selectedType === 'all' || this.selectedType === String(type));
-                    },
-                    filteredCount(){
-                        return this.items.filter((item) => this.matches(item.mode, item.type)).length;
-                    },
-                    selectedFilterLabel(){
-                        if (this.selectedMode === 'all' && this.selectedType === 'all') return 'Showing all businesses';
-                        if (this.selectedMode !== 'all' && this.selectedType === 'all') return `Mode: ${this.selectedMode}`;
-                        if (this.selectedMode === 'all' && this.selectedType !== 'all') return 'Filtered by selected category';
-                        return `Mode: ${this.selectedMode} + selected category`;
-                    }
-                 }"
-                 class="space-y-8">
+        <section id="featured-businesses" class="space-y-8">
             <div class="flex flex-col gap-4 border-b border-soft-gray-200 pb-5 md:flex-row md:items-end md:justify-between reveal-on-scroll">
                 <div>
                     <h2 class="text-3xl font-bold text-soft-gray-900">Featured Businesses</h2>
                     <p class="mt-2 text-sm text-soft-gray-600">Curated ventures from our UCO entrepreneurial community.</p>
-                </div>
-                <div class="inline-flex items-center gap-2 rounded-full border border-uco-orange-200 bg-uco-orange-50 px-4 py-2 text-xs font-semibold text-uco-orange-700">
-                    <i class="bi bi-funnel"></i>
-                    <span x-text="selectedFilterLabel()"></span>
-                    <span class="text-uco-orange-500">•</span>
-                    <span><span x-text="filteredCount()"></span> result(s)</span>
-                </div>
-            </div>
-
-            <div class="space-y-4 reveal-on-scroll" style="transition-delay: 100ms;">
-                <div class="flex flex-wrap gap-2">
-                    <button @click="selectedMode='all'" :class="selectedMode==='all' ? 'bg-uco-orange-500 text-white border-uco-orange-500 shadow-sm shadow-uco-orange-200 ring-2 ring-uco-orange-200' : 'bg-white text-soft-gray-700 border-soft-gray-200 hover:border-uco-orange-200 hover:text-uco-orange-600'" class="rounded-full border px-4 py-2 text-sm font-semibold transition">All Modes</button>
-                    <button @click="selectedMode='product'" :class="selectedMode==='product' ? 'bg-uco-orange-500 text-white border-uco-orange-500 shadow-sm shadow-uco-orange-200 ring-2 ring-uco-orange-200' : 'bg-white text-soft-gray-700 border-soft-gray-200 hover:border-uco-orange-200 hover:text-uco-orange-600'" class="rounded-full border px-4 py-2 text-sm font-semibold transition">Product</button>
-                    <button @click="selectedMode='service'" :class="selectedMode==='service' ? 'bg-uco-orange-500 text-white border-uco-orange-500 shadow-sm shadow-uco-orange-200 ring-2 ring-uco-orange-200' : 'bg-white text-soft-gray-700 border-soft-gray-200 hover:border-uco-orange-200 hover:text-uco-orange-600'" class="rounded-full border px-4 py-2 text-sm font-semibold transition">Service</button>
-                    <button @click="selectedMode='both'" :class="selectedMode==='both' ? 'bg-uco-orange-500 text-white border-uco-orange-500 shadow-sm shadow-uco-orange-200 ring-2 ring-uco-orange-200' : 'bg-white text-soft-gray-700 border-soft-gray-200 hover:border-uco-orange-200 hover:text-uco-orange-600'" class="rounded-full border px-4 py-2 text-sm font-semibold transition">Both</button>
-                </div>
-
-                <div class="flex flex-wrap gap-2">
-                    <button @click="selectedType='all'" :class="selectedType==='all' ? 'bg-uco-yellow-500 text-soft-gray-900 border-uco-yellow-500 shadow-sm shadow-uco-yellow-200 ring-2 ring-uco-yellow-200' : 'bg-white text-soft-gray-700 border-soft-gray-200 hover:border-uco-yellow-300 hover:text-uco-yellow-700'" class="rounded-full border px-4 py-2 text-sm font-semibold transition">All Categories</button>
-                    @foreach($businessTypes as $type)
-                        <button @click="selectedType='{{ $type->id }}'"
-                                :class="selectedType==='{{ $type->id }}' ? 'bg-uco-yellow-500 text-soft-gray-900 border-uco-yellow-500 shadow-sm shadow-uco-yellow-200 ring-2 ring-uco-yellow-200' : 'bg-white text-soft-gray-700 border-soft-gray-200 hover:border-uco-yellow-300 hover:text-uco-yellow-700'"
-                                class="rounded-full border px-4 py-2 text-sm font-semibold transition"
-                                title="{{ $type->name }}">
-                            {{ \Illuminate\Support\Str::limit($type->name, 34) }}
-                        </button>
-                    @endforeach
                 </div>
             </div>
 
             <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:gap-8">
                 @foreach($featuredBusinesses as $business)
                     <a href="{{ route('businesses.show', $business) }}"
-                       x-show="matches('{{ $business->business_mode }}', '{{ $business->business_type_id }}')"
-                       x-transition:enter="transition ease-out duration-500"
-                       x-transition:enter-start="opacity-0 translate-y-2"
-                       x-transition:enter-end="opacity-100 translate-y-0"
                        class="group overflow-hidden rounded-2xl border border-soft-gray-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-uco-orange-300 hover:shadow-xl reveal-on-scroll flex flex-col">
                         <div class="relative h-48 overflow-hidden sm:h-52">
                             @if($business->photos->first())
@@ -201,23 +151,6 @@
                         </div>
                     </a>
                 @endforeach
-            </div>
-
-            <div x-show="filteredCount() === 0"
-                 x-transition
-                 style="display: none;"
-                 class="col-span-full flex flex-col items-center justify-center space-y-4 rounded-3xl border-2 border-dashed border-soft-gray-200 bg-soft-gray-50 p-12 text-center text-soft-gray-600 reveal-on-scroll">
-                <div class="flex h-16 w-16 items-center justify-center rounded-full bg-uco-orange-100 text-uco-orange-500">
-                    <i class="bi bi-search text-2xl"></i>
-                </div>
-                <div>
-                    <h3 class="text-lg font-bold text-soft-gray-900">No businesses match your filters</h3>
-                    <p class="mt-1 text-sm">We couldn't find any ventures matching the selected mode and category.</p>
-                </div>
-                <button type="button" @click="selectedMode = 'all'; selectedType = 'all';" class="mt-2 inline-flex items-center gap-2 rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-soft-gray-700 shadow-sm ring-1 ring-inset ring-soft-gray-300 transition hover:bg-soft-gray-50">
-                    <i class="bi bi-arrow-counterclockwise"></i>
-                    Reset Filters
-                </button>
             </div>
         </section>
 

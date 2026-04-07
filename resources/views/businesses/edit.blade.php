@@ -174,9 +174,9 @@
                 <div class="grid md:grid-cols-2 gap-5">
                     <div>
                         <label for="province" class="block text-sm font-medium text-gray-700 mb-2">
-                            Provinsi <span class="text-red-500">*</span>
+                            Provinsi
                         </label>
-                        <select name="province" id="province" required
+                        <select name="province" id="province"
                             class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('province') border-gray-200 @enderror transition">
                             <option value="" disabled {{ old('province', $business->province) ? '' : 'selected' }}>Pilih Provinsi</option>
                             @foreach ($provinces as $province)
@@ -193,9 +193,9 @@
 
                     <div>
                         <label for="city" class="block text-sm font-medium text-gray-700 mb-2">
-                            Kota <span class="text-red-500">*</span>
+                            Kota
                         </label>
-                        <select name="city" id="city" required data-selected-city="{{ $selectedCityName }}"
+                        <select name="city" id="city" data-selected-city="{{ $selectedCityName }}"
                             data-selected-province-id="{{ $selectedProvinceId }}"
                             class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 disabled:bg-gray-50 disabled:text-gray-500 disabled:border-gray-200 disabled:shadow-inner disabled:cursor-not-allowed @error('city') border-gray-200 @enderror transition"
                             {{ $selectedProvinceId ? '' : 'disabled' }}>
@@ -346,7 +346,7 @@
                             Additional Owners (Optional)
                         </label>
                         <select name="owner_ids[]" id="owner_ids" multiple
-                            class="block w-full px-4 py-3 border rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('owner_ids') border-red-500 @else border-gray-200 @enderror transition min-h-[140px]">
+                            class="block w-full px-4 py-3 border rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('owner_ids') border-red-500 @else border-gray-200 @enderror transition">
                             @foreach ($users as $ownerUser)
                                 <option value="{{ $ownerUser->id }}" @selected(in_array((string) $ownerUser->id, array_map('strval', $selectedOwnerIds), true))>
                                     {{ $ownerUser->name }} ({{ $ownerUser->email }})
@@ -945,10 +945,7 @@
                 </a>
 
                 <div class="flex items-center gap-3">
-                    <button type="submit" form="businessEditForm"
-                        class="inline-flex items-center gap-2 px-6 py-2.5 bg-soft-gray-900 hover:bg-soft-gray-800 text-white font-semibold rounded-xl shadow-md transition duration-200">
-                        Update Business
-                    </button>
+                    
 
                     <form method="POST" action="{{ route('businesses.destroy', $business) }}"
                         onsubmit="return confirm('Are you sure you want to delete this business? This action cannot be undone.');">
@@ -959,11 +956,53 @@
                             Delete Business
                         </button>
                     </form>
+                    
+                    <button type="submit" form="businessEditForm"
+                        class="inline-flex items-center gap-2 px-6 py-2.5 bg-soft-gray-900 hover:bg-soft-gray-800 text-white font-semibold rounded-xl shadow-md transition duration-200">
+                        Update Business
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- TomSelect CSS & JS -->
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.default.min.css" rel="stylesheet">
+    <style>
+        /* Tailwind UI TomSelect Overrides */
+        .ts-wrapper .ts-control {
+            border: none !important;
+            box-shadow: none !important;
+            background: transparent !important;
+            min-height: unset !important;
+            padding: 0 !important;
+        }
+        .ts-wrapper.multi.has-items .ts-control {
+            padding: 0 !important;
+        }
+        .ts-dropdown {
+            background-color: white !important;
+            border-radius: 0.75rem !important;
+            border: 1px solid #f1f5f9 !important;
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1) !important;
+            z-index: 50 !important;
+        }
+        .ts-dropdown .option.active {
+            background-color: #f8fafc !important;
+            color: #0f172a !important;
+        }
+        .ts-wrapper .ts-control > input {
+            font-size: 1rem !important;
+        }
+        .ts-control.multi .ts-item {
+            background: #f1f5f9 !important;
+            color: #0f172a !important;
+            border: 1px solid #e2e8f0 !important;
+            border-radius: 0.5rem !important;
+            padding: 0.25rem 0.5rem !important;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
     {{-- JavaScript for Dynamic Fields and Client-Side Validation --}}
     <script>
         let productIndex = 0;
@@ -1268,15 +1307,6 @@
             const selectedProvinceId = citySelect.dataset.selectedProvinceId;
             const selectedCity = citySelect.dataset.selectedCity;
 
-            // Initialize TomSelect for owners
-            if (document.getElementById('owner_ids') && window.TomSelect) {
-                new TomSelect('#owner_ids', {
-                    plugins: ['remove_button'],
-                    create: false,
-                    placeholder: 'Assign owners...'
-                });
-            }
-
             // Initial city load
             if (selectedProvinceId) {
                 loadRegenciesByProvince(selectedProvinceId, citySelect, selectedCity);
@@ -1307,6 +1337,27 @@
                 provinceSelect.addEventListener('change', function() {
                     const provinceId = UCO_PROVINCE_MAP[this.value] || null;
                     loadRegenciesByProvince(provinceId, citySelect);
+                });
+            }
+
+            // Initialize TomSelect for owner selects
+            const userIdSelect = document.getElementById("user_id");
+            const ownerIdsSelect = document.getElementById("owner_ids");
+            if (userIdSelect && window.TomSelect) {
+                new TomSelect(userIdSelect, {
+                    create: false,
+                    placeholder: "Pilih primary owner",
+                    searchField: ["text"],
+                    dropdownParent: "body"
+                });
+            }
+            if (ownerIdsSelect && window.TomSelect) {
+                new TomSelect(ownerIdsSelect, {
+                    create: false,
+                    placeholder: "Pilih additional owner",
+                    plugins: ["remove_button"],
+                    searchField: ["text"],
+                    dropdownParent: "body"
                 });
             }
         });

@@ -148,7 +148,8 @@ class BusinessContactController extends Controller
             $business->contacts()->where('id', '!=', $contact->id)->update(['is_primary' => false]);
         }
 
-        $contact->update($validated);
+        $contact->fill($validated);
+        $contact->save();
 
         // ✅ FIXED: Redirect to business show page
         return redirect()

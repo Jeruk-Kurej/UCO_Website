@@ -15,8 +15,9 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Http;
 use App\Models\BusinessPhoto;
+use Illuminate\Contracts\Queue\ShouldQueue;
 
-class BusinessesImport implements ToModel, WithHeadingRow, WithValidation, WithChunkReading
+class BusinessesImport implements ToModel, WithHeadingRow, WithValidation, WithChunkReading, ShouldQueue
 {
     protected $errors = [];
     protected $successCount = 0;

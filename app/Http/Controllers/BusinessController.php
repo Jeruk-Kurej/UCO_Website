@@ -75,7 +75,7 @@ class BusinessController extends Controller
             });
         }
         
-        $businesses = $query->orderBy('businesses.created_at', 'desc')->paginate(12);
+        $businesses = $query->orderBy('businesses.is_featured', 'desc')->orderBy('businesses.created_at', 'desc')->paginate(12);
         
         // Prepare my businesses for current user - independent of pagination
         $myBusinesses = collect();
@@ -500,6 +500,65 @@ class BusinessController extends Controller
         return redirect()
             ->route('businesses.index')
             ->with('success', 'Business deleted successfully!');
+    }
+
+    /**
+     * Download Excel template for business import
+     */
+    public function downloadTemplate(Request $request)
+    {
+        $user = $this->getAuthUser();
+        if (!$user->isAdmin()) {
+            abort(403, 'Only administrators can download templates.');
+        }
+
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        // Set Headers
+        $headers = [
+            'A1' => 'owner_email',
+            'B1' => 'business_name',
+            'C1' => 'business_type',
+            'D1' => 'business_mode',
+            'E1' => 'description',
+            'F1' => 'established_date',
+            'G1' => 'employee_count',
+            'H1' => 'revenue_range',
+            'I1' => 'address',
+            'J1' => 'province',
+            'K1' => 'city',
+            'L1' => 'is_featured',
+            'M1' => 'is_active',
+        ];
+
+        foreach ($headers as $cell => $value) {
+            $sheet->setCellValue($cell, $value);
+            $sheet->getStyle($cell)->getFont()->setBold(true);
+            $sheet->getColumnDimension(substr($cell, 0, 1))->setAutoSize(true);
+        }
+
+        // Set Sample Data
+        $sheet->setCellValue('A2', 'student@example.com');
+        $sheet->setCellValue('B2', 'My Cool Business');
+        $sheet->setCellValue('C2', 'Technology');
+        $sheet->setCellValue('D2', 'product');
+        $sheet->setCellValue('E2', 'A tech startup focusing on cool software products.');
+        $sheet->setCellValue('F2', '2025-01-01');
+        $sheet->setCellValue('G2', '5');
+        $sheet->setCellValue('H2', 'Mikro: <= Rp 300 Juta');
+        $sheet->setCellValue('I2', 'Jl. Contoh 123');
+        $sheet->setCellValue('J2', 'Jawa Timur');
+        $sheet->setCellValue('K2', 'Surabaya');
+        $sheet->setCellValue('L2', '1');
+        $sheet->setCellValue('M2', '1');
+
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+        $fileName = 'businesses_import_template_' . date('Y-m-d') . '.xlsx';
+        $tempFile = tempnam(sys_get_temp_dir(), 'excel');
+        $writer->save($tempFile);
+
+        return response()->download($tempFile, $fileName)->deleteFileAfterSend(true);
     }
 
     /**

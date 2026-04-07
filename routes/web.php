@@ -14,6 +14,7 @@ use App\Http\Controllers\ProductPhotoController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\AboutController;
 use App\Http\Controllers\UcTestimonyController;
 use App\Models\Business;
 use App\Models\BusinessType;
@@ -39,6 +40,8 @@ Route::get('/', function () {
     }
     return redirect('/featured');  // Guests go to featured page instead of the full businesses listing
 })->name('home');
+
+Route::get('/about', AboutController::class)->name('about');
 
 // Public featured page for guests
 Route::get('/featured', [FeaturedController::class, 'index'])->name('featured');
@@ -116,6 +119,7 @@ Route::middleware(['auth', 'verified', 'admin'])->group(function () {
     Route::resource('contact-types', ContactTypeController::class)->except(['index', 'show']);
     
     Route::post('/businesses/import', [BusinessController::class, 'import'])->name('businesses.import');
+    Route::get('/businesses/template/download', [BusinessController::class, 'downloadTemplate'])->name('businesses.template');
     Route::post('/businesses/{business}/toggle-featured', [BusinessController::class, 'toggleFeatured'])
         ->name('businesses.toggle-featured');
 });
