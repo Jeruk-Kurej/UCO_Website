@@ -11,7 +11,7 @@
                 <div class="h-8 w-px bg-gray-200"></div>
                 <div>
                     <h1 class="text-2xl font-black text-gray-900 tracking-tight">{{ $product->name }}</h1>
-                    <p class="text-sm text-gray-500 font-medium">Product of <span class="text-uco-orange-500">{{ $business->business_name }}</span></p>
+
                 </div>
             </div>
 
@@ -53,12 +53,14 @@
                         <div x-data="{ 
                             activePhotoIndex: 0,
                             photos: {{ json_encode($photoUrls) }},
+                            fullscreenOpen: false,
                             next() { this.activePhotoIndex = (this.activePhotoIndex + 1) % this.photos.length },
                             prev() { this.activePhotoIndex = (this.activePhotoIndex - 1 + this.photos.length) % this.photos.length }
                         }" class="p-4 sm:p-6 pb-2 sm:pb-4">
                             
                             {{-- Active Preview Container --}}
-                            <div class="relative aspect-[16/10] sm:aspect-video md:aspect-[21/9] lg:aspect-video max-h-[500px] rounded-2xl overflow-hidden bg-gray-100 border border-gray-100 group shadow-inner">
+                            <div @click="fullscreenOpen = true" 
+                                 class="relative aspect-[16/10] sm:aspect-video md:aspect-[21/9] lg:aspect-video max-h-[500px] rounded-2xl overflow-hidden bg-gray-100 border border-gray-100 group shadow-inner cursor-zoom-in">
                                 <img :src="photos[activePhotoIndex]" 
                                      class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                                      alt="{{ $product->name }}">
@@ -90,6 +92,30 @@
                                     @endforeach
                                 </div>
                             @endif
+
+                            {{-- Fullscreen Photo Modal --}}
+                            <div x-show="fullscreenOpen" 
+                                 x-transition:enter="transition ease-out duration-300"
+                                 x-transition:enter-start="opacity-0"
+                                 x-transition:enter-end="opacity-100"
+                                 x-transition:leave="transition ease-in duration-200"
+                                 x-transition:leave-start="opacity-100"
+                                 x-transition:leave-end="opacity-0"
+                                 x-cloak 
+                                 class="fixed inset-0 z-[110] flex items-center justify-center">
+                                <div class="absolute inset-0 bg-black/95 backdrop-blur-sm" @click="fullscreenOpen = false"></div>
+                                
+                                <button type="button" @click="fullscreenOpen = false"
+                                        class="absolute top-6 right-6 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 rounded-xl p-3 z-10 transition-all duration-200">
+                                    <i class="bi bi-x-lg text-2xl"></i>
+                                </button>
+
+                                <div class="relative max-h-[90vh] max-w-[95vw] flex items-center justify-center cursor-zoom-out" @click="fullscreenOpen = false">
+                                    <img :src="photos[activePhotoIndex]" 
+                                         @click.stop
+                                         class="max-h-[90vh] max-w-[95vw] object-contain rounded-lg shadow-2xl transition-all duration-500">
+                                </div>
+                            </div>
                         </div>
                     @else
                         <div class="aspect-video flex flex-col items-center justify-center p-12 bg-gray-50 text-center">
