@@ -4,7 +4,7 @@
 
 
         {{-- Page Header --}}
-        <div class="bg-white border border-slate-200 rounded-xl shadow-sm px-4 sm:px-8 py-6 sm:py-10 mb-8">
+        <div class="bg-gradient-to-br from-white via-uco-orange-50/30 to-uco-yellow-50/30 border border-slate-200 rounded-2xl shadow-sm px-4 sm:px-8 py-6 sm:py-8 mb-8">
             <div class="flex flex-col sm:flex-row sm:items-center gap-4">
                 <a href="{{ route('businesses.index') }}" 
                    class="group inline-flex items-center justify-center sm:justify-start gap-2.5 px-4 py-2.5 bg-white hover:bg-gray-900 border border-gray-200 hover:border-gray-900 text-gray-700 hover:text-white rounded-xl font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200 mb-4 sm:mb-0">
@@ -12,37 +12,42 @@
                     <span>Back</span>
                 </a>
                 <div class="flex-1 text-center sm:text-left">
-                    <h1 class="text-2xl sm:text-3xl font-bold text-slate-800">Tambah Business Baru</h1>
+                    <p class="text-xs uppercase tracking-widest font-semibold text-uco-orange-600">Business Creation</p>
+                    <h1 class="text-2xl sm:text-3xl font-bold text-slate-800 mt-1">Tambah Business Baru</h1>
                     <p class="text-slate-600 mt-2 text-sm sm:text-base">Lengkapi informasi business Anda dengan detail</p>
                 </div>
             </div>
         </div>
 
         {{-- Tab Navigation --}}
-        <div class="bg-white border border-slate-200 rounded-t-xl shadow-sm mb-0">
-            <div class="flex border-b border-slate-200 overflow-x-auto">
-                <button type="button" 
-                        @click="activeTab = 'basic'"
-                        :class="activeTab === 'basic' ? 'border-b-2 border-gray-900 text-gray-900 font-semibold' : 'text-slate-500 hover:text-gray-700'"
-                        class="flex-1 px-4 sm:px-6 py-4 text-xs sm:text-sm transition-colors whitespace-nowrap">
+        <div class="bg-white border border-slate-200 rounded-2xl shadow-sm mb-0 overflow-hidden">
+            <div class="grid grid-cols-2 sm:grid-cols-4 bg-slate-50/70 border-b border-slate-200">
+                <button type="button" @click="activeTab = 'basic'"
+                    :class="activeTab === 'basic' ?
+                        'bg-white text-uco-orange-700 font-semibold shadow-inner border-b-2 border-uco-orange-500' :
+                        'text-slate-500 hover:text-slate-700'"
+                    class="px-4 sm:px-6 py-4 text-xs sm:text-sm transition-colors whitespace-nowrap">
                     Informasi Dasar
                 </button>
-                <button type="button" 
-                        @click="activeTab = 'products'"
-                        :class="activeTab === 'products' ? 'border-b-2 border-gray-900 text-gray-900 font-semibold' : 'text-slate-500 hover:text-gray-700'"
-                        class="flex-1 px-4 sm:px-6 py-4 text-xs sm:text-sm transition-colors whitespace-nowrap">
+                <button type="button" @click="activeTab = 'products'"
+                    :class="activeTab === 'products' ?
+                        'bg-white text-blue-700 font-semibold shadow-inner border-b-2 border-blue-500' :
+                        'text-slate-500 hover:text-slate-700'"
+                    class="px-4 sm:px-6 py-4 text-xs sm:text-sm transition-colors whitespace-nowrap">
                     Produk & Layanan
                 </button>
-                <button type="button" 
-                        @click="activeTab = 'development'"
-                        :class="activeTab === 'development' ? 'border-b-2 border-gray-900 text-gray-900 font-semibold' : 'text-slate-500 hover:text-gray-700'"
-                        class="flex-1 px-4 sm:px-6 py-4 text-xs sm:text-sm transition-colors whitespace-nowrap">
+                <button type="button" @click="activeTab = 'development'"
+                    :class="activeTab === 'development' ?
+                        'bg-white text-purple-700 font-semibold shadow-inner border-b-2 border-purple-500' :
+                        'text-slate-500 hover:text-slate-700'"
+                    class="px-4 sm:px-6 py-4 text-xs sm:text-sm transition-colors whitespace-nowrap">
                     Perkembangan Business
                 </button>
-                <button type="button" 
-                        @click="activeTab = 'documents'"
-                        :class="activeTab === 'documents' ? 'border-b-2 border-gray-900 text-gray-900 font-semibold' : 'text-slate-500 hover:text-gray-700'"
-                        class="flex-1 px-4 sm:px-6 py-4 text-xs sm:text-sm transition-colors whitespace-nowrap">
+                <button type="button" @click="activeTab = 'documents'"
+                    :class="activeTab === 'documents' ?
+                        'bg-white text-emerald-700 font-semibold shadow-inner border-b-2 border-emerald-500' :
+                        'text-slate-500 hover:text-slate-700'"
+                    class="px-4 sm:px-6 py-4 text-xs sm:text-sm transition-colors whitespace-nowrap">
                     Dokumen & Sertifikasi
                 </button>
             </div>
@@ -612,45 +617,186 @@
             {{-- TAB 4: DOCUMENTS & CERTIFICATIONS --}}
             <div x-show="activeTab === 'documents'" class="bg-white border-x border-b border-slate-200 rounded-b-xl shadow-sm p-8 space-y-6">
                 <div>
-                    <label for="legal_documents" class="block text-sm font-medium text-gray-700 mb-2">
-                        Dokumen Legal (Bisa banyak file)
-                    </label>
-                    <input type="file"
-                           name="legal_documents[]"
-                           id="legal_documents"
-                           multiple
-                           accept=".pdf,.jpg,.jpeg,.png"
-                           class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 transition">
-                    <p class="mt-1 text-xs text-gray-500">Pilih beberapa file sekaligus (PDF/JPG/PNG, max 5MB per file).</p>
-                    <ul id="legalDocumentsList" class="mt-2 text-xs text-gray-600 space-y-1"></ul>
-
-                    @error('legal_documents')
-                        <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                    @error('legal_documents.*')
-                        <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
+            {{-- TAB 4: DOCUMENTS --}}
+            <div x-show="activeTab === 'documents'"
+                class="bg-white border-x border-b border-slate-200 rounded-b-2xl shadow-sm p-8 space-y-8" style="display: none;">
+                
+                <div class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+                    <p class="font-semibold">Dokumen & Sertifikasi</p>
+                    <p class="text-xs mt-0.5">Upload bukti legalitas dan sertifikasi untuk meningkatkan kepercayaan pengunjung.</p>
                 </div>
 
-                <div>
-                    <label for="product_certifications" class="block text-sm font-medium text-gray-700 mb-2">
-                        Sertifikasi Produk (Bisa banyak file)
-                    </label>
-                    <input type="file"
-                           name="product_certifications[]"
-                           id="product_certifications"
-                           multiple
-                           accept=".pdf,.jpg,.jpeg,.png"
-                           class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 transition">
-                    <p class="mt-1 text-xs text-gray-500">Pilih beberapa file sekaligus (PDF/JPG/PNG, max 5MB per file).</p>
-                    <ul id="productCertificationsList" class="mt-2 text-xs text-gray-600 space-y-1"></ul>
+                <div class="grid md:grid-cols-2 gap-8">
+                    <!-- Dokumen Legal -->
+                    <div x-data="{
+                        files: [],
+                        handleDrop(e) { e.preventDefault(); if (e.dataTransfer.files.length) this.addFiles(Array.from(e.dataTransfer.files)); },
+                        handleSelect(e) { if (e.target.files.length) this.addFiles(Array.from(e.target.files)); },
+                        addFiles(newFiles) {
+                            const validFiles = newFiles.filter(f => f.size <= 20 * 1024 * 1024);
+                            if (newFiles.length !== validFiles.length) {
+                                showValidationToast('Gagal: Beberapa file terlalu besar (Maksimal 20MB per file).');
+                            }
+                            this.files = [...this.files, ...validFiles];
+                            this.syncInput();
+                        },
+                        removeFile(index) {
+                            this.files.splice(index, 1);
+                            this.syncInput();
+                        },
+                        syncInput() {
+                            const dt = new DataTransfer();
+                            this.files.forEach(f => dt.items.add(f));
+                            this.$refs.fileInput.files = dt.files;
+                        },
+                        megabytes(b) { return (b / (1024 * 1024)).toFixed(2) + ' MB'; }
+                    }">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Dokumen Legal (Bisa banyak file)
+                        </label>
+                        <div class="relative group" @dragover.prevent @drop="handleDrop">
+                            <label
+                                class="flex flex-col items-center w-full px-4 py-4 bg-white border-2 border-slate-200 border-dashed rounded-xl cursor-pointer hover:border-uco-orange-500 hover:bg-orange-50/30 transition-all duration-300">
+                                <div class="flex flex-row items-center justify-center gap-3 w-full">
+                                    <div
+                                        class="w-10 h-10 shrink-0 rounded-full bg-slate-50 flex items-center justify-center border border-slate-100 group-hover:bg-uco-orange-100 group-hover:border-uco-orange-200 transition-colors">
+                                        <i
+                                            class="bi bi-cloud-arrow-up text-lg text-slate-400 group-hover:text-uco-orange-600 transition-colors"></i>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p
+                                            class="text-sm font-semibold text-slate-700 group-hover:text-uco-orange-700 truncate">
+                                            Pilih Dokumen
+                                        </p>
+                                        <p class="text-[10px] text-slate-500 truncate">Format PDF/JPG/PNG (Max 20MB)
+                                        </p>
+                                    </div>
+                                    <div
+                                        class="shrink-0 px-3 py-1.5 bg-slate-100 text-slate-600 text-xs font-medium rounded-lg group-hover:bg-uco-orange-500 group-hover:text-white transition-colors shadow-sm">
+                                        Browse
+                                    </div>
+                                </div>
+                                <input type="file" x-ref="fileInput" name="legal_documents[]" multiple
+                                    accept=".pdf,.jpg,.jpeg,.png" class="hidden" @change="handleSelect($event)">
+                            </label>
+                        </div>
+                        <ul x-show="files.length > 0" class="mt-3 space-y-2" x-transition>
+                            <template x-for="(file, index) in files" :key="index">
+                                <li
+                                    class="flex items-center justify-between p-2.5 bg-white border border-slate-200 rounded-xl shadow-sm hover:border-slate-300 transition">
+                                    <div class="flex items-center gap-2.5 overflow-hidden">
+                                        <div
+                                            class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                                            <i class="bi bi-file-earmark-check"></i>
+                                        </div>
+                                        <div class="min-w-0 pr-2">
+                                            <p class="text-xs font-semibold text-slate-700 truncate"
+                                                x-text="file.name"></p>
+                                            <p class="text-[10px] text-slate-500 font-medium"
+                                                x-text="megabytes(file.size)"></p>
+                                        </div>
+                                    </div>
+                                    <button type="button" @click.prevent="removeFile(index)"
+                                        class="shrink-0 w-7 h-7 flex items-center justify-center rounded-lg text-red-400 hover:text-white hover:bg-red-500 transition-colors">
+                                        <i class="bi bi-x-lg text-sm"></i>
+                                    </button>
+                                </li>
+                            </template>
+                        </ul>
 
-                    @error('product_certifications')
-                        <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                    @error('product_certifications.*')
-                        <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
+                        @error('legal_documents')
+                            <p class="mt-1.5 text-xs text-red-600">{{ $message }}</p>
+                        @enderror
+                        @error('legal_documents.*')
+                            <p class="mt-1.5 text-xs text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- Sertifikasi Produk -->
+                    <div x-data="{
+                        files: [],
+                        handleDrop(e) { e.preventDefault(); if (e.dataTransfer.files.length) this.addFiles(Array.from(e.dataTransfer.files)); },
+                        handleSelect(e) { if (e.target.files.length) this.addFiles(Array.from(e.target.files)); },
+                        addFiles(newFiles) {
+                            const validFiles = newFiles.filter(f => f.size <= 20 * 1024 * 1024);
+                            if (newFiles.length !== validFiles.length) {
+                                showValidationToast('Gagal: Beberapa file terlalu besar (Maksimal 20MB per file).');
+                            }
+                            this.files = [...this.files, ...validFiles];
+                            this.syncInput();
+                        },
+                        removeFile(index) {
+                            this.files.splice(index, 1);
+                            this.syncInput();
+                        },
+                        syncInput() {
+                            const dt = new DataTransfer();
+                            this.files.forEach(f => dt.items.add(f));
+                            this.$refs.fileInput.files = dt.files;
+                        },
+                        megabytes(b) { return (b / (1024 * 1024)).toFixed(2) + ' MB'; }
+                    }">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Sertifikasi Produk (Bisa banyak file)
+                        </label>
+
+                        <div class="relative group" @dragover.prevent @drop="handleDrop">
+                            <label
+                                class="flex flex-col items-center w-full px-4 py-4 bg-white border-2 border-slate-200 border-dashed rounded-xl cursor-pointer hover:border-uco-orange-500 hover:bg-orange-50/30 transition-all duration-300">
+                                <div class="flex flex-row items-center justify-center gap-3 w-full">
+                                    <div
+                                        class="w-10 h-10 shrink-0 rounded-full bg-slate-50 flex items-center justify-center border border-slate-100 group-hover:bg-uco-orange-100 group-hover:border-uco-orange-200 transition-colors">
+                                        <i
+                                            class="bi bi-cloud-arrow-up text-lg text-slate-400 group-hover:text-uco-orange-600 transition-colors"></i>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p
+                                            class="text-sm font-semibold text-slate-700 group-hover:text-uco-orange-700 truncate">
+                                            Pilih Sertifikasi
+                                        </p>
+                                        <p class="text-[10px] text-slate-500 truncate">Format PDF/JPG/PNG (Max 20MB)
+                                        </p>
+                                    </div>
+                                    <div
+                                        class="shrink-0 px-3 py-1.5 bg-slate-100 text-slate-600 text-xs font-medium rounded-lg group-hover:bg-uco-orange-500 group-hover:text-white transition-colors shadow-sm">
+                                        Browse
+                                    </div>
+                                </div>
+                                <input type="file" x-ref="fileInput" name="product_certifications[]" multiple
+                                    accept=".pdf,.jpg,.jpeg,.png" class="hidden" @change="handleSelect($event)">
+                            </label>
+                        </div>
+                        <ul x-show="files.length > 0" class="mt-3 space-y-2" x-transition>
+                            <template x-for="(file, index) in files" :key="index">
+                                <li
+                                    class="flex items-center justify-between p-2.5 bg-white border border-slate-200 rounded-xl shadow-sm hover:border-slate-300 transition">
+                                    <div class="flex items-center gap-2.5 overflow-hidden">
+                                        <div
+                                            class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                                            <i class="bi bi-file-earmark-check"></i>
+                                        </div>
+                                        <div class="min-w-0 pr-2">
+                                            <p class="text-xs font-semibold text-slate-700 truncate"
+                                                x-text="file.name"></p>
+                                            <p class="text-[10px] text-slate-500 font-medium"
+                                                x-text="megabytes(file.size)"></p>
+                                        </div>
+                                    </div>
+                                    <button type="button" @click.prevent="removeFile(index)"
+                                        class="shrink-0 w-7 h-7 flex items-center justify-center rounded-lg text-red-400 hover:text-white hover:bg-red-500 transition-colors">
+                                        <i class="bi bi-x-lg text-sm"></i>
+                                    </button>
+                                </li>
+                            </template>
+                        </ul>
+
+                        @error('product_certifications')
+                            <p class="mt-1.5 text-xs text-red-600">{{ $message }}</p>
+                        @enderror
+                        @error('product_certifications.*')
+                            <p class="mt-1.5 text-xs text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
                 </div>
             </div>
 
@@ -668,16 +814,24 @@
                 </button>
             </div>
 
-            {{-- Submit Buttons --}}
-            <div class="flex items-center justify-between pt-6 border-t border-gray-200 mt-6">
-                <a href="{{ route('businesses.index') }}" class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 hover:text-gray-900 rounded-xl transition duration-150">
+        </form>
+
+        {{-- Action Buttons --}}
+        <div class="sticky bottom-4 z-40 mt-8">
+            <div class="flex items-center justify-between gap-3 p-3 sm:p-4 rounded-2xl border border-slate-200 bg-white/95 backdrop-blur shadow-lg">
+                <a href="{{ route('businesses.index') }}"
+                    class="inline-flex items-center px-4 py-2.5 text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 hover:text-gray-900 rounded-xl transition duration-150">
                     Cancel
                 </a>
-                <button type="submit" class="inline-flex items-center gap-2 px-6 py-2.5 bg-soft-gray-900 hover:bg-soft-gray-800 text-white font-semibold rounded-xl shadow-md transition duration-200">
-                    Simpan Business
-                </button>
+
+                <div class="flex items-center gap-3">
+                    <button type="submit" form="businessCreateForm"
+                        class="inline-flex items-center gap-2 px-6 py-2.5 bg-soft-gray-900 hover:bg-soft-gray-800 text-white font-semibold rounded-xl shadow-md transition duration-200">
+                        Simpan Business
+                    </button>
+                </div>
             </div>
-        </form>
+        </div>
     </div>
 
     {{-- JavaScript for Dynamic Fields and Client-Side Validation --}}
