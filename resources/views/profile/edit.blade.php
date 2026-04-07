@@ -23,7 +23,8 @@
             </a>
             <div class="flex-1">
                 <h1 class="text-2xl font-bold text-gray-900">Edit My Profile</h1>
-            <p class="text-sm text-gray-600">Manage your personal information and account settings</p>
+                <p class="text-sm text-gray-600">Manage your personal information and account settings</p>
+            </div>
         </div>
 
         <form method="POST" action="{{ route('profile.update') }}" enctype="multipart/form-data">
