@@ -36,21 +36,7 @@
                         @enderror
                     </div>
 
-                    {{-- Info Card --}}
-                    <div class="bg-gradient-to-br from-yellow-50 to-orange-50 border border-yellow-200 rounded-xl p-4">
-                        <div class="flex gap-3">
-                            <i class="bi bi-lightbulb text-yellow-600 text-xl flex-shrink-0"></i>
-                            <div class="text-sm text-yellow-800">
-                                <p class="font-semibold mb-1">Category Naming Tips</p>
-                                <ul class="space-y-1 text-xs">
-                                    <li>• Use clear, descriptive names that users will understand</li>
-                                    <li>• Keep it short and concise (1-3 words)</li>
-                                    <li>• Examples for Restaurant: "Beverages", "Appetizers", "Desserts"</li>
-                                    <li>• Examples for Fashion: "Shirts", "Pants", "Accessories"</li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
+
 
                     {{-- Submit Buttons --}}
                     <div class="flex items-center justify-between pt-6 border-t border-gray-200">

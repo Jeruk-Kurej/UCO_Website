@@ -214,7 +214,7 @@ class BusinessController extends Controller
 
             return redirect()
                 ->route('businesses.show', $business)
-                ->with('success', 'Business created successfully!');
+                ->with('success', "Success! The business '{$business->name}' has been registered.");
         } catch (\Exception $e) {
             return back()->withErrors(['error' => 'An error occurred while creating the business. Please try again.'])->withInput();
         }
@@ -450,7 +450,7 @@ class BusinessController extends Controller
 
             return redirect()
                 ->route('businesses.show', $business)
-                ->with('success', 'Business updated successfully!');
+                ->with('success', "Success! The details for '{$business->name}' have been updated.");
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error('Update error: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
             return back()->withErrors(['error' => 'An error occurred while updating the business. Please try again.'])->withInput();
@@ -476,7 +476,7 @@ class BusinessController extends Controller
         return response()->json([
             'success' => true,
             'is_featured' => $business->is_featured,
-            'message' => "Business successfully {$status}!"
+            'message' => "Business '{$business->name}' successfully {$status}!"
         ]);
     }
 
@@ -491,7 +491,7 @@ class BusinessController extends Controller
 
         return redirect()
             ->route('businesses.index')
-            ->with('success', 'Business deleted successfully!');
+            ->with('success', "The business '{$business->name}' has been deleted successfully.");
     }
 
     /**
@@ -627,7 +627,7 @@ class BusinessController extends Controller
     private function syncInlineProducts(Business $business, array $rows, bool $isUpdate): void
     {
         $defaultCategory = $business->productCategories()->firstOrCreate([
-            'name' => 'Umum',
+            'name' => 'General',
         ]);
 
         $keptIds = [];

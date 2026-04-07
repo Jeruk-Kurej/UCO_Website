@@ -95,7 +95,7 @@ class ProductController extends Controller
             // ✅ FIXED: Redirect to business show page with products tab active
             return redirect()
                 ->route('businesses.show', $business)
-                ->with('success', 'Product created successfully!')
+                ->with('success', "Success! The product '{$product->name}' has been added to '{$business->name}'.")
                 ->with('activeTab', 'products');
         } catch (\Illuminate\Validation\ValidationException $e) {
             return back()->withErrors($e->errors())->withInput();
@@ -167,7 +167,7 @@ class ProductController extends Controller
         // ✅ FIXED: Redirect to business show page
         return redirect()
             ->route('businesses.show', $business)
-            ->with('success', 'Product updated successfully!')
+            ->with('success', "Success! The details for '{$product->name}' have been updated.")
             ->with('activeTab', 'products');
     }
 
@@ -188,7 +188,7 @@ class ProductController extends Controller
         // ✅ FIXED: Redirect to business show page
         return redirect()
             ->route('businesses.show', $business)
-            ->with('success', 'Product deleted successfully!')
+            ->with('success', "Success! The product '{$product->name}' has been removed.")
             ->with('activeTab', 'products');
     }
 }

@@ -352,7 +352,7 @@
                             </option>
                         @endforeach
                     </select>
-                    <p class="mt-1 text-xs text-gray-500">Tip: Hold ⌘ / Ctrl to select multiple owners. Admin users are excluded automatically.</p>
+
                     @error('owner_ids')
                         <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -619,10 +619,7 @@
             <div x-show="activeTab === 'documents'"
                 class="bg-white border-x border-b border-slate-200 rounded-b-2xl shadow-sm p-8 space-y-8" style="display: none;">
                 
-                <div class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
-                    <p class="font-semibold">Dokumen & Sertifikasi</p>
-                    <p class="text-xs mt-0.5">Upload bukti legalitas dan sertifikasi untuk meningkatkan kepercayaan pengunjung.</p>
-                </div>
+
 
                 <div class="grid md:grid-cols-2 gap-8">
                     <!-- Dokumen Legal -->

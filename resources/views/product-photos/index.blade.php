@@ -13,15 +13,17 @@
                 <h1 class="text-2xl font-bold text-gray-900">Product Photos</h1>
                 <p class="text-sm text-gray-600">{{ $product->name }} &mdash; {{ $product->business->name }}</p>
             </div>
-            @auth
-                @if(auth()->id() === $product->business->user_id || auth()->user()->isAdmin())
-                    <a href="{{ route('products.photos.create', $product) }}" 
-                       class="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-xl font-semibold text-sm shadow-sm transition duration-150">
-                        <i class="bi bi-upload"></i>
-                        Upload Photo
-                    </a>
-                @endif
-            @endauth
+            @if($photos->count() > 0)
+                @auth
+                    @if(auth()->id() === $product->business->user_id || auth()->user()->isAdmin())
+                        <a href="{{ route('products.photos.create', $product) }}" 
+                           class="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-xl font-semibold text-sm shadow-sm transition duration-150">
+                            <i class="bi bi-upload"></i>
+                            Upload Photo
+                        </a>
+                    @endif
+                @endauth
+            @endif
         </div>
 
         {{-- Success / Error flash --}}
@@ -63,7 +65,7 @@
                                         const file = event.target.files[0];
                                         if (file) {
                                             if (file.size > 10 * 1024 * 1024) {
-                                                alert('Photo must not be larger than 10MB.');
+                                                window.showToast('The photo is too large. Please select a file smaller than 10MB.', 'error');
                                                 this.removeNewFile();
                                                 return;
                                             }
@@ -122,7 +124,7 @@
                                                         @click="showUpdate = !showUpdate; if(!showUpdate) cancelUpdate()"
                                                         :class="showUpdate ? 'bg-blue-600 hover:bg-blue-700' : 'bg-white/90 hover:bg-white text-gray-700'"
                                                         class="inline-flex items-center justify-center w-9 h-9 rounded-full shadow-lg transition-all duration-150 backdrop-blur-sm"
-                                                        :title="showUpdate ? 'Tutup panel update' : 'Update foto ini'">
+                                                        :title="showUpdate ? 'Close update panel' : 'Update this photo'">
                                                     <template x-if="!showUpdate">
                                                         <i class="bi bi-pencil text-sm text-gray-700"></i>
                                                     </template>
@@ -134,13 +136,13 @@
                                                 {{-- Delete button --}}
                                                 <form action="{{ route('products.photos.destroy', [$product, $photo]) }}"
                                                       method="POST"
-                                                      onsubmit="return confirm('Hapus foto ini permanen?');"
+                                                      onsubmit="return confirm('Delete this photo permanently?');"
                                                       class="inline">
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="submit"
                                                             class="inline-flex items-center justify-center w-9 h-9 bg-red-500/90 hover:bg-red-600 text-white rounded-full shadow-lg transition-all duration-150 backdrop-blur-sm"
-                                                            title="Hapus foto">
+                                                            title="Delete photo">
                                                         <i class="bi bi-trash text-sm"></i>
                                                     </button>
                                                 </form>
@@ -172,7 +174,7 @@
                                                     <div class="w-6 h-6 bg-blue-100 rounded-lg flex items-center justify-center">
                                                         <i class="bi bi-pencil text-blue-600 text-xs"></i>
                                                     </div>
-                                                    <p class="text-sm font-semibold text-blue-800">Update Foto</p>
+                                                    <p class="text-sm font-semibold text-blue-800">Update Photo</p>
                                                 </div>
 
                                                 {{-- Before / After Preview --}}
@@ -181,7 +183,7 @@
                                                     <div class="flex items-center gap-3 p-3 bg-white border border-gray-200/80 rounded-xl">
                                                         {{-- Current photo --}}
                                                         <div class="flex flex-col items-center gap-1">
-                                                            <span class="text-[9px] font-bold tracking-widest text-gray-400 uppercase">Saat Ini</span>
+                                                            <span class="text-[9px] font-bold tracking-widest text-gray-400 uppercase">Current</span>
                                                             <div class="w-16 h-16 rounded-lg bg-white border border-gray-200 flex items-center justify-center overflow-hidden shadow-sm">
                                                                 <img :src="currentImage" alt="{{ $product->name . ' photo' }}" class="w-full h-full object-cover">
                                                             </div>
@@ -199,14 +201,14 @@
                                                         {{-- New photo preview --}}
                                                         <template x-if="newImagePreview">
                                                             <div class="flex flex-col items-center gap-1">
-                                                                <span class="text-[9px] font-bold tracking-widest text-blue-500 uppercase">Baru</span>
+                                                                <span class="text-[9px] font-bold tracking-widest text-blue-500 uppercase">New</span>
                                                                 <div class="relative">
                                                                     <div class="w-16 h-16 rounded-lg bg-blue-50 border-2 border-blue-400 flex items-center justify-center overflow-hidden shadow-md">
                                                                         <img :src="newImagePreview" class="w-full h-full object-cover">
                                                                     </div>
                                                                     <button type="button" @click="removeNewFile()"
                                                                             class="absolute -top-1.5 -right-1.5 bg-red-500 hover:bg-red-600 text-white p-0.5 rounded-full shadow-md transition-all hover:scale-110 focus:outline-none"
-                                                                            title="Batalkan pilihan baru">
+                                                                            title="Cancel new selection">
                                                                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
                                                                         </svg>
@@ -224,10 +226,8 @@
                                                         <label for="photo_{{ $photo->id }}"
                                                                :class="isDragging ? 'bg-blue-100 border-blue-400' : 'bg-white hover:bg-gray-50 border-gray-300'"
                                                                class="cursor-pointer inline-flex items-center gap-2 px-3 py-2 border rounded-xl text-xs font-semibold text-gray-700 transition-all shadow-sm">
-                                                            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
-                                                            </svg>
-                                                            <span x-text="newImagePreview ? 'Ganti Pilihan' : 'Pilih Foto Baru'"></span>
+                                                            <i class="bi bi-upload text-base"></i>
+                                                            <span x-text="newImagePreview ? 'Change Selection' : 'Select New Photo'"></span>
                                                             <input type="file"
                                                                    name="photo"
                                                                    id="photo_{{ $photo->id }}"
@@ -236,7 +236,7 @@
                                                                    x-ref="fileInput"
                                                                    @change="fileSelected">
                                                         </label>
-                                                        <p class="text-[10px] text-gray-400">JPG, PNG, GIF (maks. 10MB)</p>
+                                                        <p class="text-[10px] text-gray-400">JPG, PNG, GIF (max. 10MB)</p>
                                                     </div>
                                                 </div>
 
@@ -278,14 +278,14 @@
                     <div class="w-20 h-20 bg-orange-50 rounded-full flex items-center justify-center mx-auto mb-4">
                         <i class="bi bi-images text-4xl text-orange-300"></i>
                     </div>
-                    <p class="text-gray-500 text-lg font-semibold mb-1">Belum ada foto</p>
+                    <p class="text-gray-500 text-lg font-semibold mb-1">No photos yet</p>
                     @auth
                         @if(auth()->id() === $product->business->user_id || auth()->user()->isAdmin())
-                            <p class="text-sm text-gray-400 mb-5">Upload foto untuk menampilkan product ini</p>
+                            <p class="text-sm text-gray-400 mb-5">Upload photos to showcase this product</p>
                             <a href="{{ route('products.photos.create', $product) }}"
                                class="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-900 hover:bg-gray-800 text-white text-sm font-semibold rounded-xl shadow-sm transition duration-150">
                                 <i class="bi bi-upload"></i>
-                                Upload Foto Pertama
+                                Upload First Photo
                             </a>
                         @endif
                     @endauth

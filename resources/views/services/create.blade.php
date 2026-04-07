@@ -89,9 +89,7 @@
                         @error('price_type')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
-                        <p class="mt-1 text-xs text-gray-500">
-                            <strong>Fixed:</strong> Exact price. <strong>Starting From:</strong> Minimum price, can be higher based on requirements.
-                        </p>
+
                     </div>
 
                     {{-- Submit Buttons --}}

@@ -1,9 +1,5 @@
 <x-guest-layout>
-    @if (session('status'))
-        <div class="mb-6 p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-800">
-            {{ session('status') }}
-        </div>
-    @endif
+
 
     <form method="POST" action="{{ route('login') }}" class="space-y-5">
         @csrf

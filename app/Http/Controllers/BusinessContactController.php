@@ -86,7 +86,7 @@ class BusinessContactController extends Controller
         // ✅ FIXED: Redirect to business show page
         return redirect()
             ->route('businesses.show', $business)
-            ->with('success', 'Contact created successfully!')
+            ->with('success', "Success! A new contact for '{$business->name}' has been added.")
             ->with('activeTab', 'contacts');
     }
 
@@ -154,7 +154,7 @@ class BusinessContactController extends Controller
         // ✅ FIXED: Redirect to business show page
         return redirect()
             ->route('businesses.show', $business)
-            ->with('success', 'Contact updated successfully!')
+            ->with('success', "Success! The contact information for '{$business->name}' has been updated.")
             ->with('activeTab', 'contacts');
     }
 
@@ -175,7 +175,7 @@ class BusinessContactController extends Controller
         // ✅ FIXED: Redirect to business show page
         return redirect()
             ->route('businesses.show', $business)
-            ->with('success', 'Contact deleted successfully!')
+            ->with('success', "The contact for '{$business->name}' has been removed successfully.")
             ->with('activeTab', 'contacts');
     }
 }

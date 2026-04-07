@@ -104,7 +104,7 @@ class BusinessPhotoController extends Controller
             // ✅ FIXED: Redirect to business show page
             return redirect()
                 ->route('businesses.show', $business)
-                ->with('success', 'Photo uploaded successfully!')
+                ->with('success', "Success! Your photo for '{$business->name}' has been uploaded.")
                 ->with('activeTab', 'photos');
         } catch (\Illuminate\Validation\ValidationException $e) {
             return back()->withErrors($e->errors())->withInput();
@@ -182,7 +182,7 @@ class BusinessPhotoController extends Controller
         // ✅ FIXED: Redirect to business show page
         return redirect()
             ->route('businesses.show', $business)
-            ->with('success', 'Photo updated successfully!')
+            ->with('success', "Success! Your photo for '{$business->name}' has been updated.")
             ->with('activeTab', 'photos');
     }
 
@@ -208,7 +208,7 @@ class BusinessPhotoController extends Controller
         // ✅ FIXED: Redirect to business show page
         return redirect()
             ->route('businesses.show', $business)
-            ->with('success', 'Photo deleted successfully!')
+            ->with('success', "The photo for '{$business->name}' has been removed successfully.")
             ->with('activeTab', 'photos');
     }
 }

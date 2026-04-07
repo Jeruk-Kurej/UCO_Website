@@ -32,7 +32,7 @@
                         @error('contact_type_id')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
-                        <p class="mt-1 text-xs text-gray-500">Select the platform for this contact method</p>
+
                     </div>
 
                     {{-- Contact Value --}}
@@ -50,9 +50,7 @@
                         @error('contact_value')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
-                        <p class="mt-1 text-xs text-gray-500">
-                            <strong>Examples:</strong> WhatsApp: 081234567890, Instagram: @username, Email: contact@business.com
-                        </p>
+
                     </div>
 
                     {{-- Is Primary --}}
@@ -66,7 +64,7 @@
                                    class="mt-1 rounded border-gray-200 text-orange-600 focus:ring-soft-gray-900">
                             <div>
                                 <span class="text-sm font-medium text-gray-700">Set as Primary Contact</span>
-                                <p class="text-xs text-gray-500">This will be the main contact method displayed prominently</p>
+
                             </div>
                         </label>
                         @error('is_primary')

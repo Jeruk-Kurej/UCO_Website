@@ -85,7 +85,7 @@ class ServiceController extends Controller
             // ✅ FIXED: Redirect to business show page with services tab active
             return redirect()
                 ->route('businesses.show', $business)
-                ->with('success', 'Service created successfully!')
+                ->with('success', "Success! The service '{$service->name}' has been added to '{$business->name}'.")
                 ->with('activeTab', 'services');
         } catch (\Illuminate\Validation\ValidationException $e) {
             return back()->withErrors($e->errors())->withInput();
@@ -146,7 +146,7 @@ class ServiceController extends Controller
         // ✅ FIXED: Redirect to business show page
         return redirect()
             ->route('businesses.show', $business)
-            ->with('success', 'Service updated successfully!')
+            ->with('success', "Success! The details for '{$service->name}' have been updated.")
             ->with('activeTab', 'services');
     }
 
@@ -167,7 +167,7 @@ class ServiceController extends Controller
         // ✅ FIXED: Redirect to business show page
         return redirect()
             ->route('businesses.show', $business)
-            ->with('success', 'Service deleted successfully!')
+            ->with('success', "Success! The service '{$service->name}' has been removed.")
             ->with('activeTab', 'services');
     }
 }

@@ -41,6 +41,13 @@ function initRevealOnScroll() {
 
 window.initRevealOnScroll = initRevealOnScroll;
 
+// Global Toast Helper
+window.showToast = function(message, type = 'success') {
+    window.dispatchEvent(new CustomEvent('notify', {
+        detail: { message, type }
+    }));
+};
+
 document.addEventListener('DOMContentLoaded', () => {
 	initRevealOnScroll();
 });

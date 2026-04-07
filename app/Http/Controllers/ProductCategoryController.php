@@ -71,7 +71,7 @@ class ProductCategoryController extends Controller
 
         return redirect()
             ->route('businesses.product-categories.index', $business)
-            ->with('success', 'Product category created successfully!');
+            ->with('success', "Success! The category '{$category->name}' has been created.");
     }
 
     /**
@@ -128,7 +128,7 @@ class ProductCategoryController extends Controller
 
         return redirect()
             ->route('businesses.product-categories.index', $business)
-            ->with('success', 'Product category updated successfully!');
+            ->with('success', "Success! The category '{$productCategory->name}' has been updated.");
     }
 
     /**
@@ -147,13 +147,13 @@ class ProductCategoryController extends Controller
         if ($productCategory->products()->count() > 0) {
             return redirect()
                 ->route('businesses.product-categories.index', $business)
-                ->with('error', 'Cannot delete category that has products. Please delete or reassign products first.');
+                ->with('error', "Cannot delete '{$productCategory->name}' because it still contains products. Please reorganize your products first.");
         }
 
         $productCategory->delete();
 
         return redirect()
             ->route('businesses.product-categories.index', $business)
-            ->with('success', 'Product category deleted successfully!');
+            ->with('success', "Success! The category '{$productCategory->name}' has been deleted.");
     }
 }

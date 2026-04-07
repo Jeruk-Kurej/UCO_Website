@@ -5,10 +5,12 @@
             <h1 class="text-4xl font-extrabold text-gray-900 tracking-tight mb-2">My Business Portfolio</h1>
             <p class="text-lg text-gray-500 max-w-2xl leading-relaxed mb-8">Manage and grow your entrepreneurial ventures within the UCO community.</p>
             
-            <a href="{{ route('businesses.create') }}" class="inline-flex items-center justify-center px-6 py-3.5 bg-uco-orange-500 text-white font-bold rounded-2xl hover:bg-uco-orange-600 hover:-translate-y-1 shadow-lg shadow-uco-orange-200 transition-all duration-300 group">
-                <i class="bi bi-plus-circle-fill mr-2.5 text-lg group-hover:rotate-90 transition-transform duration-300"></i>
-                Register New Business
-            </a>
+            @if($myBusinesses->count() > 0)
+                <a href="{{ route('businesses.create') }}" class="inline-flex items-center justify-center px-6 py-3.5 bg-uco-orange-500 text-white font-bold rounded-2xl hover:bg-uco-orange-600 hover:-translate-y-1 shadow-lg shadow-uco-orange-200 transition-all duration-300 group">
+                    <i class="bi bi-plus-circle-fill mr-2.5 text-lg group-hover:rotate-90 transition-transform duration-300"></i>
+                    Register New Business
+                </a>
+            @endif
         </div>
 
         {{-- Businesses Grid --}}

@@ -105,11 +105,11 @@ class UcTestimonyController extends Controller
             // Non-approved items simply won't appear in the public list.
             return redirect()
                 ->route('uc-testimonies.index')
-                ->with('success', 'Your testimony has been submitted.');
+                ->with('success', 'Success! Your testimony has been submitted for review. Thank you for your feedback.');
         } catch (\Illuminate\Validation\ValidationException $e) {
             return back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
-            return back()->withErrors(['error' => 'An error occurred while submitting your testimony. Please try again.'])->withInput();
+            return back()->withErrors(['error' => 'Sorry, an unexpected error occurred while submitting your testimony. Please try again later.'])->withInput();
         }
     }
 
@@ -130,6 +130,6 @@ class UcTestimonyController extends Controller
 
         return redirect()
             ->route('ai-analyses.index')
-            ->with('success', 'UC testimony rejected and deleted.');
+            ->with('success', 'The UC testimony has been successfully rejected and removed.');
     }
 }

@@ -80,7 +80,7 @@ class ProductPhotoController extends Controller
             // ✅ FIXED: Redirect back to photo index
             return redirect()
                 ->route('products.photos.index', $product)
-                ->with('success', 'Product photo uploaded successfully!');
+                ->with('success', "Success! Your photo for '{$product->name}' has been uploaded.");
         } catch (\Illuminate\Validation\ValidationException $e) {
             return back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
@@ -160,7 +160,7 @@ class ProductPhotoController extends Controller
         // ✅ FIXED: Redirect back to photo index
         return redirect()
             ->route('products.photos.index', $product)
-            ->with('success', 'Product photo updated successfully!');
+            ->with('success', "Success! The photo for '{$product->name}' has been updated.");
     }
 
     /**
@@ -185,7 +185,7 @@ class ProductPhotoController extends Controller
         // ✅ FIXED: Redirect back to photo index
         return redirect()
             ->route('products.photos.index', $product)
-            ->with('success', 'Product photo deleted successfully!');
+            ->with('success', "The photo for '{$product->name}' has been removed successfully.");
     }
 
     /**

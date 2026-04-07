@@ -21,7 +21,7 @@
                         
                         {{-- Management Dropdown (Desktop) --}}
                         <div class="relative group">
-                            <button class="text-sm font-medium flex items-center gap-2 transition-all duration-300 {{ request()->routeIs('business-types.*', 'contact-types.*', 'users.*', 'ai-analyses.*') ? 'text-soft-gray-900 font-bold' : 'text-soft-gray-600 hover:text-soft-gray-900' }}">
+                            <button class="text-sm font-medium flex items-center gap-2 transition-all duration-300 {{ request()->routeIs('business-types.*', 'contact-types.*', 'users.*', 'ai-analyses.*', 'uc-testimonies.*') ? 'text-soft-gray-900 font-semibold underline decoration-uco-orange-500 decoration-2 underline-offset-8' : 'text-soft-gray-600 hover:text-soft-gray-900' }}">
                                 Management
                                 <svg class="w-4 h-4 group-hover:rotate-180 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
@@ -73,10 +73,10 @@
                         <a href="{{ route('about') }}" class="text-sm font-medium {{ request()->routeIs('about') ? 'text-soft-gray-900 font-semibold underline decoration-uco-orange-500 decoration-2 underline-offset-8' : 'text-soft-gray-600 hover:text-soft-gray-900' }}">About Us</a>
                     @else
                         {{-- Authenticated Student / Alumni navigation --}}
-                        <a href="{{ route('dashboard') }}" class="text-sm font-medium {{ request()->routeIs('dashboard') ? 'text-soft-gray-900 font-semibold' : 'text-soft-gray-600 hover:text-soft-gray-900' }}">Featured</a>
-                        <a href="{{ route('businesses.index') }}" class="text-sm font-medium {{ request()->routeIs('businesses.*') ? 'text-soft-gray-900 font-semibold' : 'text-soft-gray-600 hover:text-soft-gray-900' }}">Businesses</a>
-                        <a href="{{ route('uc-testimonies.index') }}" class="text-sm font-medium {{ request()->routeIs('uc-testimonies.*') ? 'text-soft-gray-900 font-semibold' : 'text-soft-gray-600 hover:text-soft-gray-900' }}">Testimonies</a>
-                        <a href="{{ route('about') }}" class="text-sm font-medium {{ request()->routeIs('about') ? 'text-soft-gray-900 font-semibold' : 'text-soft-gray-600 hover:text-soft-gray-900' }}">About Us</a>
+                        <a href="{{ route('dashboard') }}" class="text-sm font-medium {{ request()->routeIs('dashboard') ? 'text-soft-gray-900 font-semibold underline decoration-uco-orange-500 decoration-2 underline-offset-8' : 'text-soft-gray-600 hover:text-soft-gray-900' }}">Featured</a>
+                        <a href="{{ route('businesses.index') }}" class="text-sm font-medium {{ request()->routeIs('businesses.*') ? 'text-soft-gray-900 font-semibold underline decoration-uco-orange-500 decoration-2 underline-offset-8' : 'text-soft-gray-600 hover:text-soft-gray-900' }}">Businesses</a>
+                        <a href="{{ route('uc-testimonies.index') }}" class="text-sm font-medium {{ request()->routeIs('uc-testimonies.*') ? 'text-soft-gray-900 font-semibold underline decoration-uco-orange-500 decoration-2 underline-offset-8' : 'text-soft-gray-600 hover:text-soft-gray-900' }}">Testimonies</a>
+                        <a href="{{ route('about') }}" class="text-sm font-medium {{ request()->routeIs('about') ? 'text-soft-gray-900 font-semibold underline decoration-uco-orange-500 decoration-2 underline-offset-8' : 'text-soft-gray-600 hover:text-soft-gray-900' }}">About Us</a>
                     @endif
 
                     {{-- Profile Dropdown --}}
@@ -102,7 +102,9 @@
                             </div>
                             <div class="py-2">
                                 <a href="/profile" class="block px-4 py-2.5 text-sm font-medium text-soft-gray-700 hover:bg-soft-gray-50 hover:text-soft-gray-900 transition">My Profile</a>
-                                <a href="{{ route('businesses.my') }}" class="block px-4 py-2.5 text-sm font-medium text-soft-gray-700 hover:bg-soft-gray-50 hover:text-soft-gray-900 transition">My Business</a>
+                                @unless(auth()->user()->isAdmin())
+                                    <a href="{{ route('businesses.my') }}" class="block px-4 py-2.5 text-sm font-medium text-soft-gray-700 hover:bg-soft-gray-50 hover:text-soft-gray-900 transition">My Business</a>
+                                @endunless
                                 <form method="POST" action="{{ route('logout') }}">@csrf
                                     <button type="submit" class="w-full text-left px-4 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 transition">Log Out</button>
                                 </form>
@@ -111,10 +113,10 @@
                     </div>
                 @else
                     {{-- Guest navigation --}}
-                    <a href="{{ route('featured') }}" class="text-sm font-medium {{ request()->routeIs('featured') ? 'text-soft-gray-900 font-semibold' : 'text-soft-gray-600 hover:text-soft-gray-900' }}">Featured</a>
-                    <a href="{{ route('businesses.index') }}" class="text-sm font-medium {{ request()->routeIs('businesses.*') ? 'text-soft-gray-900 font-semibold' : 'text-soft-gray-600 hover:text-soft-gray-900' }}">Businesses</a>
-                    <a href="{{ route('uc-testimonies.index') }}" class="text-sm font-medium {{ request()->routeIs('uc-testimonies.*') ? 'text-soft-gray-900 font-semibold' : 'text-soft-gray-600 hover:text-soft-gray-900' }}">Testimonies</a>
-                    <a href="{{ route('about') }}" class="text-sm font-medium {{ request()->routeIs('about') ? 'text-soft-gray-900 font-semibold' : 'text-soft-gray-600 hover:text-soft-gray-900' }}">About Us</a>
+                    <a href="{{ route('featured') }}" class="text-sm font-medium {{ request()->routeIs('featured') ? 'text-soft-gray-900 font-semibold underline decoration-uco-orange-500 decoration-2 underline-offset-8' : 'text-soft-gray-600 hover:text-soft-gray-900' }}">Featured</a>
+                    <a href="{{ route('businesses.index') }}" class="text-sm font-medium {{ request()->routeIs('businesses.*') ? 'text-soft-gray-900 font-semibold underline decoration-uco-orange-500 decoration-2 underline-offset-8' : 'text-soft-gray-600 hover:text-soft-gray-900' }}">Businesses</a>
+                    <a href="{{ route('uc-testimonies.index') }}" class="text-sm font-medium {{ request()->routeIs('uc-testimonies.*') ? 'text-soft-gray-900 font-semibold underline decoration-uco-orange-500 decoration-2 underline-offset-8' : 'text-soft-gray-600 hover:text-soft-gray-900' }}">Testimonies</a>
+                    <a href="{{ route('about') }}" class="text-sm font-medium {{ request()->routeIs('about') ? 'text-soft-gray-900 font-semibold underline decoration-uco-orange-500 decoration-2 underline-offset-8' : 'text-soft-gray-600 hover:text-soft-gray-900' }}">About Us</a>
                     <div class="flex items-center gap-2">
                         <a href="{{ route('login') }}" class="px-4 py-2.5 text-sm font-medium text-soft-gray-700 hover:text-soft-gray-900 transition">Log in</a>
                     </div>
@@ -187,7 +189,9 @@
                         </div>
                     </div>
                     <a href="/profile" class="block py-2.5 px-3 text-sm font-medium text-soft-gray-700 hover:bg-soft-gray-50 hover:text-soft-gray-900 rounded-lg">Profile</a>
-                    <a href="{{ route('businesses.my') }}" class="block py-2.5 px-3 text-sm font-medium text-soft-gray-700 hover:bg-soft-gray-50 hover:text-soft-gray-900 rounded-lg">My Business</a>
+                    @unless(auth()->user()->isAdmin())
+                        <a href="{{ route('businesses.my') }}" class="block py-2.5 px-3 text-sm font-medium text-soft-gray-700 hover:bg-soft-gray-50 hover:text-soft-gray-900 rounded-lg">My Business</a>
+                    @endunless
                     <form method="POST" action="{{ route('logout') }}">@csrf
                         <button type="submit" class="w-full text-left py-2.5 px-3 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg">Log Out</button>
                     </form>

@@ -39,7 +39,7 @@
                         @error('product_category_id')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
-                        <p class="mt-1 text-xs text-gray-500">Categories are based on your business type: {{ $business->businessType->name }}</p>
+
                     </div>
 
                     {{-- Product Name --}}

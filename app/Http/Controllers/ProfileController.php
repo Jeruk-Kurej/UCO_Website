@@ -107,7 +107,7 @@ class ProfileController extends Controller
             // Refresh auth session to reflect updated data
             Auth::setUser($user->fresh());
 
-            return Redirect::route('profile.edit')->with('status', 'profile-updated');
+            return Redirect::route('profile.edit')->with('success', 'Your profile information has been successfully updated.');
         } catch (\Exception $e) {
             Log::error('Profile update failed', [
                 'error' => $e->getMessage(),

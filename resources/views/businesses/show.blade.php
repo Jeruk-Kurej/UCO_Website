@@ -771,7 +771,7 @@
                         <div class="flex items-center justify-between mb-6">
                             <h3 class="text-lg font-semibold text-gray-900">Products</h3>
                             @auth
-                                @if ($canManageBusiness)
+                                @if ($canManageBusiness && $business->products->count() > 0)
                                     <div class="flex items-center gap-2">
                                         <a href="{{ route('businesses.product-categories.index', $business) }}"
                                             class="inline-flex items-center px-3 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-50 transition duration-150">
@@ -943,7 +943,7 @@
                         <div class="flex items-center justify-between mb-6">
                             <h3 class="text-lg font-semibold text-gray-900">Services</h3>
                             @auth
-                                @if ($canManageBusiness)
+                                @if ($canManageBusiness && $business->services->count() > 0)
                                     <a href="{{ route('businesses.services.create', $business) }}"
                                         class="inline-flex items-center px-3 py-2 bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium rounded-lg shadow-sm transition duration-150">
                                         <i class="bi bi-plus-lg me-2"></i>
@@ -1023,20 +1023,20 @@
                     <div class="flex items-center justify-between mb-6">
                         <h3 class="text-lg font-semibold text-gray-900">Business Photo Gallery</h3>
                         @auth
-                            @if ($canManageBusiness)
-                                <div class="flex items-center gap-2">
-                                    <a href="{{ route('businesses.photos.index', $business) }}"
-                                        class="inline-flex items-center px-3 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition duration-150">
-                                        <i class="bi bi-images me-2"></i>
-                                        Manage Photos
-                                    </a>
-                                    <a href="{{ route('businesses.photos.create', $business) }}"
-                                        class="inline-flex items-center px-3 py-2 bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium rounded-lg shadow-sm transition duration-150">
-                                        <i class="bi bi-upload me-2"></i>
-                                        Upload Photo
-                                    </a>
-                                </div>
-                            @endif
+                        @if ($canManageBusiness && $business->photos->count() > 0)
+                            <div class="flex items-center gap-2">
+                                <a href="{{ route('businesses.photos.index', $business) }}"
+                                    class="inline-flex items-center px-3 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition duration-150">
+                                    <i class="bi bi-images me-2"></i>
+                                    Manage Photos
+                                </a>
+                                <a href="{{ route('businesses.photos.create', $business) }}"
+                                    class="inline-flex items-center px-3 py-2 bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium rounded-lg shadow-sm transition duration-150">
+                                    <i class="bi bi-upload me-2"></i>
+                                    Upload Photo
+                                </a>
+                            </div>
+                        @endif
                         @endauth
                     </div>
 
@@ -1093,7 +1093,7 @@
                     <div class="flex items-center justify-between mb-6">
                         <h3 class="text-lg font-semibold text-gray-900">Contact Information</h3>
                         @auth
-                            @if ($canManageBusiness)
+                            @if ($canManageBusiness && $business->contacts->count() > 0)
                                 <a href="{{ route('businesses.contacts.create', $business) }}"
                                     class="inline-flex items-center px-3 py-2 bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium rounded-lg shadow-sm transition duration-150">
                                     <i class="bi bi-plus-lg me-2"></i>

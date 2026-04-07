@@ -161,33 +161,12 @@ function ucoFormatSize(bytes) {
 }
 
 function ucoPreviewError(message) {
-    const existing = document.getElementById('uco-preview-toast');
-    if (existing) existing.remove();
-
-    const toast = document.createElement('div');
-    toast.id = 'uco-preview-toast';
-    toast.className = [
-        'fixed top-5 right-5 z-[9999] flex items-center gap-3',
-        'px-5 py-3.5 bg-red-600 text-white rounded-xl shadow-2xl',
-        'text-sm font-medium max-w-sm pointer-events-none',
-    ].join(' ');
-    toast.innerHTML = `<i class="bi bi-exclamation-circle-fill text-lg flex-shrink-0"></i><span>${message}</span>`;
-
-    // Animate in
-    toast.style.opacity = '0';
-    toast.style.transform = 'translateX(20px)';
-    document.body.appendChild(toast);
-    requestAnimationFrame(() => {
-        toast.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-        toast.style.opacity = '1';
-        toast.style.transform = 'translateX(0)';
-    });
-
-    setTimeout(() => {
-        toast.style.opacity = '0';
-        toast.style.transform = 'translateX(20px)';
-        setTimeout(() => toast.remove(), 350);
-    }, 3500);
+    if (window.showToast) {
+        window.showToast(message, 'error');
+    } else {
+        // Fallback if app.js isn't fully loaded/bound - no more alerts!
+        console.error('UCO Preview Error:', message);
+    }
 }
 
 // Expose globally

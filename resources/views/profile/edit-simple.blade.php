@@ -65,7 +65,7 @@
         const maxSize = 10 * 1024 * 1024; // 10MB in bytes
         
         if (file && file.size > maxSize) {
-            alert('Profile photo must not be larger than 10MB. Please choose a smaller file.');
+            window.showToast('Profile photo must not be larger than 10MB. Please choose a smaller file.', 'error');
             event.target.value = '';
             return;
         }

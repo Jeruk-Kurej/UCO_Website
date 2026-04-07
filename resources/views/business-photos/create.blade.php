@@ -29,7 +29,7 @@
                                 const file = event.target.files[0];
                                 if (file) {
                                     if(file.size > 10 * 1024 * 1024) {
-                                        alert('Photo must not be larger than 10MB.');
+                                        window.showToast('Photo must not be larger than 10MB.', 'error');
                                         this.removeFile();
                                         return;
                                     }

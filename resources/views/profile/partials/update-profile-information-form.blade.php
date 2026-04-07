@@ -16,7 +16,7 @@
                 const file = event.target.files[0];
                 if(file) {
                     if(file.size > 10 * 1024 * 1024) {
-                        alert('Photo must not exceed 10MB');
+                        window.showToast('Photo must not exceed 10MB', 'error');
                         this.$refs.photoInput.value = '';
                         return;
                     }
@@ -93,10 +93,7 @@
                         <span x-text="photoPreview ? 'Change Selection' : 'Upload New Photo'"></span>
                         <input id="profile_photo" name="profile_photo" type="file" accept="image/jpeg, image/png, image/jpg, image/gif" class="sr-only" x-ref="photoInput" @change="fileSelected">
                     </label>
-                    <div class="text-[11px] text-gray-500 font-medium">
-                        <p>Recommended size: 500x500px.</p>
-                        <p>Allowed formats: JPG, PNG, GIF (Max 10MB).</p>
-                    </div>
+
                     <x-input-error class="mt-1" :messages="$errors->get('profile_photo')" />
                 </div>
             </div>
@@ -150,14 +147,7 @@
                         </button>
                     </p>
 
-                    @if (session('status') === 'verification-link-sent')
-                        <p class="mt-2 text-sm text-green-600 font-medium flex items-center gap-2">
-                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                            </svg>
-                            Verification link sent to your email!
-                        </p>
-                    @endif
+
                 </div>
             @endif
         </div>
@@ -194,20 +184,7 @@
                     Save Changes
                 </button>
 
-                @if (session('status') === 'profile-updated')
-                    <p
-                        x-data="{ show: true }"
-                        x-show="show"
-                        x-transition
-                        x-init="setTimeout(() => show = false, 3000)"
-                        class="text-sm font-medium text-green-600 flex items-center gap-2"
-                    >
-                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                        </svg>
-                        Profile updated successfully!
-                    </p>
-                @endif
+
             </div>
         </div>
     </form>
@@ -219,7 +196,7 @@
         const maxSize = 10 * 1024 * 1024;
 
         if (file && file.size > maxSize) {
-            alert('Profile photo must not be larger than 10MB. Please choose a smaller file.');
+            window.showToast('Profile photo must not be larger than 10MB. Please choose a smaller file.', 'error');
             event.target.value = '';
             return;
         }

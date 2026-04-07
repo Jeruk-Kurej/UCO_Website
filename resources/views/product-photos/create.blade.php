@@ -29,7 +29,7 @@
                                 const file = event.target.files[0];
                                 if (file) {
                                     if(file.size > 10 * 1024 * 1024) {
-                                        alert('Photo must not be larger than 10MB.');
+                                        window.showToast('The photo is too large. Please select a file smaller than 10MB.', 'error');
                                         this.removeFile();
                                         return;
                                     }
@@ -111,21 +111,7 @@
                     </div>
 
 
-                    {{-- Info Card --}}
-                    <div class="bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-200 rounded-xl p-4">
-                        <div class="flex gap-3">
-                            <i class="bi bi-info-circle text-purple-600 text-xl flex-shrink-0"></i>
-                            <div class="text-sm text-purple-800">
-                                <p class="font-semibold mb-1">Product Photo Tips</p>
-                                <ul class="space-y-1 text-xs">
-                                    <li>• Show the product clearly with good lighting</li>
-                                    <li>• Use a clean, uncluttered background</li>
-                                    <li>• Include multiple angles if possible</li>
-                                    <li>• First photo appears as the main product image</li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
+
 
                     {{-- Submit Buttons --}}
                     <div class="flex items-center justify-between pt-6 border-t border-gray-200">

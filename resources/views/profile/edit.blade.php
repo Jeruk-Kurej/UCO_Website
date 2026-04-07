@@ -3,15 +3,7 @@
 <x-app-layout>
     <div class="w-full max-w-[1600px] 2xl:max-w-[1720px] mx-auto py-8" x-data="{ activeTab: 'basic' }">
         
-        @if(session('status') === 'profile-updated')
-            <div class="mb-6 bg-green-50 border border-green-200 text-green-800 px-6 py-4 rounded-xl shadow-sm flex items-start gap-3">
-                <i class="bi bi-check-circle-fill text-green-600 text-xl flex-shrink-0 mt-0.5"></i>
-                <div class="flex-1">
-                    <p class="font-semibold">Success!</p>
-                    <p class="text-sm">Your profile has been updated successfully.</p>
-                </div>
-            </div>
-        @endif
+
 
 
         {{-- Page Header --}}
@@ -65,7 +57,7 @@
                         const file = event.target.files[0];
                         if(file) {
                             if(file.size > 10 * 1024 * 1024) {
-                                alert('Photo must not exceed 10MB');
+                                window.showToast('Photo must not exceed 10MB', 'error');
                                 this.$refs.photoInput.value = '';
                                 return;
                             }
@@ -222,11 +214,11 @@
                                 class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
                             <option value="">-- Select Religion --</option>
                             <option value="Islam" {{ old('religion', $user->religion) == 'Islam' ? 'selected' : '' }}>Islam</option>
-                            <option value="Kristen" {{ old('religion', $user->religion) == 'Kristen' ? 'selected' : '' }}>Kristen</option>
-                            <option value="Katolik" {{ old('religion', $user->religion) == 'Katolik' ? 'selected' : '' }}>Katolik</option>
+                            <option value="Christian" {{ old('religion', $user->religion) == 'Christian' ? 'selected' : '' }}>Christian</option>
+                            <option value="Catholic" {{ old('religion', $user->religion) == 'Catholic' ? 'selected' : '' }}>Catholic</option>
                             <option value="Hindu" {{ old('religion', $user->religion) == 'Hindu' ? 'selected' : '' }}>Hindu</option>
                             <option value="Buddha" {{ old('religion', $user->religion) == 'Buddha' ? 'selected' : '' }}>Buddha</option>
-                            <option value="Konghucu" {{ old('religion', $user->religion) == 'Konghucu' ? 'selected' : '' }}>Konghucu</option>
+                            <option value="Confucian" {{ old('religion', $user->religion) == 'Confucian' ? 'selected' : '' }}>Confucian</option>
                         </select>
                     </div>
 
@@ -279,12 +271,11 @@
                                placeholder="e.g., 3.75">
                     </div>
 
-                    {{-- Graduation Status --}}
-                    <div class="md:col-span-2">
-                        <label class="flex items-center gap-3 cursor-pointer">
-                            <input type="checkbox" name="Is_Graduate" value="1" {{ old('Is_Graduate', $user->Is_Graduate) ? 'checked' : '' }}
-                                   class="w-5 h-5 text-gray-900 border-gray-200 rounded focus:ring-2 focus:ring-soft-gray-900">
-                            <span class="text-sm font-medium text-gray-700">I have graduated</span>
+                    <div class="md:col-span-2 pt-2">
+                        <label class="relative inline-flex items-center cursor-pointer group">
+                            <input type="checkbox" name="Is_Graduate" value="1" {{ old('Is_Graduate', $user->Is_Graduate) ? 'checked' : '' }} class="sr-only peer">
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-uco-orange-500 transition-colors duration-300"></div>
+                            <span class="ml-3 text-sm font-bold text-gray-700 uppercase tracking-tight">I have graduated</span>
                         </label>
                     </div>
                 </div>
@@ -337,11 +328,7 @@
 
             {{-- Action Buttons --}}
             <div class="mt-6 flex items-center justify-between bg-white shadow-sm rounded-xl p-6">
-                <a href="{{ route('dashboard') }}" 
-                   class="inline-flex items-center gap-2 px-6 py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-colors">
-                    <i class="bi bi-x-lg"></i>
-                    Cancel
-                </a>
+                <span></span>
                 <button type="submit" 
                         class="inline-flex items-center gap-2 px-6 py-3 bg-gray-900 text-white font-semibold rounded-xl hover:bg-gray-800 transition-colors shadow-md hover:shadow-lg">
                     <i class="bi bi-check-lg"></i>

@@ -11,14 +11,15 @@
                 <h1 class="text-2xl font-bold text-gray-900">Product Categories</h1>
                 <p class="text-sm text-gray-600">{{ $business->name }}</p>
             </div>
-            {{-- ✅ FIXED: All authenticated users can add --}}
-            @auth
-                <a href="{{ route('businesses.product-categories.create', $business) }}" 
-                   class="inline-flex items-center px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-lg font-semibold text-sm shadow-sm transition duration-150">
-                    <i class="bi bi-plus-lg me-2"></i>
-                    Add Category
-                </a>
-            @endauth
+            @if($categories->count() > 0)
+                @auth
+                    <a href="{{ route('businesses.product-categories.create', $business) }}" 
+                       class="inline-flex items-center px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white rounded-lg font-semibold text-sm shadow-sm transition duration-150">
+                        <i class="bi bi-plus-lg me-2"></i>
+                        Add Category
+                    </a>
+                @endauth
+            @endif
         </div>
 
 

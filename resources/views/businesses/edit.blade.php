@@ -70,12 +70,7 @@
             {{-- TAB 1: BASIC INFORMATION --}}
             <div x-show="activeTab === 'basic'"
                 class="bg-white border-x border-b border-slate-200 rounded-b-2xl shadow-sm p-8 space-y-5">
-                <div
-                    class="rounded-xl border border-uco-orange-200 bg-uco-orange-50 px-4 py-3 text-sm text-uco-orange-800">
-                    <p class="font-semibold">Informasi Dasar</p>
-                    <p class="text-xs mt-0.5">Lengkapi identitas business agar mudah ditemukan dan dipahami pengguna.
-                    </p>
-                </div>
+
                 {{-- Business Name --}}
                 <div>
                     <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
@@ -353,8 +348,7 @@
                                 </option>
                             @endforeach
                         </select>
-                        <p class="mt-1 text-xs text-gray-500">Tip: Hold ⌘ / Ctrl to select multiple owners. Admin users
-                            are excluded automatically.</p>
+
                         @error('owner_ids')
                             <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
                         @enderror
@@ -365,11 +359,7 @@
             {{-- TAB 2: PRODUCTS & SERVICES --}}
             <div x-show="activeTab === 'products'"
                 class="bg-white border-x border-b border-slate-200 rounded-b-2xl shadow-sm p-8 space-y-5">
-                <div class="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-800">
-                    <p class="font-semibold">Produk & Layanan</p>
-                    <p class="text-xs mt-0.5">Tambahkan semua item penting di sini supaya halaman business Anda
-                        langsung lengkap.</p>
-                </div>
+
                 @php
                     $existingProducts = old('products');
                     if ($existingProducts === null) {
@@ -577,11 +567,7 @@
             {{-- TAB 3: BUSINESS DEVELOPMENT --}}
             <div x-show="activeTab === 'development'"
                 class="bg-white border-x border-b border-slate-200 rounded-b-2xl shadow-sm p-8 space-y-5">
-                <div class="rounded-xl border border-purple-200 bg-purple-50 px-4 py-3 text-sm text-purple-800">
-                    <p class="font-semibold">Perkembangan Business</p>
-                    <p class="text-xs mt-0.5">Data ini membantu menampilkan kematangan business Anda secara
-                        profesional.</p>
-                </div>
+
                 {{-- Establishment Date & Operational Status --}}
                 <div class="grid md:grid-cols-2 gap-5">
                     <div>
@@ -699,11 +685,7 @@
             {{-- TAB 4: DOCUMENTS & CERTIFICATIONS --}}
             <div x-show="activeTab === 'documents'"
                 class="bg-white border-x border-b border-slate-200 rounded-b-2xl shadow-sm p-8 space-y-6">
-                <div class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
-                    <p class="font-semibold">Dokumen & Sertifikasi</p>
-                    <p class="text-xs mt-0.5">Upload bukti legalitas dan sertifikasi untuk meningkatkan kepercayaan
-                        pengunjung.</p>
-                </div>
+
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                     <!-- Dokumen Legal -->
                     <div x-data="{

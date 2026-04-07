@@ -188,7 +188,7 @@ class UserController extends Controller
                 ->update(['user_id' => $newUser->id]);
             
             $businessCount = count($request->owned_businesses);
-            session()->flash('success', "User created successfully! {$businessCount} business(es) transferred to {$newUser->name}.");
+            session()->flash('success', "Success! The user '{$newUser->name}' has been created, and {$businessCount} business(es) have been transferred.");
         }
 
         // Add user as team member to businesses if selected
@@ -209,7 +209,7 @@ class UserController extends Controller
 
         return redirect()
             ->route('users.index')
-            ->with('success', session('success') ?? 'User created successfully!');
+            ->with('success', session('success') ?? "Success! The user '{$newUser->name}' has been registered.");
     }
 
     /**
@@ -391,7 +391,7 @@ class UserController extends Controller
 
         return redirect()
             ->route('users.index')
-            ->with('success', 'User updated successfully!');
+            ->with('success', "Success! The profile for '{$user->name}' has been updated.");
     }
 
     /**
@@ -416,7 +416,7 @@ class UserController extends Controller
 
         return redirect()
             ->route('users.index')
-            ->with('success', 'User deleted successfully!');
+            ->with('success', "The user '{$user->name}' has been deleted successfully.");
     }
 
     /**

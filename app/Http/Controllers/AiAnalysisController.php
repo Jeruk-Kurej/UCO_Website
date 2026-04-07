@@ -52,7 +52,7 @@ return view('ai-analyses.index', compact('ucAnalyses', 'totalCount', 'approvedCo
         $analysis = $ucTestimony->aiAnalysis;
 
         if (!$analysis) {
-            return back()->with('error', 'AI Analysis not found for this testimony.');
+            return back()->with('error', "AI Analysis records could not be found for this testimony.");
         }
 
         // Update analysis to approved
@@ -61,7 +61,8 @@ return view('ai-analyses.index', compact('ucAnalyses', 'totalCount', 'approvedCo
             'rejection_reason' => null, // Clear rejection reason
         ]);
 
-        return back()->with('success', 'Testimony has been manually approved and will now be visible.');
+        $name = $ucTestimony->user->name ?? $ucTestimony->customer_name ?? 'this user';
+        return back()->with('success', "Success! The testimony from '{$name}' has been manually approved and is now visible.");
     }
 
     /**
@@ -72,7 +73,7 @@ return view('ai-analyses.index', compact('ucAnalyses', 'totalCount', 'approvedCo
         $analysis = $ucTestimony->aiAnalysis;
 
         if (!$analysis) {
-            return back()->with('error', 'AI Analysis not found for this testimony.');
+            return back()->with('error', "AI Analysis records could not be found for this testimony.");
         }
 
         $reason = $request->input('rejection_reason', 'Rejected by administrator');
@@ -82,6 +83,7 @@ return view('ai-analyses.index', compact('ucAnalyses', 'totalCount', 'approvedCo
             'rejection_reason' => $reason,
         ]);
 
-        return back()->with('success', 'Testimony has been rejected.');
+        $name = $ucTestimony->user->name ?? $ucTestimony->customer_name ?? 'this user';
+        return back()->with('success', "The testimony from '{$name}' has been rejected.");
     }
 }
