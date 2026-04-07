@@ -54,16 +54,11 @@
                             activePhotoIndex: 0,
                             photos: {{ json_encode($photoUrls) }},
                             next() { this.activePhotoIndex = (this.activePhotoIndex + 1) % this.photos.length },
-                            prev() { this.activePhotoIndex = (this.activePhotoIndex - 1 + this.photos.length) % this.photos.length },
-                            init() {
-                                if(this.photos.length > 1) {
-                                    setInterval(() => { this.next() }, 5000);
-                                }
-                            }
+                            prev() { this.activePhotoIndex = (this.activePhotoIndex - 1 + this.photos.length) % this.photos.length }
                         }" class="p-4 sm:p-6 pb-2 sm:pb-4">
                             
                             {{-- Active Preview Container --}}
-                            <div class="relative aspect-[16/10] sm:aspect-video md:aspect-[21/9] lg:aspect-video max-h-[500px] rounded-2xl overflow-hidden bg-gray-100 border border-gray-100 group">
+                            <div class="relative aspect-[16/10] sm:aspect-video md:aspect-[21/9] lg:aspect-video max-h-[500px] rounded-2xl overflow-hidden bg-gray-100 border border-gray-100 group shadow-inner">
                                 <img :src="photos[activePhotoIndex]" 
                                      class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                                      alt="{{ $product->name }}">
@@ -79,18 +74,11 @@
                                         <i class="bi bi-chevron-right text-xl"></i>
                                     </button>
                                 @endif
-
-                                {{-- Badge --}}
-                                <div class="absolute top-4 left-4">
-                                    <span class="px-3 py-1 bg-black/50 backdrop-blur-md text-white text-[10px] font-black uppercase tracking-widest rounded-full border border-white/20">
-                                        Product Preview
-                                    </span>
-                                </div>
                             </div>
 
                             {{-- Thumbnails Container --}}
                             @if($product->photos->count() > 1)
-                                <div class="flex items-center gap-3 mt-4 sm:mt-6 overflow-x-auto pb-4 scrollbar-hide px-1">
+                                <div class="flex items-center gap-3 mt-4 sm:mt-6 overflow-x-auto pt-2 pb-4 scrollbar-hide px-1">
                                     @foreach($product->photos as $index => $photo)
                                         <button @click="activePhotoIndex = {{ $index }}"
                                                 :class="activePhotoIndex === {{ $index }} ? 'ring-2 ring-uco-orange-500 ring-offset-2 scale-95 border-transparent shadow-lg' : 'border-gray-200 hover:border-uco-orange-300 opacity-60 hover:opacity-100'"
