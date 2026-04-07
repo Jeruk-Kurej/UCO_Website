@@ -2,7 +2,7 @@
     <div class="max-w-5xl mx-auto">
         {{-- Page Header - Elegant Design --}}
         <div class="mb-8 flex items-center gap-4">
-            <a href="{{ route('businesses.show', $business) }}" 
+            <a href="{{ route('businesses.products.show', [$business, $product]) }}" 
                    class="group inline-flex items-center justify-center sm:justify-start gap-2.5 px-4 py-2.5 bg-white hover:bg-gray-900 border border-gray-200 hover:border-gray-900 text-gray-700 hover:text-white rounded-xl font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200 mb-4 sm:mb-0">
                     <i class="bi bi-arrow-left text-base group-hover:-translate-x-0.5 transition-transform duration-200"></i>
                     <span>Back</span>
@@ -15,7 +15,7 @@
 
         <div class="bg-white shadow-sm sm:rounded-xl">
             <div class="p-6">
-                <form method="POST" action="{{ route('businesses.products.update', [$business, $product]) }}" class="space-y-6">
+                <form method="POST" action="{{ route('businesses.products.update', [$business, $product]) }}" enctype="multipart/form-data" class="space-y-6">
                     @csrf
                     @method('PUT')
 
@@ -68,6 +68,52 @@
                         @error('description')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
+                    </div>
+
+                    {{-- Product Photos Management --}}
+                    <div class="space-y-4 pt-6 border-t border-gray-100">
+                        <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+                            <i class="bi bi-images text-uco-orange-500"></i>
+                            Product Photos
+                        </h3>
+
+                        {{-- Existing Photos Grid --}}
+                        @if($product->photos->count() > 0)
+                            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                                @foreach($product->photos as $photo)
+                                    <div class="group relative aspect-square rounded-xl overflow-hidden border border-gray-200 shadow-sm bg-gray-50">
+                                        <img src="{{ Storage::disk(config('filesystems.default'))->url($photo->photo_url) }}" 
+                                             class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                             alt="Product Photo">
+                                        <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                                            <button type="button"
+                                                    onclick="confirmDeletePhoto('{{ $photo->id }}')"
+                                                    class="w-10 h-10 rounded-full bg-white text-red-600 flex items-center justify-center hover:bg-red-600 hover:text-white transition-all shadow-lg transform translate-y-4 group-hover:translate-y-0 duration-300">
+                                                <i class="bi bi-trash3-fill"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @else
+                            <div class="p-8 text-center bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
+                                <p class="text-sm text-gray-400">No photos uploaded for this product yet.</p>
+                            </div>
+                        @endif
+
+                        {{-- Add New Photos --}}
+                        <div class="space-y-2 mt-6">
+                            <label class="block text-sm font-bold text-gray-700">Add More Photos</label>
+                            <x-image-preview 
+                                input-id="photos" 
+                                preview-id="product-photos-edit"
+                                multiple="true"
+                                height="h-40"
+                                placeholder="Drag or click to add new photos"
+                                hint="Select more images to add to the gallery"
+                            />
+                            <input type="file" name="photos[]" id="photos" multiple accept="image/*" class="sr-only">
+                        </div>
                     </div>
 
                     {{-- Price --}}
@@ -125,11 +171,34 @@
         </div>
     </div>
 
+    {{-- Hidden Photo Delete Forms --}}
+    @foreach($product->photos as $photo)
+        <form id="delete-photo-{{ $photo->id }}" 
+              action="{{ route('products.photos.destroy', [$product, $photo]) }}" 
+              method="POST" 
+              class="hidden">
+            @csrf
+            @method('DELETE')
+        </form>
+    @endforeach
+
     <script>
     function deleteProduct() {
         if(confirm('Are you sure you want to delete this product? This action cannot be undone.')) {
             document.getElementById('delete-form').submit();
         }
     }
+
+    function confirmDeletePhoto(photoId) {
+        if(confirm('Are you sure you want to remove this photo?')) {
+            document.getElementById('delete-photo-' + photoId).submit();
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        if (typeof ucoInitImagePreview === 'function') {
+            ucoInitImagePreview('photos', 'product-photos-edit', 10, false);
+        }
+    });
     </script>
 </x-app-layout>

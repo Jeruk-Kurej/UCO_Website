@@ -45,46 +45,55 @@ class ProductPhotoController extends Controller
 
         try {
             $validated = $request->validate([
-                'photo' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
-                'caption' => 'nullable|string|max:255',
+                'photos' => 'required|array|min:1|max:10',
+                'photos.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:10240',
             ]);
 
-            // Handle file upload
-            if ($request->hasFile('photo')) {
-                $file = $request->file('photo');
-                
-                // Additional file size check
-                if ($file->getSize() > 10240 * 1024) {
-                    return back()->withErrors(['photo' => 'Photo must not be larger than 10MB.'])->withInput();
-                }
-                
+            $uploadedCount = 0;
+            if ($request->hasFile('photos')) {
                 $product->load('business');
                 $productSlug = Str::slug($product->name, '_');
-                $nextNumber = $product->photos()->count() + 1;
-                $filename = $productSlug . '_photo_' . $nextNumber . '_' . time() . '.' . $file->getClientOriginalExtension();
-                
-                // Store to Cloudinary (default disk)
-                $path = $file->storeAs(
-                    "businesses/{$product->business_id}/products/{$product->id}/photos",
-                    $filename,
-                    config('filesystems.default')
-                );
-                
-                $validated['photo_url'] = $path;
+                $baseNumber = $product->photos()->count();
+
+                foreach ($request->file('photos') as $index => $file) {
+                    // Additional file size check just in case
+                    if ($file->getSize() > 10240 * 1024) continue;
+
+                    $nextNumber = $baseNumber + $index + 1;
+                    $filename = $productSlug . '_photo_' . $nextNumber . '_' . time() . '_' . $index . '.' . $file->getClientOriginalExtension();
+                    
+                    // Store to Cloudinary (default disk)
+                    $path = $file->storeAs(
+                        "businesses/{$product->business_id}/products/{$product->id}/photos",
+                        $filename,
+                        config('filesystems.default')
+                    );
+                    
+                    ProductPhoto::create([
+                        'product_id' => $product->id,
+                        'photo_url' => $path,
+                    ]);
+
+                    $uploadedCount++;
+                }
             }
 
-            $validated['product_id'] = $product->id;
+            if ($uploadedCount === 0) {
+                return back()->withErrors(['photos' => 'No valid photos were uploaded.'])->withInput();
+            }
 
-            $photo = ProductPhoto::create($validated);
+            $message = $uploadedCount === 1 
+                ? "Success! Your photo for '{$product->name}' has been uploaded."
+                : "Success! {$uploadedCount} photos for '{$product->name}' have been uploaded.";
 
-            // ✅ FIXED: Redirect back to photo index
             return redirect()
                 ->route('products.photos.index', $product)
-                ->with('success', "Success! Your photo for '{$product->name}' has been uploaded.");
+                ->with('success', $message);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
-            return back()->withErrors(['error' => 'An error occurred while uploading the photo. Please try again.'])->withInput();
+            \Illuminate\Support\Facades\Log::error('Product photo upload failed: ' . $e->getMessage());
+            return back()->withErrors(['error' => 'An error occurred while uploading. Please try again.'])->withInput();
         }
     }
 
@@ -182,9 +191,8 @@ class ProductPhotoController extends Controller
 
         $photo->delete();
 
-        // ✅ FIXED: Redirect back to photo index
-        return redirect()
-            ->route('products.photos.index', $product)
+        // ✅ FIXED: Redirect back to previous page (likely the edit form)
+        return back()
             ->with('success', "The photo for '{$product->name}' has been removed successfully.");
     }
 

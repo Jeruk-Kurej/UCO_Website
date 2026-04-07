@@ -10,6 +10,7 @@
     'height'       => 'h-64',      // full-preview container height
     'placeholder'  => 'Click to upload or drag & drop',
     'hint'         => 'JPG, PNG, GIF — max 10MB',
+    'multiple'     => false,       // multi-photo upload support
 ])
 
 @php
@@ -91,7 +92,7 @@
              onclick="document.getElementById('{{ $inputId }}').click()"
              ondragover="event.preventDefault(); this.classList.add('!border-uco-orange-400','!bg-uco-orange-50/50')"
              ondragleave="this.classList.remove('!border-uco-orange-400','!bg-uco-orange-50/50')"
-             ondrop="ucoHandleDrop(event, '{{ $inputId }}', '{{ $previewId }}', {{ $maxSize }})">
+             ondrop="ucoHandleDrop(event, '{{ $inputId }}', '{{ $previewId }}', {{ $maxSize }}, {{ $multiple ? 'true' : 'false' }})">
 
             {{-- Placeholder --}}
             <div id="{{ $previewId }}-placeholder"
@@ -107,25 +108,33 @@
                 <div class="absolute inset-2 border-2 border-dashed border-transparent group-hover:border-uco-orange-200 rounded-xl transition-all duration-300 pointer-events-none"></div>
             </div>
 
-            {{-- Preview (hidden until file selected) --}}
-            <div id="{{ $previewId }}-result" class="hidden absolute inset-0 opacity-0 transition-opacity duration-300">
+            {{-- Single Preview (for backward compatibility / legacy) --}}
+            <div id="{{ $previewId }}-result" class="hidden absolute inset-0 opacity-0 transition-opacity duration-300 pointer-events-none">
                 <img id="{{ $previewId }}-img"
                      src=""
                      alt="Preview"
                      class="w-full h-full object-cover">
-                {{-- Change overlay --}}
-                <div class="absolute inset-0 bg-black/0 group-hover:bg-black/35 transition-all duration-300 flex items-center justify-center">
-                    <div class="opacity-0 group-hover:opacity-100 transition-all duration-300 text-white text-center scale-90 group-hover:scale-100">
-                        <div class="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center mx-auto mb-2 border border-white/30">
-                            <i class="bi bi-pencil-fill text-lg"></i>
-                        </div>
-                        <p class="text-xs font-semibold">Click to change</p>
+            </div>
+
+            {{-- Multiple Gallery Grid --}}
+            <div id="{{ $previewId }}-gallery" class="hidden absolute inset-0 bg-white/40 backdrop-blur-sm p-4 overflow-y-auto">
+                <div id="{{ $previewId }}-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                    {{-- Grid items injected by JS --}}
+                </div>
+            </div>
+
+            {{-- Change overlay (shows on hover if files exist) --}}
+            <div id="{{ $previewId }}-overlay" class="hidden absolute inset-0 bg-black/0 group-hover:bg-black/35 transition-all duration-300 flex items-center justify-center pointer-events-none">
+                <div class="opacity-0 group-hover:opacity-100 transition-all duration-300 text-white text-center scale-90 group-hover:scale-100">
+                    <div class="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center mx-auto mb-2 border border-white/30">
+                        <i class="bi bi-pencil-fill text-lg"></i>
                     </div>
+                    <p class="text-xs font-semibold">Click to change selection</p>
                 </div>
             </div>
         </div>
 
-        {{-- File Info Bar --}}
+        {{-- File Info Bar (Single mode) --}}
         <div id="{{ $previewId }}-info"
              class="hidden items-center justify-between px-4 py-2.5 bg-uco-orange-50 border border-uco-orange-200 rounded-xl animate-in">
             <div class="flex items-center gap-3 min-w-0">
@@ -141,6 +150,19 @@
                     onclick="ucoCancelPreview('{{ $previewId }}', '{{ $inputId }}')"
                     class="flex-shrink-0 w-7 h-7 rounded-lg bg-white border border-gray-200 flex items-center justify-center text-gray-400 hover:text-red-500 hover:border-red-300 transition-all duration-200 shadow-sm ml-3">
                 <i class="bi bi-x text-base leading-none"></i>
+            </button>
+        </div>
+
+        {{-- Multi-file Badge (shows total selected) --}}
+        <div id="{{ $previewId }}-multi-info" class="hidden items-center justify-between px-4 py-2 bg-gray-900 border border-gray-800 rounded-xl">
+            <div class="flex items-center gap-2">
+                <div class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
+                <span id="{{ $previewId }}-count" class="text-xs font-bold text-white uppercase tracking-widest"></span>
+            </div>
+            <button type="button" 
+                    onclick="ucoCancelPreview('{{ $previewId }}', '{{ $inputId }}')"
+                    class="text-[10px] font-black text-red-400 hover:text-red-300 uppercase tracking-tighter transition-colors">
+                Clear All
             </button>
         </div>
 

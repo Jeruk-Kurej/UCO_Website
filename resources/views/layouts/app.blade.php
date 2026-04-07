@@ -167,7 +167,7 @@
                                  role="alert">
                                 <div class="flex items-center gap-2">
                                     <i class="bi bi-exclamation-triangle-fill text-lg"></i>
-                                    <span class="text-sm font-medium">Validasi Gagal! Pastikan form diisi dengan benar.</span>
+                                    <span class="text-sm font-medium">Validation Error! Please check the form for details.</span>
                                 </div>
                                 <button @click="show = false" class="text-white opacity-90 hover:opacity-100 transition-opacity flex-shrink-0 mt-0.5">
                                     <i class="bi bi-x-lg"></i>

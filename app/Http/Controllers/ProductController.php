@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Business;
 use App\Models\Product;
 use App\Models\User;
+use App\Models\ProductPhoto;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
 
 class ProductController extends Controller
@@ -53,11 +55,11 @@ class ProductController extends Controller
     {
         $this->authorizeBusinessAccess($business);
 
-        // Prevent creating products if service mode
-        if ($business->isServiceMode()) {
+        // Prevent creating products if NOT in product mode
+        if (!$business->isProductMode()) {
             return redirect()
                 ->route('businesses.show', $business)
-                ->withErrors(['business_mode' => 'This business is in Service mode. Cannot add products.']);
+                ->withErrors(['business_mode' => 'This business is not in Product mode.']);
         }
 
         // Fetch product categories for this BUSINESS
@@ -92,15 +94,26 @@ class ProductController extends Controller
 
             $product = Product::create($validated);
 
+            // Handle Photo Uploads
+            if ($request->hasFile('photos')) {
+                foreach ($request->file('photos') as $photoFile) {
+                    $path = $photoFile->store('products', 'public');
+                    ProductPhoto::create([
+                        'product_id' => $product->id,
+                        'photo_url' => $path,
+                    ]);
+                }
+            }
+
             // ✅ FIXED: Redirect to business show page with products tab active
             return redirect()
                 ->route('businesses.show', $business)
-                ->with('success', "Success! The product '{$product->name}' has been added to '{$business->name}'.")
+                ->with('success', "Success! The product '{$product->name}' has been added with its photos.")
                 ->with('activeTab', 'products');
         } catch (\Illuminate\Validation\ValidationException $e) {
             return back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
-            return back()->withErrors(['error' => 'An error occurred while creating the product. Please try again.'])->withInput();
+            return back()->withErrors(['error' => 'An error occurred: ' . $e->getMessage()])->withInput();
         }
     }
 
@@ -164,10 +177,21 @@ class ProductController extends Controller
 
         $product->update($validated);
 
-        // ✅ FIXED: Redirect to business show page
+        // Handle Additional Photo Uploads
+        if ($request->hasFile('photos')) {
+            foreach ($request->file('photos') as $photoFile) {
+                $path = $photoFile->store('products', 'public');
+                ProductPhoto::create([
+                    'product_id' => $product->id,
+                    'photo_url' => $path,
+                ]);
+            }
+        }
+
+        // ✅ FIXED: Redirect to product show page
         return redirect()
-            ->route('businesses.show', $business)
-            ->with('success', "Success! The details for '{$product->name}' have been updated.")
+            ->route('businesses.products.show', [$business, $product])
+            ->with('success', "Success! The product '{$product->name}' has been updated.")
             ->with('activeTab', 'products');
     }
 

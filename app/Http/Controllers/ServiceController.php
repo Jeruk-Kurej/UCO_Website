@@ -53,11 +53,11 @@ class ServiceController extends Controller
     {
         $this->authorizeBusinessAccess($business);
 
-        // Prevent creating services if product mode
-        if ($business->isProductMode()) {
+        // Prevent creating services if NOT in service mode
+        if (!$business->isServiceMode()) {
             return redirect()
                 ->route('businesses.show', $business)
-                ->withErrors(['business_mode' => 'This business is in Product mode. Cannot add services.']);
+                ->withErrors(['business_mode' => 'This business is not in Service mode.']);
         }
 
         return view('services.create', compact('business'));

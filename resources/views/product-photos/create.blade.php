@@ -2,7 +2,7 @@
     <div class="max-w-5xl mx-auto">
         {{-- Page Header --}}
         <div class="mb-6 flex flex-col sm:flex-row sm:items-center gap-4">
-            <a href="{{ route('businesses.products.show', [$product->business, $product]) }}" 
+            <a href="{{ route('products.photos.index', $product) }}" 
                class="group inline-flex items-center justify-center sm:justify-start gap-2.5 px-4 py-2.5 bg-white hover:bg-gray-900 border border-gray-200 hover:border-gray-900 text-gray-700 hover:text-white rounded-xl font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200">
                 <i class="bi bi-arrow-left text-base group-hover:-translate-x-0.5 transition-transform duration-200"></i>
                 <span>Back</span>
@@ -21,107 +21,42 @@
                       class="space-y-6">
                     @csrf
 
-                    {{-- Photo Upload via Alpine.js --}}
-                    <div x-data="{ 
-                            imagePreview: null,
-                            isDragging: false,
-                            fileSelected(event) {
-                                const file = event.target.files[0];
-                                if (file) {
-                                    if(file.size > 10 * 1024 * 1024) {
-                                        window.showToast('The photo is too large. Please select a file smaller than 10MB.', 'error');
-                                        this.removeFile();
-                                        return;
-                                    }
-                                    const reader = new FileReader();
-                                    reader.onload = (e) => { this.imagePreview = e.target.result; };
-                                    reader.readAsDataURL(file);
-                                }
-                            },
-                            removeFile() {
-                                this.imagePreview = null;
-                                this.$refs.fileInput.value = '';
-                            },
-                            handleDrop(event) {
-                                this.isDragging = false;
-                                const file = event.dataTransfer.files[0];
-                                if (file) {
-                                    this.$refs.fileInput.files = event.dataTransfer.files;
-                                    this.fileSelected({ target: this.$refs.fileInput });
-                                }
-                            }
-                        }">
+                    {{-- Photo Upload via Alpine.js Component --}}
+                    <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Photo <span class="text-red-500">*</span>
+                            Photos <span class="text-red-500">*</span>
                         </label>
                         
-                        <div class="flex flex-col sm:flex-row sm:items-center gap-4 mt-2 mb-4">
-                            <!-- Photo Preview Area -->
-                            <div class="flex items-center gap-3 p-3 bg-gray-50/80 border border-gray-200/60 rounded-xl" x-show="imagePreview">
-                                <template x-if="imagePreview">
-                                    <div class="flex flex-col items-center gap-1.5">
-                                        <span class="text-[10px] font-bold tracking-wider text-blue-500 uppercase">New</span>
-                                        <div class="relative group">
-                                            <div class="w-20 h-20 rounded-lg bg-blue-50 border-2 border-blue-400 flex items-center justify-center overflow-hidden shadow-md transition-all duration-300 p-1.5">
-                                                <img :src="imagePreview" class="max-w-full max-h-full object-contain">
-                                            </div>
-                                            <button type="button" @click="removeFile()" 
-                                                    class="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white p-1 rounded-full shadow-lg transform transition-all hover:scale-110 focus:outline-none" 
-                                                    title="Cancel new selection">
-                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
-                                                </svg>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </template>
-                            </div>
-
-                            <!-- Upload Actions -->
-                            <div class="flex-1 flex flex-col items-start gap-2"
-                                 @dragover.prevent="isDragging = true" 
-                                 @dragleave.prevent="isDragging = false" 
-                                 @drop.prevent="handleDrop($event)">
-                                <label for="photo" 
-                                       :class="isDragging ? 'bg-blue-50 border-blue-400' : 'bg-white hover:bg-gray-50 border-gray-300'"
-                                       class="cursor-pointer inline-flex items-center gap-2 px-5 py-2.5 border rounded-xl text-sm font-semibold text-gray-700 transition-all shadow-sm focus-within:ring-2 focus-within:ring-soft-gray-900 focus-within:border-soft-gray-900">
-                                    <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
-                                    </svg>
-                                    <span x-text="imagePreview ? 'Change Selection' : 'Upload Photo'"></span>
-                                    <input type="file" name="photo" id="photo" accept="image/*" required class="sr-only" x-ref="fileInput" @change="fileSelected">
-                                </label>
-                                <div class="text-[11px] text-gray-500 font-medium">
-                                    <p>Click to select or drag & drop.</p>
-                                    <p>JPG, PNG, GIF allowed (Max 10MB).</p>
-                                </div>
-                            </div>
-                        </div>
-                        @error('photo')
-                            <p class="mb-2 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
                         <x-image-preview
-                            input-id="photo"
+                            input-id="photos"
                             preview-id="pp-create"
                             :max-size="10"
                             height="h-72"
-                            placeholder="Click or drag & drop your product photo here"
-                            hint="JPG, PNG, GIF — max 10MB"
+                            placeholder="Click or drag & drop your product photos here"
+                            hint="JPG, PNG, GIF — max 10MB per file (Max 10 files)"
+                            multiple="true"
                         />
-                    </div>
+                        <input type="file" name="photos[]" id="photos" accept="image/*" multiple class="sr-only">
 
+                        @error('photos')
+                            <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                        @error('photos.*')
+                            <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
 
 
 
                     {{-- Submit Buttons --}}
                     <div class="flex items-center justify-between pt-6 border-t border-gray-200">
-                        <a href="{{ route('businesses.products.show', [$product->business, $product]) }}" class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 hover:text-gray-900 rounded-xl transition duration-150">
-    Cancel
-</a>
+                        <a href="{{ route('products.photos.index', $product) }}" class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 hover:text-gray-900 rounded-xl transition duration-150">
+                            Cancel
+                        </a>
                         <button type="submit" 
                                 class="inline-flex items-center gap-2 px-6 py-2.5 bg-gray-900 hover:bg-gray-800 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all duration-200">
-                            <i class="bi bi-upload me-2"></i>
-                            Upload Photo
+                            <i class="bi bi-cloud-arrow-up-fill text-lg"></i>
+                            Upload Photos
                         </button>
                     </div>
                 </form>
@@ -131,7 +66,7 @@
 
     @push('scripts')
     <script>
-        document.addEventListener('DOMContentLoaded', () => ucoInitImagePreview('photo', 'pp-create', 10, false));
+        document.addEventListener('DOMContentLoaded', () => ucoInitImagePreview('photos', 'pp-create', 10, false));
     </script>
     @endpush
 </x-app-layout>

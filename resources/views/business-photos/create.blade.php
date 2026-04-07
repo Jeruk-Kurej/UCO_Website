@@ -21,121 +21,57 @@
                       class="space-y-6">
                     @csrf
 
-                    {{-- Photo Upload via Alpine.js --}}
-                    <div x-data="{ 
-                            imagePreview: null,
-                            isDragging: false,
-                            fileSelected(event) {
-                                const file = event.target.files[0];
-                                if (file) {
-                                    if(file.size > 10 * 1024 * 1024) {
-                                        window.showToast('Photo must not be larger than 10MB.', 'error');
-                                        this.removeFile();
-                                        return;
-                                    }
-                                    const reader = new FileReader();
-                                    reader.onload = (e) => { this.imagePreview = e.target.result; };
-                                    reader.readAsDataURL(file);
-                                }
-                            },
-                            removeFile() {
-                                this.imagePreview = null;
-                                this.$refs.fileInput.value = '';
-                            },
-                            handleDrop(event) {
-                                this.isDragging = false;
-                                const file = event.dataTransfer.files[0];
-                                if (file) {
-                                    this.$refs.fileInput.files = event.dataTransfer.files;
-                                    this.fileSelected({ target: this.$refs.fileInput });
-                                }
-                            }
-                        }">
+                    {{-- Photo Upload via Alpine.js Component --}}
+                    <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">
                             Photo <span class="text-red-500">*</span>
                         </label>
                         
-                        <div class="flex flex-col sm:flex-row sm:items-center gap-4 mt-2 mb-4">
-                            <!-- Photo Preview Area -->
-                            <div class="flex items-center gap-3 p-3 bg-gray-50/80 border border-gray-200/60 rounded-xl" x-show="imagePreview">
-                                <template x-if="imagePreview">
-                                    <div class="flex flex-col items-center gap-1.5">
-                                        <span class="text-[10px] font-bold tracking-wider text-blue-500 uppercase">New</span>
-                                        <div class="relative group">
-                                            <div class="w-20 h-20 rounded-lg bg-blue-50 border-2 border-blue-400 flex items-center justify-center overflow-hidden shadow-md transition-all duration-300 p-1.5">
-                                                <img :src="imagePreview" class="max-w-full max-h-full object-contain">
-                                            </div>
-                                            <button type="button" @click="removeFile()" 
-                                                    class="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white p-1 rounded-full shadow-lg transform transition-all hover:scale-110 focus:outline-none" 
-                                                    title="Cancel new selection">
-                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
-                                                </svg>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </template>
-                            </div>
-
-                            <!-- Upload Actions -->
-                            <div class="flex-1 flex flex-col items-start gap-2"
-                                 @dragover.prevent="isDragging = true" 
-                                 @dragleave.prevent="isDragging = false" 
-                                 @drop.prevent="handleDrop($event)">
-                                <label for="photo" 
-                                       :class="isDragging ? 'bg-blue-50 border-blue-400' : 'bg-white hover:bg-gray-50 border-gray-300'"
-                                       class="cursor-pointer inline-flex items-center gap-2 px-5 py-2.5 border rounded-xl text-sm font-semibold text-gray-700 transition-all shadow-sm focus-within:ring-2 focus-within:ring-soft-gray-900 focus-within:border-soft-gray-900">
-                                    <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
-                                    </svg>
-                                    <span x-text="imagePreview ? 'Change Selection' : 'Upload Photo'"></span>
-                                    <input type="file" name="photo" id="photo" accept="image/*" required class="sr-only" x-ref="fileInput" @change="fileSelected">
-                                </label>
-                                <div class="text-[11px] text-gray-500 font-medium">
-                                    <p>Click to select or drag & drop.</p>
-                                    <p>JPG, PNG, GIF allowed (Max 10MB).</p>
-                                </div>
-                            </div>
-                        </div>
-                        @error('photo')
-                            <p class="mb-2 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
                         <x-image-preview
                             input-id="photo"
                             preview-id="bp-create"
                             :max-size="10"
                             height="h-72"
-                            placeholder="Click or drag & drop your business photo here"
+                            placeholder="Click or drag & drop your gallery photo here"
                             hint="JPG, PNG, GIF — max 10MB"
+                            multiple="false"
                         />
+                        <input type="file" name="photo" id="photo" accept="image/*" class="sr-only">
+
+                        @error('photo')
+                            <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    {{-- Caption --}}
+                    <div class="space-y-2">
+                        <label for="caption" class="block text-sm font-medium text-gray-700">
+                            Caption <span class="text-gray-400 font-normal">(Tell the story behind this photo)</span>
+                        </label>
+                        <input type="text" 
+                               name="caption" 
+                               id="caption" 
+                               value="{{ old('caption') }}"
+                               placeholder="Enter a caption for your gallery..."
+                               class="block w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition-all outline-none">
+                        @error('caption')
+                            <p class="text-sm text-red-600">{{ $message }}</p>
+                        @enderror
                     </div>
 
 
-                    {{-- Info Card --}}
-                    <div class="bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-200 rounded-xl p-4">
-                        <div class="flex gap-3">
-                            <i class="bi bi-info-circle text-blue-600 text-xl flex-shrink-0"></i>
-                            <div class="text-sm text-blue-800">
-                                <p class="font-semibold mb-1">Photo Guidelines</p>
-                                <ul class="space-y-1 text-xs">
-                                    <li>• Use high-quality images that showcase your business</li>
-                                    <li>• Ensure photos are well-lit and professional</li>
-                                    <li>• Avoid copyrighted images or watermarks</li>
-                                    <li>• The first photo will be your business cover image</li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
+
+
 
                     {{-- Submit Buttons --}}
                     <div class="flex items-center justify-between pt-6 border-t border-gray-200">
                         <a href="{{ route('businesses.show', $business) }}" class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 hover:text-gray-900 rounded-xl transition duration-150">
-    Cancel
-</a>
+                            Cancel
+                        </a>
                         <button type="submit" 
                                 class="inline-flex items-center gap-2 px-6 py-2.5 bg-gray-900 hover:bg-gray-800 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all duration-200">
-                            <i class="bi bi-upload me-2"></i>
-                            Upload Photo
+                            <i class="bi bi-cloud-arrow-up-fill text-lg"></i>
+                            Upload Photos
                         </button>
                     </div>
                 </form>

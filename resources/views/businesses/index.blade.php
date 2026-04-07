@@ -88,12 +88,27 @@
         </section>
 
         {{-- Search and Filter Card --}}
-        <div class="bg-white border border-gray-200 rounded-2xl p-6 mb-8 shadow-sm space-y-6">
-            <div class="flex flex-col lg:flex-row gap-6">
+        <div class="bg-white border border-gray-200 rounded-xl p-4 mb-8 shadow-sm space-y-8" 
+             x-data="{
+                search: '{{ request('search') }}',
+                selectedType: '{{ request('type') }}',
+                isSearching: false,
+                performSearch() {
+                    this.isSearching = true;
+                    const params = new URLSearchParams();
+                    if (this.search.trim()) params.append('search', this.search.trim());
+                    if (this.selectedType) params.append('type', this.selectedType);
+                    
+                    const url = '{{ route('businesses.index') }}' + (params.toString() ? '?' + params.toString() : '');
+                    
+                    window.location.href = url;
+                }
+             }">
+            <div class="flex gap-3">
                 {{-- Search Input --}}
                 <div class="flex-1">
                     <div class="relative group">
-                        <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                             <svg class="w-5 h-5 text-gray-400 group-focus-within:text-uco-orange-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                             </svg>
@@ -102,39 +117,40 @@
                                x-model="search"
                                @input.debounce.500ms="performSearch()"
                                @keydown.enter="performSearch()"
-                               placeholder="Search businesses by name, description, owner, or category..." 
-                               class="block w-full pl-12 pr-12 py-3.5 bg-gray-50 border border-gray-200 rounded-2xl text-sm focus:bg-white focus:ring-4 focus:ring-uco-orange-500/10 focus:border-uco-orange-500 transition-all outline-none">
-                        <div x-show="isSearching" class="absolute inset-y-0 right-0 flex items-center pr-4">
+                               placeholder="Search businesses by name, description, or category..." 
+                               class="block w-full pl-10 pr-12 py-2.5 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-uco-orange-500 focus:border-uco-orange-500 transition-all shadow-sm">
+                        
+                        <div x-show="isSearching" class="absolute inset-y-0 right-0 flex items-center pr-3">
                             <svg class="animate-spin h-5 w-5 text-uco-orange-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
                         </div>
-                        <button x-show="search" @click="search = ''; performSearch()" class="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-400 hover:text-gray-600" x-transition.opacity>
+                        
+                        <button x-show="search" @click="search = ''; performSearch()" class="absolute inset-y-0 right-3 flex items-center text-gray-400 hover:text-gray-600" x-transition.opacity>
                             <i class="bi bi-x-circle-fill"></i>
                         </button>
                     </div>
-                </div>
-
                 </div>
             </div>
 
             {{-- Category Filter Chips --}}
             <div class="pt-2">
-                <div class="flex items-center gap-3 mb-3">
+                <div class="flex items-center gap-3 mb-5">
                     <span class="text-xs font-bold text-gray-400 uppercase tracking-widest">Filter by Category</span>
                     <div class="h-px flex-1 bg-gray-100"></div>
                 </div>
-                <div class="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-hide -mx-1 px-1">
+                {{-- Added py-4 to container to prevent ring/shadow clipping --}}
+                <div class="flex items-center gap-3 overflow-x-auto py-4 scrollbar-hide -mx-1 px-1">
                     <button @click="selectedType = ''; performSearch()" 
                             :class="selectedType === '' ? 'bg-soft-gray-900 text-white shadow-lg shadow-gray-200 ring-4 ring-gray-900/10' : 'bg-white text-gray-600 border-gray-200 hover:border-soft-gray-300 hover:bg-gray-50'"
-                            class="whitespace-nowrap px-6 py-2.5 rounded-full text-sm font-bold border transition-all duration-300">
+                            class="whitespace-nowrap px-6 py-3 rounded-full text-sm font-bold border transition-all duration-300">
                         All Categories
                     </button>
                     @foreach($businessTypes as $type)
                         <button @click="selectedType = '{{ $type->id }}'; performSearch()" 
                                 :class="selectedType === '{{ $type->id }}' ? 'bg-uco-orange-500 text-white shadow-lg shadow-uco-orange-100 ring-4 ring-uco-orange-500/10' : 'bg-white text-gray-600 border-gray-200 hover:border-soft-gray-300 hover:bg-gray-50'"
-                                class="whitespace-nowrap px-6 py-2.5 rounded-full text-sm font-bold border transition-all duration-300">
+                                class="whitespace-nowrap px-6 py-3 rounded-full text-sm font-bold border transition-all duration-300">
                             {{ $type->name }}
                         </button>
                     @endforeach

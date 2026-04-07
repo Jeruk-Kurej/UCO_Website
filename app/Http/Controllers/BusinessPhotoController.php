@@ -68,21 +68,14 @@ class BusinessPhotoController extends Controller
     {
         $this->authorizeBusinessAccess($business);
 
-        try {
-            $validated = $request->validate([
-                'photo' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
-                'caption' => 'nullable|string|max:255',
-            ]);
+        $request->validate([
+            'photo' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
+            'caption' => 'nullable|string|max:500',
+        ]);
 
-            // Handle file upload
+        try {
             if ($request->hasFile('photo')) {
                 $file = $request->file('photo');
-                
-                // Additional file size check
-                if ($file->getSize() > 10240 * 1024) {
-                    return back()->withErrors(['photo' => 'Photo must not be larger than 10MB.'])->withInput();
-                }
-                
                 $businessSlug = Str::slug($business->name, '_');
                 $nextNumber = $business->photos()->count() + 1;
                 $filename = $businessSlug . '_photo_' . $nextNumber . '_' . time() . '.' . $file->getClientOriginalExtension();
@@ -94,22 +87,22 @@ class BusinessPhotoController extends Controller
                     config('filesystems.default')
                 );
                 
-                $validated['photo_url'] = $path;
+                BusinessPhoto::create([
+                    'business_id' => $business->id,
+                    'photo_url' => $path,
+                    'caption' => $request->input('caption'),
+                ]);
+
+                return redirect()
+                    ->route('businesses.show', $business)
+                    ->with('success', 'Success! Your photo with caption has been uploaded.')
+                    ->with('activeTab', 'photos');
             }
 
-            $validated['business_id'] = $business->id;
-
-            $photo = BusinessPhoto::create($validated);
-
-            // ✅ FIXED: Redirect to business show page
-            return redirect()
-                ->route('businesses.show', $business)
-                ->with('success', "Success! Your photo for '{$business->name}' has been uploaded.")
-                ->with('activeTab', 'photos');
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            return back()->withErrors($e->errors())->withInput();
+            return back()->withErrors(['photo' => 'Please select a photo to upload.'])->withInput();
         } catch (\Exception $e) {
-            return back()->withErrors(['error' => 'An error occurred while uploading the photo. Please try again.'])->withInput();
+            \Illuminate\Support\Facades\Log::error('Business photo upload failed: ' . $e->getMessage());
+            return back()->withErrors(['error' => 'An error occurred while uploading. Please try again.'])->withInput();
         }
     }
 

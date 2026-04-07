@@ -737,11 +737,8 @@
                             :class="activeTab === 'photos' ? 'border-soft-gray-900 text-soft-gray-900' :
                                 'border-transparent text-soft-gray-500 hover:text-soft-gray-700 hover:border-soft-gray-300'"
                             class="flex items-center gap-2 py-4 px-4 border-b-2 font-semibold text-sm transition duration-150 whitespace-nowrap">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                            </svg>
-                            Photos
+                            <i class="bi bi-images text-base"></i>
+                            Gallery
                             <span
                                 :class="activeTab === 'photos' ? 'bg-soft-gray-900 text-white' :
                                     'bg-soft-gray-100 text-soft-gray-600'"
@@ -887,29 +884,12 @@
                                             @auth
                                                 @if ($canManageBusiness)
                                                     <div class="flex items-center gap-2 pt-3 border-t border-gray-200">
-                                                        <a href="{{ route('products.photos.index', $product) }}"
-                                                            class="flex-1 inline-flex items-center justify-center px-3 py-1.5 bg-blue-50 text-blue-700 text-xs font-medium rounded hover:bg-blue-100 transition duration-150">
-                                                            <i class="bi bi-images me-1"></i>
-                                                            Photos ({{ $product->photos->count() }})
+                                                        <a href="{{ route('businesses.products.show', [$business, $product]) }}"
+                                                            class="flex-1 inline-flex items-center justify-center px-4 py-2.5 bg-gray-50 text-gray-500 text-sm font-bold rounded-xl hover:bg-gray-900 hover:text-white transition-all duration-300 group"
+                                                            title="View Details">
+                                                            <i class="bi bi-eye text-lg me-2 group-hover:scale-110 transition-transform"></i>
+                                                            Show Details
                                                         </a>
-                                                        <a href="{{ route('businesses.products.edit', [$business, $product]) }}"
-                                                            class="inline-flex items-center justify-center w-8 h-8 bg-orange-50 text-orange-600 rounded hover:bg-orange-100 transition duration-150"
-                                                            title="Edit Product">
-                                                            <i class="bi bi-pencil"></i>
-                                                        </a>
-                                                        <form
-                                                            action="{{ route('businesses.products.destroy', [$business, $product]) }}"
-                                                            method="POST"
-                                                            onsubmit="return confirm('Delete {{ $product->name }}?');"
-                                                            class="inline">
-                                                            @csrf
-                                                            @method('DELETE')
-                                                            <button type="submit"
-                                                                class="inline-flex items-center justify-center w-8 h-8 bg-red-50 text-red-600 rounded hover:bg-red-100 transition duration-150"
-                                                                title="Delete Product">
-                                                                <i class="bi bi-trash"></i>
-                                                            </button>
-                                                        </form>
                                                     </div>
                                                 @endif
                                             @endauth
@@ -1018,22 +998,24 @@
                     </div>
                 @endif
 
-                {{-- Tab: Photos --}}
+                {{-- Tab: Gallery (previously Photos) --}}
                 <div x-show="activeTab === 'photos'" class="p-6" style="display: none;">
-                    <div class="flex items-center justify-between mb-6">
-                        <h3 class="text-lg font-semibold text-gray-900">Business Photo Gallery</h3>
+                    <div class="flex items-center justify-between mb-8">
+                        <h3 class="text-xl font-bold text-gray-900">Business Gallery</h3>
                         @auth
-                        @if ($canManageBusiness && $business->photos->count() > 0)
-                            <div class="flex items-center gap-2">
-                                <a href="{{ route('businesses.photos.index', $business) }}"
-                                    class="inline-flex items-center px-3 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition duration-150">
-                                    <i class="bi bi-images me-2"></i>
-                                    Manage Photos
-                                </a>
+                        @if ($canManageBusiness)
+                            <div class="flex items-center gap-3">
+                                @if($business->photos->count() > 0)
+                                    <a href="{{ route('businesses.photos.index', $business) }}"
+                                        class="inline-flex items-center px-4 py-2.5 bg-white border border-gray-200 text-gray-700 text-sm font-semibold rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm">
+                                        <i class="bi bi-grid-3x3-gap me-2"></i>
+                                        Manage Gallery
+                                    </a>
+                                @endif
                                 <a href="{{ route('businesses.photos.create', $business) }}"
-                                    class="inline-flex items-center px-3 py-2 bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium rounded-lg shadow-sm transition duration-150">
-                                    <i class="bi bi-upload me-2"></i>
-                                    Upload Photo
+                                    class="inline-flex items-center px-4 py-2.5 bg-gray-900 hover:bg-gray-800 text-white text-sm font-semibold rounded-xl shadow-md hover:shadow-lg transition-all">
+                                    <i class="bi bi-plus-lg me-2"></i>
+                                    Upload to Gallery
                                 </a>
                             </div>
                         @endif
@@ -1041,46 +1023,44 @@
                     </div>
 
                     @if ($business->photos->count() > 0)
-                        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                             @foreach ($business->photos as $photo)
-                                @php
-                                    $gphoto = $photo->photo_url;
-                                    $gphotoUrl = null;
-                                @endphp
-                                <div class="relative group">
-                                    @if ($gphoto)
-                                        @php $gphotoUrl = storage_image_url($gphoto, 'gallery_thumb'); @endphp
-                                    @endif
-                                    @if ($gphotoUrl)
-                                        <button type="button"
-                                            @click="openFullscreen('{{ storage_image_url($gphoto, 'gallery') }}', '{{ addslashes($business->name) }} photo')"
-                                            class="block w-full rounded-lg overflow-hidden focus:outline-none focus:ring-2 focus:ring-uco-orange-500">
-                                            <img src="{{ $gphotoUrl }}" alt="{{ $business->name }} photo"
-                                                loading="lazy" decoding="async"
-                                                onload="this.classList.remove('blur-sm')"
-                                                class="w-full h-48 object-cover blur-sm hover:scale-105 transition duration-200">
-                                        </button>
-                                    @else
-                                        <div
-                                            class="w-full h-48 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center rounded-lg">
-                                            <i class="bi bi-image text-4xl text-gray-400"></i>
-                                        </div>
-                                    @endif
+                                <div class="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-all group flex flex-col">
+                                    {{-- Photo --}}
+                                    <div class="relative aspect-video overflow-hidden bg-gray-100 flex-shrink-0">
+                                        <img src="{{ storage_image_url($photo->photo_url, 'gallery') }}" 
+                                             alt="{{ $business->name }} gallery photo"
+                                             loading="lazy"
+                                             class="w-full h-full object-cover transition duration-500 group-hover:scale-105 cursor-zoom-in"
+                                             @click="openFullscreen('{{ storage_image_url($photo->photo_url, 'gallery') }}', '{{ addslashes($business->name) }} photo')">
+                                    </div>
 
+                                    {{-- Caption Section --}}
+                                    <div class="p-4 flex-grow flex flex-col justify-center border-t border-gray-50 bg-white">
+                                        @if($photo->caption)
+                                            <p class="text-gray-700 text-sm font-medium leading-normal line-clamp-3">
+                                                {{ $photo->caption }}
+                                            </p>
+                                        @else
+                                            <span class="text-gray-300 text-[10px] uppercase font-bold tracking-widest text-center">No caption</span>
+                                        @endif
+                                    </div>
                                 </div>
                             @endforeach
                         </div>
                     @else
-                        <div class="text-center py-12 bg-gray-50 rounded-lg">
-                            <i class="bi bi-images text-6xl text-gray-300 mb-3"></i>
-                            <p class="text-gray-500 text-lg font-medium mb-2">No photos yet</p>
+                        <div class="text-center py-20 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
+                            <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
+                                <i class="bi bi-images text-3xl text-gray-300"></i>
+                            </div>
+                            <h4 class="text-lg font-bold text-gray-900 mb-2">No photos in gallery yet</h4>
                             @auth
                                 @if ($canManageBusiness)
-                                    <p class="text-sm text-gray-400 mb-4">Upload photos to showcase your business</p>
+                                    <p class="text-gray-400 mb-6 max-w-xs mx-auto text-xs">Share your business journey by uploading photos to your gallery.</p>
                                     <a href="{{ route('businesses.photos.create', $business) }}"
-                                        class="inline-flex items-center px-4 py-2 bg-soft-gray-900 hover:bg-soft-gray-800 text-white text-sm font-medium rounded-xl shadow-sm transition duration-150">
+                                        class="inline-flex items-center px-6 py-2.5 bg-gray-900 hover:bg-gray-800 text-white text-sm font-bold rounded-xl shadow-md transition-all">
                                         <i class="bi bi-upload me-2"></i>
-                                        Upload Your First Photo
+                                        Add First Photo
                                     </a>
                                 @endif
                             @endauth
@@ -1181,9 +1161,10 @@
                 class="absolute top-4 right-4 text-white bg-white/10 hover:bg-white/20 rounded-lg px-3 py-2 z-10">
                 <i class="bi bi-x-lg"></i>
             </button>
-            <div class="absolute inset-0 flex items-center justify-center p-4">
-                <img :src="fullscreenSrc" :alt="fullscreenAlt"
-                    class="max-h-[92vh] max-w-[95vw] object-contain rounded-lg shadow-2xl">
+            <div class="absolute inset-0 flex items-center justify-center p-4 cursor-zoom-out"
+                @click="fullscreenOpen = false">
+                <img :src="fullscreenSrc" :alt="fullscreenAlt" @click.stop
+                    class="max-h-[92vh] max-w-[95vw] object-contain rounded-lg shadow-2xl cursor-default">
             </div>
         </div>
 

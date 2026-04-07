@@ -15,7 +15,7 @@
 
         <div class="bg-white shadow-sm sm:rounded-xl">
             <div class="p-6">
-                <form method="POST" action="{{ route('businesses.products.store', $business) }}" class="space-y-6">
+                <form method="POST" action="{{ route('businesses.products.store', $business) }}" enctype="multipart/form-data" class="space-y-6">
                     @csrf
 
                     {{-- Product Category --}}
@@ -75,6 +75,22 @@
                         @enderror
                     </div>
 
+                    {{-- Product Photos --}}
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Product Photos <span class="text-gray-400 font-normal">(Optional)</span>
+                        </label>
+                        <x-image-preview 
+                            input-id="photos" 
+                            preview-id="product-photos"
+                            multiple="true"
+                            height="h-48"
+                            placeholder="Click or drag photos here"
+                            hint="Select multiple images — Max 10MB each"
+                        />
+                        <input type="file" name="photos[]" id="photos" multiple accept="image/*" class="sr-only">
+                    </div>
+
                     {{-- Price --}}
                     <div>
                         <label for="price" class="block text-sm font-medium text-gray-700 mb-2">
@@ -114,4 +130,11 @@
             </div>
         </div>
     </div>
+    @push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            ucoInitImagePreview('photos', 'product-photos', 10, false);
+        });
+    </script>
+    @endpush
 </x-app-layout>
