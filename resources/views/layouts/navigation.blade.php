@@ -102,6 +102,7 @@
                             </div>
                             <div class="py-2">
                                 <a href="/profile" class="block px-4 py-2.5 text-sm font-medium text-soft-gray-700 hover:bg-soft-gray-50 hover:text-soft-gray-900 transition">My Profile</a>
+                                <a href="{{ route('businesses.my') }}" class="block px-4 py-2.5 text-sm font-medium text-soft-gray-700 hover:bg-soft-gray-50 hover:text-soft-gray-900 transition">My Business</a>
                                 <form method="POST" action="{{ route('logout') }}">@csrf
                                     <button type="submit" class="w-full text-left px-4 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 transition">Log Out</button>
                                 </form>
@@ -186,6 +187,7 @@
                         </div>
                     </div>
                     <a href="/profile" class="block py-2.5 px-3 text-sm font-medium text-soft-gray-700 hover:bg-soft-gray-50 hover:text-soft-gray-900 rounded-lg">Profile</a>
+                    <a href="{{ route('businesses.my') }}" class="block py-2.5 px-3 text-sm font-medium text-soft-gray-700 hover:bg-soft-gray-50 hover:text-soft-gray-900 rounded-lg">My Business</a>
                     <form method="POST" action="{{ route('logout') }}">@csrf
                         <button type="submit" class="w-full text-left py-2.5 px-3 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg">Log Out</button>
                     </form>

@@ -21,7 +21,11 @@
             <div class="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
                 @php
                     $backUrl = url()->previous();
-                    if (
+                    $isFromManagement = str_contains($backUrl, '/create') || str_contains($backUrl, '/edit') || str_contains($backUrl, '/my-businesses');
+                    
+                    if ($canManageBusiness && ($isFromManagement || $backUrl === url()->current())) {
+                        $backUrl = route('businesses.my');
+                    } elseif (
                         $backUrl === url()->current() ||
                         str_contains($backUrl, '/login') ||
                         str_contains($backUrl, '/register')

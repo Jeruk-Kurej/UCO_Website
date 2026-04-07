@@ -52,15 +52,10 @@
                     </div>
 
                     <div class="flex flex-wrap items-center gap-3">
-                                <a href="{{ route('businesses.index') }}"
+                        <a href="{{ route('businesses.index') }}"
                            class="inline-flex items-center gap-2 rounded-xl bg-uco-orange-500 px-5 py-3 text-sm font-semibold text-white shadow-md shadow-uco-orange-200 transition hover:-translate-y-0.5 hover:bg-uco-orange-600">
                             Explore Businesses
                             <i class="bi bi-arrow-right"></i>
-                        </a>
-                        <a href="#business-categories"
-                           class="inline-flex items-center gap-2 rounded-xl border border-uco-yellow-300 bg-uco-yellow-50 px-5 py-3 text-sm font-semibold text-uco-yellow-800 transition hover:border-uco-yellow-400 hover:bg-uco-yellow-100">
-                            View Categories
-                            <i class="bi bi-grid"></i>
                         </a>
                     </div>
                 </div>
@@ -151,31 +146,6 @@
                         </div>
                     </a>
                 @endforeach
-            </div>
-        </section>
-
-        {{-- Category Explorer --}}
-        <section id="business-categories" class="space-y-8">
-            <div class="reveal-on-scroll">
-                <h2 class="text-3xl font-bold text-soft-gray-900">Business Categories Explorer</h2>
-                <p class="mt-2 text-sm text-soft-gray-600">Find ventures by category and discover what our founders are building.</p>
-            </div>
-
-            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                @forelse($businessTypes as $type)
-                    <a href="{{ route('business-types.show', $type) }}"
-                       class="group rounded-2xl border border-soft-gray-200 bg-white p-5 shadow-sm transition duration-300 hover:-translate-y-1 hover:border-uco-yellow-300 hover:shadow-lg reveal-on-scroll">
-                        <div class="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-uco-yellow-100 text-uco-yellow-700">
-                            <i class="bi bi-grid-3x3-gap-fill"></i>
-                        </div>
-                        <h3 class="line-clamp-1 text-lg font-bold text-soft-gray-900">{{ $type->name }}</h3>
-                        <p class="mt-2 text-sm text-soft-gray-600">{{ $type->businesses_count }} listed businesses</p>
-                    </a>
-                @empty
-                    <div class="col-span-full rounded-2xl border border-dashed border-soft-gray-300 p-8 text-center text-soft-gray-500">
-                        Categories will appear as businesses are added.
-                    </div>
-                @endforelse
             </div>
         </section>
 

@@ -6,17 +6,8 @@
 
 
     {{-- Main Content --}}
-    @php
-        // Default tab: for authenticated non-admin users default to 'my', otherwise 'all'
-        if (auth()->check() && !auth()->user()->isAdmin()) {
-            $initialTab = request('tab', 'my');
-        } else {
-            $initialTab = request('tab', 'all');
-        }
-    @endphp
     <div class="businesses-wrapper max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8" 
          x-data="{ 
-            activeTab: '{{ $initialTab }}', 
             showImportModal: false,
             search: '{{ request('search') }}',
             selectedType: '{{ request('type', '') }}',
@@ -26,7 +17,6 @@
                 const params = new URLSearchParams();
                 if (this.search.trim()) params.append('search', this.search.trim());
                 if (this.selectedType) params.append('type', this.selectedType);
-                if (this.activeTab !== 'all') params.append('tab', this.activeTab);
                 
                 const url = '{{ route('businesses.index') }}?' + params.toString();
                 
@@ -126,15 +116,7 @@
                     </div>
                 </div>
 
-                {{-- Client-side Tabs for non-admin users: All / My --}}
-                @auth
-                    @if(!auth()->user()->isAdmin())
-                        <div role="tablist" class="inline-flex rounded-2xl bg-gray-100 p-1.5 gap-1.5 border border-gray-200 self-start shadow-inner">
-                            <button @click="activeTab = 'my'; performSearch()" type="button" role="tab" :aria-selected="activeTab === 'my'" :class="activeTab === 'my' ? 'bg-white text-soft-gray-900 shadow-md ring-1 ring-black/5' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'" class="px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-300">My Businesses</button>
-                            <button @click="activeTab = 'all'; performSearch()" type="button" role="tab" :aria-selected="activeTab === 'all'" :class="activeTab === 'all' ? 'bg-white text-soft-gray-900 shadow-md ring-1 ring-black/5' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'" class="px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-300">All Businesses</button>
-                        </div>
-                    @endif
-                @endauth
+                </div>
             </div>
 
             {{-- Category Filter Chips --}}
@@ -163,8 +145,8 @@
 
 
         <div id="content-container">
-            {{-- All Businesses (visible when activeTab === 'all') --}}
-            <div x-show="activeTab === 'all'" x-transition.opacity class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {{-- All Businesses --}}
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 @forelse ($businesses as $business)
                     @php $delay = ($loop->index % 12) * 50; @endphp
                     <div class="bg-white border rounded-xl overflow-hidden hover:-translate-y-1 hover:border-uco-orange-300 hover:shadow-xl transition-all duration-300 relative group reveal-on-scroll"
@@ -256,7 +238,7 @@
             </div>
 
         {{-- Pagination for All Businesses --}}
-        <div x-show="activeTab === 'all'" x-transition.opacity class="mt-6">
+        <div class="mt-6">
             <div class="flex items-center justify-center">
                 @if(method_exists($businesses, 'links'))
                     {{ $businesses->withQueryString()->appends(['tab' => 'all'])->links() }}
@@ -433,63 +415,6 @@
             @endif
         @endauth
 
-        @auth
-            {{-- My Businesses (visible when activeTab === 'my') --}}
-            <div x-show="activeTab === 'my'" x-transition.opacity class="col-span-1 md:col-span-2">
-            <div class="p-8 md:p-10 bg-white border border-slate-200 rounded-2xl shadow-sm w-full mt-6 reveal-on-scroll">
-                <div class="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div>
-                        <h3 class="text-xl font-bold text-gray-900 mb-1">My Businesses</h3>
-                        <p class="text-sm text-gray-500">Manage your entrepreneurial ventures</p>
-                    </div>
-                    <a href="{{ route('businesses.create') }}" class="inline-flex items-center justify-center px-5 py-2.5 bg-uco-orange-500 text-white text-sm font-semibold rounded-xl hover:bg-uco-orange-600 hover:-translate-y-0.5 shadow-md shadow-uco-orange-200 transition-all duration-200">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                        </svg>
-                        Add New Business
-                    </a>
-                </div>
-
-                @if(($myBusinesses ?? collect())->count() > 0)
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        @foreach($myBusinesses as $b)
-                            @php $delay = ($loop->index % 12) * 50; @endphp
-                            <a href="{{ route('businesses.show', $b) }}" 
-                               class="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-xl transform hover:-translate-y-1 hover:border-uco-orange-300 transition-all duration-300 overflow-hidden block reveal-on-scroll"
-                               style="transition-delay: {{ $delay }}ms;">
-                                <div class="p-6 flex items-center gap-4">
-                                    @php $myLogo = $b->logo_url ?? null; $myLogoUrl = $myLogo ? storage_image_url($myLogo, 'logo_thumb') : null; @endphp
-                                    @if($myLogoUrl)
-                                        <img src="{{ $myLogoUrl }}" alt="{{ $b->name }}" class="w-12 h-12 rounded-lg object-cover">
-                                    @else
-                                        <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400"><i class="bi bi-briefcase"></i></div>
-                                    @endif
-                                    <div class="flex-1 min-w-0">
-                                        <h4 class="font-semibold text-gray-900 truncate mb-1">{{ $b->name }}</h4>
-                                        <div class="min-h-[2.5rem]">
-                                            <p class="text-sm text-gray-500 line-clamp-2 overflow-hidden">{{ $b->description ?: 'No description provided' }}</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </a>
-                        @endforeach
-                    </div>
-                @else
-                    <div class="text-center py-16 px-4 bg-gray-50 border border-dashed border-gray-300 rounded-2xl reveal-on-scroll">
-                        <div class="mb-4 inline-flex items-center justify-center w-16 h-16 bg-white rounded-full shadow-sm text-gray-400">
-                            <i class="bi bi-shop text-2xl"></i>
-                        </div>
-                        <h4 class="text-lg font-bold text-gray-900 mb-2">No Businesses Yet</h4>
-                        <p class="text-gray-500 mb-6 max-w-md mx-auto">Start showcasing your products and services to the UCO community. It only takes a few minutes to set up your portfolio.</p>
-                        <a href="{{ route('businesses.create') }}" class="inline-flex items-center px-6 py-3 bg-uco-orange-500 text-white font-semibold rounded-xl hover:bg-uco-orange-600 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-                            <i class="bi bi-plus-circle mr-2"></i>
-                            Create Your First Business
-                        </a>
-                    </div>
-                @endif
-            </div>
-            </div>
-        @endauth
         </div>
 
     {{-- Duplicate 'My Businesses' block removed; kept only the tabbed 'my' section above. --}}

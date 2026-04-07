@@ -71,6 +71,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::resource('businesses', BusinessController::class)->except(['index', 'show']);
+    Route::get('/my-businesses', [BusinessController::class, 'my'])->name('businesses.my');
     Route::get('/regions/regencies', [BusinessController::class, 'regenciesByProvince'])->name('regions.regencies');
 
     Route::resource('businesses.product-categories', ProductCategoryController::class)

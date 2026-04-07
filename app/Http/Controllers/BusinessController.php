@@ -62,40 +62,33 @@ class BusinessController extends Controller
             $query->where('businesses.business_type_id', $type);
         }
         
-        // Filter for "My Businesses" if query param present
-        if (($request->get('tab') === 'my' || $request->get('my')) && Auth::check()) {
-            /** @var User $user */
-            $user = Auth::user();
-            $query->where(function ($ownerQuery) use ($user) {
-                $ownerQuery->where('businesses.user_id', $user->id)
-                    ->orWhereHas('owners', function ($pivotOwnerQuery) use ($user) {
-                        $pivotOwnerQuery->where('users.id', $user->id);
-                    });
-            });
-        }
-        
         $businesses = $query->orderBy('businesses.is_featured', 'desc')->orderBy('businesses.created_at', 'desc')->paginate(12);
-        
-        // Prepare my businesses for current user - independent of pagination
-        $myBusinesses = collect();
-        if (Auth::check()) {
-            /** @var User $user */
-            $user = Auth::user();
-            $myBusinesses = Business::with(['businessType', 'photos'])
-                ->where(function ($ownerQuery) use ($user) {
-                    $ownerQuery->where('user_id', $user->id)
-                        ->orWhereHas('owners', function ($pivotOwnerQuery) use ($user) {
-                            $pivotOwnerQuery->where('users.id', $user->id);
-                        });
-                })
-                ->latest()
-                ->get();
-        }
         
         // Also load business types for the filter bar
         $businessTypes = BusinessType::all();
 
-        return view('businesses.index', compact('businesses', 'myBusinesses', 'businessTypes'));
+        return view('businesses.index', compact('businesses', 'businessTypes'));
+    }
+
+    /**
+     * Display a listing of the user's manage businesses.
+     */
+    public function my()
+    {
+        /** @var User $user */
+        $user = Auth::user();
+        
+        $myBusinesses = Business::with(['businessType', 'photos'])
+            ->where(function ($ownerQuery) use ($user) {
+                $ownerQuery->where('user_id', $user->id)
+                    ->orWhereHas('owners', function ($pivotOwnerQuery) use ($user) {
+                        $pivotOwnerQuery->where('users.id', $user->id);
+                    });
+            })
+            ->latest()
+            ->get();
+
+        return view('businesses.my', compact('myBusinesses'));
     }
 
     /**
