@@ -2,7 +2,6 @@
     <div class="min-h-screen bg-gradient-to-br from-soft-gray-50 to-white py-12">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             
-            {{-- Success/Error Messages --}}
             @if(session('status') === 'profile-updated')
                 <div class="mb-6 bg-green-50 border border-green-200 text-green-800 px-6 py-4 rounded-xl shadow-sm flex items-start gap-3">
                     <i class="bi bi-check-circle-fill text-green-600 text-xl flex-shrink-0 mt-0.5"></i>
@@ -13,21 +12,6 @@
                 </div>
             @endif
 
-            @if($errors->any())
-                <div class="mb-6 bg-red-50 border border-red-200 text-red-800 px-6 py-4 rounded-xl shadow-sm">
-                    <div class="flex items-start gap-3">
-                        <i class="bi bi-exclamation-triangle-fill text-red-600 text-xl flex-shrink-0 mt-0.5"></i>
-                        <div class="flex-1">
-                            <p class="font-semibold mb-2">Please fix the following errors:</p>
-                            <ul class="list-disc list-inside space-y-1 text-sm">
-                                @foreach($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            @endif
 
             {{-- Page Header --}}
             <div class="mb-8">

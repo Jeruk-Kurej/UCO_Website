@@ -8,7 +8,7 @@
                     <span class="inline-flex items-center rounded-full border border-uco-orange-200 bg-uco-orange-50 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-uco-orange-700">
                         Admin Dashboard
                     </span>
-                    <h1 class="text-3xl font-extrabold text-soft-gray-900 md:text-4xl">Testimony Moderation</h1>
+                    <h1 class="text-3xl font-extrabold text-soft-gray-900 md:text-4xl">Testimonial Review</h1>
                     <p class="text-sm text-soft-gray-600 mt-1">Review and manage UC-wide testimonies and AI moderation results.</p>
                 </div>
             </div>

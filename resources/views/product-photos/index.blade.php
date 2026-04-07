@@ -25,28 +25,6 @@
         </div>
 
         {{-- Success / Error flash --}}
-        @if(session('success'))
-            <div class="mb-5 bg-green-50 border border-green-200 text-green-800 px-5 py-4 rounded-xl shadow-sm flex items-start gap-3">
-                <i class="bi bi-check-circle-fill text-green-600 text-xl flex-shrink-0 mt-0.5"></i>
-                <div>
-                    <p class="font-semibold">Berhasil!</p>
-                    <p class="text-sm">{{ session('success') }}</p>
-                </div>
-            </div>
-        @endif
-        @if($errors->any())
-            <div class="mb-5 bg-red-50 border border-red-200 text-red-800 px-5 py-4 rounded-xl shadow-sm flex items-start gap-3">
-                <i class="bi bi-exclamation-triangle-fill text-red-600 text-xl flex-shrink-0 mt-0.5"></i>
-                <div>
-                    <p class="font-semibold mb-1">Ada kesalahan:</p>
-                    <ul class="list-disc list-inside text-sm space-y-0.5">
-                        @foreach($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            </div>
-        @endif
 
         {{-- Product Info Card --}}
         <div class="mb-6 bg-white border border-slate-200 shadow-sm rounded-xl p-4">

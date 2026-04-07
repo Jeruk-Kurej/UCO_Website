@@ -21,14 +21,6 @@
             </div>
         </section>
 
-        @if (session('success'))
-            <section class="rounded-2xl border border-green-200 bg-green-50 px-5 py-4 text-sm text-green-800 shadow-sm reveal-on-scroll">
-                <div class="flex items-center gap-2">
-                    <i class="bi bi-check-circle-fill"></i>
-                    <span>{{ session('success') }}</span>
-                </div>
-            </section>
-        @endif
 
         @if(!auth()->check() || !auth()->user()->isAdmin())
             <section class="rounded-2xl border border-soft-gray-200 bg-white p-5 shadow-sm md:p-6 reveal-on-scroll">

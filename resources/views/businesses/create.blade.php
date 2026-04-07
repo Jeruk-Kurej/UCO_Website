@@ -1,32 +1,7 @@
 <x-app-layout>
     <div class="w-full max-w-[1600px] 2xl:max-w-[1720px] mx-auto py-6 sm:py-12 px-4 sm:px-6 lg:px-8" x-data="{ activeTab: 'basic', businessMode: '{{ old('business_mode', 'both') }}' }">
         
-        {{-- Success/Error Messages --}}
-        @if(session('success'))
-            <div class="mb-6 bg-green-50 border border-green-200 text-green-800 px-4 sm:px-6 py-4 rounded-xl shadow-sm flex items-start gap-3">
-                <i class="bi bi-check-circle-fill text-green-600 text-xl flex-shrink-0 mt-0.5"></i>
-                <div class="flex-1">
-                    <p class="font-semibold">Success!</p>
-                    <p class="text-sm">{{ session('success') }}</p>
-                </div>
-            </div>
-        @endif
 
-        @if($errors->any())
-            <div class="mb-6 bg-red-50 border border-red-200 text-red-800 px-6 py-4 rounded-xl shadow-sm">
-                <div class="flex items-start gap-3">
-                    <i class="bi bi-exclamation-triangle-fill text-red-600 text-xl flex-shrink-0 mt-0.5"></i>
-                    <div class="flex-1">
-                        <p class="font-semibold mb-2">Please fix the following errors:</p>
-                        <ul class="list-disc list-inside space-y-1 text-sm">
-                            @foreach($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        @endif
 
         {{-- Page Header --}}
         <div class="bg-white border border-slate-200 rounded-xl shadow-sm px-4 sm:px-8 py-6 sm:py-10 mb-8">
@@ -680,21 +655,17 @@
             </div>
 
             {{-- Validation Error Toast (hidden by default) --}}
-            <div id="validationToast" class="hidden fixed top-6 right-6 z-[200] max-w-sm w-full bg-red-50 border border-red-200 rounded-xl shadow-xl p-4 transform transition-all duration-300 translate-y-[-20px] opacity-0">
-                <div class="flex items-start gap-3">
-                    <div class="p-1.5 bg-red-100 rounded-lg shrink-0">
-                        <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"/>
-                        </svg>
+            <div id="validationToast" class="hidden pointer-events-auto fixed top-6 right-6 z-[200] max-w-sm w-full bg-red-600 text-white px-4 py-3 rounded-lg shadow-lg flex items-start justify-between gap-3 transform transition-all duration-300 translate-y-[-8px] opacity-0">
+                <div class="flex items-center gap-2">
+                    <i class="bi bi-exclamation-triangle-fill text-lg"></i>
+                    <div class="flex flex-col">
+                        <span class="text-sm font-medium">Validasi Gagal!</span>
+                        <span id="validationToastMsg" class="text-xs text-red-100 font-medium">Pastikan form diisi dengan benar.</span>
                     </div>
-                    <div class="flex-1 min-w-0">
-                        <p class="text-sm font-semibold text-red-800">Ada field yang belum diisi</p>
-                        <p id="validationToastMsg" class="text-xs text-red-600 mt-0.5">Silakan lengkapi field yang bertanda merah.</p>
-                    </div>
-                    <button type="button" onclick="hideValidationToast()" class="text-red-400 hover:text-red-600 p-1 rounded-md transition-colors">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                    </button>
                 </div>
+                <button type="button" onclick="hideValidationToast()" class="text-white opacity-90 hover:opacity-100 transition-opacity flex-shrink-0 mt-0.5">
+                    <i class="bi bi-x-lg pointer-events-none"></i>
+                </button>
             </div>
 
             {{-- Submit Buttons --}}
@@ -847,7 +818,7 @@
             if (msg) toastMsg.textContent = msg;
             toast.classList.remove('hidden');
             requestAnimationFrame(() => {
-                toast.classList.remove('translate-y-[-20px]', 'opacity-0');
+                toast.classList.remove('translate-y-[-8px]', 'opacity-0');
                 toast.classList.add('translate-y-0', 'opacity-100');
             });
             if (toastTimeout) clearTimeout(toastTimeout);
@@ -857,7 +828,7 @@
         function hideValidationToast() {
             const toast = document.getElementById('validationToast');
             toast.classList.remove('translate-y-0', 'opacity-100');
-            toast.classList.add('translate-y-[-20px]', 'opacity-0');
+            toast.classList.add('translate-y-[-8px]', 'opacity-0');
             setTimeout(() => toast.classList.add('hidden'), 300);
         }
 

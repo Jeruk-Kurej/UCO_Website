@@ -63,57 +63,96 @@
             {{-- Main Content --}}
             <main class="flex-grow">
                 <div class="w-full max-w-[1600px] 2xl:max-w-[1720px] mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                    {{-- Flash Messages --}}
-                    @if (session('success'))
-                        <div x-data="{ show: true }" 
-                             x-show="show" 
-                             x-transition 
-                             x-init="setTimeout(() => show = false, 4000)" 
-                             class="mb-4 bg-green-50 border-l-4 border-green-500 text-green-800 px-4 py-3 rounded-r shadow-sm flex items-center justify-between" 
-                             role="alert">
-                            <div class="flex items-center gap-2">
-                                <i class="bi bi-check-circle-fill text-green-600"></i>
-                                <span class="font-medium">{{ session('success') }}</span>
+                    {{-- Global Toast Notifications --}}
+                    <div class="fixed top-6 right-6 z-50 flex flex-col gap-3 items-end pointer-events-none">
+                        @if (session('success'))
+                            <div x-data="{ show: true }" 
+                                 x-show="show" 
+                                 x-transition:enter="transition ease-out duration-300"
+                                 x-transition:enter-start="opacity-0 translate-y-[-8px]"
+                                 x-transition:enter-end="opacity-100 translate-y-0"
+                                 x-transition:leave="transition ease-in duration-300"
+                                 x-transition:leave-start="opacity-100 translate-y-0"
+                                 x-transition:leave-end="opacity-0 translate-y-[-8px]"
+                                 x-init="setTimeout(() => show = false, 4000)" 
+                                 class="pointer-events-auto max-w-sm w-full bg-emerald-600 text-white px-4 py-3 rounded-lg shadow-lg flex items-start justify-between gap-3" 
+                                 role="alert">
+                                <div class="flex items-center gap-2">
+                                    <i class="bi bi-check-circle-fill text-lg"></i>
+                                    <span class="text-sm font-medium">{{ session('success') }}</span>
+                                </div>
+                                <button @click="show = false" class="text-white opacity-90 hover:opacity-100 transition-opacity flex-shrink-0 mt-0.5">
+                                    <i class="bi bi-x-lg"></i>
+                                </button>
                             </div>
-                            <button @click="show = false" class="text-green-600 hover:text-green-800">
-                                <i class="bi bi-x-lg"></i>
-                            </button>
-                        </div>
-                    @endif
+                        @endif
 
-                    @if (session('error'))
-                        <div x-data="{ show: true }" 
-                             x-show="show" 
-                             x-transition 
-                             x-init="setTimeout(() => show = false, 4000)" 
-                             class="mb-4 bg-red-50 border-l-4 border-red-500 text-red-800 px-4 py-3 rounded-r shadow-sm flex items-center justify-between" 
-                             role="alert">
-                            <div class="flex items-center gap-2">
-                                <i class="bi bi-exclamation-triangle-fill text-red-600"></i>
-                                <span class="font-medium">{{ session('error') }}</span>
+                        @if (session('error'))
+                            <div x-data="{ show: true }" 
+                                 x-show="show" 
+                                 x-transition:enter="transition ease-out duration-300"
+                                 x-transition:enter-start="opacity-0 translate-y-[-8px]"
+                                 x-transition:enter-end="opacity-100 translate-y-0"
+                                 x-transition:leave="transition ease-in duration-300"
+                                 x-transition:leave-start="opacity-100 translate-y-0"
+                                 x-transition:leave-end="opacity-0 translate-y-[-8px]"
+                                 x-init="setTimeout(() => show = false, 4000)" 
+                                 class="pointer-events-auto max-w-sm w-full bg-red-600 text-white px-4 py-3 rounded-lg shadow-lg flex items-start justify-between gap-3" 
+                                 role="alert">
+                                <div class="flex items-center gap-2">
+                                    <i class="bi bi-exclamation-triangle-fill text-lg"></i>
+                                    <span class="text-sm font-medium">{{ session('error') }}</span>
+                                </div>
+                                <button @click="show = false" class="text-white opacity-90 hover:opacity-100 transition-opacity flex-shrink-0 mt-0.5">
+                                    <i class="bi bi-x-lg"></i>
+                                </button>
                             </div>
-                            <button @click="show = false" class="text-red-600 hover:text-red-800">
-                                <i class="bi bi-x-lg"></i>
-                            </button>
-                        </div>
-                    @endif
+                        @endif
 
-                    @if (session('warning'))
-                        <div x-data="{ show: true }" 
-                             x-show="show" 
-                             x-transition 
-                             x-init="setTimeout(() => show = false, 4000)" 
-                             class="mb-4 bg-yellow-50 border-l-4 border-yellow-500 text-yellow-800 px-4 py-3 rounded-r shadow-sm flex items-center justify-between" 
-                             role="alert">
-                            <div class="flex items-center gap-2">
-                                <i class="bi bi-exclamation-circle-fill text-yellow-600"></i>
-                                <span class="font-medium">{{ session('warning') }}</span>
+                        @if (session('warning'))
+                            <div x-data="{ show: true }" 
+                                 x-show="show" 
+                                 x-transition:enter="transition ease-out duration-300"
+                                 x-transition:enter-start="opacity-0 translate-y-[-8px]"
+                                 x-transition:enter-end="opacity-100 translate-y-0"
+                                 x-transition:leave="transition ease-in duration-300"
+                                 x-transition:leave-start="opacity-100 translate-y-0"
+                                 x-transition:leave-end="opacity-0 translate-y-[-8px]"
+                                 x-init="setTimeout(() => show = false, 4000)" 
+                                 class="pointer-events-auto max-w-sm w-full bg-yellow-600 text-white px-4 py-3 rounded-lg shadow-lg flex items-start justify-between gap-3" 
+                                 role="alert">
+                                <div class="flex items-center gap-2">
+                                    <i class="bi bi-exclamation-circle-fill text-lg"></i>
+                                    <span class="text-sm font-medium">{{ session('warning') }}</span>
+                                </div>
+                                <button @click="show = false" class="text-white opacity-90 hover:opacity-100 transition-opacity flex-shrink-0 mt-0.5">
+                                    <i class="bi bi-x-lg"></i>
+                                </button>
                             </div>
-                            <button @click="show = false" class="text-yellow-600 hover:text-yellow-800">
-                                <i class="bi bi-x-lg"></i>
-                            </button>
-                        </div>
-                    @endif
+                        @endif
+
+                        @if ($errors->any())
+                            <div x-data="{ show: true }" 
+                                 x-show="show" 
+                                 x-transition:enter="transition ease-out duration-300"
+                                 x-transition:enter-start="opacity-0 translate-y-[-8px]"
+                                 x-transition:enter-end="opacity-100 translate-y-0"
+                                 x-transition:leave="transition ease-in duration-300"
+                                 x-transition:leave-start="opacity-100 translate-y-0"
+                                 x-transition:leave-end="opacity-0 translate-y-[-8px]"
+                                 x-init="setTimeout(() => show = false, 5000)" 
+                                 class="pointer-events-auto max-w-sm w-full bg-red-600 text-white px-4 py-3 rounded-lg shadow-lg flex items-start justify-between gap-3" 
+                                 role="alert">
+                                <div class="flex items-center gap-2">
+                                    <i class="bi bi-exclamation-triangle-fill text-lg"></i>
+                                    <span class="text-sm font-medium">Validasi Gagal! Pastikan form diisi dengan benar.</span>
+                                </div>
+                                <button @click="show = false" class="text-white opacity-90 hover:opacity-100 transition-opacity flex-shrink-0 mt-0.5">
+                                    <i class="bi bi-x-lg"></i>
+                                </button>
+                            </div>
+                        @endif
+                    </div>
 
                     {{-- Page Content --}}
                     {{ $slot }}
