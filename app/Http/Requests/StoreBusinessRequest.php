@@ -56,7 +56,7 @@ class StoreBusinessRequest extends FormRequest
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:10240',
             'established_date' => 'nullable|date',
             'employee_count' => 'nullable|integer|min:0',
-            'revenue_range' => 'nullable|in:Mikro: <= Rp 300 Juta,Kecil: > Rp 300 Juta - Rp 2,5 Milyar,Menengah: > Rp 2,5 Milyar - Rp 50 Milyar,Besar: > Rp 50 Milyar',
+            'revenue_range' => 'nullable|in:< 10jt,10jt - 50jt,50jt - 100jt,> 100jt',
             'is_from_college_project' => 'nullable|boolean',
             'is_continued_after_graduation' => 'nullable|boolean',
             'legal_document_path' => 'nullable|file|mimes:pdf|max:5120',

@@ -34,10 +34,10 @@ return new class extends Migration
             
             $table->integer('employee_count')->nullable();
             $table->enum('revenue_range', [
-                'Mikro: <= Rp 300 Juta',
-                'Kecil: > Rp 300 Juta - Rp 2,5 Milyar',
-                'Menengah: > Rp 2,5 Milyar - Rp 50 Milyar',
-                'Besar: > Rp 50 Milyar'
+                '< 10jt',
+                '10jt - 50jt',
+                '50jt - 100jt',
+                '> 100jt'
             ])->nullable();
             
             $table->boolean('is_from_college_project')->default(false);

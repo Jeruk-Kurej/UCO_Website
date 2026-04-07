@@ -48,7 +48,7 @@ class EnhancedBusinessSeeder extends Seeder
             'established_date' => now()->subYears(2)->subMonths(3),
             'address' => 'Jl. Kampus Raya No. 15, Kelurahan Kemanggisan, Jakarta Barat 11480',
             'employee_count' => 8,
-            'revenue_range' => 'Kecil: > Rp 300 Juta - Rp 2,5 Milyar',
+            'revenue_range' => '10jt - 50jt',
             'is_from_college_project' => true,
             'is_continued_after_graduation' => true,
             'legal_documents' => [
@@ -85,7 +85,7 @@ class EnhancedBusinessSeeder extends Seeder
             'established_date' => now()->subYears(5),
             'address' => 'Rukan Permata Hijau Blok A15-16, Jakarta Selatan 12210',
             'employee_count' => 15,
-            'revenue_range' => 'Menengah: > Rp 2,5 Milyar - Rp 50 Milyar',
+            'revenue_range' => '50jt - 100jt',
             'is_from_college_project' => false,
             'is_continued_after_graduation' => true,
             'legal_documents' => [
@@ -119,7 +119,7 @@ class EnhancedBusinessSeeder extends Seeder
             'established_date' => now()->subMonths(8),
             'address' => 'Virtual Office - Marketplace: Tokopedia, Shopee, Instagram',
             'employee_count' => 3,
-            'revenue_range' => 'Mikro: <= Rp 300 Juta',
+            'revenue_range' => '10jt - 50jt',
             'is_from_college_project' => true,
             'is_continued_after_graduation' => true,
             'legal_documents' => [
@@ -153,7 +153,7 @@ class EnhancedBusinessSeeder extends Seeder
             'established_date' => now()->subYears(3),
             'address' => 'Jl. Universitas No. 45, Jakarta Barat',
             'employee_count' => 5,
-            'revenue_range' => 'Mikro: <= Rp 300 Juta',
+            'revenue_range' => '< 10jt',
             'is_from_college_project' => true,
             'is_continued_after_graduation' => false, // Stopped after graduation
             'legal_documents' => [],
