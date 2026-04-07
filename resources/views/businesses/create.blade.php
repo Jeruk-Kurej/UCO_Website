@@ -1,5 +1,5 @@
 <x-app-layout>
-    <div class="w-full max-w-[1600px] 2xl:max-w-[1720px] mx-auto py-6 sm:py-12 px-4 sm:px-6 lg:px-8" x-data="{ activeTab: 'basic', businessMode: '{{ old('business_mode', 'both') }}' }">
+    <div class="w-full" x-data="{ activeTab: 'basic', businessMode: '{{ old('business_mode', 'both') }}' }">
         
 
 
