@@ -58,12 +58,7 @@ class DummyBusinessSeeder extends Seeder
             return;
         }
 
-        // Get a default product category
-        $defaultCategory = ProductCategory::first();
-        if (!$defaultCategory) {
-            $this->command->error('❌ No product categories found. Please run ProductCategorySeeder first.');
-            return;
-        }
+
 
         // Business data templates
         $businessesData = [
@@ -228,12 +223,18 @@ class DummyBusinessSeeder extends Seeder
                 'is_featured' => true, // All dummy businesses are featured
             ]);
 
+            // Create a general category for this business
+            $category = ProductCategory::create([
+                'business_id' => $business->id,
+                'name' => 'General Products',
+            ]);
+
             // Create products
             if (isset($data['products'])) {
                 foreach ($data['products'] as $productData) {
                     Product::create([
                         'business_id' => $business->id,
-                        'product_category_id' => $defaultCategory->id,
+                        'product_category_id' => $category->id,
                         'name' => $productData['name'],
                         'description' => $productData['description'],
                         'price' => $productData['price'],
