@@ -16,6 +16,8 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('business_type_id')->nullable()->constrained('business_types')->onDelete('cascade');
             $table->string('name');
+            $table->boolean('is_active')->default(true);
+            $table->boolean('is_featured')->default(false)->index();
             $table->text('description');
             $table->timestamps();
         });
