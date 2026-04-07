@@ -10,7 +10,8 @@ return new class extends Migration
     {
         Schema::create('uc_testimonies', function (Blueprint $table) {
             $table->id();
-            $table->string('customer_name');
+            $table->foreignId('user_id')->nullable()->constrained()->onDelete('set null');
+            $table->string('customer_name')->nullable();
             $table->text('content');
             $table->unsignedTinyInteger('rating');
             $table->date('date');
