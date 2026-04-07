@@ -188,3 +188,6 @@ TePolicies: [BusinessPolicy.php](app/Policies/BusinessPolicy.php) (handles publi
 - Runtime checks: On startup the deploy script runs `php artisan config:clear` and `php artisan cache:clear`. If you need an explicit Cloudinary connectivity check, add a lightweight Artisan command that calls `Storage::disk('cloudinary')->exists('some-known-public-id')` and returns success/failure; wire that into a healthcheck endpoint.
 
 If you want, I can add a migration command/script to upload existing local files to Cloudinary and patch DB entries automatically — say the word and I'll scaffold it.
+
+
+Never use any embeddings or vector databases for this project. All AI interactions must go through the Google Gemini API as implemented in `AiModerationService.php`.
