@@ -63,11 +63,10 @@ class BusinessController extends Controller
         }
         
         // Filter for "My Businesses" if query param present
-        if ($request->get('my') && Auth::check()) {
+        if (($request->get('tab') === 'my' || $request->get('my')) && Auth::check()) {
             /** @var User $user */
             $user = Auth::user();
             $query->where(function ($ownerQuery) use ($user) {
-                // Pre-pend 'businesses.' since we joined tables to prevent ambiguous column errors
                 $ownerQuery->where('businesses.user_id', $user->id)
                     ->orWhereHas('owners', function ($pivotOwnerQuery) use ($user) {
                         $pivotOwnerQuery->where('users.id', $user->id);

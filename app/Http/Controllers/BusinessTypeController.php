@@ -31,7 +31,7 @@ class BusinessTypeController extends Controller
      */
     public function index(Request $request)
     {
-        // ✅ NO AUTHORIZATION - Public access for reading
+        $this->authorizeAdmin();
         $search = $request->get('search');
         $query = BusinessType::withCount('businesses');
         

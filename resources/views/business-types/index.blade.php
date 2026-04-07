@@ -21,9 +21,15 @@
                 .then(html => {
                     const parser = new DOMParser();
                     const doc = parser.parseFromString(html, 'text/html');
-                    const newContent = doc.querySelector('.space-y-6');
-                    if (newContent) {
-                        document.querySelector('.space-y-6').innerHTML = newContent.innerHTML;
+                    const newTableBody = doc.querySelector('#business-types-table-body');
+                    const newPagination = doc.querySelector('#pagination-container');
+                    const newStats = doc.querySelector('#stats-summary');
+                    
+                    if (newTableBody) {
+                        document.querySelector('#business-types-table-body').innerHTML = newTableBody.innerHTML;
+                        if (newPagination) document.querySelector('#pagination-container').innerHTML = newPagination.innerHTML;
+                        if (newStats) document.querySelector('#stats-summary').innerHTML = newStats.innerHTML;
+                        
                         window.history.pushState({}, '', url);
                         if (typeof window.initRevealOnScroll === 'function') {
                             window.initRevealOnScroll();
@@ -37,34 +43,33 @@
                 });
             }
          }">
-        <section class="relative overflow-hidden rounded-3xl border border-uco-orange-100 bg-white px-6 py-8 shadow-sm md:px-8 md:py-10">
+        {{-- Page Header --}}
+        <section class="relative overflow-hidden rounded-3xl border border-uco-orange-100 bg-white px-6 py-8 shadow-sm md:px-8 md:py-10 mb-8">
             <div class="uco-hero-mesh"></div>
             <div class="relative z-10 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
                 <div class="space-y-2 reveal-on-scroll">
                     <span class="inline-flex items-center rounded-full border border-uco-orange-200 bg-uco-orange-50 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-uco-orange-700">
-                        UCO Directory
+                        Admin Dashboard
                     </span>
-                    @if(auth()->check() && auth()->user()->isAdmin())
-                        <h1 class="text-3xl font-extrabold text-soft-gray-900 md:text-4xl">Business Type Management</h1>
-                        <p class="text-sm text-soft-gray-600 md:text-base">Organize, refine, and maintain categories for all listed businesses.</p>
-                    @else
-                        <h1 class="text-3xl font-extrabold text-soft-gray-900 md:text-4xl">Explore Business Types</h1>
-                        <p class="text-sm text-soft-gray-600 md:text-base">Browse categories and jump into businesses built by UCO students & alumni.</p>
-                    @endif
+                    <h1 class="text-3xl font-extrabold text-soft-gray-900 md:text-4xl">Business Type Management</h1>
+                    <p class="text-sm text-soft-gray-600 mt-1">Organize and maintain industrial categories for all businesses.</p>
                 </div>
 
-                @auth
-                    @if(auth()->user()->isAdmin())
-                        <a href="{{ route('business-types.create') }}"
-                           class="inline-flex items-center gap-2 rounded-xl bg-uco-orange-500 px-5 py-3 text-sm font-semibold text-white shadow-md shadow-uco-orange-200 transition hover:-translate-y-0.5 hover:bg-uco-orange-600">
-                            <i class="bi bi-plus-circle"></i>
-                            Create Business Type
-                        </a>
-                    @endif
-                @endauth
+                <div class="flex items-center gap-3 relative z-10 reveal-on-scroll" style="transition-delay: 100ms;">
+                    @auth
+                        @if(auth()->user()->isAdmin())
+                            <a href="{{ route('business-types.create') }}"
+                               class="inline-flex items-center gap-2 rounded-xl bg-uco-orange-500 px-5 py-3 text-sm font-semibold text-white shadow-md shadow-uco-orange-200 transition hover:-translate-y-0.5 hover:bg-uco-orange-600">
+                                <i class="bi bi-plus-circle"></i>
+                                Create Business Type
+                            </a>
+                        @endif
+                    @endauth
+                </div>
             </div>
         </section>
 
+        {{-- Search Section --}}
         <section class="rounded-2xl border border-soft-gray-200 bg-white p-4 shadow-sm md:p-5 reveal-on-scroll">
             <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
                 <div class="relative flex-1">
@@ -76,7 +81,7 @@
                            @input.debounce.500ms="performSearch()"
                            @keydown.enter="performSearch()"
                            placeholder="Search business types by name or description..."
-                           class="block w-full rounded-xl border border-soft-gray-300 py-2.5 pl-10 pr-10 text-sm text-soft-gray-800 focus:border-uco-orange-300 focus:ring-2 focus:ring-uco-orange-200">
+                           class="block w-full rounded-xl border border-soft-gray-300 py-2.5 pl-10 pr-10 text-sm text-soft-gray-800 focus:border-uco-orange-300 focus:ring-2 focus:ring-uco-orange-200 transition-all">
                     <div x-show="isSearching" class="absolute inset-y-0 right-0 flex items-center pr-3">
                         <svg class="h-4 w-4 animate-spin text-soft-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -96,116 +101,153 @@
             </div>
         </section>
 
-        <section class="space-y-4">
-            <div class="flex flex-wrap items-center gap-2 reveal-on-scroll">
-                <span class="inline-flex items-center gap-2 rounded-full border border-uco-orange-200 bg-uco-orange-50 px-4 py-2 text-xs font-semibold text-uco-orange-700">
-                    <i class="bi bi-tags"></i>
-                    {{ $businessTypes->total() }} total type(s)
-                </span>
-                <span class="inline-flex items-center gap-2 rounded-full border border-uco-yellow-300 bg-uco-yellow-50 px-4 py-2 text-xs font-semibold text-uco-yellow-800">
-                    <i class="bi bi-briefcase"></i>
-                    {{ $businessTypes->sum('businesses_count') }} linked business(es)
-                </span>
+        {{-- Business Types Table --}}
+        <div class="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm reveal-on-scroll">
+            <div class="overflow-x-auto">
+                <table class="w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase tracking-widest w-[10%]">
+                                Icon
+                            </th>
+                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-widest w-[45%]">
+                                Business Type
+                            </th>
+                            <th scope="col" class="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase tracking-widest w-[20%]">
+                                Usage Count
+                            </th>
+                            <th scope="col" class="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase tracking-widest w-[25%]">
+                                Actions
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="business-types-table-body" class="bg-white divide-y divide-gray-100 italic-none">
+                        @forelse($businessTypes as $type)
+                            <tr class="hover:bg-gray-50/80 transition-colors group">
+                                {{-- Icon Preview --}}
+                                <td class="px-6 py-5">
+                                    <div class="flex items-center justify-center">
+                                        <div class="w-12 h-12 rounded-xl bg-uco-orange-50 text-uco-orange-600 flex items-center justify-center text-xl shadow-sm border border-uco-orange-100 group-hover:scale-110 transition-transform">
+                                            <i class="bi bi-briefcase"></i>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                {{-- Type Name & Description --}}
+                                <td class="px-6 py-5">
+                                    <div>
+                                        <div class="text-base font-bold text-gray-900 group-hover:text-uco-orange-600 transition-colors">{{ $type->name }}</div>
+                                        <div class="text-xs text-gray-500 mt-1 line-clamp-1 max-w-sm">{{ $type->description ?: 'No description provided' }}</div>
+                                    </div>
+                                </td>
+
+                                {{-- Usage Count --}}
+                                <td class="px-6 py-5 text-center">
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold
+                                        {{ $type->businesses_count > 0 ? 'bg-uco-orange-100 text-uco-orange-700' : 'bg-gray-100 text-gray-500' }}">
+                                        {{ $type->businesses_count ?? 0 }} businesses
+                                    </span>
+                                </td>
+
+                                {{-- Actions --}}
+                                <td class="px-6 py-5">
+                                    <div class="flex items-center justify-center gap-3">
+                                        <a href="{{ route('business-types.show', $type) }}" 
+                                           class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-gray-50 text-gray-600 hover:bg-uco-orange-500 hover:text-white transition-all shadow-sm"
+                                           title="View Details">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+
+                                        @if(auth()->check() && auth()->user()->isAdmin())
+                                            @if(($type->businesses_count ?? 0) == 0)
+                                                <form action="{{ route('business-types.destroy', $type) }}" 
+                                                      method="POST" 
+                                                      onsubmit="return confirm('⚠️ Delete {{ $type->name }}?\n\nThis action cannot be undone!');"
+                                                      class="inline">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" 
+                                                            class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-gray-50 text-red-600 hover:bg-red-500 hover:text-white transition-all shadow-sm"
+                                                            title="Delete Type">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </form>
+                                            @else
+                                                <span class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-gray-100 text-gray-300 cursor-not-allowed" 
+                                                      title="Cannot delete - {{ $type->businesses_count }} business(es) using this type">
+                                                    <i class="bi bi-lock"></i>
+                                                </span>
+                                            @endif
+                                        @endif
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="4" class="px-6 py-20 text-center">
+                                    <div class="flex flex-col items-center justify-center">
+                                        <div class="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-4">
+                                            <i class="bi bi-tags text-4xl text-gray-300"></i>
+                                        </div>
+                                        <p class="text-gray-900 text-xl font-bold">No business types found</p>
+                                        <p class="text-gray-500 text-sm mt-1">Try a different search keyword or create a new category.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
 
-            <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-                @forelse($businessTypes as $type)
-                    <article class="group flex h-full flex-col rounded-2xl border border-soft-gray-200 bg-white p-5 shadow-sm transition duration-300 hover:-translate-y-1 hover:border-uco-orange-200 hover:shadow-lg reveal-on-scroll">
-                        <div class="mb-4 flex items-start justify-between gap-3">
-                            <div class="flex min-w-0 items-center gap-3">
-                                <div class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-uco-yellow-100 text-uco-yellow-700">
-                                    <i class="bi bi-grid-3x3-gap-fill"></i>
-                                </div>
-                                <div class="min-w-0">
-                                    <h3 class="line-clamp-1 text-lg font-bold text-soft-gray-900" title="{{ $type->name }}">{{ $type->name }}</h3>
-                                    <p class="text-xs text-soft-gray-500">Category</p>
-                                </div>
-                            </div>
-                            <span class="inline-flex flex-shrink-0 items-center whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold {{ $type->businesses_count > 0 ? 'bg-uco-orange-100 text-uco-orange-700' : 'bg-soft-gray-100 text-soft-gray-600' }}">
-                                {{ $type->businesses_count ?? 0 }} business(es)
-                            </span>
-                        </div>
-
-                        <p class="line-clamp-2 flex-1 text-sm leading-relaxed text-soft-gray-600">
-                            {{ $type->description ?: 'No description provided for this business type yet.' }}
-                        </p>
-
-                        <div class="mt-5 flex flex-wrap items-center gap-2">
-                            <a href="{{ route('business-types.show', $type) }}"
-                               class="inline-flex items-center gap-2 rounded-xl bg-uco-orange-500 px-4 py-2 text-xs font-semibold text-white transition hover:bg-uco-orange-600">
-                                Details
-                                <i class="bi bi-eye"></i>
-                            </a>
-
-                            @auth
-                                @if(auth()->user()->isAdmin())
-
-                                    @if($type->businesses_count == 0)
-                                        <form action="{{ route('business-types.destroy', $type) }}"
-                                              method="POST"
-                                              onsubmit="return confirm('⚠️ Delete {{ $type->name }}?\n\nThis action cannot be undone!');"
-                                              class="inline">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit"
-                                                    class="inline-flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-100">
-                                                Delete
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </form>
-                                    @else
-                                        <span class="inline-flex cursor-not-allowed items-center gap-2 rounded-xl border border-soft-gray-200 bg-soft-gray-100 px-4 py-2 text-xs font-semibold text-soft-gray-400"
-                                              title="Cannot delete - {{ $type->businesses_count }} business(es) using this type">
-                                            Delete Locked
-                                            <i class="bi bi-lock"></i>
-                                        </span>
-                                    @endif
-                                @endif
-                            @endauth
-                        </div>
-                    </article>
-                @empty
-                    <div class="col-span-full rounded-2xl border border-dashed border-soft-gray-300 bg-soft-gray-50 p-10 text-center reveal-on-scroll">
-                        <div class="mb-3 text-uco-orange-500"><i class="bi bi-tags text-3xl"></i></div>
-                        <p class="text-lg font-semibold text-soft-gray-700">No business types found</p>
-                        <p class="mt-1 text-sm text-soft-gray-500">Try a different keyword, or create a new category to get started.</p>
+            {{-- Pagination Container --}}
+            <div id="pagination-container">
+                @if($businessTypes->hasPages())
+                    <div class="px-6 py-4 bg-gray-50 border-t border-gray-100">
+                        {{ $businessTypes->links() }}
                     </div>
-                @endforelse
+                @endif
             </div>
+        </div>
 
-            @if($businessTypes->hasPages())
-                <div class="rounded-2xl border border-soft-gray-200 bg-white px-4 py-4 shadow-sm">
-                    {{ $businessTypes->links() }}
+        {{-- Stats Summary --}}
+        <div id="stats-summary" class="grid grid-cols-1 md:grid-cols-3 gap-6 reveal-on-scroll">
+            <div class="bg-white rounded-2xl shadow-sm p-6 border-l-4 border-uco-orange-500 hover:shadow-md transition-shadow group">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Total Categories</p>
+                        <p class="text-3xl font-extrabold text-gray-900 group-hover:text-uco-orange-600 transition-colors">{{ $businessTypes->total() }}</p>
+                    </div>
+                    <div class="w-14 h-14 rounded-2xl bg-uco-orange-50 flex items-center justify-center text-uco-orange-500">
+                        <i class="bi bi-tags text-3xl"></i>
+                    </div>
                 </div>
-            @endif
-        </section>
+            </div>
 
-        @auth
-            <section class="grid grid-cols-1 gap-4 md:grid-cols-3 reveal-on-scroll">
-                <article class="rounded-2xl border border-uco-orange-100 bg-white p-5 shadow-sm">
-                    <p class="text-xs font-semibold uppercase tracking-wide text-soft-gray-500">Total Types</p>
-                    <div class="mt-2 flex items-center justify-between">
-                        <p class="text-3xl font-bold text-soft-gray-900">{{ $businessTypes->total() }}</p>
-                        <span class="rounded-xl bg-uco-orange-50 p-2 text-uco-orange-600"><i class="bi bi-tags"></i></span>
+            <div class="bg-white rounded-2xl shadow-sm p-6 border-l-4 border-blue-500 hover:shadow-md transition-shadow group">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Total Linked Businesses</p>
+                        <p class="text-3xl font-extrabold text-gray-900 group-hover:text-blue-600 transition-colors">{{ $businessTypes->sum('businesses_count') }}</p>
                     </div>
-                </article>
+                    <div class="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-500">
+                        <i class="bi bi-briefcase text-3xl"></i>
+                    </div>
+                </div>
+            </div>
 
-                <article class="rounded-2xl border border-uco-yellow-200 bg-white p-5 shadow-sm">
-                    <p class="text-xs font-semibold uppercase tracking-wide text-soft-gray-500">Total Businesses</p>
-                    <div class="mt-2 flex items-center justify-between">
-                        <p class="text-3xl font-bold text-soft-gray-900">{{ $businessTypes->sum('businesses_count') }}</p>
-                        <span class="rounded-xl bg-uco-yellow-50 p-2 text-uco-yellow-700"><i class="bi bi-briefcase"></i></span>
+            <div class="bg-white rounded-2xl shadow-sm p-6 border-l-4 border-emerald-500 hover:shadow-md transition-shadow group">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Avg per Category</p>
+                        <p class="text-3xl font-extrabold text-gray-900 group-hover:text-emerald-600 transition-colors">
+                            {{ $businessTypes->count() > 0 ? round($businessTypes->sum('businesses_count') / $businessTypes->count(), 1) : 0 }}
+                        </p>
                     </div>
-                </article>
-
-                <article class="rounded-2xl border border-soft-gray-200 bg-white p-5 shadow-sm">
-                    <p class="text-xs font-semibold uppercase tracking-wide text-soft-gray-500">Average per Type</p>
-                    <div class="mt-2 flex items-center justify-between">
-                        <p class="text-3xl font-bold text-soft-gray-900">{{ $businessTypes->count() > 0 ? round($businessTypes->sum('businesses_count') / $businessTypes->count(), 1) : 0 }}</p>
-                        <span class="rounded-xl bg-soft-gray-100 p-2 text-soft-gray-600"><i class="bi bi-bar-chart"></i></span>
+                    <div class="w-14 h-14 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-500">
+                        <i class="bi bi-bar-chart text-3xl"></i>
                     </div>
-                </article>
-            </section>
-        @endauth
+                </div>
+            </div>
+        </div>
     </div>
 </x-app-layout>

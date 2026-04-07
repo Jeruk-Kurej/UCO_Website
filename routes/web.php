@@ -50,8 +50,6 @@ use Illuminate\Http\Request as HttpRequest;
 
 // Businesses index: Everyone can see the full listing
 Route::get('/businesses', [BusinessController::class, 'index'])->name('businesses.index');
-Route::get('/business-types', [BusinessTypeController::class, 'index'])->name('business-types.index');
-Route::get('/contact-types', [ContactTypeController::class, 'index'])->name('contact-types.index');
 
 // ✅ PUBLIC: Everyone (guests + authenticated) can view and submit testimonies
 Route::get('/uc-testimonies', [UcTestimonyController::class, 'index'])->name('uc-testimonies.index');
@@ -138,6 +136,10 @@ Route::get('/contact-types/{contactType}', [ContactTypeController::class, 'show'
 // ============================================================
 
 Route::middleware(['auth', 'verified', 'admin'])->group(function () {
+    // Management Routes
+    Route::resource('contact-types', ContactTypeController::class);
+    Route::resource('business-types', BusinessTypeController::class);
+
     Route::get('/admin/reset-database-confirm', function () {
         return view('admin.reset-database');
     })->name('admin.reset-database');

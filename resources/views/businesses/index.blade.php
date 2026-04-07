@@ -14,7 +14,55 @@
             $initialTab = request('tab', 'all');
         }
     @endphp
-    <div class="businesses-wrapper max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8" x-data="{ activeTab: '{{ $initialTab }}', showImportModal: false }" x-cloak>
+    <div class="businesses-wrapper max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8" 
+         x-data="{ 
+            activeTab: '{{ $initialTab }}', 
+            showImportModal: false,
+            search: '{{ request('search') }}',
+            selectedType: '{{ request('type', '') }}',
+            isSearching: false,
+            performSearch() {
+                this.isSearching = true;
+                const params = new URLSearchParams();
+                if (this.search.trim()) params.append('search', this.search.trim());
+                if (this.selectedType) params.append('type', this.selectedType);
+                if (this.activeTab !== 'all') params.append('tab', this.activeTab);
+                
+                const url = '{{ route('businesses.index') }}?' + params.toString();
+                
+                fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'text/html'
+                    }
+                })
+                .then(response => response.text())
+                .then(html => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const newContent = doc.querySelector('#content-container');
+                    
+                    if (newContent) {
+                        const container = document.querySelector('#content-container');
+                        container.innerHTML = newContent.innerHTML;
+                        
+                        // Push to history
+                        window.history.pushState({}, '', url);
+
+                        // Important: Re-initialize animations for new elements
+                        if (typeof window.initRevealOnScroll === 'function') {
+                            window.initRevealOnScroll();
+                        }
+                    }
+                    this.isSearching = false;
+                })
+                .catch(error => {
+                    console.error('Search error:', error);
+                    window.location.href = url;
+                });
+            }
+         }" x-cloak>
         {{-- Page Header --}}
         <section class="relative overflow-hidden rounded-3xl border border-uco-orange-100 bg-white px-6 py-8 shadow-sm md:px-8 md:py-10 mb-8">
             <div class="uco-hero-mesh"></div>
@@ -23,23 +71,23 @@
                     <span class="inline-flex items-center rounded-full border border-uco-orange-200 bg-uco-orange-50 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-uco-orange-700">
                         UCO Directory
                     </span>
-                    <h1 class="text-3xl font-extrabold text-soft-gray-900 md:text-4xl">Businesses</h1>
-                    <p class="text-sm text-soft-gray-600 mt-1">Manage and discover businesses built by UCO students & alumni</p>
+                    <h1 class="text-soft-gray-900 text-3xl font-extrabold md:text-4xl">Businesses</h1>
+                    <p class="text-soft-gray-600 mt-1 text-sm">Manage and discover businesses built by UCO students & alumni</p>
                 </div>
 
-                <div class="flex items-center gap-3 relative z-10 reveal-on-scroll" style="transition-delay: 100ms;">
+                <div class="reveal-on-scroll relative z-10 flex items-center gap-3" style="transition-delay: 100ms;">
                     @auth
                         @if(auth()->user()->isAdmin())
                             <button type="button" 
                                     @click="showImportModal = true" 
-                                    class="inline-flex items-center px-5 py-3 bg-white border border-gray-300 text-sm font-semibold rounded-xl text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    class="inline-flex items-center rounded-xl border border-gray-300 bg-white px-5 py-3 text-sm font-semibold text-gray-700 shadow-sm transition-colors hover:bg-gray-50">
+                                <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
                                 </svg>
                                 Import Excel
                             </button>
                             <a href="{{ route('businesses.create') }}" 
-                               class="inline-flex items-center gap-2 rounded-xl bg-uco-orange-500 px-5 py-3 text-sm font-semibold text-white shadow-md shadow-uco-orange-200 transition hover:-translate-y-0.5 hover:bg-uco-orange-600">
+                               class="bg-uco-orange-500 shadow-uco-orange-200 inline-flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold text-white shadow-md transition hover:-translate-y-0.5 hover:bg-uco-orange-600">
                                 <i class="bi bi-plus-circle"></i>
                                 Add Business
                             </a>
@@ -50,46 +98,13 @@
         </section>
 
         {{-- Search and Filter Card --}}
-        <div class="bg-white border border-gray-200 rounded-xl p-4 mb-6 shadow-sm">
-            <div class="flex flex-col sm:flex-row gap-4">
-                <div class="flex-1" 
-                     x-data="{
-                        search: '{{ request('search') }}',
-                        isSearching: false,
-                        performSearch() {
-                            this.isSearching = true;
-                            const trimmed = this.search.trim();
-                            const url = trimmed.length > 0 
-                                ? '{{ route('businesses.index') }}?search=' + encodeURIComponent(trimmed)
-                                : '{{ route('businesses.index') }}';
-                            
-                            fetch(url, {
-                                method: 'GET',
-                                headers: {
-                                    'X-Requested-With': 'XMLHttpRequest',
-                                    'Accept': 'text/html'
-                                }
-                            })
-                            .then(response => response.text())
-                            .then(html => {
-                                const parser = new DOMParser();
-                                const doc = parser.parseFromString(html, 'text/html');
-                                const newContent = doc.querySelector('#content-container');
-                                if (newContent) {
-                                    document.querySelector('#content-container').innerHTML = newContent.innerHTML;
-                                    window.history.pushState({}, '', url);
-                                }
-                                this.isSearching = false;
-                            })
-                            .catch(error => {
-                                console.error('Search error:', error);
-                                window.location.href = url;
-                            });
-                        }
-                     }">
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="bg-white border border-gray-200 rounded-2xl p-6 mb-8 shadow-sm space-y-6">
+            <div class="flex flex-col lg:flex-row gap-6">
+                {{-- Search Input --}}
+                <div class="flex-1">
+                    <div class="relative group">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+                            <svg class="w-5 h-5 text-gray-400 group-focus-within:text-uco-orange-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                             </svg>
                         </div>
@@ -97,26 +112,51 @@
                                x-model="search"
                                @input.debounce.500ms="performSearch()"
                                @keydown.enter="performSearch()"
-                               placeholder="Search businesses..." 
-                               class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-uco-orange-500 focus:border-uco-orange-500 transition-all">
-                        <div x-show="isSearching" class="absolute inset-y-0 right-0 flex items-center pr-3">
-                            <svg class="animate-spin h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                               placeholder="Search businesses by name, description, owner, or category..." 
+                               class="block w-full pl-12 pr-12 py-3.5 bg-gray-50 border border-gray-200 rounded-2xl text-sm focus:bg-white focus:ring-4 focus:ring-uco-orange-500/10 focus:border-uco-orange-500 transition-all outline-none">
+                        <div x-show="isSearching" class="absolute inset-y-0 right-0 flex items-center pr-4">
+                            <svg class="animate-spin h-5 w-5 text-uco-orange-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
                         </div>
+                        <button x-show="search" @click="search = ''; performSearch()" class="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-400 hover:text-gray-600" x-transition.opacity>
+                            <i class="bi bi-x-circle-fill"></i>
+                        </button>
                     </div>
                 </div>
 
                 {{-- Client-side Tabs for non-admin users: All / My --}}
                 @auth
                     @if(!auth()->user()->isAdmin())
-                        <div role="tablist" class="inline-flex rounded-xl bg-gray-100 p-1 gap-1 border border-gray-200 self-start">
-                            <button @click="activeTab = 'my'" type="button" role="tab" :aria-selected="activeTab === 'my'" :class="activeTab === 'my' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'" class="px-5 py-2 rounded-lg text-sm font-medium transition-all duration-200">My Businesses</button>
-                            <button @click="activeTab = 'all'" type="button" role="tab" :aria-selected="activeTab === 'all'" :class="activeTab === 'all' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'" class="px-5 py-2 rounded-lg text-sm font-medium transition-all duration-200">All Businesses</button>
+                        <div role="tablist" class="inline-flex rounded-2xl bg-gray-100 p-1.5 gap-1.5 border border-gray-200 self-start shadow-inner">
+                            <button @click="activeTab = 'my'; performSearch()" type="button" role="tab" :aria-selected="activeTab === 'my'" :class="activeTab === 'my' ? 'bg-white text-soft-gray-900 shadow-md ring-1 ring-black/5' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'" class="px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-300">My Businesses</button>
+                            <button @click="activeTab = 'all'; performSearch()" type="button" role="tab" :aria-selected="activeTab === 'all'" :class="activeTab === 'all' ? 'bg-white text-soft-gray-900 shadow-md ring-1 ring-black/5' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'" class="px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-300">All Businesses</button>
                         </div>
                     @endif
                 @endauth
+            </div>
+
+            {{-- Category Filter Chips --}}
+            <div class="pt-2">
+                <div class="flex items-center gap-3 mb-3">
+                    <span class="text-xs font-bold text-gray-400 uppercase tracking-widest">Filter by Category</span>
+                    <div class="h-px flex-1 bg-gray-100"></div>
+                </div>
+                <div class="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-hide -mx-1 px-1">
+                    <button @click="selectedType = ''; performSearch()" 
+                            :class="selectedType === '' ? 'bg-soft-gray-900 text-white shadow-lg shadow-gray-200 ring-4 ring-gray-900/10' : 'bg-white text-gray-600 border-gray-200 hover:border-soft-gray-300 hover:bg-gray-50'"
+                            class="whitespace-nowrap px-6 py-2.5 rounded-full text-sm font-bold border transition-all duration-300">
+                        All Categories
+                    </button>
+                    @foreach($businessTypes as $type)
+                        <button @click="selectedType = '{{ $type->id }}'; performSearch()" 
+                                :class="selectedType === '{{ $type->id }}' ? 'bg-uco-orange-500 text-white shadow-lg shadow-uco-orange-100 ring-4 ring-uco-orange-500/10' : 'bg-white text-gray-600 border-gray-200 hover:border-soft-gray-300 hover:bg-gray-50'"
+                                class="whitespace-nowrap px-6 py-2.5 rounded-full text-sm font-bold border transition-all duration-300">
+                            {{ $type->name }}
+                        </button>
+                    @endforeach
+                </div>
             </div>
         </div>
 
