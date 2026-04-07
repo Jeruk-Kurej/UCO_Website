@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Services\AiModerationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class UcTestimonyController extends Controller
 {
@@ -61,12 +62,37 @@ class UcTestimonyController extends Controller
 
             $testimony = UcTestimony::create($validated);
 
+            $rawCustomerName = (string) ($validated['customer_name'] ?? '');
+            $customerNameForAi = trim(preg_replace(
+                [
+                    '/\\S+@\\S+\\.\\S+/i',           // remove emails
+                    '/\\+?\\d[\\d\\-\\s\\(\\)]{5,}\\d/', // remove phone-like sequences
+                    "/[^\\p{L}\\s\\-'.]/u"          // keep letters/spaces/hyphen/apostrophe/dot
+                ],
+                ['', '', ''],
+                $rawCustomerName
+            ));
+
+            if ($customerNameForAi === '') {
+                // Provide a generic label so the model still receives a valid Customer field
+                $customerNameForAi = 'Guest';
+            }
+
             $aiService = app(AiModerationService::class);
             $result = $aiService->analyze(
                 $validated['content'],
                 (int) $validated['rating'],
-                $validated['customer_name']
+                $customerNameForAi
             );
+
+            // Helpful debug log so we can trace when guest names are being sanitized
+            Log::info('UcTestimony AI analysis', [
+                'raw_customer_name' => $rawCustomerName,
+                'sanitized_customer_name' => $customerNameForAi,
+                'rating' => $validated['rating'],
+                'sentiment_score' => $result['sentiment_score'] ?? null,
+                'is_approved' => $result['is_approved'] ?? null,
+            ]);
 
             UcAiAnalysis::create([
                 'uc_testimony_id' => $testimony->id,
