@@ -651,7 +651,7 @@
         </div>
 
         {{-- Users Table Card --}}
-        <div class="bg-white border border-gray-200 rounded-xl overflow-hidden" id="table-container">
+        <div class="bg-white border border-gray-200 rounded-xl overflow-hidden mb-8" id="table-container">
             {{-- Table Container --}}
             <div class="overflow-x-auto">
                 <table class="w-full divide-y divide-gray-200">
