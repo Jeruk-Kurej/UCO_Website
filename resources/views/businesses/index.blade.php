@@ -72,7 +72,9 @@
                 poll() {
                     if (this.status === 'completed' || this.status === 'failed') return;
             
-                    fetch(`/import-progress/${this.importId}`)
+                    fetch(`/import-progress/${this.importId}?type=business`, {
+                        headers: { 'Accept': 'application/json' }
+                    })
                         .then(res => res.json())
                         .then(data => {
                             if (!data.total && !data.current && this.status === 'processing') {
@@ -97,7 +99,6 @@
                                 this.progress = Math.min(100, Math.round((this.current / this.total) * 100));
                             }
                             
-                            // Auto-refresh the list if there are new successful imports (debounced to 3s)
                             if (this.success > this.lastRefreshSuccess && Date.now() - this.lastRefreshTime > 3000) {
                                 this.refreshList();
                                 this.lastRefreshSuccess = this.success;
@@ -124,7 +125,10 @@
                         });
                 },
                 refreshList() {
-                    fetch('{{ route('businesses.index') }}', {
+                    const url = new URL('{{ route('businesses.index') }}');
+                    url.searchParams.append('_t', Date.now());
+                    
+                    fetch(url.toString(), {
                             headers: {
                                 'X-Requested-With': 'XMLHttpRequest'
                             }
@@ -134,8 +138,14 @@
                             const parser = new DOMParser();
                             const doc = parser.parseFromString(html, 'text/html');
                             const newContent = doc.querySelector('#content-container');
-                            if (newContent) {
-                                document.querySelector('#content-container').innerHTML = newContent.innerHTML;
+                            const currentContent = document.querySelector('#content-container');
+                            if (newContent && currentContent) {
+                                // Prevent invisible cards from reveal-on-scroll CSS by forcing visibility on injected DOM
+                                newContent.querySelectorAll('.reveal-on-scroll').forEach(el => {
+                                    el.classList.add('is-visible');
+                                });
+                                currentContent.innerHTML = newContent.innerHTML;
+                                if (window.Alpine) window.Alpine.initTree(currentContent);
                             }
                         });
                 },
@@ -275,27 +285,7 @@
                             </div>
                         </div>
                     </div>
-                    <template x-if="errors && errors.length > 0">
-                        <div class="rounded-xl border border-amber-200 bg-amber-50 overflow-hidden">
-                            <div
-                                class="flex items-center justify-between px-4 py-2 border-b border-amber-200 bg-amber-100/50">
-                                <p
-                                    class="text-[10px] uppercase tracking-wider text-amber-700 font-bold tracking-widest">
-                                    Skipped Row Details</p>
-                                <span
-                                    class="inline-flex items-center rounded-full bg-amber-200 px-2.5 py-0.5 text-[10px] font-bold text-amber-800"
-                                    x-text="`${errors.length} row${errors.length !== 1 ? 's' : ''}`"></span>
-                            </div>
-                            <ul class="divide-y divide-amber-100 max-h-40 overflow-y-auto">
-                                <template x-for="(err, i) in errors" :key="i">
-                                    <li class="flex items-start gap-2 px-4 py-2">
-                                        <span class="flex-shrink-0 text-amber-400 mt-0.5">&rsaquo;</span>
-                                        <span class="text-xs text-amber-900" x-text="err"></span>
-                                    </li>
-                                </template>
-                            </ul>
-                        </div>
-                    </template>
+
                 </div>
             </div>
         @endif

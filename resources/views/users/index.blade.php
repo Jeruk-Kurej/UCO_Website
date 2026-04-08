@@ -97,7 +97,9 @@
                 poll() {
                     if (this.status === 'completed' || this.status === 'failed') return;
             
-                    fetch(`/import-progress/${this.importId}`)
+                    fetch(`/import-progress/${this.importId}?type=user`, {
+                        headers: { 'Accept': 'application/json' }
+                    })
                         .then(res => res.json())
                         .then(data => {
                             if (!data.total && !data.current && this.status === 'processing') {
@@ -110,10 +112,10 @@
                             } else {
                                 this.zombieCount = 0;
                             }
-            
-                            this.current = data.current || this.current;
-                            this.total = data.total || this.total;
-                            this.status = data.status || this.status;
+                            
+                            this.current = data.current || 0;
+                            this.total = data.total || 0;
+                            this.status = data.status || 'processing';
                             this.success = data.success || 0;
                             this.skipped = data.skipped || 0;
                             this.errors = data.errors || [];
@@ -121,16 +123,25 @@
                             if (this.total > 0) {
                                 this.progress = Math.min(100, Math.round((this.current / this.total) * 100));
                             }
+                            
+                            // Auto-refresh progressively
+                            if (this.success > this.lastRefreshSuccess && Date.now() - this.lastRefreshTime > 3000) {
+                                this.refreshList();
+                                this.lastRefreshSuccess = this.success;
+                                this.lastRefreshTime = Date.now();
+                            }
             
                             if (this.status === 'completed' || (this.total > 0 && this.current >= this.total)) {
                                 this.progress = 100;
                                 this.status = 'completed';
                                 this.summaryVisible = true;
+                                this.refreshList();
                                 this.clearSession(false);
                                 // Auto-hide summary after 8 seconds
                                 setTimeout(() => { this.show = false; }, 8000);
                             } else if (this.status === 'failed') {
                                 this.summaryVisible = true;
+                                this.refreshList();
                                 this.clearSession(false);
                             } else {
                                 setTimeout(() => this.poll(), 1500);
@@ -139,6 +150,41 @@
                         .catch(err => {
                             console.error('Polling error:', err);
                             setTimeout(() => this.poll(), 5000);
+                        });
+                },
+                refreshList() {
+                    const url = new URL('{{ route('users.index') }}');
+                    url.searchParams.append('_t', Date.now());
+                    
+                    fetch(url.toString(), {
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        })
+                        .then(res => res.text())
+                        .then(html => {
+                            const parser = new DOMParser();
+                            const doc = parser.parseFromString(html, 'text/html');
+                            
+                            // Prevent invisible DOM from reveal-on-scroll CSS by forcing visibility
+                            doc.querySelectorAll('.reveal-on-scroll').forEach(el => {
+                                el.classList.add('is-visible');
+                            });
+                            
+                            // Replace table
+                            const newTable = doc.querySelector('#table-container');
+                            const currentTable = document.querySelector('#table-container');
+                            if (newTable && currentTable) {
+                                currentTable.innerHTML = newTable.innerHTML;
+                                if (window.Alpine) window.Alpine.initTree(currentTable);
+                            }
+                            
+                            // Replace stats if they exist
+                            const newStats = doc.querySelector('#stats-container');
+                            const currentStats = document.querySelector('#stats-container');
+                            if (newStats && currentStats) {
+                                currentStats.innerHTML = newStats.innerHTML;
+                            }
                         });
                 },
                 clearSession(reload = false) {
@@ -279,28 +325,7 @@
                             </div>
                         </div>
                     </div>
-                    {{-- Error List --}}
-                    <template x-if="errors && errors.length > 0">
-                        <div class="rounded-xl border border-amber-200 bg-amber-50 overflow-hidden">
-                            <div
-                                class="flex items-center justify-between px-4 py-2 border-b border-amber-200 bg-amber-100/50">
-                                <p
-                                    class="text-[10px] uppercase tracking-wider text-amber-700 font-bold tracking-widest">
-                                    Skipped Row Details</p>
-                                <span
-                                    class="inline-flex items-center rounded-full bg-amber-200 px-2.5 py-0.5 text-[10px] font-bold text-amber-800"
-                                    x-text="`${errors.length} row${errors.length !== 1 ? 's' : ''}`"></span>
-                            </div>
-                            <ul class="divide-y divide-amber-100 max-h-40 overflow-y-auto">
-                                <template x-for="(err, i) in errors" :key="i">
-                                    <li class="flex items-start gap-2 px-4 py-2">
-                                        <span class="flex-shrink-0 text-amber-400 mt-0.5">&rsaquo;</span>
-                                        <span class="text-xs text-amber-900" x-text="err"></span>
-                                    </li>
-                                </template>
-                            </ul>
-                        </div>
-                    </template>
+
                 </div>
             </div>
         @endif
@@ -796,7 +821,7 @@
         </div>
 
         {{-- Stats Summary --}}
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4" id="stats-container">
             <div class="bg-white border border-gray-200 rounded-xl p-5">
                 <div class="flex items-center justify-between">
                     <div>
