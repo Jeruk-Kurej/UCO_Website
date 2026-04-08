@@ -570,32 +570,17 @@ class BusinessController extends Controller
         ]);
 
         // Increase execution time and memory limit for large imports
-        set_time_limit(300); // 5 minutes
-        ini_set('memory_limit', '512M');
+        set_time_limit(600); // 10 minutes
+        ini_set('memory_limit', '1024M');
 
         try {
-            $import = new BusinessesImport();
+            $importId = 'business_import_' . time() . '_' . uniqid();
+            session(['active_business_import_id' => $importId]);
+            $import = new BusinessesImport($importId);
             Excel::import($import, $request->file('file'));
 
-            $results = $import->getResults();
-
-            $message = "Import completed! Success: {$results['success']}, Skipped: {$results['skipped']}";
-            
-            if (!empty($results['errors'])) {
-                $message .= ". Errors: " . count($results['errors']);
-                
-                // Log detailed errors for debugging
-                foreach ($results['errors'] as $error) {
-                    Log::error("Business import error: " . $error);
-                }
-                
-                // Show first few errors to user
-                $errorMessages = array_slice($results['errors'], 0, 5);
-                return back()->with('success', $message)
-                    ->with('import_errors', $errorMessages);
-            }
-
-            return back()->with('success', $message);
+            return back()
+                ->with('business_success', 'Import started in the background! Please wait.');
 
         } catch (\Exception $e) {
             Log::error('Business import exception: ' . $e->getMessage());

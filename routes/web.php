@@ -65,6 +65,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Import progress tracking endpoint
     Route::get('/import-progress/{sessionId}', [DashboardController::class, 'importProgress'])->name('import.progress');
+    Route::post('/clear-active-import', [DashboardController::class, 'clearActiveImport'])->name('import.clear');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

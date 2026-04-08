@@ -20,7 +20,7 @@ class FeaturedController extends Controller
             ->where('is_featured', true)
             ->latest()
             ->get()
-            ->sortByDesc(fn (Business $business) => $this->businessQualityScore($business))
+            ->sortByDesc(fn(Business $business) => $this->businessQualityScore($business))
             ->values()
             ->map(function (Business $business) {
                 $business->display_description = $this->buildBusinessDisplayDescription($business);
@@ -51,7 +51,7 @@ class FeaturedController extends Controller
 
                 return $testimony;
             })
-            ->filter(fn (UcTestimony $testimony) => $testimony->display_content !== '')
+            ->filter(fn(UcTestimony $testimony) => $testimony->display_content !== '')
             ->take(6)
             ->values();
 

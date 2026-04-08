@@ -21,14 +21,22 @@
             <div class="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
                 @php
                     $backUrl = url()->previous();
-                    $isFromManagement = str_contains($backUrl, '/create') || str_contains($backUrl, '/edit') || str_contains($backUrl, '/my-businesses');
-                    
-                    if ($canManageBusiness && ($isFromManagement || $backUrl === url()->current())) {
+                    $isFromManagement =
+                        str_contains($backUrl, '/create') ||
+                        str_contains($backUrl, '/edit') ||
+                        str_contains($backUrl, '/my-businesses');
+
+                    // Admin manages ALL businesses → always back to the general index
+                    // Owner manages THEIR businesses → back to their own portfolio
+                    $isOwner = auth()->check() && !auth()->user()->isAdmin() && $business->isOwnedBy(auth()->user());
+
+                    if ($isOwner && ($isFromManagement || $backUrl === url()->current())) {
                         $backUrl = route('businesses.my');
                     } elseif (
                         $backUrl === url()->current() ||
                         str_contains($backUrl, '/login') ||
-                        str_contains($backUrl, '/register')
+                        str_contains($backUrl, '/register') ||
+                        str_contains($backUrl, '/my-businesses')
                     ) {
                         $backUrl = route('businesses.index');
                     }
@@ -771,13 +779,13 @@
                                 @if ($canManageBusiness && $business->products->count() > 0)
                                     <div class="flex items-center gap-2">
                                         <a href="{{ route('businesses.product-categories.index', $business) }}"
-                                            class="inline-flex items-center px-3 py-2 bg-uco-orange-500  text-white text-sm font-bold font-medium rounded-xl">
-                                            <i class="bi bi-tags me-2"></i>
+                                            class="inline-flex items-center gap-1.5 px-3 py-2 bg-uco-orange-500 hover:bg-uco-orange-600 text-white text-sm font-semibold rounded-xl transition">
+                                            <i class="bi bi-tags"></i>
                                             Manage Categories
                                         </a>
                                         <a href="{{ route('businesses.products.create', $business) }}"
-                                            class="inline-flex items-center px-3 py-2 bg-soft-gray-900 hover:bg-soft-gray-800 text-white text-sm font-medium rounded-xl shadow-sm transition duration-150">
-                                            <i class="bi bi-plus-lg me-2"></i>
+                                            class="inline-flex items-center gap-1.5 px-3 py-2 bg-soft-gray-900 hover:bg-soft-gray-800 text-white text-sm font-medium rounded-xl shadow-sm transition duration-150">
+                                            <i class="bi bi-plus-lg"></i>
                                             Add Product
                                         </a>
                                     </div>
@@ -887,7 +895,8 @@
                                                         <a href="{{ route('businesses.products.show', [$business, $product]) }}"
                                                             class="flex-1 inline-flex items-center justify-center px-4 py-2.5 bg-gray-50 text-gray-500 text-sm font-bold rounded-xl hover:bg-gray-900 hover:text-white transition-all duration-300 group"
                                                             title="View Details">
-                                                            <i class="bi bi-eye text-lg me-2 group-hover:scale-110 transition-transform"></i>
+                                                            <i
+                                                                class="bi bi-eye text-lg me-2 group-hover:scale-110 transition-transform"></i>
                                                             Show Details
                                                         </a>
                                                     </div>
@@ -898,19 +907,31 @@
                                 @endforeach
                             </div>
                         @else
-                            <div class="text-center py-12 bg-gray-50 rounded-lg">
-                                <i class="bi bi-box-seam text-6xl text-gray-300 mb-3"></i>
-                                <p class="text-gray-500 text-lg font-medium mb-2">No products yet</p>
+                            <div class="text-center py-16 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
+                                <div class="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                    <i class="bi bi-box-seam text-2xl text-gray-400"></i>
+                                </div>
+                                <h4 class="text-base font-bold text-gray-900 mb-1">No products yet</h4>
                                 @auth
                                     @if ($canManageBusiness)
-                                        <p class="text-sm text-gray-400 mb-4">Start adding products to showcase your
-                                            offerings</p>
-                                        <a href="{{ route('businesses.products.create', $business) }}"
-                                            class="inline-flex items-center px-4 py-2 bg-soft-gray-900 hover:bg-soft-gray-800 text-white text-sm font-medium rounded-xl shadow-sm transition duration-150">
-                                            <i class="bi bi-plus-lg me-2"></i>
-                                            Add Your First Product
-                                        </a>
+                                        <p class="text-sm text-gray-400 mb-5 max-w-xs mx-auto">Start by setting up your product categories, then add your first product.</p>
+                                        <div class="flex items-center justify-center gap-3 flex-wrap">
+                                            <a href="{{ route('businesses.product-categories.index', $business) }}"
+                                                class="inline-flex items-center gap-1.5 px-4 py-2.5 bg-white border border-uco-orange-200 text-uco-orange-600 text-sm font-semibold rounded-xl hover:bg-uco-orange-50 transition-all">
+                                                <i class="bi bi-tags"></i>
+                                                Manage Categories
+                                            </a>
+                                            <a href="{{ route('businesses.products.create', $business) }}"
+                                                class="inline-flex items-center gap-1.5 px-4 py-2.5 bg-soft-gray-900 hover:bg-soft-gray-800 text-white text-sm font-semibold rounded-xl shadow-sm transition duration-150">
+                                                <i class="bi bi-plus-lg"></i>
+                                                Add Your First Product
+                                            </a>
+                                        </div>
+                                    @else
+                                        <p class="text-sm text-gray-400">No products have been added yet.</p>
                                     @endif
+                                @else
+                                    <p class="text-sm text-gray-400">No products have been added yet.</p>
                                 @endauth
                             </div>
                         @endif
@@ -1003,46 +1024,47 @@
                     <div class="flex items-center justify-between mb-8">
                         <h3 class="text-xl font-bold text-gray-900">Business Gallery</h3>
                         @auth
-                        @if ($canManageBusiness)
-                            <div class="flex items-center gap-3">
-                                @if($business->photos->count() > 0)
+                            @if ($canManageBusiness && $business->photos->count() > 0)
+                                <div class="flex items-center gap-3">
                                     <a href="{{ route('businesses.photos.index', $business) }}"
                                         class="inline-flex items-center px-4 py-2.5 bg-white border border-gray-200 text-gray-700 text-sm font-semibold rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm">
                                         <i class="bi bi-grid-3x3-gap me-2"></i>
                                         Manage Gallery
                                     </a>
-                                @endif
-                                <a href="{{ route('businesses.photos.create', $business) }}"
-                                    class="inline-flex items-center px-4 py-2.5 bg-gray-900 hover:bg-gray-800 text-white text-sm font-semibold rounded-xl shadow-md hover:shadow-lg transition-all">
-                                    <i class="bi bi-plus-lg me-2"></i>
-                                    Upload to Gallery
-                                </a>
-                            </div>
-                        @endif
+                                    <a href="{{ route('businesses.photos.create', $business) }}"
+                                        class="inline-flex items-center px-4 py-2.5 bg-gray-900 hover:bg-gray-800 text-white text-sm font-semibold rounded-xl shadow-md hover:shadow-lg transition-all">
+                                        <i class="bi bi-plus-lg me-2"></i>
+                                        Upload to Gallery
+                                    </a>
+                                </div>
+                            @endif
                         @endauth
                     </div>
 
                     @if ($business->photos->count() > 0)
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                             @foreach ($business->photos as $photo)
-                                <div class="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-all group flex flex-col">
+                                <div
+                                    class="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-all group flex flex-col">
                                     {{-- Photo --}}
                                     <div class="relative aspect-video overflow-hidden bg-gray-100 flex-shrink-0">
-                                        <img src="{{ storage_image_url($photo->photo_url, 'gallery') }}" 
-                                             alt="{{ $business->name }} gallery photo"
-                                             loading="lazy"
-                                             class="w-full h-full object-cover transition duration-500 group-hover:scale-105 cursor-zoom-in"
-                                             @click="openFullscreen('{{ storage_image_url($photo->photo_url, 'gallery') }}', '{{ addslashes($business->name) }} photo')">
+                                        <img src="{{ storage_image_url($photo->photo_url, 'gallery') }}"
+                                            alt="{{ $business->name }} gallery photo" loading="lazy"
+                                            class="w-full h-full object-cover transition duration-500 group-hover:scale-105 cursor-zoom-in"
+                                            @click="openFullscreen('{{ storage_image_url($photo->photo_url, 'gallery') }}', '{{ addslashes($business->name) }} photo')">
                                     </div>
 
                                     {{-- Caption Section --}}
-                                    <div class="p-4 flex-grow flex flex-col justify-center border-t border-gray-50 bg-white">
-                                        @if($photo->caption)
+                                    <div
+                                        class="p-4 flex-grow flex flex-col justify-center border-t border-gray-50 bg-white">
+                                        @if ($photo->caption)
                                             <p class="text-gray-700 text-sm font-medium leading-normal line-clamp-3">
                                                 {{ $photo->caption }}
                                             </p>
                                         @else
-                                            <span class="text-gray-300 text-[10px] uppercase font-bold tracking-widest text-center">No caption</span>
+                                            <span
+                                                class="text-gray-300 text-[10px] uppercase font-bold tracking-widest text-center">No
+                                                caption</span>
                                         @endif
                                     </div>
                                 </div>
@@ -1050,13 +1072,15 @@
                         </div>
                     @else
                         <div class="text-center py-20 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
-                            <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
+                            <div
+                                class="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
                                 <i class="bi bi-images text-3xl text-gray-300"></i>
                             </div>
                             <h4 class="text-lg font-bold text-gray-900 mb-2">No photos in gallery yet</h4>
                             @auth
                                 @if ($canManageBusiness)
-                                    <p class="text-gray-400 mb-6 max-w-xs mx-auto text-xs">Share your business journey by uploading photos to your gallery.</p>
+                                    <p class="text-gray-400 mb-6 max-w-xs mx-auto text-xs">Share your business journey by
+                                        uploading photos to your gallery.</p>
                                     <a href="{{ route('businesses.photos.create', $business) }}"
                                         class="inline-flex items-center px-6 py-2.5 bg-gray-900 hover:bg-gray-800 text-white text-sm font-bold rounded-xl shadow-md transition-all">
                                         <i class="bi bi-upload me-2"></i>

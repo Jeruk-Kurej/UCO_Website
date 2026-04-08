@@ -16,19 +16,39 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Http;
 use App\Models\BusinessPhoto;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Maatwebsite\Excel\Concerns\WithEvents;
+use Maatwebsite\Excel\Concerns\WithColumnLimit;
+use Maatwebsite\Excel\Events\BeforeImport;
+use Maatwebsite\Excel\Events\AfterImport;
+use Maatwebsite\Excel\Events\ImportFailed;
+use Illuminate\Support\Facades\Cache;
 
-class BusinessesImport implements ToModel, WithHeadingRow, WithValidation, WithChunkReading, ShouldQueue
+class BusinessesImport implements ToModel, WithHeadingRow, WithValidation, WithChunkReading, ShouldQueue, WithEvents, WithColumnLimit
 {
+    public $importId;
     protected $errors = [];
     protected $successCount = 0;
     protected $skippedCount = 0;
+
+    public function __construct($importId = null)
+    {
+        $this->importId = $importId;
+    }
 
     /**
      * Chunk size for reading (memory efficient)
      */
     public function chunkSize(): int
     {
-        return 100;
+        return 10;
+    }
+
+    /**
+     * Column limit to save memory (Ignore columns after Z)
+     */
+    public function endColumn(): string
+    {
+        return 'Z';
     }
 
     /**
@@ -69,9 +89,8 @@ class BusinessesImport implements ToModel, WithHeadingRow, WithValidation, WithC
             // CRITICAL: Detect if this is student data instead of business data
             if ($this->isStudentData($row)) {
                 $this->skippedCount++;
-                $errorMsg = "Row skipped: This appears to be STUDENT/USER data, not BUSINESS data. Found student columns: " . implode(', ', array_keys($row)) . ". Please use User Import instead.";
-                $this->errors[] = $errorMsg;
-                Log::error("Business import: " . $errorMsg);
+                $this->errors[] = "Wrong file: This row appears to be User/Student data. Use User Import instead.";
+                $this->updateWorkerProgress('skipped');
                 return null;
             }
 
@@ -84,7 +103,8 @@ class BusinessesImport implements ToModel, WithHeadingRow, WithValidation, WithC
                 empty($row['business_name']) && 
                 empty($row['nama_bisnis'])) {
                 $this->skippedCount++;
-                $this->errors[] = "❌ Missing business name - row skipped";
+                $this->errors[] = "Skipped: Missing business name";
+                $this->updateWorkerProgress('skipped');
                 return null;
             }
 
@@ -107,7 +127,8 @@ class BusinessesImport implements ToModel, WithHeadingRow, WithValidation, WithC
             $existingBusiness = Business::where('name', $businessName)->first();
             if ($existingBusiness) {
                 $this->skippedCount++;
-                $this->errors[] = "⚠️ Duplicate: '{$businessName}' already exists, skipped";
+                $this->errors[] = "Duplicate: '{$businessName}' — already exists";
+                $this->updateWorkerProgress('skipped');
                 return null;
             }
 
@@ -145,9 +166,9 @@ class BusinessesImport implements ToModel, WithHeadingRow, WithValidation, WithC
             if (!$user) {
                 $emailAttempt = $row['email'] ?? $row['owner_email'] ?? $row['email_owner'] ?? 'N/A';
                 $nameAttempt = $row['owner'] ?? $row['owner_name'] ?? $row['nama_owner'] ?? $row['nama'] ?? 'N/A';
-                $errorMsg = "❌ Owner not found for '{$businessName}' - Tried email: '{$emailAttempt}', name: '{$nameAttempt}' - Import users first!";
-                $this->errors[] = $errorMsg;
+                $this->errors[] = "Owner not found for '{$businessName}' — email: '{$emailAttempt}', name: '{$nameAttempt}'. Import users first.";
                 $this->skippedCount++;
+                $this->updateWorkerProgress('skipped');
                 return null;
             }
 
@@ -246,6 +267,10 @@ class BusinessesImport implements ToModel, WithHeadingRow, WithValidation, WithC
             }
             
             $this->successCount++;
+            $this->updateWorkerProgress('success');
+            
+            // Explicitly clear memory after processing each row/chunk
+            gc_collect_cycles();
             
             return $business;
 
@@ -253,8 +278,100 @@ class BusinessesImport implements ToModel, WithHeadingRow, WithValidation, WithC
             $this->errors[] = "Row error: {$e->getMessage()} - Data: " . json_encode($row);
             Log::error("Error importing business: " . $e->getMessage());
             $this->skippedCount++;
+            $this->updateWorkerProgress('skipped');
             return null;
         }
+    }
+
+    /**
+     * Update worker progress in Cache (Atomic)
+     */
+    protected function updateWorkerProgress($status = 'success')
+    {
+        if ($this->importId) {
+            $prefix = "import_{$this->importId}";
+            
+            // Atomic increment is safe for parallel queue workers
+            Cache::increment("{$prefix}_current");
+            
+            if ($status === 'success') {
+                Cache::increment("{$prefix}_success");
+            } else {
+                Cache::increment("{$prefix}_skipped");
+            }
+
+            // Sync errors to cache if they occurred in this chunk
+            if (!empty($this->errors)) {
+                $progress = Cache::get($prefix, ['status' => 'processing', 'errors' => []]);
+                $progress['errors'] = array_slice(array_merge($progress['errors'] ?? [], $this->errors), -10);
+                Cache::put($prefix, $progress, now()->addMinutes(30));
+                $this->errors = [];
+            }
+
+            // Check if finished by comparing current vs total
+            $total = (int) Cache::get("{$prefix}_total", 0);
+            $current = (int) Cache::get("{$prefix}_current", 0);
+            
+            if ($total > 0 && $current >= $total) {
+                $progress = Cache::get($prefix, ['status' => 'processing', 'errors' => []]);
+                $progress['status'] = 'completed';
+                Cache::put($prefix, $progress, now()->addMinutes(30));
+            }
+        }
+    }
+
+    /**
+     * Maatwebsite Excel Events
+     */
+    public function registerEvents(): array
+    {
+        return [
+            BeforeImport::class => function (BeforeImport $event) {
+                if ($this->importId) {
+                    $totalRows = $event->getReader()->getTotalRows();
+                    // Detect the largest sheet rows (likely the main data)
+                    $totalCount = 0;
+                    foreach ($totalRows as $rows) {
+                        if ($rows > $totalCount) $totalCount = $rows;
+                    }
+                    $totalCount = max(0, $totalCount - 1); // Exclude header
+                    
+                    $prefix = "import_{$this->importId}";
+
+                    // Initialize the Atomic state tracker
+                    Cache::put($prefix, [
+                        'status' => 'processing',
+                        'errors' => []
+                    ], now()->addMinutes(60));
+
+                    Cache::forever("{$prefix}_total", $totalCount);
+                    Cache::forever("{$prefix}_current", 0);
+                    Cache::forever("{$prefix}_success", 0);
+                    Cache::forever("{$prefix}_skipped", 0);
+
+                    Log::info("[BusinessImport-Queue] ID: {$this->importId} | Started with {$totalCount} rows");
+                }
+            },
+            AfterImport::class => function (AfterImport $event) {
+                if ($this->importId) {
+                    $prefix = "import_{$this->importId}";
+                    $progress = Cache::get($prefix, ['status' => 'processing', 'errors' => []]);
+                    $progress['status'] = 'completed';
+                    Cache::put($prefix, $progress, now()->addMinutes(60));
+                    Log::info("[BusinessImport-Queue] ID: {$this->importId} | Finished Successfully");
+                }
+            },
+            ImportFailed::class => function (ImportFailed $event) {
+                if ($this->importId) {
+                    $prefix = "import_{$this->importId}";
+                    $progress = Cache::get($prefix, ['status' => 'processing', 'errors' => []]);
+                    $progress['status'] = 'failed';
+                    $progress['errors'][] = $event->getException()->getMessage();
+                    Cache::put($prefix, $progress, now()->addMinutes(60));
+                    Log::error("[BusinessImport-Queue] ID: {$this->importId} | FAILED: " . $event->getException()->getMessage());
+                }
+            },
+        ];
     }
 
     /**

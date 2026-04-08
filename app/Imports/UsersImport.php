@@ -12,20 +12,40 @@ use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
 use Maatwebsite\Excel\Concerns\WithChunkReading;
+use Maatwebsite\Excel\Concerns\WithEvents;
+use Maatwebsite\Excel\Concerns\WithColumnLimit;
+use Maatwebsite\Excel\Events\BeforeImport;
+use Maatwebsite\Excel\Events\AfterImport;
+use Maatwebsite\Excel\Events\ImportFailed;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
-class UsersImport implements ToModel, WithHeadingRow, WithValidation, WithChunkReading, ShouldQueue
+class UsersImport implements ToModel, WithHeadingRow, WithValidation, WithChunkReading, ShouldQueue, WithEvents, WithColumnLimit
 {
+    public $importId;
     protected $errors = [];
     protected $successCount = 0;
     protected $skippedCount = 0;
+
+    public function __construct($importId = null)
+    {
+        $this->importId = $importId;
+    }
 
     /**
      * Chunk size for reading (memory efficient)
      */
     public function chunkSize(): int
     {
-        return 100;
+        return 10;
+    }
+
+    /**
+     * Column limit to save memory (Ignore columns after Z)
+     */
+    public function endColumn(): string
+    {
+        return 'Z';
     }
 
     /**
@@ -36,7 +56,7 @@ class UsersImport implements ToModel, WithHeadingRow, WithValidation, WithChunkR
         // Only reject if it's CLEARLY business data (has business columns but NO user columns)
         $businessColumns = ['business_name', 'business_type', 'business_mode', 'established_date', 'employee_count', 'revenue_range'];
         $userColumns = ['name', 'email', 'username', 'nis', 'student_year', 'major'];
-        
+
         $hasUserData = false;
         foreach ($userColumns as $column) {
             if (array_key_exists($column, $row) && !empty($row[$column])) {
@@ -44,12 +64,12 @@ class UsersImport implements ToModel, WithHeadingRow, WithValidation, WithChunkR
                 break;
             }
         }
-        
+
         // If we have user data (name or email), this is USER data, not business data
         if ($hasUserData) {
             return false;
         }
-        
+
         // Only mark as business data if NO user columns exist but business columns do
         $businessColumnCount = 0;
         foreach ($businessColumns as $column) {
@@ -57,7 +77,7 @@ class UsersImport implements ToModel, WithHeadingRow, WithValidation, WithChunkR
                 $businessColumnCount++;
             }
         }
-        
+
         // If 3 or more business columns exist AND no user data, this is business data
         return $businessColumnCount >= 3;
     }
@@ -73,26 +93,27 @@ class UsersImport implements ToModel, WithHeadingRow, WithValidation, WithChunkR
             // CRITICAL: Remove 'id' column if exists to prevent duplicate key errors
             // ID should be auto-incremented by database, not set from Excel
             unset($row['id']);
-            
+
             // CRITICAL: Detect if this is business data instead of user data
             if ($this->isBusinessData($row)) {
                 $this->skippedCount++;
-                $errorMsg = "Row skipped: This appears to be BUSINESS data, not USER data. Found business columns: " . implode(', ', array_keys($row)) . ". Please use Business Import instead.";
-                $this->errors[] = $errorMsg;
-                Log::error("User import: " . $errorMsg);
+                $this->errors[] = "Wrong file: This row appears to be Business data. Use Business Import instead.";
+                $this->updateWorkerProgress('skipped');
                 return null;
             }
 
             // Check required fields
             if (empty($row['name'])) {
                 $this->skippedCount++;
-                $this->errors[] = "❌ Missing name - row skipped";
+                $this->errors[] = "Skipped: Missing name field";
+                $this->updateWorkerProgress('skipped');
                 return null;
             }
 
             if (empty($row['email'])) {
                 $this->skippedCount++;
-                $this->errors[] = "❌ Missing email for '{$row['name']}' - row skipped";
+                $this->errors[] = "Skipped: Missing email for row with name '{$row['name']}'";
+                $this->updateWorkerProgress('skipped');
                 return null;
             }
 
@@ -128,7 +149,7 @@ class UsersImport implements ToModel, WithHeadingRow, WithValidation, WithChunkR
                 }
 
                 // Merge JSON fields
-                foreach (['personal_data','academic_data','father_data','mother_data','graduation_data'] as $jsonField) {
+                foreach (['personal_data', 'academic_data', 'father_data', 'mother_data', 'graduation_data'] as $jsonField) {
                     $incoming = $this->{"build" . ucfirst(str_replace('_', '', $jsonField))}($row) ?? ($row[$jsonField] ?? null);
                     if ($incoming && is_array($incoming)) {
                         $existingVal = $existingUser->{$jsonField} ?? [];
@@ -154,17 +175,20 @@ class UsersImport implements ToModel, WithHeadingRow, WithValidation, WithChunkR
                 if ($updated) {
                     $existingUser->save();
                     $this->successCount++;
-                    // try images as well
+                    $this->updateWorkerProgress('success');
                     try {
                         $this->handleUserImages($existingUser, $row);
                     } catch (\Exception $e) {
                         Log::warning('User image handling failed for existing user ' . ($existingUser->email ?? $existingUser->name) . ': ' . $e->getMessage());
                     }
+                    gc_collect_cycles();
                     return $existingUser;
                 }
 
+                // Truly duplicate — no new data to add
                 $this->skippedCount++;
-                $this->errors[] = "⚠️ Duplicate: '{$row['name']}' ({$row['email']}) already exists, no new data to merge";
+                $this->errors[] = "Duplicate: '{$row['name']}' ({$row['email']}) — already exists, no new data";
+                $this->updateWorkerProgress('skipped');
                 return null;
             }
 
@@ -176,24 +200,24 @@ class UsersImport implements ToModel, WithHeadingRow, WithValidation, WithChunkR
                 'role' => $row['role'] ?? 'student',
                 'is_active' => isset($row['is_active']) ? (bool)$row['is_active'] : true,
                 'email_verified_at' => now(),
-                
+
                 // Personal Information
                 'birth_date' => $row['birth_date'] ?? $row['tanggal_lahir'] ?? null,
                 'birth_city' => $row['birth_city'] ?? $row['tempat_lahir'] ?? null,
                 'religion' => $row['religion'] ?? $row['agama'] ?? null,
-                
+
                 // Contact Information
                 'phone_number' => $row['phone_number'] ?? $row['phone'] ?? $row['telp'] ?? null,
                 'mobile_number' => $row['mobile_number'] ?? $row['mobile'] ?? $row['hp'] ?? null,
                 'whatsapp' => $row['whatsapp'] ?? $row['wa'] ?? null,
-                
+
                 // Student/Academic Information - MATCH DATABASE FIELD NAMES (PascalCase)
                 'NIS' => $row['nis'] ?? null,
                 'Student_Year' => $row['student_year'] ?? $row['angkatan'] ?? null,
                 'Major' => $row['major'] ?? $row['prodi'] ?? $row['jurusan'] ?? null,
                 'Is_Graduate' => isset($row['is_graduate']) ? (bool)$row['is_graduate'] : false,
                 'CGPA' => $row['cgpa'] ?? $row['ipk'] ?? null,
-                
+
                 // JSON fields - store additional data
                 'personal_data' => $this->buildPersonalData($row),
                 'academic_data' => $this->buildAcademicData($row),
@@ -215,15 +239,105 @@ class UsersImport implements ToModel, WithHeadingRow, WithValidation, WithChunkR
             }
 
             $this->successCount++;
+            $this->updateWorkerProgress('success');
+
+            // Explicitly clear memory after processing each row/chunk
+            gc_collect_cycles();
 
             return $user;
-
         } catch (\Exception $e) {
             $this->errors[] = "Error importing user: {$e->getMessage()} - Data: " . json_encode($row);
             Log::error("User import error: " . $e->getMessage());
             $this->skippedCount++;
+            $this->updateWorkerProgress('skipped');
             return null;
         }
+    }
+
+    /**
+     * Update worker progress in Cache (Atomic)
+     */
+    protected function updateWorkerProgress($status = 'success')
+    {
+        if ($this->importId) {
+            $prefix = "import_{$this->importId}";
+
+            Cache::increment("{$prefix}_current");
+
+            if ($status === 'success') {
+                Cache::increment("{$prefix}_success");
+            } else {
+                Cache::increment("{$prefix}_skipped");
+            }
+
+            if (!empty($this->errors)) {
+                $progress = Cache::get($prefix, ['status' => 'processing', 'errors' => []]);
+                $progress['errors'] = array_slice(array_merge($progress['errors'] ?? [], $this->errors), -10);
+                Cache::put($prefix, $progress, now()->addMinutes(30));
+                $this->errors = [];
+            }
+
+            $total = (int) Cache::get("{$prefix}_total", 0);
+            $current = (int) Cache::get("{$prefix}_current", 0);
+
+            if ($total > 0 && $current >= $total) {
+                $progress = Cache::get($prefix, ['status' => 'processing', 'errors' => []]);
+                $progress['status'] = 'completed';
+                Cache::put($prefix, $progress, now()->addMinutes(30));
+            }
+        }
+    }
+
+    /**
+     * Maatwebsite Excel Events
+     */
+    public function registerEvents(): array
+    {
+        return [
+            BeforeImport::class => function (BeforeImport $event) {
+                if ($this->importId) {
+                    $totalRows = $event->getReader()->getTotalRows();
+                    $totalCount = 0;
+                    foreach ($totalRows as $rows) {
+                        if ($rows > $totalCount) $totalCount = $rows;
+                    }
+                    $totalCount = max(0, $totalCount - 1);
+
+                    $prefix = "import_{$this->importId}";
+
+                    Cache::put($prefix, [
+                        'status' => 'processing',
+                        'errors' => []
+                    ], now()->addMinutes(60));
+
+                    Cache::forever("{$prefix}_total", $totalCount);
+                    Cache::forever("{$prefix}_current", 0);
+                    Cache::forever("{$prefix}_success", 0);
+                    Cache::forever("{$prefix}_skipped", 0);
+
+                    Log::info("[UserImport-Queue] ID: {$this->importId} | Started with {$totalCount} rows");
+                }
+            },
+            AfterImport::class => function (AfterImport $event) {
+                if ($this->importId) {
+                    $prefix = "import_{$this->importId}";
+                    $progress = Cache::get($prefix, ['status' => 'processing', 'errors' => []]);
+                    $progress['status'] = 'completed';
+                    Cache::put($prefix, $progress, now()->addMinutes(60));
+                    Log::info("[UserImport-Queue] ID: {$this->importId} | Finished Successfully");
+                }
+            },
+            ImportFailed::class => function (ImportFailed $event) {
+                if ($this->importId) {
+                    $prefix = "import_{$this->importId}";
+                    $progress = Cache::get($prefix, ['status' => 'processing', 'errors' => []]);
+                    $progress['status'] = 'failed';
+                    $progress['errors'][] = $event->getException()->getMessage();
+                    Cache::put($prefix, $progress, now()->addMinutes(60));
+                    Log::error("[UserImport-Queue] ID: {$this->importId} | FAILED: " . $event->getException()->getMessage());
+                }
+            },
+        ];
     }
 
     /**
@@ -233,9 +347,29 @@ class UsersImport implements ToModel, WithHeadingRow, WithValidation, WithChunkR
     {
         // Remove known mapped fields to avoid duplication
         $known = [
-            'id','username','name','email','password','role','is_active','birth_date','birth_city','religion',
-            'phone_number','mobile_number','whatsapp','nis','student_year','major','is_graduate','cgpa',
-            'personal_data','academic_data','father_data','mother_data','graduation_data'
+            'id',
+            'username',
+            'name',
+            'email',
+            'password',
+            'role',
+            'is_active',
+            'birth_date',
+            'birth_city',
+            'religion',
+            'phone_number',
+            'mobile_number',
+            'whatsapp',
+            'nis',
+            'student_year',
+            'major',
+            'is_graduate',
+            'cgpa',
+            'personal_data',
+            'academic_data',
+            'father_data',
+            'mother_data',
+            'graduation_data'
         ];
 
         $data = [];
@@ -258,21 +392,21 @@ class UsersImport implements ToModel, WithHeadingRow, WithValidation, WithChunkR
             'gender' => $row['gender'] ?? null,
             'citizenship' => $row['citizenship'] ?? null,
             'citizenship_no' => $row['citizenship_no'] ?? null,
-            
+
             // Primary Address
             'address' => $row['address'] ?? null,
             'address_city' => $row['address_city'] ?? null,
             'province' => $row['province'] ?? null,
             'country' => $row['country'] ?? null,
             'zip_code' => $row['zip_code'] ?? null,
-            
+
             // Secondary Address
             'address2' => $row['address2'] ?? null,
             'address_city2' => $row['address_city2'] ?? null,
             'province2' => $row['province2'] ?? null,
             'country2' => $row['country2'] ?? null,
             'zip_code2' => $row['zip_code2'] ?? null,
-            
+
             // Additional Contacts
             'phone_number2' => $row['phone_number2'] ?? null,
             'mobile_number2' => $row['mobile_number2'] ?? null,
@@ -282,7 +416,7 @@ class UsersImport implements ToModel, WithHeadingRow, WithValidation, WithChunkR
             'twitter' => $row['twitter'] ?? null,
             'instagram' => $row['instagram'] ?? null,
         ]);
-        
+
         return !empty($data) ? $data : null;
     }
 
@@ -296,7 +430,7 @@ class UsersImport implements ToModel, WithHeadingRow, WithValidation, WithChunkR
             'nisn' => $row['nisn'] ?? null,
             'prodi' => $row['prodi'] ?? null,
             'sub_prodi' => $row['sub_prodi'] ?? null,
-            
+
             // Education History
             'edu_level' => $row['edu_level'] ?? null,
             'academic_advisor' => $row['academic_advisor'] ?? null,
@@ -306,14 +440,14 @@ class UsersImport implements ToModel, WithHeadingRow, WithValidation, WithChunkR
             'start_year' => $row['start_year'] ?? null,
             'end_year' => $row['end_year'] ?? null,
             'score' => $row['score'] ?? null,
-            
+
             // Certificates
             'certificate_no_1' => $row['certificate_no_1'] ?? null,
             'certificate_date_1' => $row['certificate_date_1'] ?? null,
             'certificate_no_2' => $row['certificate_no_2'] ?? null,
             'certificate_date_2' => $row['certificate_date_2'] ?? null,
         ]);
-        
+
         return !empty($data) ? $data : null;
     }
 
@@ -333,7 +467,7 @@ class UsersImport implements ToModel, WithHeadingRow, WithValidation, WithChunkR
             'npwp_no' => $row['father_npwp_no'] ?? null,
             'religion' => $row['father_religion'] ?? null,
             'bpjs_no' => $row['father_bpjs_no'] ?? null,
-            
+
             // Contact
             'address' => $row['father_address'] ?? null,
             'address_city' => $row['father_address_city'] ?? null,
@@ -341,7 +475,7 @@ class UsersImport implements ToModel, WithHeadingRow, WithValidation, WithChunkR
             'mobile' => $row['father_mobile'] ?? null,
             'email' => $row['father_email'] ?? null,
             'bbm' => $row['father_bbm'] ?? null,
-            
+
             // Education & Work
             'education' => $row['father_education'] ?? null,
             'education_major' => $row['father_education_major'] ?? null,
@@ -354,7 +488,7 @@ class UsersImport implements ToModel, WithHeadingRow, WithValidation, WithChunkR
             'business_revenue' => $row['father_business_revenue'] ?? null,
             'special_need' => $row['father_special_need'] ?? null,
         ]);
-        
+
         return !empty($data) ? $data : null;
     }
 
@@ -374,7 +508,7 @@ class UsersImport implements ToModel, WithHeadingRow, WithValidation, WithChunkR
             'npwp_no' => $row['mother_npwp_no'] ?? null,
             'religion' => $row['mother_religion'] ?? null,
             'bpjs_no' => $row['mother_bpjs_no'] ?? null,
-            
+
             // Contact
             'address' => $row['mother_address'] ?? null,
             'address_city' => $row['mother_address_city'] ?? null,
@@ -382,7 +516,7 @@ class UsersImport implements ToModel, WithHeadingRow, WithValidation, WithChunkR
             'mobile' => $row['mother_mobile'] ?? null,
             'email' => $row['mother_email'] ?? null,
             'bbm' => $row['mother_bbm'] ?? null,
-            
+
             // Education & Work
             'education' => $row['mother_education'] ?? null,
             'education_major' => $row['mother_education_major'] ?? null,
@@ -395,7 +529,7 @@ class UsersImport implements ToModel, WithHeadingRow, WithValidation, WithChunkR
             'business_revenue' => $row['mother_business_revenue'] ?? null,
             'special_need' => $row['mother_special_need'] ?? null,
         ]);
-        
+
         return !empty($data) ? $data : null;
     }
 
@@ -412,27 +546,27 @@ class UsersImport implements ToModel, WithHeadingRow, WithValidation, WithChunkR
             'form_no' => $row['form_no'] ?? null,
             'start_date' => $row['start_date'] ?? null,
             'end_date' => $row['end_date'] ?? null,
-            
+
             // Final Projects
             'final_project_indonesia' => $row['final_project_indonesia'] ?? null,
             'final_project_english' => $row['final_project_english'] ?? null,
-            
+
             // Academic Results
             'cum_credits' => $row['cum_credits'] ?? null,
             'predicate' => $row['predicate'] ?? null,
-            
+
             // Graduation Docs
             'judicium_date' => $row['judicium_date'] ?? null,
             'document_no' => $row['document_no'] ?? null,
             'document_date' => $row['document_date'] ?? null,
             'graduate_period' => $row['graduate_period'] ?? null,
-            
+
             // Business Info
             'business_name' => $row['business_name'] ?? null,
             'business_line' => $row['business_line'] ?? null,
             'business_title' => $row['business_title'] ?? null,
         ]);
-        
+
         return !empty($data) ? $data : null;
     }
 
@@ -472,7 +606,6 @@ class UsersImport implements ToModel, WithHeadingRow, WithValidation, WithChunkR
                         $user->additional_data = $additional;
                         $user->save();
                     }
-
                 } catch (\Exception $e) {
                     Log::warning("Failed to import image for user ({$user->email}): " . $e->getMessage());
                     continue;
@@ -545,7 +678,7 @@ class UsersImport implements ToModel, WithHeadingRow, WithValidation, WithChunkR
     {
         return [
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
+            'email' => 'required|email', // Duplicate check is handled in model() with merge logic
             'role' => 'nullable|in:student,alumni,admin',
         ];
     }
