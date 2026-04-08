@@ -88,7 +88,7 @@
         </section>
 
         {{-- Search and Filter Card --}}
-        <div class="bg-white border border-gray-200 rounded-xl p-4 mb-8 shadow-sm space-y-8" 
+        <div class="bg-white border border-gray-200 rounded-xl p-4 mb-8 shadow-sm space-y-2" 
              x-data="{
                 search: '{{ request('search') }}',
                 selectedType: '{{ request('type') }}',
@@ -135,12 +135,6 @@
             </div>
 
             {{-- Category Filter Chips --}}
-            <div class="pt-2">
-                <div class="flex items-center gap-3 mb-5">
-                    <span class="text-xs font-bold text-gray-400 uppercase tracking-widest">Filter by Category</span>
-                    <div class="h-px flex-1 bg-gray-100"></div>
-                </div>
-                {{-- Added py-4 to container to prevent ring/shadow clipping --}}
                 <div class="flex items-center gap-3 overflow-x-auto py-4 scrollbar-hide -mx-1 px-1">
                     <button @click="selectedType = ''; performSearch()" 
                             :class="selectedType === '' ? 'bg-soft-gray-900 text-white shadow-lg shadow-gray-200 ring-4 ring-gray-900/10' : 'bg-white text-gray-600 border-gray-200 hover:border-soft-gray-300 hover:bg-gray-50'"
@@ -155,7 +149,6 @@
                         </button>
                     @endforeach
                 </div>
-            </div>
         </div>
 
 
