@@ -19,7 +19,17 @@ class FeaturedController extends Controller
         $featuredBusinesses = Business::with(['businessType', 'photos', 'user'])
             ->where('is_featured', true)
             ->latest()
-            ->get()
+            ->get();
+
+        // Fallback: IF no businesses are manually featured, show recent ones so the page isn't empty
+        if ($featuredBusinesses->isEmpty()) {
+            $featuredBusinesses = Business::with(['businessType', 'photos', 'user'])
+                ->latest()
+                ->take(6)
+                ->get();
+        }
+
+        $featuredBusinesses = $featuredBusinesses
             ->sortByDesc(fn(Business $business) => $this->businessQualityScore($business))
             ->values()
             ->map(function (Business $business) {

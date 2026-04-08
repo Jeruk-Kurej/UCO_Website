@@ -67,6 +67,8 @@
                 show: true,
                 zombieCount: 0,
                 summaryVisible: false,
+                lastRefreshSuccess: 0,
+                lastRefreshTime: Date.now(),
                 poll() {
                     if (this.status === 'completed' || this.status === 'failed') return;
             
@@ -94,11 +96,19 @@
                             if (this.total > 0) {
                                 this.progress = Math.min(100, Math.round((this.current / this.total) * 100));
                             }
+                            
+                            // Auto-refresh the list if there are new successful imports (debounced to 3s)
+                            if (this.success > this.lastRefreshSuccess && Date.now() - this.lastRefreshTime > 3000) {
+                                this.refreshList();
+                                this.lastRefreshSuccess = this.success;
+                                this.lastRefreshTime = Date.now();
+                            }
             
                             if (this.status === 'completed' || (this.total > 0 && this.current >= this.total)) {
                                 this.progress = 100;
                                 this.status = 'completed';
                                 this.summaryVisible = true;
+                                this.refreshList();
                                 this.clearSession(false);
                                 setTimeout(() => { this.show = false; }, 8000);
                             } else if (this.status === 'failed') {
