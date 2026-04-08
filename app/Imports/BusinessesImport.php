@@ -249,6 +249,7 @@ class BusinessesImport implements ToModel, WithHeadingRow, WithValidation, WithC
                 'is_from_college_project' => $this->parseBoolean($row['from_college_project'] ?? $row['dari_kuliah'] ?? null),
                 'is_continued_after_graduation' => $this->parseBoolean($row['continued_after_grad'] ?? $row['lanjut_setelah_lulus'] ?? null),
                 'business_challenges' => $challenges,
+                'status' => Business::STATUS_APPROVED,
                 // capture any remaining unmapped columns for audit/reference
                 'additional_data' => $this->buildAdditionalData($row),
             ]);

@@ -30,24 +30,6 @@
 
                             <div class="absolute left-0 mt-2 w-72 bg-white rounded-2xl shadow-2xl border border-soft-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 overflow-hidden transform group-hover:translate-y-0 translate-y-2">
                                 <div class="p-2 space-y-1">
-                                    <a href="{{ route('business-types.index') }}" class="flex items-start gap-3 p-3 rounded-xl hover:bg-soft-gray-50 transition-colors {{ request()->routeIs('business-types.*') ? 'bg-uco-orange-50' : '' }}">
-                                        <div class="w-9 h-9 rounded-lg bg-uco-orange-100 text-uco-orange-600 flex items-center justify-center text-lg flex-shrink-0">
-                                            <i class="bi bi-tags"></i>
-                                        </div>
-                                        <div>
-                                            <p class="text-sm font-bold text-soft-gray-900">Business Types</p>
-                                            <p class="text-xs text-soft-gray-500">Manage industry categories</p>
-                                        </div>
-                                    </a>
-                                    <a href="{{ route('contact-types.index') }}" class="flex items-start gap-3 p-3 rounded-xl hover:bg-soft-gray-50 transition-colors {{ request()->routeIs('contact-types.*') ? 'bg-blue-50' : '' }}">
-                                        <div class="w-9 h-9 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center text-lg flex-shrink-0">
-                                            <i class="bi bi-telephone"></i>
-                                        </div>
-                                        <div>
-                                            <p class="text-sm font-bold text-soft-gray-900">Contact Types</p>
-                                            <p class="text-xs text-soft-gray-500">Manage contact platforms</p>
-                                        </div>
-                                    </a>
                                     <a href="{{ route('users.index') }}" class="flex items-start gap-3 p-3 rounded-xl hover:bg-soft-gray-50 transition-colors {{ request()->routeIs('users.*') ? 'bg-emerald-50' : '' }}">
                                         <div class="w-9 h-9 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center text-lg flex-shrink-0">
                                             <i class="bi bi-people"></i>
@@ -73,6 +55,24 @@
                                         <div>
                                             <p class="text-sm font-bold text-soft-gray-900">Testimonial Review</p>
                                             <p class="text-xs text-soft-gray-500">AI analysis of platform feedback</p>
+                                        </div>
+                                    </a>
+                                    <a href="{{ route('business-types.index') }}" class="flex items-start gap-3 p-3 rounded-xl hover:bg-soft-gray-50 transition-colors {{ request()->routeIs('business-types.*') ? 'bg-uco-orange-50' : '' }}">
+                                        <div class="w-9 h-9 rounded-lg bg-uco-orange-100 text-uco-orange-600 flex items-center justify-center text-lg flex-shrink-0">
+                                            <i class="bi bi-tags"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-bold text-soft-gray-900">Business Types</p>
+                                            <p class="text-xs text-soft-gray-500">Manage industry categories</p>
+                                        </div>
+                                    </a>
+                                    <a href="{{ route('contact-types.index') }}" class="flex items-start gap-3 p-3 rounded-xl hover:bg-soft-gray-50 transition-colors {{ request()->routeIs('contact-types.*') ? 'bg-blue-50' : '' }}">
+                                        <div class="w-9 h-9 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center text-lg flex-shrink-0">
+                                            <i class="bi bi-telephone"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-bold text-soft-gray-900">Contact Types</p>
+                                            <p class="text-xs text-soft-gray-500">Manage contact platforms</p>
                                         </div>
                                     </a>
                                 </div>
@@ -158,14 +158,6 @@
                         <p class="text-[10px] font-bold text-soft-gray-400 uppercase tracking-widest">Management</p>
                     </div>
                     <div class="space-y-1">
-                        <a href="{{ route('business-types.index') }}" class="flex items-center gap-3 py-2.5 px-3 text-sm font-medium rounded-xl {{ request()->routeIs('business-types.*') ? 'bg-soft-gray-100 text-soft-gray-900 font-bold border-l-4 border-uco-orange-500' : 'text-soft-gray-600 hover:bg-soft-gray-50' }}">
-                            <i class="bi bi-tags text-uco-orange-500"></i>
-                            Business Types
-                        </a>
-                        <a href="{{ route('contact-types.index') }}" class="flex items-center gap-3 py-2.5 px-3 text-sm font-medium rounded-xl {{ request()->routeIs('contact-types.*') ? 'bg-soft-gray-100 text-soft-gray-900 font-bold border-l-4 border-blue-500' : 'text-soft-gray-600 hover:bg-soft-gray-50' }}">
-                            <i class="bi bi-telephone text-blue-500"></i>
-                            Contact Types
-                        </a>
                         <a href="{{ route('users.index') }}" class="flex items-center gap-3 py-2.5 px-3 text-sm font-medium rounded-xl {{ request()->routeIs('users.*') ? 'bg-soft-gray-100 text-soft-gray-900 font-bold border-l-4 border-emerald-500' : 'text-soft-gray-600 hover:bg-soft-gray-50' }}">
                             <i class="bi bi-people text-emerald-500"></i>
                             Users
@@ -177,6 +169,14 @@
                         <a href="{{ route('ai-analyses.index') }}" class="flex items-center gap-3 py-2.5 px-3 text-sm font-medium rounded-xl {{ request()->routeIs('ai-analyses.*') ? 'bg-soft-gray-100 text-soft-gray-900 font-bold border-l-4 border-purple-500' : 'text-soft-gray-600 hover:bg-soft-gray-50' }}">
                             <i class="bi bi-robot text-purple-500"></i>
                             Testimonial Review
+                        </a>
+                        <a href="{{ route('business-types.index') }}" class="flex items-center gap-3 py-2.5 px-3 text-sm font-medium rounded-xl {{ request()->routeIs('business-types.*') ? 'bg-soft-gray-100 text-soft-gray-900 font-bold border-l-4 border-uco-orange-500' : 'text-soft-gray-600 hover:bg-soft-gray-50' }}">
+                            <i class="bi bi-tags text-uco-orange-500"></i>
+                            Business Types
+                        </a>
+                        <a href="{{ route('contact-types.index') }}" class="flex items-center gap-3 py-2.5 px-3 text-sm font-medium rounded-xl {{ request()->routeIs('contact-types.*') ? 'bg-soft-gray-100 text-soft-gray-900 font-bold border-l-4 border-blue-500' : 'text-soft-gray-600 hover:bg-soft-gray-50' }}">
+                            <i class="bi bi-telephone text-blue-500"></i>
+                            Contact Types
                         </a>
                     </div>
 
