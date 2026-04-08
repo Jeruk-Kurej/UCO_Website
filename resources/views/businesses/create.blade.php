@@ -13,8 +13,8 @@
                 </a>
                 <div class="flex-1 text-center sm:text-left">
                     <p class="text-xs uppercase tracking-widest font-semibold text-uco-orange-600">Business Creation</p>
-                    <h1 class="text-2xl sm:text-3xl font-bold text-slate-800 mt-1">Tambah Business Baru</h1>
-                    <p class="text-slate-600 mt-2 text-sm sm:text-base">Lengkapi informasi business Anda dengan detail</p>
+                    <h1 class="text-2xl sm:text-3xl font-bold text-slate-800 mt-1">Register New Business</h1>
+                    <p class="text-slate-600 mt-2 text-sm sm:text-base">Complete your business details information</p>
                 </div>
             </div>
         </div>
@@ -27,28 +27,28 @@
                         'bg-white text-uco-orange-700 font-semibold shadow-inner border-b-2 border-uco-orange-500' :
                         'text-slate-500 hover:text-slate-700'"
                     class="px-4 sm:px-6 py-4 text-xs sm:text-sm transition-colors whitespace-nowrap">
-                    Informasi Dasar
+                    Basic Information
                 </button>
                 <button type="button" @click="activeTab = 'products'"
                     :class="activeTab === 'products' ?
                         'bg-white text-blue-700 font-semibold shadow-inner border-b-2 border-blue-500' :
                         'text-slate-500 hover:text-slate-700'"
                     class="px-4 sm:px-6 py-4 text-xs sm:text-sm transition-colors whitespace-nowrap">
-                    Produk & Layanan
+                    Products & Services
                 </button>
                 <button type="button" @click="activeTab = 'development'"
                     :class="activeTab === 'development' ?
                         'bg-white text-purple-700 font-semibold shadow-inner border-b-2 border-purple-500' :
                         'text-slate-500 hover:text-slate-700'"
                     class="px-4 sm:px-6 py-4 text-xs sm:text-sm transition-colors whitespace-nowrap">
-                    Perkembangan Business
+                    Business Development
                 </button>
                 <button type="button" @click="activeTab = 'documents'"
                     :class="activeTab === 'documents' ?
                         'bg-white text-emerald-700 font-semibold shadow-inner border-b-2 border-emerald-500' :
                         'text-slate-500 hover:text-slate-700'"
                     class="px-4 sm:px-6 py-4 text-xs sm:text-sm transition-colors whitespace-nowrap">
-                    Dokumen & Sertifikasi
+                    Documents & Certifications
                 </button>
             </div>
         </div>
@@ -61,7 +61,7 @@
                 {{-- Business Name --}}
                 <div>
                     <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
-                        Nama Business <span class="text-red-500">*</span>
+                        Business Name <span class="text-red-500">*</span>
                     </label>
                     <input type="text" 
                            name="name" 
@@ -78,7 +78,7 @@
                 {{-- Position --}}
                 <div>
                     <label for="position" class="block text-sm font-medium text-gray-700 mb-2">
-                        Posisi Anda
+                        Your Position
                     </label>
                     <input type="text" 
                            name="position" 
@@ -95,13 +95,13 @@
                 <div class="grid md:grid-cols-2 gap-5">
                     <div>
                         <label for="business_type_id" class="block text-sm font-medium text-gray-700 mb-2">
-                            Kategori Business <span class="text-red-500">*</span>
+                            Business Category <span class="text-red-500">*</span>
                         </label>
                         <select name="business_type_id" 
                                 id="business_type_id"
                                 required
                                 class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('business_type_id') border-gray-200 @enderror transition">
-                            <option value="" disabled selected>Pilih Kategori</option>
+                            <option value="" disabled selected>Select Category</option>
                             @foreach($businessTypes as $type)
                                 <option value="{{ $type->id }}" {{ old('business_type_id') == $type->id ? 'selected' : '' }}>
                                     {{ $type->name }}
@@ -115,14 +115,14 @@
 
                     <div>
                         <label for="business_mode" class="block text-sm font-medium text-gray-700 mb-2">
-                            Jenis Offering <span class="text-red-500">*</span>
+                            Offering Type <span class="text-red-500">*</span>
                         </label>
                         <select name="business_mode" 
                                 id="business_mode"
                                 required
                                 x-model="businessMode"
                                 class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('business_mode') border-gray-200 @enderror transition">
-                            <option value="" disabled selected>Pilih Jenis Offering</option>
+                            <option value="" disabled selected>Select Offering Type</option>
                             <option value="product" {{ old('business_mode') == 'product' ? 'selected' : '' }}>Product Only</option>
                             <option value="service" {{ old('business_mode') == 'service' ? 'selected' : '' }}>Service Only</option>
                             <option value="both" {{ old('business_mode') == 'both' ? 'selected' : '' }}>Product & Service</option>
@@ -136,7 +136,7 @@
                 {{-- Description --}}
                 <div>
                     <label for="description" class="block text-sm font-medium text-gray-700 mb-2">
-                        Deskripsi <span class="text-red-500">*</span>
+                        Description <span class="text-red-500">*</span>
                     </label>
                     <textarea name="description" 
                               id="description" 
@@ -144,7 +144,7 @@
                               maxlength="1000"
                               required
                               class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('description') border-gray-200 @enderror transition"
-                              placeholder="Deskripsikan business Anda...">{{ old('description') }}</textarea>
+                              placeholder="Describe your business...">{{ old('description') }}</textarea>
                     <p class="mt-1 text-xs text-gray-500">Max 1000 characters.</p>
                     @error('description')
                         <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
@@ -160,12 +160,12 @@
                 <div class="grid md:grid-cols-2 gap-5">
                     <div>
                         <label for="province" class="block text-sm font-medium text-gray-700 mb-2">
-                            Provinsi
+                            Province
                         </label>
                         <select name="province"
                                 id="province"
                                class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('province') border-gray-200 @enderror transition">
-                            <option value="" disabled selected>Pilih Provinsi</option>
+                            <option value="" disabled selected>Select Province</option>
                             @foreach($provinces as $province)
                                 <option value="{{ $province->name }}" data-id="{{ $province->id }}" {{ old('province') === $province->name ? 'selected' : '' }}>
                                     {{ $province->name }}
@@ -179,7 +179,7 @@
 
                     <div>
                         <label for="city" class="block text-sm font-medium text-gray-700 mb-2">
-                            Kota
+                            City
                         </label>
                         <select name="city"
                                 id="city"
@@ -187,7 +187,7 @@
                                 data-selected-province-id="{{ $selectedProvinceId }}"
                                 class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 disabled:bg-gray-50 disabled:text-gray-500 disabled:border-gray-200 disabled:shadow-inner disabled:cursor-not-allowed @error('city') border-gray-200 @enderror transition"
                                 {{ $selectedProvinceId ? '' : 'disabled' }}>
-                            <option value="" disabled selected>{{ $selectedProvinceId ? 'Pilih Kota/Kabupaten' : 'Pilih Provinsi terlebih dahulu' }}</option>
+                            <option value="" disabled selected>{{ $selectedProvinceId ? 'Select City/Regency' : 'Select Province first' }}</option>
                             @if($selectedCityName)
                                 <option value="{{ $selectedCityName }}" selected>{{ $selectedCityName }}</option>
                             @endif
@@ -201,13 +201,13 @@
                 {{-- Full Address --}}
                 <div>
                     <label for="address" class="block text-sm font-medium text-gray-700 mb-2">
-                        Alamat Lengkap
+                        Full Address
                     </label>
                     <textarea name="address" 
                               id="address" 
                               rows="3"
                               class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('address') border-gray-200 @enderror transition"
-                              placeholder="Alamat lengkap business...">{{ old('address') }}</textarea>
+                              placeholder="Full business address...">{{ old('address') }}</textarea>
                     @error('address')
                         <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -217,7 +217,7 @@
                 <div class="grid md:grid-cols-2 gap-5">
                     <div>
                         <label for="phone" class="block text-sm font-medium text-gray-700 mb-2">
-                            Nomor Telepon
+                            Phone Number
                         </label>
                         <input type="text" 
                                name="phone" 
@@ -248,7 +248,7 @@
 
                 {{-- Logo Upload --}}
                 <div class="md:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 mb-4">Logo Business</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-4">Business Logo</label>
                     
                     <input type="file" name="logo" id="logo" accept="image/*" class="hidden">
                     
@@ -368,77 +368,77 @@
                 @endphp
 
                 <div class="bg-slate-50 border border-slate-200 rounded-xl p-4" x-show="['product', 'both'].includes(businessMode)">
-                    <h3 class="text-sm font-semibold text-slate-700">Produk (bisa tambah banyak)</h3>
-                    <p class="text-xs text-slate-500 mt-1">Tambahkan semua produk langsung di sini.</p>
+                    <h3 class="text-sm font-semibold text-slate-700">Products (can add multiple)</h3>
+                    <p class="text-xs text-slate-500 mt-1">Add all products directly here.</p>
 
                     <div id="productsContainer" class="space-y-3 mt-4">
                         @foreach($oldProducts as $index => $product)
                             <div class="product-item border border-slate-200 rounded-xl p-4 bg-white">
                                 <div class="flex justify-between items-center mb-3">
-                                    <p class="text-xs font-semibold text-slate-500">Produk #{{ $loop->iteration }}</p>
-                                    <button type="button" onclick="this.closest('.product-item').remove()" class="text-xs px-2 py-1 rounded-lg bg-red-50 text-red-600 hover:bg-red-100">Hapus</button>
+                                    <p class="text-xs font-semibold text-slate-500">Product #{{ $loop->iteration }}</p>
+                                    <button type="button" onclick="this.closest('.product-item').remove()" class="text-xs px-2 py-1 rounded-lg bg-red-50 text-red-600 hover:bg-red-100">Delete</button>
                                 </div>
                                 <div class="grid md:grid-cols-2 gap-3">
                                     <div>
-                                        <label class="block text-xs text-slate-600 mb-1">Nama Produk</label>
-                                        <input type="text" name="products[{{ $index }}][name]" value="{{ $product['name'] ?? '' }}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="Contoh: Kopi Arabica 250gr">
+                                        <label class="block text-xs text-slate-600 mb-1">Product Name</label>
+                                        <input type="text" name="products[{{ $index }}][name]" value="{{ $product['name'] ?? '' }}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="Example: Arabica Coffee 250gr">
                                     </div>
                                     <div>
-                                        <label class="block text-xs text-slate-600 mb-1">Harga</label>
+                                        <label class="block text-xs text-slate-600 mb-1">Price</label>
                                         <input type="number" step="0.01" min="0" name="products[{{ $index }}][price]" value="{{ $product['price'] ?? '' }}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="50000">
                                     </div>
                                 </div>
                                 <div class="mt-3">
-                                    <label class="block text-xs text-slate-600 mb-1">Deskripsi</label>
-                                    <textarea name="products[{{ $index }}][description]" rows="2" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="Deskripsi produk...">{{ $product['description'] ?? '' }}</textarea>
+                                    <label class="block text-xs text-slate-600 mb-1">Description</label>
+                                    <textarea name="products[{{ $index }}][description]" rows="2" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="Product description...">{{ $product['description'] ?? '' }}</textarea>
                                 </div>
                             </div>
                         @endforeach
                     </div>
 
-                    <button type="button" onclick="addProductRow()" class="mt-3 px-4 py-2 bg-slate-100 text-gray-700 rounded-xl hover:bg-slate-200 transition text-sm font-medium">+ Tambah Produk</button>
+                    <button type="button" onclick="addProductRow()" class="mt-3 px-4 py-2 bg-slate-100 text-gray-700 rounded-xl hover:bg-slate-200 transition text-sm font-medium">+ Add Product</button>
                 </div>
 
                 <div class="bg-slate-50 border border-slate-200 rounded-xl p-4" x-show="['service', 'both'].includes(businessMode)">
-                    <h3 class="text-sm font-semibold text-slate-700">Layanan (bisa tambah banyak)</h3>
-                    <p class="text-xs text-slate-500 mt-1">Tambahkan semua layanan langsung di sini.</p>
+                    <h3 class="text-sm font-semibold text-slate-700">Services (can add multiple)</h3>
+                    <p class="text-xs text-slate-500 mt-1">Add all services directly here.</p>
 
                     <div id="servicesContainer" class="space-y-3 mt-4">
                         @foreach($oldServices as $index => $service)
                             <div class="service-item border border-slate-200 rounded-xl p-4 bg-white">
                                 <div class="flex justify-between items-center mb-3">
-                                    <p class="text-xs font-semibold text-slate-500">Layanan #{{ $loop->iteration }}</p>
-                                    <button type="button" onclick="this.closest('.service-item').remove()" class="text-xs px-2 py-1 rounded-lg bg-red-50 text-red-600 hover:bg-red-100">Hapus</button>
+                                    <p class="text-xs font-semibold text-slate-500">Service #{{ $loop->iteration }}</p>
+                                    <button type="button" onclick="this.closest('.service-item').remove()" class="text-xs px-2 py-1 rounded-lg bg-red-50 text-red-600 hover:bg-red-100">Delete</button>
                                 </div>
                                 <div class="grid md:grid-cols-3 gap-3">
                                     <div>
-                                        <label class="block text-xs text-slate-600 mb-1">Nama Layanan</label>
-                                        <input type="text" name="services[{{ $index }}][name]" value="{{ $service['name'] ?? '' }}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="Contoh: Konsultasi Branding">
+                                        <label class="block text-xs text-slate-600 mb-1">Service Name</label>
+                                        <input type="text" name="services[{{ $index }}][name]" value="{{ $service['name'] ?? '' }}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="Example: Branding Consultation">
                                     </div>
                                     <div>
-                                        <label class="block text-xs text-slate-600 mb-1">Tipe Harga</label>
+                                        <label class="block text-xs text-slate-600 mb-1">Price Type</label>
                                         <input type="text" name="services[{{ $index }}][price_type]" value="{{ $service['price_type'] ?? 'fixed' }}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="fixed / per session / per hour">
                                     </div>
                                     <div>
-                                        <label class="block text-xs text-slate-600 mb-1">Harga</label>
+                                        <label class="block text-xs text-slate-600 mb-1">Price</label>
                                         <input type="number" step="0.01" min="0" name="services[{{ $index }}][price]" value="{{ $service['price'] ?? '' }}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="150000">
                                     </div>
                                 </div>
                                 <div class="mt-3">
-                                    <label class="block text-xs text-slate-600 mb-1">Deskripsi</label>
-                                    <textarea name="services[{{ $index }}][description]" rows="2" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="Deskripsi layanan...">{{ $service['description'] ?? '' }}</textarea>
+                                    <label class="block text-xs text-slate-600 mb-1">Description</label>
+                                    <textarea name="services[{{ $index }}][description]" rows="2" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="Service description...">{{ $service['description'] ?? '' }}</textarea>
                                 </div>
                             </div>
                         @endforeach
                     </div>
 
-                    <button type="button" onclick="addServiceRow()" class="mt-3 px-4 py-2 bg-slate-100 text-gray-700 rounded-xl hover:bg-slate-200 transition text-sm font-medium">+ Tambah Layanan</button>
+                    <button type="button" onclick="addServiceRow()" class="mt-3 px-4 py-2 bg-slate-100 text-gray-700 rounded-xl hover:bg-slate-200 transition text-sm font-medium">+ Add Service</button>
                 </div>
 
                 {{-- Product Name --}}
                 <div>
                     <label for="product_name" class="block text-sm font-medium text-gray-700 mb-2">
-                        Nama Produk/Layanan Utama
+                        Primary Product/Service Name
                     </label>
                     <input type="text" 
                            name="product_name" 
@@ -454,13 +454,13 @@
                 {{-- Product Description --}}
                 <div>
                     <label for="product_description" class="block text-sm font-medium text-gray-700 mb-2">
-                        Deskripsi Produk/Layanan
+                        Product/Service Description
                     </label>
                     <textarea name="product_description" 
                               id="product_description" 
                               rows="4"
                               class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('product_description') border-gray-200 @enderror transition"
-                              placeholder="Jelaskan produk/layanan yang Anda tawarkan...">{{ old('product_description') }}</textarea>
+                              placeholder="Describe the products/services you offer...">{{ old('product_description') }}</textarea>
                     @error('product_description')
                         <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -469,13 +469,13 @@
                 {{-- Unique Value Proposition --}}
                 <div>
                     <label for="unique_value_proposition" class="block text-sm font-medium text-gray-700 mb-2">
-                        Keunikan/Nilai Lebih Produk
+                        Unique Value Proposition
                     </label>
                     <textarea name="unique_value_proposition" 
                               id="unique_value_proposition" 
                               rows="3"
                               class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('unique_value_proposition') border-gray-200 @enderror transition"
-                              placeholder="Apa yang membuat produk Anda berbeda dari kompetitor?">{{ old('unique_value_proposition') }}</textarea>
+                              placeholder="What makes your product different from competitors?">{{ old('unique_value_proposition') }}</textarea>
                     @error('unique_value_proposition')
                         <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -500,7 +500,7 @@
                 {{-- Customer Base --}}
                 <div>
                     <label for="customer_base_size" class="block text-sm font-medium text-gray-700 mb-2">
-                        Jumlah Customer Aktif
+                        Customer Base Size
                     </label>
                     <input type="number" 
                            name="customer_base_size" 
@@ -521,7 +521,7 @@
                 <div class="grid md:grid-cols-2 gap-5">
                     <div>
                         <label for="establishment_date" class="block text-sm font-medium text-gray-700 mb-2">
-                            Tanggal Berdiri
+                            Established Date
                         </label>
                         <input type="date" 
                                name="establishment_date" 
@@ -535,15 +535,15 @@
 
                     <div>
                         <label for="operational_status" class="block text-sm font-medium text-gray-700 mb-2">
-                            Status Operasional
+                            Operational Status
                         </label>
                         <select name="operational_status" 
                                 id="operational_status"
                                 class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('operational_status') border-gray-200 @enderror transition">
-                            <option value="">Pilih Status</option>
-                            <option value="active" {{ old('operational_status') == 'active' ? 'selected' : '' }}>Aktif</option>
-                            <option value="inactive" {{ old('operational_status') == 'inactive' ? 'selected' : '' }}>Tidak Aktif</option>
-                            <option value="seasonal" {{ old('operational_status') == 'seasonal' ? 'selected' : '' }}>Musiman</option>
+                            <option value="">Select Status</option>
+                            <option value="active" {{ old('operational_status') == 'active' ? 'selected' : '' }}>Active</option>
+                            <option value="inactive" {{ old('operational_status') == 'inactive' ? 'selected' : '' }}>Inactive</option>
+                            <option value="seasonal" {{ old('operational_status') == 'seasonal' ? 'selected' : '' }}>Seasonal</option>
                         </select>
                         @error('operational_status')
                             <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
@@ -555,7 +555,7 @@
                 <div class="grid md:grid-cols-2 gap-5">
                     <div>
                         <label for="employee_count" class="block text-sm font-medium text-gray-700 mb-2">
-                            Jumlah Karyawan
+                            Employee Count
                         </label>
                         <input type="number" 
                                name="employee_count" 
@@ -571,16 +571,16 @@
 
                     <div>
                         <label for="revenue_range" class="block text-sm font-medium text-gray-700 mb-2">
-                            Range Pendapatan (per bulan)
+                            Revenue Range (per month)
                         </label>
                         <select name="revenue_range" 
                                 id="revenue_range"
                                 class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('revenue_range') border-gray-200 @enderror transition">
-                            <option value="">Pilih Range</option>
-                            <option value="< 10jt" {{ old('revenue_range') == '< 10jt' ? 'selected' : '' }}>< 10 Juta</option>
-                            <option value="10jt - 50jt" {{ old('revenue_range') == '10jt - 50jt' ? 'selected' : '' }}>10 - 50 Juta</option>
-                            <option value="50jt - 100jt" {{ old('revenue_range') == '50jt - 100jt' ? 'selected' : '' }}>50 - 100 Juta</option>
-                            <option value="> 100jt" {{ old('revenue_range') == '> 100jt' ? 'selected' : '' }}>> 100 Juta</option>
+                            <option value="">Select Range</option>
+                            <option value="< 10jt" {{ old('revenue_range') == '< 10jt' ? 'selected' : '' }}>< 10 Million</option>
+                            <option value="10jt - 50jt" {{ old('revenue_range') == '10jt - 50jt' ? 'selected' : '' }}>10 - 50 Million</option>
+                            <option value="50jt - 100jt" {{ old('revenue_range') == '50jt - 100jt' ? 'selected' : '' }}>50 - 100 Million</option>
+                            <option value="> 100jt" {{ old('revenue_range') == '> 100jt' ? 'selected' : '' }}>> 100 Million</option>
                         </select>
                         @error('revenue_range')
                             <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
@@ -591,20 +591,20 @@
                 {{-- Business Challenges (Dynamic) --}}
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Tantangan Business
+                        Business Challenges
                     </label>
                     <div id="challengesContainer" class="space-y-3">
                         <div class="flex gap-2">
                             <input type="text" 
                                    name="business_challenges[]" 
                                    class="flex-1 px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 transition"
-                                   placeholder="e.g., Keterbatasan modal">
+                                   placeholder="e.g., Limited capital">
                         </div>
                     </div>
                     <button type="button" 
                             onclick="addChallenge()"
                             class="mt-3 px-4 py-2 bg-slate-100 text-gray-700 rounded-xl hover:bg-slate-200 transition text-sm font-medium">
-                        + Tambah Tantangan
+                        + Add Challenge
                     </button>
                     @error('business_challenges')
                         <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
@@ -613,9 +613,6 @@
             </div>
 
             {{-- TAB 4: DOCUMENTS & CERTIFICATIONS --}}
-            <div x-show="activeTab === 'documents'" class="bg-white border-x border-b border-slate-200 rounded-b-xl shadow-sm p-8 space-y-6">
-                <div>
-            {{-- TAB 4: DOCUMENTS --}}
             <div x-show="activeTab === 'documents'"
                 class="bg-white border-x border-b border-slate-200 rounded-b-2xl shadow-sm p-8 space-y-8" style="display: none;">
                 
@@ -630,7 +627,7 @@
                         addFiles(newFiles) {
                             const validFiles = newFiles.filter(f => f.size <= 20 * 1024 * 1024);
                             if (newFiles.length !== validFiles.length) {
-                                showValidationToast('Gagal: Beberapa file terlalu besar (Maksimal 20MB per file).');
+                                showValidationToast('Failed: Some files are too large (Max 20MB per file).');
                             }
                             this.files = [...this.files, ...validFiles];
                             this.syncInput();
@@ -647,7 +644,7 @@
                         megabytes(b) { return (b / (1024 * 1024)).toFixed(2) + ' MB'; }
                     }">
                         <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Dokumen Legal (Bisa banyak file)
+                            Legal Documents (Can add multiple)
                         </label>
                         <div class="relative group" @dragover.prevent @drop="handleDrop">
                             <label
@@ -661,7 +658,7 @@
                                     <div class="flex-1 min-w-0">
                                         <p
                                             class="text-sm font-semibold text-slate-700 group-hover:text-uco-orange-700 truncate">
-                                            Pilih Dokumen
+                                            Select Documents
                                         </p>
                                         <p class="text-[10px] text-slate-500 truncate">Format PDF/JPG/PNG (Max 20MB)
                                         </p>
@@ -715,7 +712,7 @@
                         addFiles(newFiles) {
                             const validFiles = newFiles.filter(f => f.size <= 20 * 1024 * 1024);
                             if (newFiles.length !== validFiles.length) {
-                                showValidationToast('Gagal: Beberapa file terlalu besar (Maksimal 20MB per file).');
+                                showValidationToast('Failed: Some files are too large (Max 20MB per file).');
                             }
                             this.files = [...this.files, ...validFiles];
                             this.syncInput();
@@ -732,7 +729,7 @@
                         megabytes(b) { return (b / (1024 * 1024)).toFixed(2) + ' MB'; }
                     }">
                         <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Sertifikasi Produk (Bisa banyak file)
+                            Product Certifications (Can add multiple)
                         </label>
 
                         <div class="relative group" @dragover.prevent @drop="handleDrop">
@@ -747,7 +744,7 @@
                                     <div class="flex-1 min-w-0">
                                         <p
                                             class="text-sm font-semibold text-slate-700 group-hover:text-uco-orange-700 truncate">
-                                            Pilih Sertifikasi
+                                            Select Certification
                                         </p>
                                         <p class="text-[10px] text-slate-500 truncate">Format PDF/JPG/PNG (Max 20MB)
                                         </p>

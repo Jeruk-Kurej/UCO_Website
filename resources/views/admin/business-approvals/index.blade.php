@@ -63,7 +63,7 @@
                                     {{ $b->businessType->name }}
                                 </span>
                                 <div class="flex items-center justify-between gap-2">
-                                    <h3 class="text-xl font-bold text-gray-900 group-hover:text-uco-orange-600 transition-colors line-clamp-1">{{ $b->name }}</h3>
+                                    <h3 class="text-xl font-bold text-gray-900 line-clamp-1">{{ $b->name }}</h3>
                                     <span class="text-xs text-gray-400 whitespace-nowrap">{{ $b->created_at->diffForHumans() }}</span>
                                 </div>
                                 <p class="text-xs text-uco-orange-600 font-semibold mt-1">Owner: {{ $b->user->name }}</p>
@@ -82,16 +82,9 @@
 
                             <div class="flex items-center gap-3 pt-5 border-t border-gray-100 mt-auto">
                                 <a href="{{ route('admin.business-approvals.show', $b) }}" 
-                                   class="flex-1 inline-flex items-center justify-center px-4 py-2.5 bg-gray-900 text-white text-sm font-bold rounded-xl hover:bg-gray-800 transition-all">
+                                   class="flex-1 inline-flex items-center justify-center px-4 py-2.5 bg-gray-900 text-white text-sm font-bold rounded-xl hover:bg-gray-800 transition-all shadow-lg shadow-gray-200">
                                     Review Details
                                 </a>
-                                
-                                <form action="{{ route('admin.business-approvals.approve', $b) }}" method="POST" class="contents">
-                                    @csrf
-                                    <button type="submit" class="w-11 h-11 flex items-center justify-center bg-green-500 text-white rounded-xl hover:bg-green-600 transition-all shadow-lg shadow-green-100" title="Approve Immediately">
-                                        <i class="bi bi-check-lg text-lg"></i>
-                                    </button>
-                                </form>
                             </div>
                         </div>
                     </div>

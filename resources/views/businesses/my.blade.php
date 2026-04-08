@@ -74,7 +74,7 @@
 
                             @if($b->status === 'rejected' && $b->rejection_reason)
                                 <div class="mb-4 p-3 bg-red-50 border border-red-100 rounded-xl">
-                                    <p class="text-[10px] font-bold text-red-600 uppercase tracking-wider mb-1">Feedback perbaikan:</p>
+                                    <p class="text-[10px] font-bold text-red-600 uppercase tracking-wider mb-1">Revision Feedback:</p>
                                     <p class="text-xs text-red-700 italic">"{{ $b->rejection_reason }}"</p>
                                 </div>
                             @endif

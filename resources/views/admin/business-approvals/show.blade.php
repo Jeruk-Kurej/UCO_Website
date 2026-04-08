@@ -68,7 +68,7 @@
                         </h3>
                         <dl class="space-y-4">
                             <div>
-                                <dt class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Business Mode</dt>
+                                <p class="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">Business Mode</p>
                                 <dd class="text-sm font-semibold text-gray-700 capitalize">{{ $business->business_mode }}</dd>
                             </div>
                             <div>
@@ -80,7 +80,7 @@
                                 <dd class="text-sm font-semibold text-gray-700">{{ $business->employee_count ?: 'N/A' }} employees</dd>
                             </div>
                             <div>
-                                <dt class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Revenue Range</dt>
+                                <p class="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">Category / Type</p>
                                 <dd class="text-sm font-semibold text-gray-700">{{ $business->revenue_range ?: 'N/A' }}</dd>
                             </div>
                         </dl>
@@ -98,7 +98,7 @@
                                 <dd class="text-sm font-semibold text-gray-700">{{ $business->address ?: 'N/A' }}</dd>
                             </div>
                             <div>
-                                <dt class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">City / Province</dt>
+                                <p class="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">Owner / Position</p>
                                 <dd class="text-sm font-semibold text-gray-700">{{ $business->city ?: 'N/A' }}, {{ $business->province ?: 'N/A' }}</dd>
                             </div>
                             @if($business->phone)
@@ -130,20 +130,21 @@
 
                 {{-- Action Card --}}
                 <div class="bg-white border border-gray-200 rounded-3xl p-8 shadow-xl">
-                    <h3 class="text-xl font-black text-gray-900 mb-6">Moderation</h3>
+                    <h2 class="text-lg font-bold text-slate-800 mb-4">Moderation Action</h2>
                     
                     <div class="space-y-4">
                         <form action="{{ route('admin.business-approvals.approve', $business) }}" method="POST">
                             @csrf
-                            <button type="submit" class="w-full py-4 bg-green-500 text-white font-black rounded-2xl hover:bg-green-600 transition-all hover:-translate-y-1 shadow-lg shadow-green-100 flex items-center justify-center gap-2">
-                                <i class="bi bi-check-circle-fill text-lg"></i>
-                                Approve Business
+                            <button type="submit" name="status" value="approved"
+                                    class="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold shadow-lg shadow-emerald-200 transition-all duration-200">
+                                <i class="bi bi-check-circle-fill"></i>
+                                <span>Approve Business</span>
                             </button>
                         </form>
-                        
-                        <button @click="showRejectModal = true" class="w-full py-4 bg-white border-2 border-red-100 text-red-500 font-black rounded-2xl hover:bg-red-50 transition-all flex items-center justify-center gap-2">
-                            <i class="bi bi-x-circle-fill text-lg"></i>
-                            Reject / Needs Revision
+                        <button @click="showRejectModal = true"
+                                class="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-white hover:bg-red-50 border-2 border-red-500 text-red-600 rounded-xl font-bold transition-all duration-200">
+                            <i class="bi bi-x-circle-fill"></i>
+                            <span>Reject / Revise</span>
                         </button>
                     </div>
                     
@@ -158,7 +159,11 @@
         <div x-show="showRejectModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm">
             <div @click.away="showRejectModal = false" class="bg-white w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden p-8 reveal-on-scroll">
                 <div class="flex items-center justify-between mb-6">
-                    <h3 class="text-2xl font-black text-gray-900">Provide Feedback</h3>
+                    <div>
+                        <p class="text-xs uppercase tracking-widest font-semibold text-uco-orange-600">Moderation System</p>
+                        <h1 class="text-2xl sm:text-3xl font-bold text-slate-800 mt-1">Approval Details</h1>
+                        <p class="text-slate-600 mt-2 text-sm sm:text-base">Review the business details carefully before making a decision</p>
+                    </div>
                     <button @click="showRejectModal = false" class="text-gray-400 hover:text-gray-600">
                         <i class="bi bi-x-lg"></i>
                     </button>
@@ -167,8 +172,10 @@
                 <form action="{{ route('admin.business-approvals.reject', $business) }}" method="POST">
                     @csrf
                     <div class="mb-8">
-                        <label class="block text-sm font-bold text-gray-700 mb-2">Rejection Reason / Revision Notes</label>
-                        <textarea name="rejection_reason" required rows="5" class="w-full rounded-2xl border-gray-200 focus:border-red-500 focus:ring-red-500/20 transition-all italic text-gray-600 px-4 py-3" placeholder="Tell the owner what needs to be fixed..."></textarea>
+                        <label for="rejection_reason" class="block text-sm font-semibold text-slate-700 mb-2">Rejection Reason / Revision Notes</label>
+                        <textarea name="rejection_reason" id="rejection_reason" rows="4" 
+                                  class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-red-500 focus:border-red-500 transition-all duration-200 text-sm"
+                                  placeholder="Provide a reason if rejecting or requesting a revision..."></textarea>
                     </div>
                     
                     <div class="flex items-center gap-4">
