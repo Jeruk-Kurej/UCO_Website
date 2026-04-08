@@ -719,11 +719,21 @@
                             <div class="mb-3 p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
                                 <p class="text-xs font-semibold text-slate-600">Dokumen saat ini:</p>
                                 @foreach ($legalDocs as $index => $doc)
+                                    @php
+                                        $docUrl = storage_image_url($doc['file_path'] ?? null);
+                                    @endphp
                                     <label class="flex items-center justify-between gap-3 text-xs">
-                                        <a href="{{ Storage::disk(config('filesystems.default'))->url($doc['file_path']) }}"
-                                            target="_blank" class="text-blue-600 hover:underline truncate">
-                                            {{ $doc['original_name'] ?? basename($doc['file_path']) }}
-                                        </a>
+                                        @if ($docUrl)
+                                            <a href="{{ $docUrl }}" target="_blank"
+                                                class="text-blue-600 hover:underline truncate">
+                                                {{ $doc['original_name'] ?? basename($doc['file_path']) }}
+                                            </a>
+                                        @else
+                                            <span class="truncate text-gray-500">
+                                                {{ $doc['original_name'] ?? basename($doc['file_path']) }}
+                                                (file not found)
+                                            </span>
+                                        @endif
                                         <span class="inline-flex items-center gap-2 shrink-0">
                                             <input type="checkbox" name="remove_legal_docs[]"
                                                 value="{{ $index }}"
@@ -825,11 +835,21 @@
                             <div class="mb-3 p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
                                 <p class="text-xs font-semibold text-slate-600">Sertifikasi saat ini:</p>
                                 @foreach ($certifications as $index => $cert)
+                                    @php
+                                        $certUrl = storage_image_url($cert['file_path'] ?? null);
+                                    @endphp
                                     <label class="flex items-center justify-between gap-3 text-xs">
-                                        <a href="{{ Storage::disk(config('filesystems.default'))->url($cert['file_path']) }}"
-                                            target="_blank" class="text-blue-600 hover:underline truncate">
-                                            {{ $cert['original_name'] ?? basename($cert['file_path']) }}
-                                        </a>
+                                        @if ($certUrl)
+                                            <a href="{{ $certUrl }}" target="_blank"
+                                                class="text-blue-600 hover:underline truncate">
+                                                {{ $cert['original_name'] ?? basename($cert['file_path']) }}
+                                            </a>
+                                        @else
+                                            <span class="truncate text-gray-500">
+                                                {{ $cert['original_name'] ?? basename($cert['file_path']) }}
+                                                (file not found)
+                                            </span>
+                                        @endif
                                         <span class="inline-flex items-center gap-2 shrink-0">
                                             <input type="checkbox" name="remove_certifications[]"
                                                 value="{{ $index }}"

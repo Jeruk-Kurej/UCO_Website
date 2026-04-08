@@ -44,15 +44,28 @@
                 {{-- Main Gallery Card --}}
                 <div class="bg-white border border-gray-200 rounded-3xl overflow-hidden shadow-sm">
                     @php
-                        $photoUrls = $product->photos->map(function($photo) {
-                            return Storage::disk(config('filesystems.default'))->url($photo->photo_url);
-                        });
+                        $galleryPhotos = $product->photos->map(function ($photo) {
+                            $full = storage_image_url($photo->photo_url, 'gallery_full');
+                            $thumb = storage_image_url($photo->photo_url, 'gallery_thumb');
+
+                            if (!$full && !$thumb) {
+                                return null;
+                            }
+
+                            return [
+                                'full' => $full ?: $thumb,
+                                'thumb' => $thumb ?: $full,
+                            ];
+                        })->filter()->values();
+
+                        $photoUrls = $galleryPhotos->pluck('full')->values();
+                        $thumbnailUrls = $galleryPhotos->pluck('thumb')->values();
                     @endphp
 
-                    @if($product->photos->count() > 0)
+                    @if($photoUrls->count() > 0)
                         <div x-data="{ 
                             activePhotoIndex: 0,
-                            photos: {{ json_encode($photoUrls) }},
+                            photos: @js($photoUrls),
                             fullscreenOpen: false,
                             next() { this.activePhotoIndex = (this.activePhotoIndex + 1) % this.photos.length },
                             prev() { this.activePhotoIndex = (this.activePhotoIndex - 1 + this.photos.length) % this.photos.length }
@@ -66,7 +79,7 @@
                                      alt="{{ $product->name }}">
                                 
                                 {{-- Navigation Overlays --}}
-                                @if($product->photos->count() > 1)
+                                @if($photoUrls->count() > 1)
                                     <button @click="prev()" @click.stop
                                             class="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/30 backdrop-blur-md text-white border border-white/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-black/50 hover:scale-110">
                                         <i class="bi bi-chevron-left text-xl"></i>
@@ -79,13 +92,13 @@
                             </div>
 
                             {{-- Thumbnails Container --}}
-                            @if($product->photos->count() > 1)
+                            @if($thumbnailUrls->count() > 1)
                                 <div class="flex items-center gap-3 mt-4 sm:mt-6 overflow-x-auto pt-2 pb-4 scrollbar-hide px-1">
-                                    @foreach($product->photos as $index => $photo)
+                                    @foreach($thumbnailUrls as $index => $thumbnailUrl)
                                         <button @click="activePhotoIndex = {{ $index }}"
                                                 :class="activePhotoIndex === {{ $index }} ? 'ring-2 ring-uco-orange-500 ring-offset-2 scale-95 border-transparent shadow-lg' : 'border-gray-200 hover:border-uco-orange-300 opacity-60 hover:opacity-100'"
                                                 class="relative flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border-2 transition-all duration-300">
-                                            <img src="{{ Storage::disk(config('filesystems.default'))->url($photo->photo_url) }}" 
+                                            <img src="{{ $thumbnailUrl }}" 
                                                  class="w-full h-full object-cover"
                                                  alt="Thumbnail">
                                         </button>

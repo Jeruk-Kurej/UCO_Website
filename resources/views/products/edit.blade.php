@@ -81,10 +81,20 @@
                         @if($product->photos->count() > 0)
                             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                                 @foreach($product->photos as $photo)
+                                    @php
+                                        $photoUrl = storage_image_url($photo->photo_url, 'gallery_thumb');
+                                    @endphp
                                     <div class="group relative aspect-square rounded-xl overflow-hidden border border-gray-200 shadow-sm bg-gray-50">
-                                        <img src="{{ Storage::disk(config('filesystems.default'))->url($photo->photo_url) }}" 
-                                             class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                                             alt="Product Photo">
+                                        @if($photoUrl)
+                                            <img src="{{ $photoUrl }}" 
+                                                 class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                                 alt="Product Photo">
+                                        @else
+                                            <div class="w-full h-full flex flex-col items-center justify-center text-gray-400 bg-gray-100 p-3 text-center">
+                                                <i class="bi bi-image text-2xl mb-1"></i>
+                                                <span class="text-[11px] font-semibold leading-tight">Photo missing from storage</span>
+                                            </div>
+                                        @endif
                                         <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                                             <button type="button"
                                                     onclick="confirmDeletePhoto('{{ $photo->id }}')"

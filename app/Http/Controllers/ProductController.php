@@ -7,7 +7,6 @@ use App\Models\Product;
 use App\Models\User;
 use App\Models\ProductPhoto;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
 
 class ProductController extends Controller
@@ -97,7 +96,7 @@ class ProductController extends Controller
             // Handle Photo Uploads
             if ($request->hasFile('photos')) {
                 foreach ($request->file('photos') as $photoFile) {
-                    $path = $photoFile->store('products', 'public');
+                    $path = $photoFile->store('products', config('filesystems.default'));
                     ProductPhoto::create([
                         'product_id' => $product->id,
                         'photo_url' => $path,
@@ -180,7 +179,7 @@ class ProductController extends Controller
         // Handle Additional Photo Uploads
         if ($request->hasFile('photos')) {
             foreach ($request->file('photos') as $photoFile) {
-                $path = $photoFile->store('products', 'public');
+                $path = $photoFile->store('products', config('filesystems.default'));
                 ProductPhoto::create([
                     'product_id' => $product->id,
                     'photo_url' => $path,
