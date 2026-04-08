@@ -771,7 +771,7 @@
                                 @if ($canManageBusiness && $business->products->count() > 0)
                                     <div class="flex items-center gap-2">
                                         <a href="{{ route('businesses.product-categories.index', $business) }}"
-                                            class="inline-flex items-center px-3 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-50 transition duration-150">
+                                            class="inline-flex items-center px-3 py-2 bg-uco-orange-500  text-white text-sm font-bold font-medium rounded-xl">
                                             <i class="bi bi-tags me-2"></i>
                                             Manage Categories
                                         </a>
