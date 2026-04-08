@@ -43,8 +43,17 @@
                                 @endif
                             </div>
 
+                            {{-- Status Badge (Dynamic based on status) --}}
+                            <div class="absolute top-4 left-4 flex gap-2">
+                                <div class="px-2.5 py-1 rounded-lg shadow-sm flex items-center gap-1.5 text-[10px] font-black uppercase
+                                    {{ $b->status === 'approved' ? 'bg-green-500 text-white' : ($b->status === 'rejected' ? 'bg-red-500 text-white' : 'bg-uco-orange-500 text-white') }}">
+                                    <i class="bi {{ $b->status === 'approved' ? 'bi-check-circle-fill' : ($b->status === 'rejected' ? 'bi-x-circle-fill' : 'bi-hourglass-split') }}"></i>
+                                    {{ $b->status_label }}
+                                </div>
+                            </div>
+
                             {{-- Featured Badge --}}
-                            @if($b->is_featured)
+                            @if($b->is_featured && $b->status === 'approved')
                                 <div class="absolute top-4 right-4 bg-yellow-400 text-yellow-900 text-[10px] font-black uppercase px-2.5 py-1 rounded-lg shadow-sm flex items-center gap-1.5">
                                     <i class="bi bi-star-fill"></i> Featured
                                 </div>
@@ -59,9 +68,16 @@
                                 <h3 class="text-xl font-bold text-gray-900 group-hover:text-uco-orange-600 transition-colors line-clamp-1">{{ $b->name }}</h3>
                             </div>
                             
-                            <p class="text-sm text-gray-500 line-clamp-2 mb-6 flex-1 italic text-left">
+                            <p class="text-sm text-gray-500 line-clamp-2 mb-4 flex-1 italic text-left">
                                 {{ $b->description ?: 'No description provided' }}
                             </p>
+
+                            @if($b->status === 'rejected' && $b->rejection_reason)
+                                <div class="mb-4 p-3 bg-red-50 border border-red-100 rounded-xl">
+                                    <p class="text-[10px] font-bold text-red-600 uppercase tracking-wider mb-1">Feedback perbaikan:</p>
+                                    <p class="text-xs text-red-700 italic">"{{ $b->rejection_reason }}"</p>
+                                </div>
+                            @endif
 
                             <div class="flex items-center justify-end pt-5 border-t border-gray-100 mt-auto">
                                 <div class="text-uco-orange-500 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all">

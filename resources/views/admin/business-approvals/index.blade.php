@@ -1,0 +1,114 @@
+<x-app-layout>
+    <div class="w-full max-w-[1600px] 2xl:max-w-[1720px] mx-auto py-8">
+        {{-- Page Header --}}
+        <div class="mb-12 reveal-on-scroll">
+            <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                <div>
+                    <h1 class="text-4xl font-extrabold text-gray-900 tracking-tight mb-2">Business Approvals</h1>
+                    <p class="text-lg text-gray-500 max-w-2xl leading-relaxed mb-0">Review and moderate business registrations before they go public.</p>
+                </div>
+                
+                <div class="flex bg-gray-100 p-1 rounded-2xl">
+                    <a href="{{ route('admin.business-approvals.index', ['status' => 'pending']) }}" 
+                       class="px-6 py-2.5 rounded-xl text-sm font-bold transition-all {{ $status === 'pending' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700' }}">
+                        Pending
+                    </a>
+                    <a href="{{ route('admin.business-approvals.index', ['status' => 'rejected']) }}" 
+                       class="px-6 py-2.5 rounded-xl text-sm font-bold transition-all {{ $status === 'rejected' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700' }}">
+                        Rejected
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        @if($businesses->count() > 0)
+            {{-- Businesses Grid --}}
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 mb-12">
+                @foreach($businesses as $b)
+                    <div class="group bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-2xl hover:border-uco-orange-300 transition-all duration-500 overflow-hidden flex flex-col reveal-on-scroll">
+                        {{-- Cover Image / Logo --}}
+                        <div class="h-48 bg-gray-50 relative overflow-hidden">
+                            @php 
+                                $cover = $b->photos->where('is_primary', true)->first()?->photo_path ?? ($b->photos->first()?->photo_path ?? null);
+                                $coverUrl = $cover ? storage_image_url($cover, 'preview') : null;
+                            @endphp
+                            @if($coverUrl)
+                                <img src="{{ $coverUrl }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                            @else
+                                <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-200">
+                                    <i class="bi bi-shop text-5xl text-gray-300"></i>
+                                </div>
+                            @endif
+                            
+                            {{-- Logo Overlay --}}
+                            <div class="absolute bottom-4 left-4">
+                                @php $logo = $b->logo_url ? storage_image_url($b->logo_url, 'logo_thumb') : null; @endphp
+                                @if($logo)
+                                    <img src="{{ $logo }}" class="w-16 h-16 rounded-xl bg-white p-1.5 shadow-lg border border-white">
+                                @endif
+                            </div>
+
+                            {{-- Status Badge --}}
+                            <div class="absolute top-4 left-4">
+                                <span class="px-2.5 py-1 rounded-lg bg-soft-gray-900 text-white text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5">
+                                    <i class="bi {{ $b->status === 'rejected' ? 'bi-x-circle-fill' : 'bi-hourglass-split' }}"></i>
+                                    {{ $b->status_label }}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="p-6 flex-1 flex flex-col">
+                            <div class="mb-4 text-left">
+                                <span class="inline-block px-2.5 py-1 rounded-lg bg-soft-gray-100 text-soft-gray-600 text-[10px] font-bold uppercase tracking-wider mb-2">
+                                    {{ $b->businessType->name }}
+                                </span>
+                                <div class="flex items-center justify-between gap-2">
+                                    <h3 class="text-xl font-bold text-gray-900 group-hover:text-uco-orange-600 transition-colors line-clamp-1">{{ $b->name }}</h3>
+                                    <span class="text-xs text-gray-400 whitespace-nowrap">{{ $b->created_at->diffForHumans() }}</span>
+                                </div>
+                                <p class="text-xs text-uco-orange-600 font-semibold mt-1">Owner: {{ $b->user->name }}</p>
+                            </div>
+                            
+                            <p class="text-sm text-gray-500 line-clamp-2 mb-6 flex-1 italic text-left">
+                                {{ $b->description ?: 'No description provided' }}
+                            </p>
+
+                            @if($b->status === 'rejected' && $b->rejection_reason)
+                                <div class="mb-6 p-3 bg-red-50 border border-red-100 rounded-xl">
+                                    <p class="text-[10px] font-bold text-red-600 uppercase tracking-wider mb-1">Previous Rejection Reason:</p>
+                                    <p class="text-xs text-red-700 italic line-clamp-2">"{{ $b->rejection_reason }}"</p>
+                                </div>
+                            @endif
+
+                            <div class="flex items-center gap-3 pt-5 border-t border-gray-100 mt-auto">
+                                <a href="{{ route('admin.business-approvals.show', $b) }}" 
+                                   class="flex-1 inline-flex items-center justify-center px-4 py-2.5 bg-gray-900 text-white text-sm font-bold rounded-xl hover:bg-gray-800 transition-all">
+                                    Review Details
+                                </a>
+                                
+                                <form action="{{ route('admin.business-approvals.approve', $b) }}" method="POST" class="contents">
+                                    @csrf
+                                    <button type="submit" class="w-11 h-11 flex items-center justify-center bg-green-500 text-white rounded-xl hover:bg-green-600 transition-all shadow-lg shadow-green-100" title="Approve Immediately">
+                                        <i class="bi bi-check-lg text-lg"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+            
+            <div class="mt-8">
+                {{ $businesses->links() }}
+            </div>
+        @else
+            <div class="bg-white border-2 border-dashed border-gray-200 rounded-3xl p-20 text-center reveal-on-scroll">
+                <div class="w-24 h-24 bg-soft-gray-50 text-soft-gray-300 rounded-full flex items-center justify-center mx-auto mb-8 shadow-inner">
+                    <i class="bi bi-journal-check text-5xl"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-900 mb-4">No Pending Approvals</h2>
+                <p class="text-gray-500 max-w-md mx-auto leading-relaxed italic">Everything is up to date! There are no businesses waiting for approval at the moment.</p>
+            </div>
+        @endif
+    </div>
+</x-app-layout>

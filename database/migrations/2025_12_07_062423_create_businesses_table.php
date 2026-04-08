@@ -49,6 +49,9 @@ return new class extends Migration
             $table->json('business_challenges')->nullable()->comment('Array of challenges');
             $table->json('additional_data')->nullable()->comment('Extended business data');
 
+            $table->string('status')->default('pending')->index();
+            $table->text('rejection_reason')->nullable();
+
             $table->timestamps();
         });
     }

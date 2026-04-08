@@ -18,10 +18,11 @@ class DatabaseSeeder extends Seeder
 
         // Call seeders in dependency order
         $this->call([
-            UserSeeder::class,              // 1. Create users first
-            BusinessTypeSeeder::class,      // 2. Create business types
-            ContactTypeSeeder::class,       // 3. Create contact types
-            DummyBusinessSeeder::class,     // 4. Create dummy businesses with products and services
+            IndoRegionSeeder::class,        // 1. Seed geographical data (Provinces, Regencies, etc.)
+            UserSeeder::class,              // 2. Create users
+            BusinessTypeSeeder::class,      // 3. Create business types
+            ContactTypeSeeder::class,       // 4. Create contact types
+            DummyBusinessSeeder::class,     // 5. Create dummy businesses
         ]);
 
         $this->command->newLine();

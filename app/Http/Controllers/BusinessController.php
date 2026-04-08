@@ -41,7 +41,7 @@ class BusinessController extends Controller
     public function index(Request $request)
     {
         $search = $request->get('search');
-        $query = Business::with(['user', 'businessType', 'products', 'photos']);
+        $query = Business::approved()->with(['user', 'businessType', 'products', 'photos']);
         
         // Optimize search filtering via JOIN instead of slow correlated Subqueries (orWhereHas)
         if ($search) {
@@ -126,6 +126,10 @@ class BusinessController extends Controller
             // Automatically set user_id to current user unless admin specifies
             if (!isset($validated['user_id']) || !$user->isAdmin()) {
                 $validated['user_id'] = $user->id;
+                $validated['status'] = Business::STATUS_PENDING;
+            } else {
+                // Admins can create approved businesses directly
+                $validated['status'] = $request->input('status', Business::STATUS_APPROVED);
             }
 
             $selectedOwnerIds = [];
@@ -213,8 +217,8 @@ class BusinessController extends Controller
             }
 
             return redirect()
-                ->route('businesses.show', $business)
-                ->with('success', "Success! The business '{$business->name}' has been registered.");
+                ->route('businesses.my')
+                ->with('success', "Success! The business '{$business->name}' has been registered and is now waiting for approval.");
         } catch (\Exception $e) {
             return back()->withErrors(['error' => 'An error occurred while creating the business. Please try again.'])->withInput();
         }
@@ -449,7 +453,7 @@ class BusinessController extends Controller
             }
 
             return redirect()
-                ->route('businesses.show', $business)
+                ->route('businesses.my')
                 ->with('success', "Success! The details for '{$business->name}' have been updated.");
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error('Update error: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);

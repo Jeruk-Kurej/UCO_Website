@@ -221,6 +221,7 @@ class DummyBusinessSeeder extends Seeder
                 'address' => $data['address'],
                 'business_mode' => 'both', // Support both products and services
                 'is_featured' => true, // All dummy businesses are featured
+                'status' => Business::STATUS_APPROVED,
             ]);
 
             // Create a general category for this business

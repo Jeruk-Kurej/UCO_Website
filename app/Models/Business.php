@@ -11,6 +11,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Business extends Model
 {
     use HasFactory;
+    
+    public const STATUS_PENDING = 'pending';
+    public const STATUS_APPROVED = 'approved';
+    public const STATUS_REJECTED = 'rejected';
 
     protected $fillable = [
         'user_id',
@@ -36,6 +40,8 @@ class Business extends Model
         'additional_data',
         'legal_document_path',
         'certification_path',
+        'status',
+        'rejection_reason',
     ];
 
     protected $casts = [
@@ -343,5 +349,33 @@ class Business extends Model
     public function getOperationalStatusAttribute(): ?string
     {
         return $this->additional_data['operational_status'] ?? null;
+    }
+
+    /**
+     * Scope a query to only include approved businesses.
+     */
+    public function scopeApproved($query)
+    {
+        return $query->where('status', self::STATUS_APPROVED);
+    }
+
+    /**
+     * Get the status badge color (Tailwind classes)
+     */
+    public function getStatusColorAttribute(): string
+    {
+        return match($this->status) {
+            self::STATUS_APPROVED => 'green',
+            self::STATUS_REJECTED => 'red',
+            default => 'orange',
+        };
+    }
+
+    /**
+     * Get the status label
+     */
+    public function getStatusLabelAttribute(): string
+    {
+        return ucfirst($this->status);
     }
 }
