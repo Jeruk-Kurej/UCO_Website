@@ -141,8 +141,12 @@ class UsersImport implements ToModel, WithHeadingRow, WithValidation, WithChunkR
                 ];
 
                 foreach ($mergeFields as $k => $v) {
-                    if ($v === null) continue;
-                    if (empty($existingUser->{$k}) && $v !== null && $v !== '') {
+                    if ($v === null || $v === '') continue;
+                    
+                    $currentValue = $existingUser->{$k};
+                    // Only merge if the current DB field is truly empty (null or empty string) 
+                    // and the incoming value is actually a change.
+                    if (($currentValue === null || $currentValue === '') && $v !== $currentValue) {
                         $existingUser->{$k} = $v;
                         $updated = true;
                     }
@@ -630,7 +634,7 @@ class UsersImport implements ToModel, WithHeadingRow, WithValidation, WithChunkR
         $response = Http::retry(3, 200)->timeout(15)->withOptions(['verify' => true])->get($url);
         if (!$response->ok()) return null;
 
-        $contentType = $response->header('Content-Type', '');
+        $contentType = $response->header('Content-Type') ?? '';
         if (stripos($contentType, 'image/') !== 0) return null;
 
         $maxBytes = 5 * 1024 * 1024;
