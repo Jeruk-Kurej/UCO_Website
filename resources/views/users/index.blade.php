@@ -264,17 +264,6 @@
                             <p class="text-lg font-bold text-gray-600 leading-none" x-text="total"></p>
                             <p class="text-[10px] uppercase tracking-wider text-gray-400 font-semibold mt-1">Total</p>
                         </div>
-                        <div class="w-14 h-14 relative flex items-center justify-center flex-shrink-0 ml-1">
-                            <svg class="w-full h-full transform -rotate-90" viewBox="0 0 64 64">
-                                <circle cx="32" cy="32" r="28" stroke="#f3f4f6" stroke-width="5"
-                                    fill="transparent" />
-                                <circle cx="32" cy="32" r="28" stroke="#f97316" stroke-width="5"
-                                    fill="transparent" :stroke-dasharray="2 * Math.PI * 28"
-                                    :stroke-dashoffset="(1 - progress / 100) * (2 * Math.PI * 28)"
-                                    style="transition: stroke-dashoffset 0.7s ease-out;" />
-                            </svg>
-                            <span class="absolute text-[11px] font-bold text-gray-700" x-text="`${progress}%`"></span>
-                        </div>
                     </div>
                 </div>
 
