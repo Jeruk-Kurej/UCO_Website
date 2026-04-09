@@ -39,13 +39,22 @@
                                             <p class="text-xs text-soft-gray-500">Manage platform users</p>
                                         </div>
                                     </a>
+                                    @php $pendingApprovals = \App\Models\Business::pending()->count(); @endphp
                                     <a href="{{ route('admin.business-approvals.index') }}" class="flex items-start gap-3 p-3 rounded-xl hover:bg-soft-gray-50 transition-colors {{ request()->routeIs('admin.business-approvals.*') ? 'bg-orange-50' : '' }}">
-                                        <div class="w-9 h-9 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center text-lg flex-shrink-0">
+                                        <div class="w-9 h-9 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center text-lg flex-shrink-0 relative">
                                             <i class="bi bi-check2-square"></i>
+                                            @if($pendingApprovals > 0)
+                                                <span class="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse border-2 border-white"></span>
+                                            @endif
                                         </div>
-                                        <div>
-                                            <p class="text-sm font-bold text-soft-gray-900">Business Approvals</p>
-                                            <p class="text-xs text-soft-gray-500">Moderate new registrations</p>
+                                        <div class="flex-grow flex items-center justify-between">
+                                            <div>
+                                                <p class="text-sm font-bold text-soft-gray-900">Business Approvals</p>
+                                                <p class="text-xs text-soft-gray-500">Moderate new registrations</p>
+                                            </div>
+                                            @if($pendingApprovals > 0)
+                                                <span class="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center">{{ $pendingApprovals }}</span>
+                                            @endif
                                         </div>
                                     </a>
                                     <a href="{{ route('ai-analyses.index') }}" class="flex items-start gap-3 p-3 rounded-xl hover:bg-soft-gray-50 transition-colors {{ request()->routeIs('ai-analyses.*') ? 'bg-purple-50' : '' }}">
@@ -162,9 +171,16 @@
                             <i class="bi bi-people text-emerald-500"></i>
                             Users
                         </a>
-                        <a href="{{ route('admin.business-approvals.index') }}" class="flex items-center gap-3 py-2.5 px-3 text-sm font-medium rounded-xl {{ request()->routeIs('admin.business-approvals.*') ? 'bg-soft-gray-100 text-soft-gray-900 font-bold border-l-4 border-orange-500' : 'text-soft-gray-600 hover:bg-soft-gray-50' }}">
-                            <i class="bi bi-check2-square text-orange-500"></i>
-                            Business Approvals
+                        <a href="{{ route('admin.business-approvals.index') }}" class="flex items-center justify-between py-2.5 px-3 text-sm font-medium rounded-xl {{ request()->routeIs('admin.business-approvals.*') ? 'bg-soft-gray-100 text-soft-gray-900 font-bold border-l-4 border-orange-500' : 'text-soft-gray-600 hover:bg-soft-gray-50' }}">
+                            <div class="flex items-center gap-3">
+                                <i class="bi bi-check2-square text-orange-500"></i>
+                                Business Approvals
+                            </div>
+                            @if($pendingApprovals > 0)
+                                <span class="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full animate-pulse">
+                                    {{ $pendingApprovals }}
+                                </span>
+                            @endif
                         </a>
                         <a href="{{ route('ai-analyses.index') }}" class="flex items-center gap-3 py-2.5 px-3 text-sm font-medium rounded-xl {{ request()->routeIs('ai-analyses.*') ? 'bg-soft-gray-100 text-soft-gray-900 font-bold border-l-4 border-purple-500' : 'text-soft-gray-600 hover:bg-soft-gray-50' }}">
                             <i class="bi bi-robot text-purple-500"></i>

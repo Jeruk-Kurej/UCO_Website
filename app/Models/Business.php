@@ -360,6 +360,14 @@ class Business extends Model
     }
 
     /**
+     * Scope a query to only include pending businesses.
+     */
+    public function scopePending($query)
+    {
+        return $query->where('status', self::STATUS_PENDING);
+    }
+
+    /**
      * Get the status badge color (Tailwind classes)
      */
     public function getStatusColorAttribute(): string
