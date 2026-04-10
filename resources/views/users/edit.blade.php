@@ -168,8 +168,22 @@ $graduationData = $userToEdit->graduation_data ?? [];
                                class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
                     </div>
 
+                    {{-- Passport No --}}
+                    <div>
+                        <label for="personal_data[passport_no]" class="block text-sm font-medium text-gray-700 mb-2">Passport Number</label>
+                        <input type="text" name="personal_data[passport_no]" id="personal_data[passport_no]" value="{{ old('personal_data.passport_no', $personalData['passport_no'] ?? '') }}"
+                               class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
+                    </div>
+
+                    {{-- Special Needs --}}
+                    <div>
+                        <label for="personal_data[special_need]" class="block text-sm font-medium text-gray-700 mb-2">Special Needs</label>
+                        <input type="text" name="personal_data[special_need]" id="personal_data[special_need]" value="{{ old('personal_data.special_need', $personalData['special_need'] ?? '') }}"
+                               class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900" placeholder="e.g. None">
+                    </div>
+
                     {{-- Status --}}
-                    <div class="md:col-span-2">
+                    <div class="md:col-span-1 py-4">
                         <label class="flex items-center gap-2 cursor-pointer">
                             <input type="checkbox" name="is_active" value="1" {{ old('is_active', $userToEdit->is_active) ? 'checked' : '' }}
                                    class="w-4 h-4 text-soft-gray-900 border-gray-200 rounded focus:ring-soft-gray-900">
@@ -265,6 +279,37 @@ $graduationData = $userToEdit->graduation_data ?? [];
                                class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
                     </div>
 
+                    <div class="md:col-span-2 border-t pt-6 mt-4">
+                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">Secondary Address / Home</h3>
+                    </div>
+
+                    <div class="md:col-span-2">
+                        <label for="personal_data[address2]" class="block text-sm font-medium text-gray-700 mb-2">Secondary Address (Street)</label>
+                        <textarea name="personal_data[address2]" id="personal_data[address2]" rows="2"
+                                  class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">{{ old('personal_data.address2', $personalData['address2'] ?? '') }}</textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">City 2</label>
+                        <input type="text" name="personal_data[address_city2]" value="{{ old('personal_data.address_city2', $personalData['address_city2'] ?? '') }}"
+                               class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Province 2</label>
+                        <input type="text" name="personal_data[province2]" value="{{ old('personal_data.province2', $personalData['province2'] ?? '') }}"
+                               class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Country 2</label>
+                        <input type="text" name="personal_data[country2]" value="{{ old('personal_data.country2', $personalData['country2'] ?? '') }}"
+                               class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Zip Code 2</label>
+                        <input type="text" name="personal_data[zip_code2]" value="{{ old('personal_data.zip_code2', $personalData['zip_code2'] ?? '') }}"
+                               class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
+                    </div>
+
                     {{-- Social Media Section --}}
                     <div class="md:col-span-2 border-t pt-6 mt-4">
                         <h3 class="text-md font-semibold text-gray-800 mb-4">Social Media</h3>
@@ -277,6 +322,21 @@ $graduationData = $userToEdit->graduation_data ?? [];
                             <div>
                                 <label for="facebook" class="block text-sm font-medium text-gray-700 mb-2">Facebook</label>
                                 <input type="text" name="personal_data[facebook]" id="facebook" value="{{ old('personal_data.facebook', $personalData['facebook'] ?? '') }}"
+                                       class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
+                            </div>
+                            <div>
+                                <label for="instagram" class="block text-sm font-medium text-gray-700 mb-2">Instagram</label>
+                                <input type="text" name="personal_data[instagram]" id="instagram" value="{{ old('personal_data.instagram', $personalData['instagram'] ?? '') }}"
+                                       class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
+                            </div>
+                            <div>
+                                <label for="twitter" class="block text-sm font-medium text-gray-700 mb-2">Twitter (X)</label>
+                                <input type="text" name="personal_data[twitter]" id="twitter" value="{{ old('personal_data.twitter', $personalData['twitter'] ?? '') }}"
+                                       class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
+                            </div>
+                            <div>
+                                <label for="bbm" class="block text-sm font-medium text-gray-700 mb-2">BBM</label>
+                                <input type="text" name="personal_data[bbm]" id="bbm" value="{{ old('personal_data.bbm', $personalData['bbm'] ?? '') }}"
                                        class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
                             </div>
                             <div>
@@ -402,32 +462,102 @@ $graduationData = $userToEdit->graduation_data ?? [];
 
                     {{-- Graduation Data Section --}}
                     <div class="md:col-span-2 border-t pt-6 mt-4">
-                        <h3 class="text-md font-semibold text-gray-800 mb-4">Graduation Information</h3>
+                        <h3 class="text-md font-semibold text-gray-800 mb-4">Graduation & Career Info</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {{-- Final Projects --}}
                             <div>
-                                <label for="official_email" class="block text-sm font-medium text-gray-700 mb-2">Official Email</label>
-                                <input type="email" name="graduation_data[official_email]" id="official_email" value="{{ old('graduation_data.official_email', $graduationData['official_email'] ?? '') }}"
+                                <label for="final_project_indonesia" class="block text-sm font-medium text-gray-700 mb-2">Final Project (Indonesia)</label>
+                                <input type="text" name="graduation_data[final_project_indonesia]" id="final_project_indonesia" value="{{ old('graduation_data.final_project_indonesia', $graduationData['final_project_indonesia'] ?? '') }}"
+                                       class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
+                            </div>
+                            <div>
+                                <label for="final_project_english" class="block text-sm font-medium text-gray-700 mb-2">Final Project (English)</label>
+                                <input type="text" name="graduation_data[final_project_english]" id="final_project_english" value="{{ old('graduation_data.final_project_english', $graduationData['final_project_english'] ?? '') }}"
+                                       class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
+                            </div>
+
+                            {{-- Results --}}
+                            <div>
+                                <label for="predicate" class="block text-sm font-medium text-gray-700 mb-2">Predicate (Cumlaude, etc.)</label>
+                                <input type="text" name="graduation_data[predicate]" id="predicate" value="{{ old('graduation_data.predicate', $graduationData['predicate'] ?? '') }}"
+                                       class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
+                            </div>
+                            <div>
+                                <label for="judicium_date" class="block text-sm font-medium text-gray-700 mb-2">Judicium Date</label>
+                                <input type="date" name="graduation_data[judicium_date]" id="judicium_date" value="{{ old('graduation_data.judicium_date', $graduationData['judicium_date'] ?? '') }}"
+                                       class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
+                            </div>
+
+                            {{-- Documents --}}
+                            <div>
+                                <label for="document_no" class="block text-sm font-medium text-gray-700 mb-2">Document No (SK Yudisium/Ijazah)</label>
+                                <input type="text" name="graduation_data[document_no]" id="document_no" value="{{ old('graduation_data.document_no', $graduationData['document_no'] ?? '') }}"
+                                       class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
+                            </div>
+                            <div>
+                                <label for="graduate_period" class="block text-sm font-medium text-gray-700 mb-2">Graduate Period</label>
+                                <input type="text" name="graduation_data[graduate_period]" id="graduate_period" value="{{ old('graduation_data.graduate_period', $graduationData['graduate_period'] ?? '') }}"
                                        class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900"
-                                       placeholder="student@university.edu">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 border-t pt-6">
+                            <div class="col-span-full">
+                                <h4 class="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4">Graduation & Career Info</h4>
                             </div>
                             <div>
-                                <label for="current_status" class="block text-sm font-medium text-gray-700 mb-2">Current Status</label>
-                                <input type="text" name="graduation_data[current_status]" id="current_status" value="{{ old('graduation_data.current_status', $graduationData['current_status'] ?? '') }}"
-                                       class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
+                                <x-input-label for="graduation_data[final_project_indonesia]" value="Final Project Title (Indonesia)" />
+                                <x-text-input id="graduation_data[final_project_indonesia]" name="graduation_data[final_project_indonesia]" type="text" class="mt-1 block w-full" :value="old('graduation_data.final_project_indonesia', $graduationData['final_project_indonesia'] ?? '')" />
                             </div>
                             <div>
-                                <label for="class_semester" class="block text-sm font-medium text-gray-700 mb-2">Class/Semester</label>
-                                <input type="text" name="graduation_data[class_semester]" id="class_semester" value="{{ old('graduation_data.class_semester', $graduationData['class_semester'] ?? '') }}"
-                                       class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
+                                <x-input-label for="graduation_data[final_project_english]" value="Final Project Title (English)" />
+                                <x-text-input id="graduation_data[final_project_english]" name="graduation_data[final_project_english]" type="text" class="mt-1 block w-full" :value="old('graduation_data.final_project_english', $graduationData['final_project_english'] ?? '')" />
                             </div>
                             <div>
-                                <label for="form_no" class="block text-sm font-medium text-gray-700 mb-2">Form Number</label>
-                                <input type="text" name="graduation_data[form_no]" id="form_no" value="{{ old('graduation_data.form_no', $graduationData['form_no'] ?? '') }}"
-                                       class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
+                                <x-input-label for="graduation_data[predicate]" value="Predicate" />
+                                <x-text-input id="graduation_data[predicate]" name="graduation_data[predicate]" type="text" class="mt-1 block w-full" :value="old('graduation_data.predicate', $graduationData['predicate'] ?? '')" placeholder="e.g. Cumlaude" />
+                            </div>
+                            <div>
+                                <x-input-label for="graduation_data[judicium_date]" value="Judicium Date" />
+                                <x-text-input id="graduation_data[judicium_date]" name="graduation_data[judicium_date]" type="date" class="mt-1 block w-full" :value="old('graduation_data.judicium_date', $graduationData['judicium_date'] ?? '')" />
+                            </div>
+                            <div>
+                                <x-input-label for="graduation_data[official_email]" value="Official/Professional Email" />
+                                <x-text-input id="graduation_data[official_email]" name="graduation_data[official_email]" type="email" class="mt-1 block w-full" :value="old('graduation_data.official_email', $graduationData['official_email'] ?? '')" />
+                            </div>
+                            <div>
+                                <x-input-label for="graduation_data[current_status]" value="Current Career Status" />
+                                <x-text-input id="graduation_data[current_status]" name="graduation_data[current_status]" type="text" class="mt-1 block w-full" :value="old('graduation_data.current_status', $graduationData['current_status'] ?? '')" placeholder="e.g. Employed, Entrepreneur" />
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8 border-t pt-6">
+                            <div class="col-span-full">
+                                <h4 class="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4">Academic History & Documentation</h4>
+                            </div>
+                            <div>
+                                <x-input-label for="academic_data[academic_advisor]" value="Academic Advisor" />
+                                <x-text-input id="academic_data[academic_advisor]" name="academic_data[academic_advisor]" type="text" class="mt-1 block w-full" :value="old('academic_data.academic_advisor', $academicData['academic_advisor'] ?? '')" />
+                            </div>
+                            <div>
+                                <x-input-label for="academic_data[nisn]" value="NISN" />
+                                <x-text-input id="academic_data[nisn]" name="academic_data[nisn]" type="text" class="mt-1 block w-full" :value="old('academic_data.nisn', $academicData['nisn'] ?? '')" />
+                            </div>
+                            <div>
+                                <x-input-label for="academic_data[prodi]" value="Prodi" />
+                                <x-text-input id="academic_data[prodi]" name="academic_data[prodi]" type="text" class="mt-1 block w-full" :value="old('academic_data.prodi', $academicData['prodi'] ?? '')" />
+                            </div>
+                            <div>
+                                <x-input-label for="academic_data[sub_prodi]" value="Sub-Prodi" />
+                                <x-text-input id="academic_data[sub_prodi]" name="academic_data[sub_prodi]" type="text" class="mt-1 block w-full" :value="old('academic_data.sub_prodi', $academicData['sub_prodi'] ?? '')" />
+                            </div>
+                            <div>
+                                <x-input-label for="academic_data[certificate_no_1]" value="Certificate No 1" />
+                                <x-text-input id="academic_data[certificate_no_1]" name="academic_data[certificate_no_1]" type="text" class="mt-1 block w-full" :value="old('academic_data.certificate_no_1', $academicData['certificate_no_1'] ?? '')" />
+                            </div>
+                            <div>
+                                <x-input-label for="academic_data[certificate_no_2]" value="Certificate No 2" />
+                                <x-text-input id="academic_data[certificate_no_2]" name="academic_data[certificate_no_2]" type="text" class="mt-1 block w-full" :value="old('academic_data.certificate_no_2', $academicData['certificate_no_2'] ?? '')" />
                             </div>
                         </div>
                     </div>
-                </div>
             </div>
 
             {{-- Parents Information Tab --}}
@@ -466,7 +596,22 @@ $graduationData = $userToEdit->graduation_data ?? [];
                                    class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">ID Number</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">NPWP Number</label>
+                            <input type="text" name="father_data[npwp_no]" value="{{ old('father_data.npwp_no', $fatherData['npwp_no'] ?? '') }}"
+                                   class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">BPJS Number</label>
+                            <input type="text" name="father_data[bpjs_no]" value="{{ old('father_data.bpjs_no', $fatherData['bpjs_no'] ?? '') }}"
+                                   class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Passport Number</label>
+                            <input type="text" name="father_data[passport_no]" value="{{ old('father_data.passport_no', $fatherData['passport_no'] ?? '') }}"
+                                   class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Citizenship No (ID Card)</label>
                             <input type="text" name="father_data[citizenship_no]" value="{{ old('father_data.citizenship_no', $fatherData['citizenship_no'] ?? '') }}"
                                    class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
                         </div>
@@ -505,6 +650,17 @@ $graduationData = $userToEdit->graduation_data ?? [];
                             <input type="text" name="father_data[business_name]" value="{{ old('father_data.business_name', $fatherData['business_name'] ?? '') }}"
                                    class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
                         </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Business Revenue</label>
+                            <input type="text" name="father_data[business_revenue]" value="{{ old('father_data.business_revenue', $fatherData['business_revenue'] ?? '') }}"
+                                   class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900"
+                                   placeholder="e.g. > 1B">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Business Address</label>
+                            <input type="text" name="father_data[business_address]" value="{{ old('father_data.business_address', $fatherData['business_address'] ?? '') }}"
+                                   class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
+                        </div>
                     </div>
                 </div>
 
@@ -538,7 +694,22 @@ $graduationData = $userToEdit->graduation_data ?? [];
                                    class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">ID Number</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">NPWP Number</label>
+                            <input type="text" name="mother_data[npwp_no]" value="{{ old('mother_data.npwp_no', $motherData['npwp_no'] ?? '') }}"
+                                   class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">BPJS Number</label>
+                            <input type="text" name="mother_data[bpjs_no]" value="{{ old('mother_data.bpjs_no', $motherData['bpjs_no'] ?? '') }}"
+                                   class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Passport Number</label>
+                            <input type="text" name="mother_data[passport_no]" value="{{ old('mother_data.passport_no', $motherData['passport_no'] ?? '') }}"
+                                   class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Citizenship No (ID Card)</label>
                             <input type="text" name="mother_data[citizenship_no]" value="{{ old('mother_data.citizenship_no', $motherData['citizenship_no'] ?? '') }}"
                                    class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
                         </div>
@@ -575,6 +746,17 @@ $graduationData = $userToEdit->graduation_data ?? [];
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Business Name</label>
                             <input type="text" name="mother_data[business_name]" value="{{ old('mother_data.business_name', $motherData['business_name'] ?? '') }}"
+                                   class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Business Revenue</label>
+                            <input type="text" name="mother_data[business_revenue]" value="{{ old('mother_data.business_revenue', $motherData['business_revenue'] ?? '') }}"
+                                   class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900"
+                                   placeholder="e.g. 500M - 1B">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Business Address</label>
+                            <input type="text" name="mother_data[business_address]" value="{{ old('mother_data.business_address', $motherData['business_address'] ?? '') }}"
                                    class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
                         </div>
                     </div>

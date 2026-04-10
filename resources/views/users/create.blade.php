@@ -161,8 +161,22 @@
                                class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
                     </div>
 
+                    {{-- Passport No --}}
+                    <div>
+                        <label for="personal_data[passport_no]" class="block text-sm font-medium text-gray-700 mb-2">Passport Number</label>
+                        <input type="text" name="personal_data[passport_no]" id="personal_data[passport_no]" value="{{ old('personal_data.passport_no') }}"
+                               class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
+                    </div>
+
+                    {{-- Special Needs --}}
+                    <div>
+                        <label for="personal_data[special_need]" class="block text-sm font-medium text-gray-700 mb-2">Special Needs</label>
+                        <input type="text" name="personal_data[special_need]" id="personal_data[special_need]" value="{{ old('personal_data.special_need') }}"
+                               class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900" placeholder="e.g. None">
+                    </div>
+
                     {{-- Status --}}
-                    <div class="md:col-span-2">
+                    <div class="md:col-span-1 py-4">
                         <label class="flex items-center gap-2 cursor-pointer">
                             <input type="checkbox" name="is_active" value="1" {{ old('is_active', true) ? 'checked' : '' }}
                                    class="w-4 h-4 text-soft-gray-900 border-gray-200 rounded focus:ring-soft-gray-900">
@@ -258,6 +272,37 @@
                                class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
                     </div>
 
+                    <div class="md:col-span-2 border-t pt-6 mt-4">
+                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">Secondary Address / Home</h3>
+                    </div>
+
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Secondary Address (Street)</label>
+                        <textarea name="personal_data[address2]" rows="2"
+                                  class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">{{ old('personal_data.address2') }}</textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">City 2</label>
+                        <input type="text" name="personal_data[address_city2]" value="{{ old('personal_data.address_city2') }}"
+                               class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Province 2</label>
+                        <input type="text" name="personal_data[province2]" value="{{ old('personal_data.province2') }}"
+                               class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Country 2</label>
+                        <input type="text" name="personal_data[country2]" value="{{ old('personal_data.country2') }}"
+                               class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Zip Code 2</label>
+                        <input type="text" name="personal_data[zip_code2]" value="{{ old('personal_data.zip_code2') }}"
+                               class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
+                    </div>
+
                     {{-- Social Media Section --}}
                     <div class="md:col-span-2 border-t pt-6 mt-4">
                         <h3 class="text-md font-semibold text-gray-800 mb-4">Social Media</h3>
@@ -280,6 +325,16 @@
                             <div>
                                 <label for="instagram" class="block text-sm font-medium text-gray-700 mb-2">Instagram</label>
                                 <input type="text" name="personal_data[instagram]" id="instagram" value="{{ old('personal_data.instagram') }}"
+                                       class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
+                            </div>
+                            <div>
+                                <label for="twitter_x" class="block text-sm font-medium text-gray-700 mb-2">Twitter (X)</label>
+                                <input type="text" name="personal_data[twitter]" id="twitter_x" value="{{ old('personal_data.twitter') }}"
+                                       class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
+                            </div>
+                            <div>
+                                <label for="bbm" class="block text-sm font-medium text-gray-700 mb-2">BBM</label>
+                                <input type="text" name="personal_data[bbm]" id="bbm" value="{{ old('personal_data.bbm') }}"
                                        class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
                             </div>
                         </div>
@@ -357,6 +412,18 @@
                                placeholder="3.85">
                     </div>
 
+                    {{-- Certifications --}}
+                    <div>
+                        <label for="cert1" class="block text-sm font-medium text-gray-700 mb-2">Certificate No 1</label>
+                        <input type="text" name="academic_data[certificate_no_1]" id="cert1" value="{{ old('academic_data.certificate_no_1') }}"
+                               class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
+                    </div>
+                    <div>
+                        <label for="cert2" class="block text-sm font-medium text-gray-700 mb-2">Certificate No 2</label>
+                        <input type="text" name="academic_data[certificate_no_2]" id="cert2" value="{{ old('academic_data.certificate_no_2') }}"
+                               class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
+                    </div>
+
                     {{-- Is Graduate --}}
                     <div class="md:col-span-2">
                         <label class="flex items-center gap-2 cursor-pointer">
@@ -395,27 +462,54 @@
 
                     {{-- Graduation Data Section --}}
                     <div class="md:col-span-2 border-t pt-6 mt-4">
-                        <h3 class="text-md font-semibold text-gray-800 mb-4">Graduation Information</h3>
+                        <h3 class="text-md font-semibold text-gray-800 mb-4">Graduation & Career Info</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {{-- Final Projects --}}
                             <div>
-                                <label for="official_email" class="block text-sm font-medium text-gray-700 mb-2">Official Email</label>
-                                <input type="email" name="graduation_data[official_email]" id="official_email" value="{{ old('graduation_data.official_email') }}"
+                                <label for="final_project_indonesia" class="block text-sm font-medium text-gray-700 mb-2">Final Project (Indonesia)</label>
+                                <input type="text" name="graduation_data[final_project_indonesia]" id="final_project_indonesia" value="{{ old('graduation_data.final_project_indonesia') }}"
+                                       class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
+                            </div>
+                            <div>
+                                <label for="final_project_english" class="block text-sm font-medium text-gray-700 mb-2">Final Project (English)</label>
+                                <input type="text" name="graduation_data[final_project_english]" id="final_project_english" value="{{ old('graduation_data.final_project_english') }}"
+                                       class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
+                            </div>
+
+                            {{-- Results --}}
+                            <div>
+                                <label for="predicate" class="block text-sm font-medium text-gray-700 mb-2">Predicate (Cumlaude, etc.)</label>
+                                <input type="text" name="graduation_data[predicate]" id="predicate" value="{{ old('graduation_data.predicate') }}"
+                                       class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
+                            </div>
+                            <div>
+                                <label for="judicium_date" class="block text-sm font-medium text-gray-700 mb-2">Judicium Date</label>
+                                <input type="date" name="graduation_data[judicium_date]" id="judicium_date" value="{{ old('graduation_data.judicium_date') }}"
+                                       class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
+                            </div>
+
+                            {{-- Documents --}}
+                            <div>
+                                <label for="document_no" class="block text-sm font-medium text-gray-700 mb-2">Document No (SK Yudisium/Ijazah)</label>
+                                <input type="text" name="graduation_data[document_no]" id="document_no" value="{{ old('graduation_data.document_no') }}"
+                                       class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
+                            </div>
+                            <div>
+                                <label for="graduate_period" class="block text-sm font-medium text-gray-700 mb-2">Graduate Period</label>
+                                <input type="text" name="graduation_data[graduate_period]" id="graduate_period" value="{{ old('graduation_data.graduate_period') }}"
                                        class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900"
-                                       placeholder="student@university.edu">
+                                       placeholder="Periode 1 2024">
+                            </div>
+
+                            {{-- Professional Status --}}
+                            <div>
+                                <label for="official_email" class="block text-sm font-medium text-gray-700 mb-2">Official/Professional Email</label>
+                                <input type="email" name="graduation_data[official_email]" id="official_email" value="{{ old('graduation_data.official_email') }}"
+                                       class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
                             </div>
                             <div>
-                                <label for="current_status" class="block text-sm font-medium text-gray-700 mb-2">Current Status</label>
+                                <label for="current_status" class="block text-sm font-medium text-gray-700 mb-2">Current Career Status</label>
                                 <input type="text" name="graduation_data[current_status]" id="current_status" value="{{ old('graduation_data.current_status') }}"
-                                       class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
-                            </div>
-                            <div>
-                                <label for="class_semester" class="block text-sm font-medium text-gray-700 mb-2">Class/Semester</label>
-                                <input type="text" name="graduation_data[class_semester]" id="class_semester" value="{{ old('graduation_data.class_semester') }}"
-                                       class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
-                            </div>
-                            <div>
-                                <label for="form_no" class="block text-sm font-medium text-gray-700 mb-2">Form Number</label>
-                                <input type="text" name="graduation_data[form_no]" id="form_no" value="{{ old('graduation_data.form_no') }}"
                                        class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
                             </div>
                         </div>
@@ -459,7 +553,22 @@
                                    class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">ID Number</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">NPWP Number</label>
+                            <input type="text" name="father_data[npwp_no]" value="{{ old('father_data.npwp_no') }}"
+                                   class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">BPJS Number</label>
+                            <input type="text" name="father_data[bpjs_no]" value="{{ old('father_data.bpjs_no') }}"
+                                   class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Passport Number</label>
+                            <input type="text" name="father_data[passport_no]" value="{{ old('father_data.passport_no') }}"
+                                   class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Citizenship No (ID Card)</label>
                             <input type="text" name="father_data[citizenship_no]" value="{{ old('father_data.citizenship_no') }}"
                                    class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
                         </div>
@@ -498,6 +607,17 @@
                             <input type="text" name="father_data[business_name]" value="{{ old('father_data.business_name') }}"
                                    class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
                         </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Business Revenue</label>
+                            <input type="text" name="father_data[business_revenue]" value="{{ old('father_data.business_revenue') }}"
+                                   class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900"
+                                   placeholder="e.g. > 1B">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Business Address</label>
+                            <input type="text" name="father_data[business_address]" value="{{ old('father_data.business_address') }}"
+                                   class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
+                        </div>
                     </div>
                 </div>
 
@@ -531,7 +651,22 @@
                                    class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">ID Number</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">NPWP Number</label>
+                            <input type="text" name="mother_data[npwp_no]" value="{{ old('mother_data.npwp_no') }}"
+                                   class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">BPJS Number</label>
+                            <input type="text" name="mother_data[bpjs_no]" value="{{ old('mother_data.bpjs_no') }}"
+                                   class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Passport Number</label>
+                            <input type="text" name="mother_data[passport_no]" value="{{ old('mother_data.passport_no') }}"
+                                   class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Citizenship No (ID Card)</label>
                             <input type="text" name="mother_data[citizenship_no]" value="{{ old('mother_data.citizenship_no') }}"
                                    class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
                         </div>
@@ -568,6 +703,17 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Business Name</label>
                             <input type="text" name="mother_data[business_name]" value="{{ old('mother_data.business_name') }}"
+                                   class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Business Revenue</label>
+                            <input type="text" name="mother_data[business_revenue]" value="{{ old('mother_data.business_revenue') }}"
+                                   class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900"
+                                   placeholder="e.g. 500M - 1B">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Business Address</label>
+                            <input type="text" name="mother_data[business_address]" value="{{ old('mother_data.business_address') }}"
                                    class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
                         </div>
                     </div>

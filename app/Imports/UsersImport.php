@@ -45,7 +45,7 @@ class UsersImport implements ToModel, WithHeadingRow, WithValidation, WithChunkR
      */
     public function endColumn(): string
     {
-        return 'Z';
+        return 'DZ'; // Support the massive ~114 columns provided by the user
     }
 
     /**
@@ -127,16 +127,16 @@ class UsersImport implements ToModel, WithHeadingRow, WithValidation, WithChunkR
                     'name' => $row['name'] ?? null,
                     'role' => $row['role'] ?? null,
                     'is_active' => isset($row['is_active']) ? (bool)$row['is_active'] : null,
-                    'birth_date' => $row['birth_date'] ?? $row['tanggal_lahir'] ?? null,
+                    'birth_date' => $row['birth_date'] ?? $row['tanggal_lahir'] ?? $row['birthday'] ?? null,
                     'birth_city' => $row['birth_city'] ?? $row['tempat_lahir'] ?? null,
                     'religion' => $row['religion'] ?? $row['agama'] ?? null,
-                    'phone_number' => $row['phone_number'] ?? $row['phone'] ?? $row['telp'] ?? null,
-                    'mobile_number' => $row['mobile_number'] ?? $row['mobile'] ?? $row['hp'] ?? null,
+                    'phone_number' => $row['phone_number'] ?? $row['phone'] ?? $row['telp'] ?? $row['phone_1'] ?? null,
+                    'mobile_number' => $row['mobile_number'] ?? $row['mobile'] ?? $row['hp'] ?? $row['mobile_1'] ?? null,
                     'whatsapp' => $row['whatsapp'] ?? $row['wa'] ?? null,
                     'NIS' => $row['nis'] ?? null,
-                    'Student_Year' => $row['student_year'] ?? $row['angkatan'] ?? null,
+                    'Student_Year' => $row['student_year'] ?? $row['angkatan'] ?? $row['academic_year'] ?? null,
                     'Major' => $row['major'] ?? $row['prodi'] ?? $row['jurusan'] ?? null,
-                    'Is_Graduate' => isset($row['is_graduate']) ? (bool)$row['is_graduate'] : null,
+                    'Is_Graduate' => isset($row['is_graduate']) ? (bool)$row['is_graduate'] : (isset($row['is_graduated']) ? (bool)$row['is_graduated'] : null),
                     'CGPA' => $row['cgpa'] ?? $row['ipk'] ?? null,
                 ];
 
@@ -206,20 +206,20 @@ class UsersImport implements ToModel, WithHeadingRow, WithValidation, WithChunkR
                 'email_verified_at' => now(),
 
                 // Personal Information
-                'birth_date' => $row['birth_date'] ?? $row['tanggal_lahir'] ?? null,
+                'birth_date' => $row['birth_date'] ?? $row['tanggal_lahir'] ?? $row['birthday'] ?? null,
                 'birth_city' => $row['birth_city'] ?? $row['tempat_lahir'] ?? null,
                 'religion' => $row['religion'] ?? $row['agama'] ?? null,
 
                 // Contact Information
-                'phone_number' => $row['phone_number'] ?? $row['phone'] ?? $row['telp'] ?? null,
-                'mobile_number' => $row['mobile_number'] ?? $row['mobile'] ?? $row['hp'] ?? null,
+                'phone_number' => $row['phone_number'] ?? $row['phone'] ?? $row['telp'] ?? $row['phone_1'] ?? null,
+                'mobile_number' => $row['mobile_number'] ?? $row['mobile'] ?? $row['hp'] ?? $row['mobile_1'] ?? null,
                 'whatsapp' => $row['whatsapp'] ?? $row['wa'] ?? null,
 
                 // Student/Academic Information - MATCH DATABASE FIELD NAMES (PascalCase)
                 'NIS' => $row['nis'] ?? null,
-                'Student_Year' => $row['student_year'] ?? $row['angkatan'] ?? null,
+                'Student_Year' => $row['student_year'] ?? $row['angkatan'] ?? $row['academic_year'] ?? null,
                 'Major' => $row['major'] ?? $row['prodi'] ?? $row['jurusan'] ?? null,
-                'Is_Graduate' => isset($row['is_graduate']) ? (bool)$row['is_graduate'] : false,
+                'Is_Graduate' => isset($row['is_graduate']) ? (bool)$row['is_graduate'] : (isset($row['is_graduated']) ? (bool)$row['is_graduated'] : false),
                 'CGPA' => $row['cgpa'] ?? $row['ipk'] ?? null,
 
                 // JSON fields - store additional data
@@ -398,27 +398,31 @@ class UsersImport implements ToModel, WithHeadingRow, WithValidation, WithChunkR
             'citizenship_no' => $row['citizenship_no'] ?? null,
 
             // Primary Address
-            'address' => $row['address'] ?? null,
+            'address' => $row['address'] ?? $row['address_1'] ?? $row['alamat'] ?? null,
             'address_city' => $row['address_city'] ?? null,
             'province' => $row['province'] ?? null,
             'country' => $row['country'] ?? null,
-            'zip_code' => $row['zip_code'] ?? null,
+            'zip_code' => $row['zip_code'] ?? $row['postal_code_1'] ?? null,
 
             // Secondary Address
-            'address2' => $row['address2'] ?? null,
-            'address_city2' => $row['address_city2'] ?? null,
-            'province2' => $row['province2'] ?? null,
-            'country2' => $row['country2'] ?? null,
-            'zip_code2' => $row['zip_code2'] ?? null,
+            'address2' => $row['address2'] ?? $row['address_2'] ?? null,
+            'address_city2' => $row['address_city_2'] ?? null,
+            'province2' => $row['province_2'] ?? null,
+            'country2' => $row['country_2'] ?? null,
+            'zip_code2' => $row['zip_code2'] ?? $row['postal_code_2'] ?? null,
 
             // Additional Contacts
-            'phone_number2' => $row['phone_number2'] ?? null,
-            'mobile_number2' => $row['mobile_number2'] ?? null,
+            'phone_number2' => $row['phone_number2'] ?? $row['phone_2'] ?? null,
+            'mobile_number2' => $row['mobile_number2'] ?? $row['mobile_2'] ?? null,
             'bbm' => $row['bbm'] ?? null,
             'line' => $row['line'] ?? null,
             'facebook' => $row['facebook'] ?? null,
             'twitter' => $row['twitter'] ?? null,
             'instagram' => $row['instagram'] ?? null,
+
+            // Identity extras
+            'passport_no' => $row['passport_no'] ?? $row['nomor_paspor'] ?? null,
+            'special_need' => $row['special_need'] ?? $row['kebutuhan_khusus'] ?? null,
         ]);
 
         return !empty($data) ? $data : null;
@@ -437,7 +441,6 @@ class UsersImport implements ToModel, WithHeadingRow, WithValidation, WithChunkR
 
             // Education History
             'edu_level' => $row['edu_level'] ?? null,
-            'academic_advisor' => $row['academic_advisor'] ?? null,
             'previous_school_name' => $row['previous_school_name'] ?? null,
             'school_city' => $row['school_city'] ?? null,
             'previous_edu_level' => $row['previous_edu_level'] ?? null,
@@ -446,6 +449,7 @@ class UsersImport implements ToModel, WithHeadingRow, WithValidation, WithChunkR
             'score' => $row['score'] ?? null,
 
             // Certificates
+            'academic_advisor' => $row['academic_advisor'] ?? null,
             'certificate_no_1' => $row['certificate_no_1'] ?? null,
             'certificate_date_1' => $row['certificate_date_1'] ?? null,
             'certificate_no_2' => $row['certificate_no_2'] ?? null,

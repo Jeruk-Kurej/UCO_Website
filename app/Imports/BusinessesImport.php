@@ -48,7 +48,7 @@ class BusinessesImport implements ToModel, WithHeadingRow, WithValidation, WithC
      */
     public function endColumn(): string
     {
-        return 'Z';
+        return 'DZ'; // Support large professional datasets (matching UsersImport)
     }
 
     /**
