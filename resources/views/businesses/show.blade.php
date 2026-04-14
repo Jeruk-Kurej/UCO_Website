@@ -636,67 +636,145 @@
                     </div>
 
                     {{-- Description --}}
-                    <div>
+                    <div class="mb-8">
                         <h4 class="text-sm font-bold text-soft-gray-900 uppercase tracking-wider mb-3">About This
                             Business</h4>
                         <p
                             class="text-base text-soft-gray-700 leading-relaxed w-full max-w-[1600px] 2xl:max-w-[1720px]">
                             {{ $business->description }}</p>
+                    </div>
 
-                        @if ($business->legal_document_path || $business->certification_path)
-                            <div class="mt-6 pt-5 border-t border-soft-gray-100 flex flex-col sm:flex-row gap-4">
-                                @if ($business->legal_document_path)
-                                    <div class="flex items-center gap-3">
-                                        <div class="p-2.5 bg-red-50 text-red-600 rounded-xl">
-                                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                                                <path
-                                                    d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8zm1-13h-2v6h6v-2h-4V7z" />
-                                            </svg>
-                                        </div>
-                                        <div>
-                                            <h4 class="text-sm font-bold text-gray-900 mb-0.5">Dokumen Legalitas</h4>
-                                            <a href="{{ Storage::url($business->legal_document_path) }}"
-                                                target="_blank"
-                                                class="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline transition-colors">
-                                                <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor"
-                                                    viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        stroke-width="2"
-                                                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                                </svg>
-                                                Lihat / Unduh Dokumen (PDF)
-                                            </a>
-                                        </div>
-                                    </div>
-                                @endif
+                    {{-- Business Insights - Professional Dossier Metadata (REDESIGNED) --}}
+                    <div class="flex flex-wrap items-center gap-y-6 gap-x-12 py-8 mb-4 border-y border-slate-100">
+                        {{-- Revenue (SENSITIVE - PROTECTED) --}}
+                        @can('update', $business)
+                        <div class="flex items-start gap-4 group">
+                            <div class="w-11 h-11 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100/50 shadow-sm group-hover:bg-emerald-600 group-hover:text-white transition-all duration-300">
+                                <i class="bi bi-cash-stack text-lg"></i>
+                            </div>
+                            <div>
+                                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1.5 flex items-center gap-1.5">
+                                    <i class="bi bi-lock-fill text-[9px]"></i> Private Revenue
+                                </p>
+                                <h5 class="text-base font-extrabold text-slate-800">{{ $business->revenue_range ?? 'Not Disclosed' }}</h5>
+                                <p class="text-[9px] text-slate-400 font-medium mt-0.5 italic">Visible only to you</p>
+                            </div>
+                        </div>
+                        <div class="hidden lg:block w-px h-10 bg-slate-100"></div>
+                        @endcan
 
-                                @if ($business->certification_path)
-                                    <div class="flex items-center gap-3">
-                                        <div class="p-2.5 bg-blue-50 text-blue-600 rounded-xl">
-                                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                                                <path
-                                                    d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8zm1-13h-2v6h6v-2h-4V7z" />
-                                            </svg>
-                                        </div>
-                                        <div>
-                                            <h4 class="text-sm font-bold text-gray-900 mb-0.5">Sertifikasi Produk</h4>
-                                            <a href="{{ Storage::url($business->certification_path) }}"
-                                                target="_blank"
-                                                class="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline transition-colors">
-                                                <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor"
-                                                    viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        stroke-width="2"
-                                                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                                </svg>
-                                                Lihat / Unduh Sertifikat (PDF)
-                                            </a>
-                                        </div>
-                                    </div>
-                                @endif
+                        {{-- Employee Count --}}
+                        <div class="flex items-start gap-4 group">
+                            <div class="w-11 h-11 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100/50 shadow-sm group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
+                                <i class="bi bi-people-fill text-lg"></i>
+                            </div>
+                            <div>
+                                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1.5">Team Size</p>
+                                <h5 class="text-base font-extrabold text-slate-800">{{ $business->employee_count ?? '0' }} Professionals</h5>
+                                <p class="text-[9px] text-slate-400 font-medium mt-0.5">Permanent & active staff</p>
+                            </div>
+                        </div>
+
+                        <div class="hidden lg:block w-px h-10 bg-slate-100"></div>
+
+                        {{-- Established --}}
+                        <div class="flex items-start gap-4 group">
+                            <div class="w-11 h-11 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100/50 shadow-sm group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300">
+                                <i class="bi bi-rocket-takeoff-fill text-lg"></i>
+                            </div>
+                            <div>
+                                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1.5">Academic Heritage</p>
+                                <h5 class="text-base font-extrabold text-slate-800">
+                                    @if($business->established_date)
+                                        Est. {{ \Carbon\Carbon::parse($business->established_date)->format('M Y') }}
+                                        <span class="inline-block ml-1 text-[11px] font-bold text-uco-orange-600 bg-orange-50 px-2 py-0.5 rounded-full border border-orange-100/50">
+                                            {{ \Carbon\Carbon::parse($business->established_date)->diffForHumans(['syntax' => \Carbon\CarbonInterface::DIFF_ABSOLUTE]) }}
+                                        </span>
+                                    @else
+                                        Timeline Undisclosed
+                                    @endif
+                                </h5>
+                                <p class="text-[9px] text-slate-400 font-medium mt-0.5 italic">Total duration of excellence</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Academic Origin / Success Badge --}}
+                    @if($business->is_from_college_project)
+                    <div class="mb-12 p-1.5 inline-flex items-center gap-3 bg-gradient-to-r from-orange-50 to-white border border-orange-100 rounded-2xl shadow-sm">
+                        <div class="w-8 h-8 rounded-xl bg-uco-orange-500 text-white flex items-center justify-center shadow-md">
+                            <i class="bi bi-mortarboard-fill"></i>
+                        </div>
+                        <div class="pr-4">
+                            <p class="text-[10px] font-bold text-uco-orange-700 uppercase tracking-widest leading-none">Corporate Origin</p>
+                            <p class="text-[11px] text-uco-orange-900 font-extrabold mt-0.5">Evolution of UCO Entrepreneurship Project</p>
+                        </div>
+                        @if($business->is_continued_after_graduation)
+                            <div class="h-6 w-px bg-orange-100 mx-1"></div>
+                            <div class="flex items-center gap-1.5 pr-2">
+                                <i class="bi bi-patch-check-fill text-indigo-500 text-sm"></i>
+                                <span class="text-[10px] font-bold text-indigo-700 uppercase tracking-widest">Sustained Post-Graduation</span>
                             </div>
                         @endif
                     </div>
+                    @endif
+
+                    {{-- Business Challenges & Spacing --}}
+                    <div class="grid grid-cols-1 gap-12 mb-20">
+                        {{-- Strategic Challenges --}}
+                        <div class="space-y-4">
+                            <div class="flex items-center gap-2">
+                                <div class="w-1.5 h-4 bg-slate-900 rounded-full"></div>
+                                <h4 class="text-[11px] font-black text-slate-900 uppercase tracking-[0.2em]">Strategic Challenges</h4>
+                            </div>
+                            <div class="flex flex-wrap gap-2.5">
+                                @if($business->business_challenges && count($business->business_challenges) > 0)
+                                    @foreach($business->business_challenges as $challenge)
+                                        <div class="px-3.5 py-2 bg-white text-slate-600 text-[11px] font-bold rounded-xl border border-slate-200 shadow-sm flex items-center gap-2 hover:border-slate-800 hover:text-slate-900 transition-all cursor-default">
+                                            <i class="bi bi-chevron-right text-[8px] text-uco-orange-500"></i>
+                                            {{ $challenge }}
+                                        </div>
+                                    @endforeach
+                                @else
+                                    <div class="flex items-center gap-3 p-4 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200 w-full max-w-md">
+                                        <i class="bi bi-shield-check text-slate-400 text-xl"></i>
+                                        <p class="text-xs text-slate-500 font-medium leading-relaxed italic">The business is currently operating with stable strategic planning. No major challenges reported.</p>
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Original Documents Links (Hidden if empty or moved to Insights) --}}
+                    @if ($business->legal_document_path || $business->certification_path)
+                        <div class="mt-8 pt-6 border-t border-soft-gray-100 flex flex-wrap gap-6">
+                            @if ($business->legal_document_path)
+                                <a href="{{ Storage::url($business->legal_document_path) }}" target="_blank" class="flex items-center gap-3 group">
+                                    <div class="w-10 h-10 rounded-lg bg-soft-gray-50 flex items-center justify-center text-soft-gray-400 group-hover:bg-red-50 group-hover:text-red-500 transition-colors">
+                                        <i class="bi bi-file-earmark-pdf"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-[10px] font-bold text-soft-gray-500 uppercase tracking-widest leading-none">Legal Document</p>
+                                        <p class="text-xs font-bold text-soft-gray-700 group-hover:text-soft-gray-900 leading-none mt-1">View Document</p>
+                                    </div>
+                                </a>
+                            @endif
+
+                            @if ($business->certification_path)
+                                <a href="{{ Storage::url($business->certification_path) }}" target="_blank" class="flex items-center gap-3 group">
+                                    <div class="w-10 h-10 rounded-lg bg-soft-gray-50 flex items-center justify-center text-soft-gray-400 group-hover:bg-blue-50 group-hover:text-blue-500 transition-colors">
+                                        <i class="bi bi-patch-check"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-[10px] font-bold text-soft-gray-500 uppercase tracking-widest leading-none">Product Cert.</p>
+                                        <p class="text-xs font-bold text-soft-gray-700 group-hover:text-soft-gray-900 leading-none mt-1">View Certificate</p>
+                                    </div>
+                                </a>
+                            @endif
+                        </div>
+                    @endif
+                </div>
+            </div>
                 </div>
             </div>
 
@@ -704,7 +782,7 @@
             <div id="business-tabs" x-data="{
                 activeTab: '{{ session('activeTab', $business->isProductMode() ? 'products' : 'services') }}'
             }"
-                class="bg-white shadow-lg sm:rounded-2xl border border-soft-gray-100">
+                class="mt-10 bg-white shadow-lg sm:rounded-2xl border border-soft-gray-100">
                 <div class="border-b-2 border-soft-gray-100">
                     <nav class="flex -mb-px px-6 overflow-x-auto">
                         @if ($business->isProductMode())
@@ -796,8 +874,8 @@
                         @if ($business->products->count() > 0)
                             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                 @foreach ($business->products as $product)
-                                    <div
-                                        class="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition duration-150">
+                                    <div @click="if(!event.target.closest('button') && !event.target.closest('a')) window.location='{{ route('businesses.products.show', [$business, $product]) }}'"
+                                        class="group border border-gray-200 rounded-lg overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer bg-white">
                                         {{-- Product Image / Carousel --}}
                                         <div class="relative overflow-hidden group" x-data="{
                                             currentIndex: 0,
@@ -828,8 +906,8 @@
                                                             x-transition:leave="transition ease-in duration-300"
                                                             x-transition:leave-start="opacity-100"
                                                             x-transition:leave-end="opacity-0"
-                                                            class="absolute inset-0 cursor-zoom-in"
-                                                            @click="openFullscreen('{{ storage_image_url($photo->photo_url, 'gallery') }}', '{{ addslashes($product->name) }}')">
+                                                            class="absolute inset-0 cursor-pointer"
+                                                            >
                                                             <img src="{{ storage_image_url($photo->photo_url, 'gallery_thumb') }}"
                                                                 alt="{{ $product->name }}"
                                                                 class="w-full h-full object-cover">
@@ -888,20 +966,8 @@
                                             <p class="text-sm text-gray-600 mb-3 line-clamp-2">
                                                 {{ $product->description }}</p>
 
-                                            {{-- Action Buttons --}}
-                                            @auth
-                                                @if ($canManageBusiness)
-                                                    <div class="flex items-center gap-2 pt-3 border-t border-gray-200">
-                                                        <a href="{{ route('businesses.products.show', [$business, $product]) }}"
-                                                            class="flex-1 inline-flex items-center justify-center px-4 py-2.5 bg-gray-50 text-gray-500 text-sm font-bold rounded-xl hover:bg-gray-900 hover:text-white transition-all duration-300 group"
-                                                            title="View Details">
-                                                            <i
-                                                                class="bi bi-eye text-lg me-2 group-hover:scale-110 transition-transform"></i>
-                                                            Show Details
-                                                        </a>
-                                                    </div>
-                                                @endif
-                                            @endauth
+                                            {{-- Content padding adjustment to make it look balanced without the button --}}
+                                            <div class="pt-2"></div>
                                         </div>
                                     </div>
                                 @endforeach
@@ -957,8 +1023,8 @@
                         @if ($business->services->count() > 0)
                             <div class="space-y-3">
                                 @foreach ($business->services as $service)
-                                    <div
-                                        class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition duration-150">
+                                    <div @click="if(!event.target.closest('button') && !event.target.closest('a')) window.location='{{ route('businesses.services.show', [$business, $service]) }}'"
+                                        class="group border border-gray-200 rounded-lg p-5 hover:bg-gray-50 hover:shadow-md transition-all duration-300 cursor-pointer bg-white">
                                         <div class="flex items-start justify-between">
                                             <div class="flex-1">
                                                 <h4 class="font-semibold text-gray-900 mb-1">{{ $service->name }}</h4>

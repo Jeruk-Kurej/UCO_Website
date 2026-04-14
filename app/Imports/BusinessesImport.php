@@ -54,10 +54,10 @@ class BusinessesImport implements ToModel, WithHeadingRow, WithValidation, WithC
     /**
      * Detect if the Excel data is student/user data instead of business data
      */
-    private function isStudentData(array $row): bool
+     private function isStudentData(array $row): bool
     {
         // Check for student-specific columns
-        $studentColumns = ['nis', 'nisn', 'prodi', 'angkatan', 'student_year', 'major', 'jurusan', 'ipk', 'cgpa'];
+        $studentColumns = ['nis', 'nisn', 'prodi', 'angkatan', 'student_year', 'major', 'jurusan', 'ipk', 'cgpa', 'nim'];
         
         $studentColumnCount = 0;
         foreach ($studentColumns as $column) {
@@ -65,9 +65,28 @@ class BusinessesImport implements ToModel, WithHeadingRow, WithValidation, WithC
                 $studentColumnCount++;
             }
         }
+
+        // Check for core business columns that would indicate this is actually a business row
+        $businessColumns = [
+            'nama_bisnisventura', 'nama_perusahaan_tempat_bekerja', 'nama_perusahaan_tempat_bekerja_jika_intraprenuer',
+            'nama_bisnis', 'business_name', 'nama_aktivitaspekerjaan', 'posisi_saat_ini', 'nama_aktivitas'
+        ];
         
-        // If 3 or more student columns exist, this is likely student data
-        if ($studentColumnCount >= 3) {
+        $hasBusinessData = false;
+        foreach ($businessColumns as $column) {
+            if (!empty($row[$column])) {
+                $hasBusinessData = true;
+                break;
+            }
+        }
+        
+        // If it has business data, it's NOT just student data, regardless of student columns
+        if ($hasBusinessData) {
+            return false;
+        }
+        
+        // If 5 or more student columns exist and NO business data, this is likely purely student data
+        if ($studentColumnCount >= 5) {
             return true;
         }
         
@@ -119,6 +138,8 @@ class BusinessesImport implements ToModel, WithHeadingRow, WithValidation, WithC
                 ?? $row['nama_bisnis_ventura'] 
                 ?? $row['nama_perusahaan_tempat_bekerja_jika_intraprenuer'] 
                 ?? $row['nama_perusahaan_tempat_bekerja'] 
+                ?? $row['nama_aktivitaspekerjaan']
+                ?? $row['nama_aktivitas']
                 ?? $row['business_name'] 
                 ?? $row['nama_bisnis'] 
                 ?? null;
@@ -181,6 +202,7 @@ class BusinessesImport implements ToModel, WithHeadingRow, WithValidation, WithC
             $businessTypeName = $row['jenis_usaha_dari_perusahaan_tempat_anda_bekerja_saat_ini_jika_intraprenuer'] 
                 ?? $row['jenis_bisnisventura_yang_anda_jalankan_saat_ini'] 
                 ?? $row['jenis_usaha_dari_perusahaan_tempat_anda_bekerja_saat_ini_jika_intraprenuer_atau_jenis_bisnisventura_yang_anda_jalankan_saat_ini'] 
+                ?? $row['jenis_aktivitas_yang_anda_jalankan_saat_ini']
                 ?? $row['jenis_bisnisventura'] 
                 ?? $row['jenis_bisnis_ventura'] 
                 ?? $row['kategori_bisnis'] 
@@ -221,6 +243,7 @@ class BusinessesImport implements ToModel, WithHeadingRow, WithValidation, WithC
             // Excel headers: "Posisi saat ini (jika intraprenuer)" or "Posisi saat ini"
             $position = $row['posisi_saat_ini_jika_intraprenuer'] 
                 ?? $row['posisi_saat_ini'] 
+                ?? $row['posisi_pekerjaan_yang_sedang_dicari']
                 ?? $row['position'] 
                 ?? $row['posisi'] 
                 ?? $row['jabatan']
@@ -234,6 +257,8 @@ class BusinessesImport implements ToModel, WithHeadingRow, WithValidation, WithC
                 'position' => $position,
                 'description' => $description ?: (
                     $row['deskripsi_bisnis'] ?? 
+                    $row['deskripsi_perusahaan_tempat_bekerja_jika_intraprenuer'] ??
+                    $row['deskripsi_aktivitas'] ??
                     $row['deskripsi'] ?? 
                     $row['description'] ?? 
                     $row['business_description'] ?? 
@@ -426,6 +451,7 @@ class BusinessesImport implements ToModel, WithHeadingRow, WithValidation, WithC
         
         // Look for challenge-related fields
         $challengeFields = [
+            'tantangan_yang_dihadapi_seorang_entrepreneur',
             'main_focus_entrepreneur',
             'capital_for_entrepreneur',
             'netserviceinya_others_tidak_bekerja',
@@ -532,7 +558,11 @@ class BusinessesImport implements ToModel, WithHeadingRow, WithValidation, WithC
      */
     private function parseEmployeeCount(array $row): ?int
     {
-        $employeeField = $row['sberlitik_2023_02_2_sumatoini'] ?? null;
+        $employeeField = $row['jumlah_karyawan'] 
+            ?? $row['employee_count']
+            ?? $row['jumlah_pegawai']
+            ?? $row['sberlitik_2023_02_2_sumatoini'] 
+            ?? null;
         
         if ($employeeField && is_numeric($employeeField)) {
             return (int) $employeeField;
@@ -546,7 +576,14 @@ class BusinessesImport implements ToModel, WithHeadingRow, WithValidation, WithC
      */
     private function parseRevenueRange(array $row): ?string
     {
-        $revenueField = $row['sberlitik_2023_02_2_sumatoini_1_yene_jmist'] ?? null;
+        $revenueField = $row['omzet_per_tahun_dari_salah_satu_bisnis_saat_ini_jika_entrepreneurmelanjutkan_bisnis_orang_tua']
+            ?? $row['pendapatan_per_tahun']
+            ?? $row['pendapatan_per_bulan_saat_ini_jika_intraprenuer']
+            ?? $row['pendapatan_per_tahun_saat_ini']
+            ?? $row['omzet_per_tahun']
+            ?? $row['revenue_range']
+            ?? $row['sberlitik_2023_02_2_sumatoini_1_yene_jmist'] 
+            ?? null;
         
         if ($revenueField) {
             return $revenueField;
@@ -607,7 +644,7 @@ class BusinessesImport implements ToModel, WithHeadingRow, WithValidation, WithC
                     }
 
                     // Determine if this column is likely a logo
-                    if (preg_match('/logo|logo_usaha|logo_kantor|logo_perusahaan/i', $col)) {
+                    if (preg_match('/logo|logo_usaha|logo_kantor|logo_perusahaan|logo_usahaperusahaan/i', $col)) {
                         $business->logo_url = $publicUrl;
                         $business->save();
                     } else {

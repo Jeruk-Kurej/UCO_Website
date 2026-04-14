@@ -132,6 +132,11 @@ class BusinessController extends Controller
                 $validated['status'] = $request->input('status', Business::STATUS_APPROVED);
             }
 
+            // Ensure checkboxes and dynamic arrays have defaults if missing from request
+            $validated['business_challenges'] = $request->input('business_challenges', []);
+            $validated['is_from_college_project'] = $request->boolean('is_from_college_project');
+            $validated['is_continued_after_graduation'] = $request->boolean('is_continued_after_graduation');
+
             $selectedOwnerIds = [];
             if ($user->isAdmin()) {
                 $selectedOwnerIds = collect($request->input('owner_ids', []))
@@ -194,15 +199,30 @@ class BusinessController extends Controller
             }
             $validated['product_certifications'] = !empty($certifications) ? $certifications : null;
 
-            // Handle certification path (single PDF)
-            if ($request->hasFile('certification_path')) {
-                $certPath = $request->file('certification_path')->store('businesses/documents', 'public');
-                $validated['certification_path'] = $certPath;
+            // Consolidate established_date
+            if (!empty($validated['establishment_date'])) {
+                $validated['established_date'] = $validated['establishment_date'];
             }
+            unset($validated['establishment_date']);
 
             $productRows = $validated['products'] ?? [];
             $serviceRows = $validated['services'] ?? [];
             unset($validated['products'], $validated['services']);
+
+            // Move extra fields into additional_data JSON
+            $additionalDataKeys = [
+                'phone', 'email', 'website', 'instagram_handle', 'whatsapp_number',
+                'product_name', 'product_description', 'unique_value_proposition', 
+                'target_market', 'customer_base_size', 'operational_status'
+            ];
+            $additionalData = [];
+            foreach ($additionalDataKeys as $key) {
+                if (array_key_exists($key, $validated)) {
+                    $additionalData[$key] = $validated[$key];
+                    unset($validated[$key]);
+                }
+            }
+            $validated['additional_data'] = $additionalData;
 
             $business = Business::create($validated);
 
@@ -217,7 +237,7 @@ class BusinessController extends Controller
             }
 
             return redirect()
-                ->route('businesses.my')
+                ->route($user->isAdmin() ? 'businesses.index' : 'businesses.my')
                 ->with('success', "Success! The business '{$business->name}' has been registered and is now waiting for approval.");
         } catch (\Exception $e) {
             return back()->withErrors(['error' => 'An error occurred while creating the business. Please try again.'])->withInput();
@@ -303,6 +323,12 @@ class BusinessController extends Controller
             if (!$user->isAdmin()) {
                 unset($validated['user_id']);
             }
+
+            // Ensure checkboxes and dynamic arrays have defaults if missing from request
+            // This fixes the bug where removing all challenges or unchecking boxes didn't clear the DB
+            $validated['business_challenges'] = $request->input('business_challenges', []);
+            $validated['is_from_college_project'] = $request->boolean('is_from_college_project');
+            $validated['is_continued_after_graduation'] = $request->boolean('is_continued_after_graduation');
 
             $selectedOwnerIds = [];
             if ($user->isAdmin()) {
@@ -427,10 +453,18 @@ class BusinessController extends Controller
             $serviceRows = $validated['services'] ?? [];
             unset($validated['products'], $validated['services']);
 
+            // Consolidate established_date
+            if (!empty($validated['establishment_date'])) {
+                $validated['established_date'] = $validated['establishment_date'];
+            }
+            unset($validated['establishment_date']);
+
             // Move extra fields into additional_data JSON (merge with existing)
-            $additionalDataKeys = ['phone', 'email', 'website', 'instagram_handle', 'whatsapp_number',
-                'product_name', 'product_description', 'unique_value_proposition', 'target_market',
-                'customer_base_size', 'establishment_date', 'operational_status'];
+            $additionalDataKeys = [
+                'phone', 'email', 'website', 'instagram_handle', 'whatsapp_number',
+                'product_name', 'product_description', 'unique_value_proposition', 
+                'target_market', 'customer_base_size', 'operational_status'
+            ];
             $additionalData = $business->additional_data ?? [];
             foreach ($additionalDataKeys as $key) {
                 if (array_key_exists($key, $validated)) {
@@ -453,7 +487,7 @@ class BusinessController extends Controller
             }
 
             return redirect()
-                ->route('businesses.my')
+                ->route($user->isAdmin() ? 'businesses.index' : 'businesses.my')
                 ->with('success', "Success! The details for '{$business->name}' have been updated.");
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error('Update error: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
