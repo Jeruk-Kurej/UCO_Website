@@ -1,8 +1,68 @@
-@use('Illuminate\Support\Facades\Storage')
-
 <x-app-layout>
+    @push('styles')
+        <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.default.min.css" rel="stylesheet">
+        <style>
+            .ts-wrapper {
+                width: 100% !important;
+                display: block !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                box-sizing: border-box !important;
+            }
+
+            .ts-wrapper .ts-control {
+                border: 1px solid #e2e8f0 !important;
+                border-radius: 0.75rem !important;
+                padding: 10px 16px !important; 
+                min-height: 42px !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+                transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+                box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+                background: white !important;
+                display: flex !important;
+                align-items: center !important;
+            }
+
+            .ts-wrapper.focus .ts-control {
+                border-color: #111827 !important; /* Soft Gray 900 */
+                box-shadow: 0 0 0 4px rgba(17, 24, 39, 0.05) !important;
+                ring: none !important;
+            }
+
+            .ts-dropdown {
+                background-color: white !important;
+                border: 1px solid #e2e8f0 !important;
+                border-radius: 1rem !important;
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+                margin-top: 6px !important;
+                padding: 6px !important;
+                z-index: 1000 !important;
+            }
+
+            .ts-dropdown .option {
+                padding: 8px 12px !important;
+                font-size: 13px !important;
+                color: #475569 !important;
+                border-radius: 0.75rem !important;
+                margin-bottom: 2px !important;
+                transition: all 0.15s ease !important;
+            }
+
+            .ts-dropdown .option.active {
+                background-color: #fff7ed !important;
+                color: #f97316 !important;
+                font-weight: 600 !important;
+            }
+
+            .ts-wrapper .ts-control>input {
+                font-size: 14px !important;
+            }
+        </style>
+    @endpush
     <div class="w-full max-w-[1600px] 2xl:max-w-[1720px] mx-auto py-8" x-data="{ activeTab: 'basic' }">
         
+
 
 
 
@@ -211,7 +271,7 @@
                     <div>
                         <label for="religion" class="block text-sm font-medium text-gray-700 mb-2">Religion</label>
                         <select name="religion" id="religion" 
-                                class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
+                                class="block w-full">
                             <option value="">-- Select Religion --</option>
                             <option value="Islam" {{ old('religion', $user->religion) == 'Islam' ? 'selected' : '' }}>Islam</option>
                             <option value="Christian" {{ old('religion', $user->religion) == 'Christian' ? 'selected' : '' }}>Christian</option>
@@ -338,7 +398,22 @@
         </form>
     </div>
 
-<script>
-        document.addEventListener('DOMContentLoaded', () => ucoInitImagePreview('profile_photo', 'edit-profile-preview', 10, true));
-    </script>
+    @push('scripts')
+        <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                ucoInitImagePreview('profile_photo', 'edit-profile-preview', 10, true);
+                
+                // Initialize TomSelect for religion
+                const religionSelect = document.getElementById("religion");
+                if (religionSelect && window.TomSelect) {
+                    new TomSelect(religionSelect, {
+                        create: false,
+                        placeholder: "-- Select Religion --",
+                        searchField: ["text"],
+                    });
+                }
+            });
+        </script>
+    @endpush
 </x-app-layout>

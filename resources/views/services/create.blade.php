@@ -1,4 +1,65 @@
 <x-app-layout>
+    @push('styles')
+        <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.default.min.css" rel="stylesheet">
+        <style>
+            .ts-wrapper {
+                width: 100% !important;
+                display: block !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                box-sizing: border-box !important;
+            }
+
+            .ts-wrapper .ts-control {
+                border: 1px solid #e2e8f0 !important;
+                border-radius: 0.75rem !important;
+                padding: 10px 16px !important; 
+                min-height: 42px !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+                transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+                box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+                background: white !important;
+                display: flex !important;
+                align-items: center !important;
+            }
+
+            .ts-wrapper.focus .ts-control {
+                border-color: #111827 !important; /* Soft Gray 900 */
+                box-shadow: 0 0 0 4px rgba(17, 24, 39, 0.05) !important;
+                ring: none !important;
+            }
+
+            .ts-dropdown {
+                background-color: white !important;
+                border: 1px solid #e2e8f0 !important;
+                border-radius: 1rem !important;
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+                margin-top: 6px !important;
+                padding: 6px !important;
+                z-index: 1000 !important;
+            }
+
+            .ts-dropdown .option {
+                padding: 8px 12px !important;
+                font-size: 13px !important;
+                color: #475569 !important;
+                border-radius: 0.75rem !important;
+                margin-bottom: 2px !important;
+                transition: all 0.15s ease !important;
+            }
+
+            .ts-dropdown .option.active {
+                background-color: #fff7ed !important;
+                color: #f97316 !important;
+                font-weight: 600 !important;
+            }
+
+            .ts-wrapper .ts-control>input {
+                font-size: 14px !important;
+            }
+        </style>
+    @endpush
     <div class="max-w-5xl mx-auto">
         {{-- Page Header --}}
         <div class="mb-6 flex flex-col sm:flex-row sm:items-center gap-4">
@@ -81,7 +142,7 @@
                         <select name="price_type" 
                                 id="price_type" 
                                 required
-                                class="block w-full rounded-xl border-gray-200 shadow-sm focus:border-soft-gray-900 focus:ring-soft-gray-900 sm:text-sm @error('price_type') border-red-500 @enderror">
+                                class="block w-full">
                             <option value="">-- Select Price Type --</option>
                             <option value="fixed" {{ old('price_type') === 'fixed' ? 'selected' : '' }}>Fixed Price</option>
                             <option value="starting_from" {{ old('price_type') === 'starting_from' ? 'selected' : '' }}>Starting From</option>
@@ -107,4 +168,19 @@
             </div>
         </div>
     </div>
+    @push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const priceTypeSelect = document.getElementById("price_type");
+            if (priceTypeSelect && window.TomSelect) {
+                new TomSelect(priceTypeSelect, {
+                    create: false,
+                    placeholder: "-- Select Price Type --",
+                    searchField: ["text"],
+                });
+            }
+        });
+    </script>
+    @endpush
 </x-app-layout>

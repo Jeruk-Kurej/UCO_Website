@@ -301,7 +301,7 @@
                 <div class="grid md:grid-cols-2 gap-5">
                     <div>
                         <label for="instagram_handle" class="block text-sm font-medium text-gray-700 mb-2">
-                            Instagram Handle
+                            Instagram
                         </label>
                         <div class="relative">
                             <span class="absolute left-4 top-3.5 text-slate-400">@</span>
@@ -881,237 +881,8 @@
     </div>
 
 
-    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
-    {{-- JavaScript for Dynamic Fields and Client-Side Validation --}}
-    <script>
-        let productIndex = 0;
-        let serviceIndex = 0;
 
-        async function loadRegenciesByProvince(provinceId, citySelect, selectedCity = null) {
-            if (!provinceId) {
-                citySelect.innerHTML = '<option value="" disabled selected>Pilih Provinsi terlebih dahulu</option>';
-                citySelect.disabled = true;
-                return;
-            }
 
-            citySelect.innerHTML = '<option value="" disabled selected>Pilih Kota/Kabupaten</option>';
-            citySelect.disabled = false;
-
-            try {
-                const response = await fetch(`{{ route('regions.regencies') }}?province_id=${provinceId}`);
-                const regencies = await response.json();
-
-                regencies.forEach((regency) => {
-                    const option = document.createElement('option');
-                    option.value = regency.name;
-                    option.textContent = regency.name;
-                    if (selectedCity && selectedCity === regency.name) {
-                        option.selected = true;
-                    }
-                    citySelect.appendChild(option);
-                });
-            } catch (error) {
-                citySelect.disabled = true;
-            }
-        }
-
-        function addChallenge() {
-            const container = document.getElementById('challengesContainer');
-            const newChallenge = document.createElement('div');
-            newChallenge.className = 'flex gap-2';
-            newChallenge.innerHTML = `
-                <input type="text" 
-                       name="business_challenges[]" 
-                       class="flex-1 px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 transition"
-                       placeholder="Masukkan tantangan">
-                <button type="button" 
-                        onclick="this.parentElement.remove()"
-                        class="px-4 py-2 bg-red-100 text-red-700 rounded-xl hover:bg-red-200 transition">
-                    ✖
-                </button>
-            `;
-            container.appendChild(newChallenge);
-        }
-
-        function addProductRow(data = {}) {
-            const container = document.getElementById('productsContainer');
-            const idx = productIndex++;
-            const element = document.createElement('div');
-            element.className = 'product-item border border-slate-200 rounded-xl p-4 bg-white';
-            element.innerHTML = `
-                <div class="flex justify-between items-center mb-3">
-                    <p class="text-xs font-semibold text-slate-500">Produk Baru</p>
-                    <button type="button" onclick="this.closest('.product-item').remove()" class="text-xs px-2 py-1 rounded-lg bg-red-50 text-red-600 hover:bg-red-100">Hapus</button>
-                </div>
-                <div class="grid md:grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-xs text-slate-600 mb-1">Nama Produk</label>
-                        <input type="text" name="products[${idx}][name]" value="${data.name || ''}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="Contoh: Kopi Arabica 250gr">
-                    </div>
-                    <div>
-                        <label class="block text-xs text-slate-600 mb-1">Harga</label>
-                        <input type="number" step="0.01" min="0" name="products[${idx}][price]" value="${data.price || ''}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="50000">
-                    </div>
-                </div>
-                <div class="mt-3">
-                    <label class="block text-xs text-slate-600 mb-1">Deskripsi</label>
-                    <textarea name="products[${idx}][description]" rows="2" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="Deskripsi produk...">${data.description || ''}</textarea>
-                </div>
-            `;
-            container.appendChild(element);
-        }
-
-        function addServiceRow(data = {}) {
-            const container = document.getElementById('servicesContainer');
-            const idx = serviceIndex++;
-            const element = document.createElement('div');
-            element.className = 'service-item border border-slate-200 rounded-xl p-4 bg-white';
-            element.innerHTML = `
-                <div class="flex justify-between items-center mb-3">
-                    <p class="text-xs font-semibold text-slate-500">Layanan Baru</p>
-                    <button type="button" onclick="this.closest('.service-item').remove()" class="text-xs px-2 py-1 rounded-lg bg-red-50 text-red-600 hover:bg-red-100">Hapus</button>
-                </div>
-                <div class="grid md:grid-cols-3 gap-3">
-                    <div>
-                        <label class="block text-xs text-slate-600 mb-1">Nama Layanan</label>
-                        <input type="text" name="services[${idx}][name]" value="${data.name || ''}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="Contoh: Konsultasi Branding">
-                    </div>
-                    <div>
-                        <label class="block text-xs text-slate-600 mb-1">Tipe Harga</label>
-                        <input type="text" name="services[${idx}][price_type]" value="${data.price_type || 'fixed'}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="fixed / per session / per hour">
-                    </div>
-                    <div>
-                        <label class="block text-xs text-slate-600 mb-1">Harga</label>
-                        <input type="number" step="0.01" min="0" name="services[${idx}][price]" value="${data.price || ''}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="150000">
-                    </div>
-                </div>
-                <div class="mt-3">
-                    <label class="block text-xs text-slate-600 mb-1">Deskripsi</label>
-                    <textarea name="services[${idx}][description]" rows="2" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="Deskripsi layanan...">${data.description || ''}</textarea>
-                </div>
-            `;
-            container.appendChild(element);
-        }
-
-        function bindMultiFileList(inputId, listId) {
-            const input = document.getElementById(inputId);
-            const list = document.getElementById(listId);
-            if (!input || !list) return;
-
-            input.addEventListener('change', () => {
-                list.innerHTML = '';
-                if (!input.files || input.files.length === 0) return;
-
-                Array.from(input.files).forEach((file) => {
-                    const li = document.createElement('li');
-                    const sizeMb = (file.size / (1024 * 1024)).toFixed(2);
-                    li.textContent = `${file.name} (${sizeMb} MB)`;
-                    list.appendChild(li);
-                });
-            });
-        }
-
-        // Client-side form validation
-        let toastTimeout = null;
-
-        function showValidationToast(msg) {
-            const toast = document.getElementById('validationToast');
-            const toastMsg = document.getElementById('validationToastMsg');
-            if (msg) toastMsg.textContent = msg;
-            toast.classList.remove('hidden');
-            requestAnimationFrame(() => {
-                toast.classList.remove('translate-y-[-8px]', 'opacity-0');
-                toast.classList.add('translate-y-0', 'opacity-100');
-            });
-            if (toastTimeout) clearTimeout(toastTimeout);
-            toastTimeout = setTimeout(() => hideValidationToast(), 6000);
-        }
-
-        function hideValidationToast() {
-            const toast = document.getElementById('validationToast');
-            toast.classList.remove('translate-y-0', 'opacity-100');
-            toast.classList.add('translate-y-[-8px]', 'opacity-0');
-            setTimeout(() => toast.classList.add('hidden'), 300);
-        }
-
-        document.getElementById('businessCreateForm').addEventListener('submit', function(e) {
-            // Remove previous error styling
-            this.querySelectorAll('.validation-error-border').forEach(el => {
-                el.classList.remove('validation-error-border', 'border-red-400', 'ring-2', 'ring-red-100');
-            });
-            this.querySelectorAll('.validation-error-msg').forEach(el => el.remove());
-
-            const requiredFields = this.querySelectorAll('[required]');
-            let firstInvalid = null;
-            const emptyLabels = [];
-
-            requiredFields.forEach(field => {
-                if (field.type === 'file') return;
-                const val = (field.value || '').trim();
-                if (!val || (field.tagName === 'SELECT' && val === '')) {
-                    field.classList.add('validation-error-border', 'border-red-400', 'ring-2', 'ring-red-100');
-                    
-                    const wrapper = field.closest('div');
-                    const label = wrapper ? wrapper.querySelector('label') : null;
-                    const labelText = label ? label.textContent.replace('*', '').trim() : field.name;
-                    emptyLabels.push(labelText);
-
-                    if (wrapper && !wrapper.querySelector('.validation-error-msg')) {
-                        const errMsg = document.createElement('p');
-                        errMsg.className = 'validation-error-msg mt-1.5 text-sm text-red-600 flex items-center gap-1.5';
-                        errMsg.innerHTML = '<svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg> <span>' + labelText + ' wajib diisi</span>';
-                        field.insertAdjacentElement('afterend', errMsg);
-                    }
-
-                    if (!firstInvalid) firstInvalid = field;
-
-                    field.addEventListener('input', function handler() {
-                        this.classList.remove('validation-error-border', 'border-red-400', 'ring-2', 'ring-red-100');
-                        const nextErr = this.parentElement.querySelector('.validation-error-msg') || (this.nextElementSibling && this.nextElementSibling.classList.contains('validation-error-msg') ? this.nextElementSibling : null);
-                        if (nextErr) nextErr.remove();
-                        this.removeEventListener('input', handler);
-                    }, { once: true });
-
-                    field.addEventListener('change', function handler() {
-                        this.classList.remove('validation-error-border', 'border-red-400', 'ring-2', 'ring-red-100');
-                        const nextErr = this.parentElement.querySelector('.validation-error-msg') || (this.nextElementSibling && this.nextElementSibling.classList.contains('validation-error-msg') ? this.nextElementSibling : null);
-                        if (nextErr) nextErr.remove();
-                        this.removeEventListener('change', handler);
-                    }, { once: true });
-                }
-            });
-
-            if (firstInvalid) {
-                e.preventDefault();
-
-                // Find which tab the field belongs to and switch to it
-                const tabPanel = firstInvalid.closest('[x-show]');
-                let tabSwitched = false;
-                if (tabPanel) {
-                    const xShow = tabPanel.getAttribute('x-show');
-                    const match = xShow.match(/activeTab\s*===\s*'([\w]+)'/);
-                    if (match) {
-                        const targetTab = match[1];
-                        // Alpine v3: find the root x-data element and use Alpine.$data()
-                        const rootEl = document.querySelector('[x-data*="activeTab"]');
-                        if (rootEl && window.Alpine) {
-                            Alpine.$data(rootEl).activeTab = targetTab;
-                            tabSwitched = true;
-                        }
-                    }
-                }
-
-                // Wait for tab to become visible before scrolling
-                const scrollDelay = tabSwitched ? 350 : 100;
-                setTimeout(() => {
-                    firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    firstInvalid.focus();
-                }, scrollDelay);
-
-                const count = emptyLabels.length;
-                showValidationToast('Ada ' + count + ' field wajib yang belum diisi: ' + emptyLabels.slice(0, 3).join(', ') + (count > 3 ? '...' : ''));
-            }
-        });
 
 @push('styles')
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.default.min.css" rel="stylesheet">
@@ -1139,8 +910,8 @@
         }
 
         .ts-wrapper.focus .ts-control {
-            border-color: #f97316 !important; /* UCO Orange Focus */
-            box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.1) !important;
+            border-color: #111827 !important; /* Dark Slate / Soft Gray 900 */
+            box-shadow: 0 0 0 4px rgba(17, 24, 39, 0.05) !important;
             ring: none !important;
         }
 
@@ -1239,6 +1010,179 @@
 @push('scripts')
     <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
     <script>
+        let productIndex = 0;
+        let serviceIndex = 0;
+
+        function addChallenge() {
+            const container = document.getElementById('challengesContainer');
+            const newChallenge = document.createElement('div');
+            newChallenge.className = 'flex gap-2';
+            newChallenge.innerHTML = `
+                <input type="text" 
+                       name="business_challenges[]" 
+                       class="flex-1 px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 transition"
+                       placeholder="Masukkan tantangan">
+                <button type="button" 
+                        onclick="this.parentElement.remove()"
+                        class="px-4 py-2 bg-red-100 text-red-700 rounded-xl hover:bg-red-200 transition">
+                    ✖
+                </button>
+            `;
+            container.appendChild(newChallenge);
+        }
+
+        function addProductRow(data = {}) {
+            const container = document.getElementById('productsContainer');
+            const idx = productIndex++;
+            const element = document.createElement('div');
+            element.className = 'product-item border border-slate-200 rounded-xl p-4 bg-white';
+            element.innerHTML = `
+                <div class="flex justify-between items-center mb-3">
+                    <p class="text-xs font-semibold text-slate-500">Produk Baru</p>
+                    <button type="button" onclick="this.closest('.product-item').remove()" class="text-xs px-2 py-1 rounded-lg bg-red-50 text-red-600 hover:bg-red-100">Hapus</button>
+                </div>
+                <div class="grid md:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs text-slate-600 mb-1">Nama Produk</label>
+                        <input type="text" name="products[${idx}][name]" value="${data.name || ''}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="Contoh: Kopi Arabica 250gr">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-600 mb-1">Harga</label>
+                        <input type="number" step="0.01" min="0" name="products[${idx}][price]" value="${data.price || ''}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="50000">
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <label class="block text-xs text-slate-600 mb-1">Deskripsi</label>
+                    <textarea name="products[${idx}][description]" rows="2" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="Deskripsi produk...">${data.description || ''}</textarea>
+                </div>
+            `;
+            container.appendChild(element);
+        }
+
+        function addServiceRow(data = {}) {
+            const container = document.getElementById('servicesContainer');
+            const idx = serviceIndex++;
+            const element = document.createElement('div');
+            element.className = 'service-item border border-slate-200 rounded-xl p-4 bg-white';
+            element.innerHTML = `
+                <div class="flex justify-between items-center mb-3">
+                    <p class="text-xs font-semibold text-slate-500">Layanan Baru</p>
+                    <button type="button" onclick="this.closest('.service-item').remove()" class="text-xs px-2 py-1 rounded-lg bg-red-50 text-red-600 hover:bg-red-100">Hapus</button>
+                </div>
+                <div class="grid md:grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-xs text-slate-600 mb-1">Nama Layanan</label>
+                        <input type="text" name="services[${idx}][name]" value="${data.name || ''}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="Contoh: Konsultasi Branding">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-600 mb-1">Tipe Harga</label>
+                        <input type="text" name="services[${idx}][price_type]" value="${data.price_type || 'fixed'}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="fixed / per session / per hour">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-600 mb-1">Harga</label>
+                        <input type="number" step="0.01" min="0" name="services[${idx}][price]" value="${data.price || ''}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="150000">
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <label class="block text-xs text-slate-600 mb-1">Deskripsi</label>
+                    <textarea name="services[${idx}][description]" rows="2" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="Deskripsi layanan...">${data.description || ''}</textarea>
+                </div>
+            `;
+            container.appendChild(element);
+        }
+
+        function bindMultiFileList(inputId, listId) {
+            const input = document.getElementById(inputId);
+            const list = document.getElementById(listId);
+            if (!input || !list) return;
+
+            input.addEventListener('change', () => {
+                list.innerHTML = '';
+                if (!input.files || input.files.length === 0) return;
+
+                Array.from(input.files).forEach((file) => {
+                    const li = document.createElement('li');
+                    const sizeMb = (file.size / (1024 * 1024)).toFixed(2);
+                    li.textContent = `${file.name} (${sizeMb} MB)`;
+                    list.appendChild(li);
+                });
+            });
+        }
+
+        async function loadRegenciesByProvince(provinceId, citySelect, cityTSInstance = null) {
+            if (!provinceId) {
+                if (cityTSInstance) {
+                    cityTSInstance.clearOptions();
+                    cityTSInstance.disable();
+                }
+                citySelect.innerHTML = '<option value="" disabled selected>Pilih Provinsi terlebih dahulu</option>';
+                citySelect.disabled = true;
+                return;
+            }
+
+            // Show loading state in raw select for screen readers/fallback
+            citySelect.innerHTML = '<option value="" disabled selected>Memuat kota...</option>';
+            citySelect.disabled = false;
+            
+            if (cityTSInstance) {
+                cityTSInstance.clearOptions();
+                cityTSInstance.enable();
+                // Optionally show a loading placeholder in TomSelect if needed, but clearing is usually enough
+            }
+
+            try {
+                const response = await fetch(`{{ route('regions.regencies') }}?province_id=${provinceId}`, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+                if (!response.ok) throw new Error('Failed to fetch regencies');
+                const regencies = await response.json();
+
+                if (cityTSInstance) {
+                    const options = regencies.map(r => ({ value: r.name, text: r.name }));
+                    cityTSInstance.addOptions(options);
+                    cityTSInstance.refreshOptions(false);
+                } else {
+                    citySelect.innerHTML = '<option value="" disabled selected>Pilih Kota/Kabupaten</option>';
+                    regencies.forEach((regency) => {
+                        const option = document.createElement('option');
+                        option.value = regency.name;
+                        option.textContent = regency.name;
+                        citySelect.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error("Error loading regencies:", error);
+                citySelect.disabled = true;
+                if (cityTSInstance) cityTSInstance.disable();
+            }
+        }
+
+        // Client-side form validation
+        let toastTimeout = null;
+
+        function showValidationToast(msg) {
+            const toast = document.getElementById('validationToast');
+            const toastMsg = document.getElementById('validationToastMsg');
+            if (msg) toastMsg.textContent = msg;
+            toast.classList.remove('hidden');
+            requestAnimationFrame(() => {
+                toast.classList.remove('translate-y-[-8px]', 'opacity-0');
+                toast.classList.add('translate-y-0', 'opacity-100');
+            });
+            if (toastTimeout) clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => hideValidationToast(), 6000);
+        }
+
+        function hideValidationToast() {
+            const toast = document.getElementById('validationToast');
+            toast.classList.remove('translate-y-0', 'opacity-100');
+            toast.classList.add('translate-y-[-8px]', 'opacity-0');
+            setTimeout(() => toast.classList.add('hidden'), 300);
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             productIndex = document.querySelectorAll('#productsContainer .product-item').length;
             serviceIndex = document.querySelectorAll('#servicesContainer .service-item').length;
@@ -1253,10 +1197,51 @@
             const citySelect = document.getElementById('city');
             const UCO_PROVINCE_MAP = @json($provinces->pluck('id', 'name'));
 
-            provinceSelect.addEventListener('change', function () {
-                const provinceId = UCO_PROVINCE_MAP[this.value] || null;
-                loadRegenciesByProvince(provinceId, citySelect);
-            });
+            // Province & City TomSelect
+            let provinceTS = null;
+            let cityTS = null;
+
+            if (provinceSelect && window.TomSelect) {
+                provinceTS = new TomSelect(provinceSelect, {
+                    create: false,
+                    placeholder: "Pilih Provinsi",
+                    searchField: ["text"],
+                });
+
+                provinceTS.on('change', function (value) {
+                    const provinceId = UCO_PROVINCE_MAP[value] || null;
+                    loadRegenciesByProvince(provinceId, citySelect, cityTS);
+                });
+            }
+
+            if (citySelect && window.TomSelect) {
+                cityTS = new TomSelect(citySelect, {
+                    create: false,
+                    placeholder: "Pilih Kota/Kabupaten",
+                    searchField: ["text"],
+                });
+            }
+
+            // Initial trigger if province is pre-selected (e.g., from old input)
+            if (provinceTS && provinceTS.getValue()) {
+                const provinceId = UCO_PROVINCE_MAP[provinceTS.getValue()] || null;
+                const selectedCity = citySelect.dataset.selectedCity || null;
+                loadRegenciesByProvince(provinceId, citySelect, cityTS).then(() => {
+                    if (selectedCity && cityTS) {
+                        cityTS.setValue(selectedCity);
+                    }
+                });
+            }
+
+            // Initialize TomSelect for Business Type
+            const typeSelect = document.getElementById("business_type_id");
+            if (typeSelect && window.TomSelect) {
+                new TomSelect(typeSelect, {
+                    create: false,
+                    placeholder: "Select Category",
+                    searchField: ["text"],
+                });
+            }
 
             // Initialize TomSelect for owner selects
             const userIdSelect = document.getElementById("user_id");
@@ -1277,12 +1262,117 @@
                 });
             }
 
+            // Initialize TomSelect for Offering Type (Business Mode)
+            const modeSelect = document.getElementById("business_mode");
+            if (modeSelect && window.TomSelect) {
+                const ts = new TomSelect(modeSelect, {
+                    create: false,
+                    placeholder: "Select Offering Type",
+                    searchField: ["text"],
+                });
+                // Sync with Alpine.js
+                ts.on('change', (val) => {
+                    modeSelect.dispatchEvent(new Event('change', { bubbles: true }));
+                });
+            }
+
+            // Initialize TomSelect for Operational Status
+            const statusSelect = document.getElementById("operational_status");
+            if (statusSelect && window.TomSelect) {
+                new TomSelect(statusSelect, {
+                    create: false,
+                    placeholder: "Select Status",
+                    searchField: ["text"],
+                });
+            }
+
             // Initialize TomSelect for Revenue Range
             const revenueSelect = document.getElementById("revenue_range");
             if (revenueSelect && window.TomSelect) {
                 new TomSelect(revenueSelect, {
                     create: true,
                     placeholder: "Select or type revenue range",
+                });
+            }
+
+            // Form Submit Listener
+            const createForm = document.getElementById('businessCreateForm');
+            if (createForm) {
+                createForm.addEventListener('submit', function(e) {
+                    // Remove previous error styling
+                    this.querySelectorAll('.validation-error-border').forEach(el => {
+                        el.classList.remove('validation-error-border', 'border-red-400', 'ring-2', 'ring-red-100');
+                    });
+                    this.querySelectorAll('.validation-error-msg').forEach(el => el.remove());
+
+                    const requiredFields = this.querySelectorAll('[required]');
+                    let firstInvalid = null;
+                    const emptyLabels = [];
+
+                    requiredFields.forEach(field => {
+                        if (field.type === 'file') return;
+                        const val = (field.value || '').trim();
+                        if (!val || (field.tagName === 'SELECT' && val === '')) {
+                            field.classList.add('validation-error-border', 'border-red-400', 'ring-2', 'ring-red-100');
+                            
+                            const wrapper = field.closest('div');
+                            const label = wrapper ? wrapper.querySelector('label') : null;
+                            const labelText = label ? label.textContent.replace('*', '').trim() : field.name;
+                            emptyLabels.push(labelText);
+
+                            if (wrapper && !wrapper.querySelector('.validation-error-msg')) {
+                                const errMsg = document.createElement('p');
+                                errMsg.className = 'validation-error-msg mt-1.5 text-sm text-red-600 flex items-center gap-1.5';
+                                errMsg.innerHTML = '<svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg> <span>' + labelText + ' wajib diisi</span>';
+                                field.insertAdjacentElement('afterend', errMsg);
+                            }
+
+                            if (!firstInvalid) firstInvalid = field;
+
+                            field.addEventListener('input', function handler() {
+                                this.classList.remove('validation-error-border', 'border-red-400', 'ring-2', 'ring-red-100');
+                                const nextErr = this.parentElement.querySelector('.validation-error-msg') || (this.nextElementSibling && this.nextElementSibling.classList.contains('validation-error-msg') ? this.nextElementSibling : null);
+                                if (nextErr) nextErr.remove();
+                                this.removeEventListener('input', handler);
+                            }, { once: true });
+
+                            field.addEventListener('change', function handler() {
+                                this.classList.remove('validation-error-border', 'border-red-400', 'ring-2', 'ring-red-100');
+                                const nextErr = this.parentElement.querySelector('.validation-error-msg') || (this.nextElementSibling && this.nextElementSibling.classList.contains('validation-error-msg') ? this.nextElementSibling : null);
+                                if (nextErr) nextErr.remove();
+                                this.removeEventListener('change', handler);
+                            }, { once: true });
+                        }
+                    });
+
+                    if (firstInvalid) {
+                        e.preventDefault();
+
+                        // Find which tab the field belongs to and switch to it
+                        const tabPanel = firstInvalid.closest('[x-show]');
+                        let tabSwitched = false;
+                        if (tabPanel) {
+                            const xShow = tabPanel.getAttribute('x-show');
+                            const match = xShow.match(/activeTab\s*===\s*'([\w]+)'/);
+                            if (match) {
+                                const targetTab = match[1];
+                                const rootEl = document.querySelector('[x-data*="activeTab"]');
+                                if (rootEl && window.Alpine) {
+                                    Alpine.$data(rootEl).activeTab = targetTab;
+                                    tabSwitched = true;
+                                }
+                            }
+                        }
+
+                        const scrollDelay = tabSwitched ? 350 : 100;
+                        setTimeout(() => {
+                            firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            firstInvalid.focus();
+                        }, scrollDelay);
+
+                        const count = emptyLabels.length;
+                        showValidationToast('Ada ' + count + ' field wajib yang belum diisi: ' + emptyLabels.slice(0, 3).join(', ') + (count > 3 ? '...' : ''));
+                    }
                 });
             }
         });

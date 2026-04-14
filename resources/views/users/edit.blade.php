@@ -7,6 +7,67 @@ $motherData = $userToEdit->mother_data ?? [];
 $graduationData = $userToEdit->graduation_data ?? [];
 @endphp
 <x-app-layout>
+    @push('styles')
+        <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.default.min.css" rel="stylesheet">
+        <style>
+            .ts-wrapper {
+                width: 100% !important;
+                display: block !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                box-sizing: border-box !important;
+            }
+
+            .ts-wrapper .ts-control {
+                border: 1px solid #e2e8f0 !important;
+                border-radius: 0.75rem !important;
+                padding: 10px 16px !important; 
+                min-height: 42px !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+                transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+                box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+                background: white !important;
+                display: flex !important;
+                align-items: center !important;
+            }
+
+            .ts-wrapper.focus .ts-control {
+                border-color: #111827 !important; /* Soft Gray 900 */
+                box-shadow: 0 0 0 4px rgba(17, 24, 39, 0.05) !important;
+                ring: none !important;
+            }
+
+            .ts-dropdown {
+                background-color: white !important;
+                border: 1px solid #e2e8f0 !important;
+                border-radius: 1rem !important;
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+                margin-top: 6px !important;
+                padding: 6px !important;
+                z-index: 1000 !important;
+            }
+
+            .ts-dropdown .option {
+                padding: 8px 12px !important;
+                font-size: 13px !important;
+                color: #475569 !important;
+                border-radius: 0.75rem !important;
+                margin-bottom: 2px !important;
+                transition: all 0.15s ease !important;
+            }
+
+            .ts-dropdown .option.active {
+                background-color: #fff7ed !important;
+                color: #f97316 !important;
+                font-weight: 600 !important;
+            }
+
+            .ts-wrapper .ts-control>input {
+                font-size: 14px !important;
+            }
+        </style>
+    @endpush
     <div class="w-full max-w-[1600px] 2xl:max-w-[1720px] mx-auto" x-data="{ activeTab: 'basic' }">
         
 
@@ -792,53 +853,106 @@ $graduationData = $userToEdit->graduation_data ?? [];
                 @method('DELETE')
             </form>
         @endif
-<script>
-    async function loadPersonalRegenciesByProvince(provinceId, citySelect, selectedCity = null) {
-        citySelect.innerHTML = '<option value="">Select City</option>';
+    @push('scripts')
+        <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+        <script>
+            const UCO_PROVINCE_MAP = @json($provinces->pluck('id', 'name'));
 
-        if (!provinceId) {
-            citySelect.disabled = true;
-            return;
-        }
-
-        citySelect.disabled = false;
-
-        try {
-            const response = await fetch(`{{ route('regions.regencies') }}?province_id=${provinceId}`);
-            const regencies = await response.json();
-
-            regencies.forEach((regency) => {
-                const option = document.createElement('option');
-                option.value = regency.name;
-                option.textContent = regency.name;
-                if (selectedCity && selectedCity === regency.name) {
-                    option.selected = true;
+            async function loadPersonalRegenciesByProvince(provinceId, citySelect, cityTSInstance = null) {
+                if (!provinceId) {
+                    if (cityTSInstance) {
+                        cityTSInstance.clearOptions();
+                        cityTSInstance.disable();
+                    }
+                    citySelect.innerHTML = '<option value="">Select City</option>';
+                    citySelect.disabled = true;
+                    return;
                 }
-                citySelect.appendChild(option);
+
+                citySelect.innerHTML = '<option value="">Loading cities...</option>';
+                citySelect.disabled = false;
+                
+                if (cityTSInstance) {
+                    cityTSInstance.clearOptions();
+                    cityTSInstance.enable();
+                }
+
+                try {
+                    const response = await fetch(`{{ route('regions.regencies') }}?province_id=${provinceId}`, {
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    });
+                    const regencies = await response.json();
+
+                    if (cityTSInstance) {
+                        const options = regencies.map(r => ({ value: r.name, text: r.name }));
+                        cityTSInstance.addOptions(options);
+                        cityTSInstance.refreshOptions(false);
+                    } else {
+                        citySelect.innerHTML = '<option value="">Select City/Kabupaten</option>';
+                        regencies.forEach((regency) => {
+                            const option = document.createElement('option');
+                            option.value = regency.name;
+                            option.textContent = regency.name;
+                            citySelect.appendChild(option);
+                        });
+                    }
+                } catch (error) {
+                    citySelect.disabled = true;
+                    if (cityTSInstance) cityTSInstance.disable();
+                }
+            }
+
+            document.addEventListener('DOMContentLoaded', () => {
+                const roleSelect = document.getElementById('role');
+                const genderSelect = document.getElementById('gender');
+                const provinceSelect = document.getElementById('personal_province');
+                const citySelect = document.getElementById('personal_address_city');
+                const eduLevelSelect = document.getElementById('edu_level');
+
+                let cityTS = null;
+
+                if (roleSelect && window.TomSelect) {
+                    new TomSelect(roleSelect, { create: false, placeholder: "Select Role", searchField: ["text"] });
+                }
+
+                if (genderSelect && window.TomSelect) {
+                    new TomSelect(genderSelect, { create: false, placeholder: "Select Gender", searchField: ["text"] });
+                }
+
+                if (eduLevelSelect && window.TomSelect) {
+                    new TomSelect(eduLevelSelect, { create: false, placeholder: "Select education level", searchField: ["text"] });
+                }
+
+                if (citySelect && window.TomSelect) {
+                    cityTS = new TomSelect(citySelect, { create: false, placeholder: "Select City", searchField: ["text"] });
+                }
+
+                if (provinceSelect && window.TomSelect) {
+                    const provinceTS = new TomSelect(provinceSelect, {
+                        create: false,
+                        placeholder: "Select Province",
+                        searchField: ["text"]
+                    });
+
+                    provinceTS.on('change', function(value) {
+                        const provinceId = UCO_PROVINCE_MAP[value] || null;
+                        loadPersonalRegenciesByProvince(provinceId, citySelect, cityTS);
+                    });
+
+                    // Initial load/rehydration for edit view
+                    const selectedCity = citySelect.dataset.selectedCity;
+                    const initialProvince = provinceTS.getValue();
+                    if (initialProvince) {
+                        const provinceId = UCO_PROVINCE_MAP[initialProvince] || null;
+                        loadPersonalRegenciesByProvince(provinceId, citySelect, cityTS).then(() => {
+                            if (selectedCity && cityTS) cityTS.setValue(selectedCity);
+                        });
+                    }
+                }
             });
-        } catch (error) {
-            citySelect.disabled = true;
-        }
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-        const provinceSelect = document.getElementById('personal_province');
-        const citySelect = document.getElementById('personal_address_city');
-
-        if (!provinceSelect || !citySelect) return;
-
-        const selectedProvinceId = citySelect.dataset.selectedProvinceId;
-        const selectedCity = citySelect.dataset.selectedCity;
-
-        if (selectedProvinceId) {
-            loadPersonalRegenciesByProvince(selectedProvinceId, citySelect, selectedCity);
-        }
-
-        provinceSelect.addEventListener('change', function () {
-            const selectedOption = this.options[this.selectedIndex];
-            const provinceId = selectedOption ? selectedOption.dataset.id : null;
-            loadPersonalRegenciesByProvince(provinceId, citySelect);
-        });
-    });
-</script>
+        </script>
+    @endpush
 </x-app-layout>

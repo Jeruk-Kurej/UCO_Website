@@ -971,8 +971,8 @@ Update Business
         }
 
         .ts-wrapper.focus .ts-control {
-            border-color: #f97316 !important; /* UCO Orange Focus */
-            box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.1) !important;
+            border-color: #111827 !important; /* Soft Gray 900 */
+            box-shadow: 0 0 0 4px rgba(17, 24, 39, 0.05) !important;
             ring: none !important;
         }
 
@@ -1077,45 +1077,53 @@ Update Business
         let cityTomSelect = null;
         let provinceTomSelect = null;
 
-        async function loadRegenciesByProvince(provinceId, citySelect, selectedCity = null) {
-            if (cityTomSelect) {
-                cityTomSelect.destroy();
-                cityTomSelect = null;
-            }
-
+        async function loadRegenciesByProvince(provinceId, citySelect, cityTSInstance = null) {
             if (!provinceId) {
+                if (cityTSInstance) {
+                    cityTSInstance.clearOptions();
+                    cityTSInstance.disable();
+                }
                 citySelect.innerHTML = '<option value="" disabled selected>Pilih Provinsi terlebih dahulu</option>';
                 citySelect.disabled = true;
                 return;
             }
 
+            // Show loading state in raw select for screen readers/fallback
             citySelect.innerHTML = '<option value="" disabled selected>Memuat kota...</option>';
             citySelect.disabled = false;
+            
+            if (cityTSInstance) {
+                cityTSInstance.clearOptions();
+                cityTSInstance.enable();
+            }
 
             try {
-                const response = await fetch(`/regions/regencies?province_id=${provinceId}`, {
+                const response = await fetch(`{{ route('regions.regencies') }}?province_id=${provinceId}`, {
                     headers: {
                         'Accept': 'application/json',
                         'X-Requested-With': 'XMLHttpRequest'
                     }
                 });
-                if (!response.ok) throw new Error('Network response was not ok');
+                if (!response.ok) throw new Error('Failed to fetch regencies');
                 const regencies = await response.json();
 
-                citySelect.innerHTML = '<option value="" disabled selected>Pilih Kota/Kabupaten</option>';
-                regencies.forEach((regency) => {
-                    const option = document.createElement('option');
-                    option.value = regency.name;
-                    option.textContent = regency.name;
-                    if (selectedCity && selectedCity === regency.name) {
-                        option.selected = true;
-                    }
-                    citySelect.appendChild(option);
-                });
+                if (cityTSInstance) {
+                    const options = regencies.map(r => ({ value: r.name, text: r.name }));
+                    cityTSInstance.addOptions(options);
+                    cityTSInstance.refreshOptions(false);
+                } else {
+                    citySelect.innerHTML = '<option value="" disabled selected>Pilih Kota/Kabupaten</option>';
+                    regencies.forEach((regency) => {
+                        const option = document.createElement('option');
+                        option.value = regency.name;
+                        option.textContent = regency.name;
+                        citySelect.appendChild(option);
+                    });
+                }
             } catch (error) {
-                console.error("Fetch regencies error:", error);
-                citySelect.innerHTML = '<option value="" disabled selected>Gagal memuat kota/kabupaten</option>';
+                console.error("Error loading regencies:", error);
                 citySelect.disabled = true;
+                if (cityTSInstance) cityTSInstance.disable();
             }
         }
 
@@ -1234,14 +1242,73 @@ Update Business
             const selectedProvinceId = citySelect.dataset.selectedProvinceId;
             const selectedCity = citySelect.dataset.selectedCity;
 
-            if (selectedProvinceId) {
-                loadRegenciesByProvince(selectedProvinceId, citySelect, selectedCity);
+            // Province & City TomSelect
+            if (provinceSelect && window.TomSelect) {
+                provinceTS = new TomSelect(provinceSelect, {
+                    create: false,
+                    placeholder: "Pilih Provinsi",
+                    searchField: ["text"],
+                });
+
+                provinceTS.on('change', function (value) {
+                    const provinceId = UCO_PROVINCE_MAP[value] || null;
+                    loadRegenciesByProvince(provinceId, citySelect, cityTS);
+                });
             }
 
-            provinceSelect.addEventListener('change', function() {
-                const provinceId = UCO_PROVINCE_MAP[this.value] || null;
-                loadRegenciesByProvince(provinceId, citySelect);
-            });
+            if (citySelect && window.TomSelect) {
+                cityTS = new TomSelect(citySelect, {
+                    create: false,
+                    placeholder: "Pilih Kota/Kabupaten",
+                    searchField: ["text"],
+                });
+            }
+
+            // Initial trigger for edit view
+            if (selectedProvinceId) {
+                loadRegenciesByProvince(selectedProvinceId, citySelect, cityTS).then(() => {
+                    if (selectedCity && cityTS) cityTS.setValue(selectedCity);
+                });
+            } else if (provinceTS && provinceTS.getValue()) {
+                const provinceId = UCO_PROVINCE_MAP[provinceTS.getValue()] || null;
+                loadRegenciesByProvince(provinceId, citySelect, cityTS).then(() => {
+                    if (selectedCity && cityTS) cityTS.setValue(selectedCity);
+                });
+            }
+
+            // Initialize TomSelect for Business Type
+            const typeSelect = document.getElementById("business_type_id");
+            if (typeSelect && window.TomSelect) {
+                new TomSelect(typeSelect, {
+                    create: false,
+                    placeholder: "Select Category",
+                    searchField: ["text"],
+                });
+            }
+
+            // Initialize TomSelect for Offering Type (Business Mode)
+            const modeSelect = document.getElementById("business_mode");
+            if (modeSelect && window.TomSelect) {
+                const modeTS = new TomSelect(modeSelect, {
+                    create: false,
+                    placeholder: "Select Offering Type",
+                    searchField: ["text"],
+                });
+                // Sync with Alpine.js
+                modeTS.on('change', () => {
+                    modeSelect.dispatchEvent(new Event('change', { bubbles: true }));
+                });
+            }
+
+            // Initialize TomSelect for Operational Status
+            const statusSelect = document.getElementById("operational_status");
+            if (statusSelect && window.TomSelect) {
+                new TomSelect(statusSelect, {
+                    create: false,
+                    placeholder: "Select Status",
+                    searchField: ["text"],
+                });
+            }
 
             // Initialize TomSelect for owner selects
             const userIdSelect = document.getElementById("user_id");
