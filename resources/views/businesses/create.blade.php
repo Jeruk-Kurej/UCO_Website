@@ -15,6 +15,14 @@
                     <p class="text-xs uppercase tracking-widest font-semibold text-uco-orange-600">Business Creation</p>
                     <h1 class="text-2xl sm:text-3xl font-bold text-slate-800 mt-1">Register New Business</h1>
                     <p class="text-slate-600 mt-2 text-sm sm:text-base">Complete your business details information</p>
+
+                    @if(auth()->user()->isAdmin())
+                        <div class="mt-4 inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 border border-blue-100 rounded-lg text-xs font-medium text-blue-700">
+                            <i class="bi bi-info-circle-fill"></i>
+                            <span>Wait! Do you have many businesses to add?</span>
+                            <a href="{{ route('businesses.index', ['import' => 1]) }}" class="font-bold underline hover:text-blue-800 transition-colors">Import from Excel Instead</a>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>
@@ -872,42 +880,7 @@
         </div>
     </div>
 
-    <!-- TomSelect CSS & JS -->
-    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.default.min.css" rel="stylesheet">
-    <style>
-        /* Tailwind UI TomSelect Overrides */
-        .ts-wrapper .ts-control {
-            border: none !important;
-            box-shadow: none !important;
-            background: transparent !important;
-            min-height: unset !important;
-            padding: 0 !important;
-        }
-        .ts-wrapper.multi.has-items .ts-control {
-            padding: 0 !important;
-        }
-        .ts-dropdown {
-            background-color: white !important;
-            border-radius: 0.75rem !important;
-            border: 1px solid #f1f5f9 !important;
-            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1) !important;
-            z-index: 50 !important;
-        }
-        .ts-dropdown .option.active {
-            background-color: #f8fafc !important;
-            color: #0f172a !important;
-        }
-        .ts-wrapper .ts-control > input {
-            font-size: 1rem !important;
-        }
-        .ts-control.multi .ts-item {
-            background: #f1f5f9 !important;
-            color: #0f172a !important;
-            border: 1px solid #e2e8f0 !important;
-            border-radius: 0.5rem !important;
-            padding: 0.25rem 0.5rem !important;
-        }
-    </style>
+
     <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
     {{-- JavaScript for Dynamic Fields and Client-Side Validation --}}
     <script>
@@ -1142,6 +1115,7 @@
 
 @push('styles')
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.default.min.css" rel="stylesheet">
+    <style>
         .ts-wrapper {
             width: 100% !important;
             display: block !important;

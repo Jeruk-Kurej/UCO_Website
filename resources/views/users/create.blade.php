@@ -13,6 +13,14 @@
             <div class="flex-1">
                 <h1 class="text-2xl font-bold text-gray-900">Create New User</h1>
                 <p class="text-sm text-gray-600">Add a new user with complete information</p>
+                
+                @if(auth()->user()->isAdmin())
+                    <div class="mt-2 inline-flex items-center gap-2 px-3 py-1 bg-blue-50 border border-blue-100 rounded-lg text-xs font-medium text-blue-700">
+                        <i class="bi bi-info-circle-fill"></i>
+                        <span>Need to add many users?</span>
+                        <a href="{{ route('users.index', ['import' => 1]) }}" class="font-bold underline hover:text-blue-800 transition-colors">Import from Excel Instead</a>
+                    </div>
+                @endif
             </div>
         </div>
 

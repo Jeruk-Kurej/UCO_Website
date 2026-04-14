@@ -1,6 +1,6 @@
 <x-app-layout>
     {{-- Main Content --}}
-    <div class="users-wrapper max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8" x-data="{ showImportModal: false }" x-cloak>
+    <div class="users-wrapper max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8" x-data="{ showImportModal: {{ request('import') ? 'true' : 'false' }} }" x-cloak>
 
 
 

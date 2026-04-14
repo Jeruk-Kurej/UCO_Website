@@ -7,7 +7,7 @@
 
     {{-- Main Content --}}
     <div class="businesses-wrapper max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8" x-data="{
-        showImportModal: false,
+        showImportModal: {{ request('import') ? 'true' : 'false' }},
         search: '{{ request('search') }}',
         selectedType: '{{ request('type', '') }}',
         isSearching: false,
