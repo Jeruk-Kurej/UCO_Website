@@ -14,13 +14,14 @@ use Maatwebsite\Excel\Concerns\WithValidation;
 use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Concerns\WithColumnLimit;
+use Maatwebsite\Excel\Concerns\SkipsEmptyRows;
 use Maatwebsite\Excel\Events\BeforeImport;
 use Maatwebsite\Excel\Events\AfterImport;
 use Maatwebsite\Excel\Events\ImportFailed;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
-class UsersImport implements ToModel, WithHeadingRow, WithValidation, WithChunkReading, ShouldQueue, WithEvents, WithColumnLimit
+class UsersImport implements ToModel, WithHeadingRow, WithValidation, WithChunkReading, ShouldQueue, WithEvents, WithColumnLimit, SkipsEmptyRows
 {
     public $importId;
     protected $errors = [];
@@ -685,8 +686,8 @@ class UsersImport implements ToModel, WithHeadingRow, WithValidation, WithChunkR
     public function rules(): array
     {
         return [
-            'name' => 'required|string|max:255',
-            'email' => 'required|email', // Duplicate check is handled in model() with merge logic
+            'name' => 'nullable|string|max:255',
+            'email' => 'nullable|email', // Duplicate and required checks are handled in model() to gracefully skip
             'role' => 'nullable|in:student,alumni,admin',
         ];
     }
