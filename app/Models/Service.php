@@ -6,9 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+use App\Traits\HasSlug;
+
 class Service extends Model
 {
-    use HasFactory;
+    use HasFactory, HasSlug;
 
     /*
     |--------------------------------------------------------------------------
@@ -19,6 +21,7 @@ class Service extends Model
     protected $fillable = [
         'business_id',
         'name',
+        'slug',
         'description',
         'price_type',
         'price',

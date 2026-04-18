@@ -96,6 +96,16 @@ class User extends Authenticatable
     }
 
     /**
+     * Get the route key for the model.
+     *
+     * @return string
+     */
+    public function getRouteKeyName()
+    {
+        return 'username';
+    }
+
+    /**
      * Get all businesses owned by this user
      */
     public function businesses(): HasMany

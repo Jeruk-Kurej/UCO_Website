@@ -76,25 +76,25 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/regions/regencies', [BusinessController::class, 'regenciesByProvince'])->name('regions.regencies');
 
     Route::resource('businesses.product-categories', ProductCategoryController::class)
-        ->scoped(['business' => 'id', 'productCategory' => 'id']);
+        ->scoped();
 
     Route::resource('businesses.products', ProductController::class)
         ->except(['index'])
-        ->scoped(['business' => 'id', 'product' => 'id']);
+        ->scoped();
 
     Route::resource('businesses.services', ServiceController::class)
         ->except(['index'])
-        ->scoped(['business' => 'id', 'service' => 'id']);
+        ->scoped();
 
     Route::resource('businesses.photos', BusinessPhotoController::class)
-        ->scoped(['business' => 'id', 'photo' => 'id']);
+        ->scoped();
 
     Route::resource('businesses.contacts', BusinessContactController::class)
         ->except(['index'])
-        ->scoped(['business' => 'id', 'contact' => 'id']);
+        ->scoped();
 
     Route::resource('products.photos', ProductPhotoController::class)
-        ->scoped(['product' => 'id', 'photo' => 'id']);
+        ->scoped();
 
 });
 

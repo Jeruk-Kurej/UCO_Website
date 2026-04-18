@@ -7,9 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+use App\Traits\HasSlug;
+
 class Product extends Model
 {
-    use HasFactory;
+    use HasFactory, HasSlug;
 
     /*
     |--------------------------------------------------------------------------
@@ -21,6 +23,7 @@ class Product extends Model
         'business_id',
         'product_category_id',
         'name',
+        'slug',
         'description',
         'price',
     ];

@@ -7,10 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Traits\HasSlug;
 
 class Business extends Model
 {
-    use HasFactory;
+    use HasFactory, HasSlug;
     
     public const STATUS_PENDING = 'pending';
     public const STATUS_APPROVED = 'approved';
@@ -22,6 +23,7 @@ class Business extends Model
         'business_type_id',
         'business_mode',
         'name',
+        'slug',
         'description',
         'position', // User's position in this business
         

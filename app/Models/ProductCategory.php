@@ -7,9 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+use App\Traits\HasSlug;
+
 class ProductCategory extends Model
 {
-    use HasFactory;
+    use HasFactory, HasSlug;
 
     /*
     |--------------------------------------------------------------------------
@@ -20,6 +22,7 @@ class ProductCategory extends Model
     protected $fillable = [
         'business_id',
         'name',
+        'slug',
     ];
 
     /*
