@@ -397,7 +397,7 @@
                                     </div>
                                     <div>
                                         <label class="block text-xs text-slate-600 mb-1">Price</label>
-                                        <input type="number" step="0.01" min="0" name="products[{{ $index }}][price]" value="{{ $product['price'] ?? '' }}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="50000">
+                                        <input type="number" step="any" min="0" name="products[{{ $index }}][price]" value="{{ $product['price'] ?? '' }}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="50000">
                                     </div>
                                 </div>
                                 <div class="mt-3">
@@ -433,7 +433,7 @@
                                     </div>
                                     <div>
                                         <label class="block text-xs text-slate-600 mb-1">Price</label>
-                                        <input type="number" step="0.01" min="0" name="services[{{ $index }}][price]" value="{{ $service['price'] ?? '' }}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="150000">
+                                        <input type="number" step="any" min="0" name="services[{{ $index }}][price]" value="{{ $service['price'] ?? '' }}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="150000">
                                     </div>
                                 </div>
                                 <div class="mt-3">
@@ -1048,7 +1048,7 @@
                     </div>
                     <div>
                         <label class="block text-xs text-slate-600 mb-1">Harga</label>
-                        <input type="number" step="0.01" min="0" name="products[${idx}][price]" value="${data.price || ''}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="50000">
+                        <input type="number" step="any" min="0" name="products[${idx}][price]" value="${data.price || ''}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="50000">
                     </div>
                 </div>
                 <div class="mt-3">
@@ -1080,7 +1080,7 @@
                     </div>
                     <div>
                         <label class="block text-xs text-slate-600 mb-1">Harga</label>
-                        <input type="number" step="0.01" min="0" name="services[${idx}][price]" value="${data.price || ''}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="150000">
+                        <input type="number" step="any" min="0" name="services[${idx}][price]" value="${data.price || ''}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="150000">
                     </div>
                 </div>
                 <div class="mt-3">
