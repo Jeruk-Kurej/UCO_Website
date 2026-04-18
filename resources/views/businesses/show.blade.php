@@ -309,146 +309,153 @@
                                     x-transition:enter-end="opacity-100 scale-100 translate-y-0"
                                     x-transition:leave="transition ease-in duration-150"
                                     x-transition:leave-start="opacity-100 scale-100 translate-y-0"
-                                    x-transition:leave-end="opacity-0 scale-95 translate-y-1" @click.stop
-                                    class="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-md max-h-[90vh] overflow-y-auto">
-                                    <div class="bg-gray-50 rounded-2xl shadow-2xl overflow-hidden relative">
+                                    x-transition:leave-end="opacity-0 scale-95 translate-y-1"
+                                    class="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-lg p-4">
+                                    <div class="bg-white rounded-[2rem] shadow-[0_25px_80px_-10px_rgba(0,0,0,0.15)] border border-gray-100 overflow-hidden relative">
+                                        
+                                        <button @click="showUserModal = false"
+                                            class="absolute top-5 right-5 w-8 h-8 rounded-full bg-gray-50 text-gray-400 hover:text-gray-900 flex items-center justify-center transition-all duration-200 z-30">
+                                            <i class="bi bi-x text-xl"></i>
+                                        </button>
 
-                                        {{-- Top Section (Clean) --}}
-                                        <div class="bg-white px-6 py-8 text-center relative">
-                                            <button @click="showUserModal = false"
-                                                class="absolute top-4 right-4 w-8 h-8 rounded-full bg-gray-50 hover:bg-gray-100 text-gray-400 hover:text-gray-700 flex items-center justify-center transition-colors duration-150">
-                                                <i class="bi bi-x text-lg"></i>
-                                            </button>
-                                            <div class="relative inline-block mb-4 mt-2">
+                                        {{-- HIG Header --}}
+                                        <div class="px-8 pt-10 pb-6 text-center">
+                                            <div class="mb-4">
                                                 @if($ownerPhotoBig)
                                                     <img src="{{ $ownerPhotoBig }}" 
-                                                         class="w-24 h-24 object-cover rounded-full border-[3px] border-gray-50 shadow-sm" alt="photo">
+                                                         class="w-24 h-24 object-cover rounded-full border border-gray-100 shadow-sm mx-auto" alt="photo">
                                                 @else
-                                                    <div class="w-24 h-24 bg-gray-50 text-gray-400 rounded-full flex items-center justify-center text-3xl font-bold border-[3px] border-white shadow-sm">
+                                                    <div class="w-24 h-24 bg-gray-50 text-gray-400 rounded-full flex items-center justify-center text-3xl font-bold border border-gray-100 mx-auto">
                                                         {{ strtoupper(substr($owner->name, 0, 1)) }}
                                                     </div>
                                                 @endif
-                                                <span class="absolute bottom-1 right-1 w-5 h-5 rounded-full border-2 border-white {{ $owner->is_active ? 'bg-green-500' : 'bg-red-500' }}"></span>
                                             </div>
-                                            <h2 class="text-xl font-bold text-gray-900">{{ $owner->name }}</h2>
+                                            <h2 class="text-xl font-bold text-gray-900 tracking-tight leading-tight">{{ $owner->name }}</h2>
+                                            <p class="text-[11px] font-semibold text-gray-400 uppercase tracking-widest mt-1">Owner Account</p>
                                         </div>
 
-                                        {{-- Tabs nav --}}
-                                        <div class="flex border-b border-gray-100 bg-white">
-                                            <button @click="tab = 'basic'"
-                                                :class="tab === 'basic' ? 'text-gray-900 border-b-2 border-gray-900 font-bold bg-gray-50/50' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50 border-b-2 border-transparent'"
-                                                class="flex-1 py-3 text-[11px] font-bold uppercase tracking-widest transition-all duration-150">
-                                                <i class="bi bi-person mr-1.5"></i> Profile Info
-                                            </button>
-                                            <button @click="tab = 'academic'"
-                                                :class="tab === 'academic' ? 'text-gray-900 border-b-2 border-gray-900 font-bold bg-gray-50/50' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50 border-b-2 border-transparent'"
-                                                class="flex-1 py-3 text-[11px] font-bold uppercase tracking-widest transition-all duration-150">
-                                                <i class="bi bi-mortarboard mr-1.5"></i> Academic
-                                            </button>
+                                        {{-- HIG Segmented Control --}}
+                                        <div class="px-8 mb-4">
+                                            <div class="flex p-1 bg-gray-100/60 rounded-xl">
+                                                <button @click="tab = 'basic'"
+                                                    class="flex-1 py-1.5 text-xs font-bold rounded-lg transition-all duration-200"
+                                                    :class="tab === 'basic' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'">
+                                                    Identity
+                                                </button>
+                                                <button @click="tab = 'academic'"
+                                                    class="flex-1 py-1.5 text-xs font-bold rounded-lg transition-all duration-200"
+                                                    :class="tab === 'academic' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'">
+                                                    Academic
+                                                </button>
+                                            </div>
                                         </div>
 
-                                        <div class="p-4 bg-gray-50/30">
-                                            {{-- TAB: BASIC PROFILE --}}
-                                            <div x-show="tab === 'basic'" x-transition:enter="transition ease-out duration-300 transform" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" class="space-y-4">
-                                                {{-- Base Info --}}
-                                                <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-                                                    <div class="flex justify-between items-center py-2 border-b border-gray-50">
-                                                        <span class="text-sm text-gray-500">Username</span>
-                                                        <span class="text-sm font-medium text-gray-900">{{ $owner->username }}</span>
+                                        <div class="px-8 pb-10 overflow-y-auto max-h-[400px] custom-scrollbar">
+                                            {{-- TAB: IDENTITY --}}
+                                            <div x-show="tab === 'basic'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" class="divide-y divide-gray-50">
+                                                
+                                                <div class="py-3 flex items-center justify-between group">
+                                                    <div class="flex items-center gap-3">
+                                                        <i class="bi bi-person text-gray-400"></i>
+                                                        <span class="text-sm font-medium text-gray-500">Username</span>
                                                     </div>
-                                                    <div class="flex justify-between items-center py-2 border-b border-gray-50">
-                                                        <span class="text-sm text-gray-500">Email</span>
-                                                        <span class="text-sm font-medium text-gray-900">{{ $owner->email }}</span>
-                                                    </div>
-                                                    <div class="flex justify-between items-center pt-2">
-                                                        <span class="text-sm text-gray-500">Official Email</span>
-                                                        <span class="text-sm font-medium text-gray-900">{{ $ownerGrad['official_email'] ?? '-' }}</span>
-                                                    </div>
+                                                    <span class="text-sm font-bold text-gray-900">{{ $owner->username }}</span>
                                                 </div>
 
-                                                {{-- Social --}}
-                                                <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-                                                    <h3 class="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-4">Social Network</h3>
-                                                    <div class="space-y-3">
-                                                        <div class="flex items-center gap-3">
-                                                            <div class="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center text-green-600">
-                                                                <i class="bi bi-whatsapp"></i>
-                                                            </div>
-                                                            <span class="text-sm text-gray-700 font-medium">{{ $owner->whatsapp ?? '-' }}</span>
-                                                        </div>
-                                                        <div class="flex items-center gap-3">
-                                                            <div class="w-8 h-8 rounded-lg bg-pink-50 flex items-center justify-center text-pink-600">
-                                                                <i class="bi bi-instagram"></i>
-                                                            </div>
-                                                            <span class="text-sm text-gray-700 font-medium">{{ $ownerPerso['instagram'] ?? '-' }}</span>
-                                                        </div>
-                                                        <div class="flex items-center gap-3">
-                                                            <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">
-                                                                <i class="bi bi-facebook"></i>
-                                                            </div>
-                                                            <span class="text-sm text-gray-700 font-medium">{{ $ownerPerso['facebook'] ?? '-' }}</span>
-                                                        </div>
-                                                        <div class="flex items-center gap-3">
-                                                            <div class="w-8 h-8 rounded-lg bg-sky-50 flex items-center justify-center text-sky-600">
-                                                                <i class="bi bi-twitter-x"></i>
-                                                            </div>
-                                                            <span class="text-sm text-gray-700 font-medium">{{ $ownerPerso['twitter'] ?? '-' }}</span>
-                                                        </div>
+                                                <div class="py-3 flex items-center justify-between">
+                                                    <div class="flex items-center gap-3">
+                                                        <i class="bi bi-envelope text-gray-400"></i>
+                                                        <span class="text-sm font-medium text-gray-500">Official Email</span>
                                                     </div>
+                                                    <span class="text-sm font-bold text-gray-900">{{ $ownerGrad['official_email'] ?? '-' }}</span>
                                                 </div>
 
-                                                {{-- Demographics --}}
-                                                <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-                                                    <span class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Demographics</span>
-                                                    <p class="text-sm font-medium text-gray-900 mt-2">
-                                                        {{ $ownerPerso['gender'] ?? '-' }}, 
-                                                        {{ $owner->birth_date ? \Carbon\Carbon::parse($owner->birth_date)->format('d M Y') : '-' }} 
-                                                        @if($owner->birth_city) ({{ $owner->birth_city }}) @endif
-                                                    </p>
+                                                <div class="py-3 flex items-center justify-between">
+                                                    <div class="flex items-center gap-3">
+                                                        <i class="bi bi-whatsapp text-gray-400"></i>
+                                                        <span class="text-sm font-medium text-gray-500">WhatsApp</span>
+                                                    </div>
+                                                    <span class="text-sm font-bold text-gray-900">{{ $owner->whatsapp ?? '-' }}</span>
+                                                </div>
+
+                                                <div class="py-3 flex items-center justify-between">
+                                                    <div class="flex items-center gap-3">
+                                                        <i class="bi bi-instagram text-gray-400"></i>
+                                                        <span class="text-sm font-medium text-gray-500">Instagram</span>
+                                                    </div>
+                                                    <span class="text-sm font-bold text-gray-900">{{ $ownerPerso['instagram'] ?? '-' }}</span>
+                                                </div>
+
+                                                <div class="py-3 flex items-center justify-between">
+                                                    <div class="flex items-center gap-3">
+                                                        <i class="bi bi-gender-ambiguous text-gray-400"></i>
+                                                        <span class="text-sm font-medium text-gray-500">Gender</span>
+                                                    </div>
+                                                    <span class="text-sm font-bold text-gray-900">{{ $ownerPerso['gender'] ?? '-' }}</span>
+                                                </div>
+
+                                                <div class="py-3 flex items-center justify-between">
+                                                    <div class="flex items-center gap-3">
+                                                        <i class="bi bi-calendar3 text-gray-400"></i>
+                                                        <span class="text-sm font-medium text-gray-500">Birth Info</span>
+                                                    </div>
+                                                    <div class="text-right">
+                                                        <p class="text-sm font-bold text-gray-900">{{ $owner->birth_date ? \Carbon\Carbon::parse($owner->birth_date)->format('d M Y') : '-' }}</p>
+                                                        <p class="text-[10px] text-gray-400 font-bold uppercase">{{ $owner->birth_city ?? 'No City' }}</p>
+                                                    </div>
                                                 </div>
                                             </div>
 
-                                            {{-- TAB: ACADEMIC & EXTENDED --}}
-                                            <div x-show="tab === 'academic'" style="display: none;" x-transition:enter="transition ease-out duration-300 transform" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" class="space-y-4">
-                                                {{-- Extended Academic Data --}}
-                                                <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100 space-y-4">
-                                                    <div class="border-b border-gray-50 pb-4">
-                                                        <span class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Academic Target</span>
-                                                        <p class="text-[13px] leading-tight font-bold text-gray-900 mt-1.5">{{ $ownerAcad['prodi'] ?? ($ownerMajor ?? 'Not Recorded') }} / {{ $ownerAcad['sub_prodi'] ?? 'N/A' }}</p>
+                                            {{-- TAB: ACADEMIC --}}
+                                            <div x-show="tab === 'academic'" style="display: none;" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" class="divide-y divide-gray-50">
+                                                
+                                                <div class="py-4">
+                                                    <div class="flex items-center gap-3 mb-1">
+                                                        <i class="bi bi-mortarboard text-gray-400"></i>
+                                                        <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Major & Concentration</span>
                                                     </div>
+                                                    <p class="text-sm font-bold text-gray-900 ml-7">{{ $ownerAcad['prodi'] ?? ($ownerMajor ?? 'Not Recorded') }}</p>
+                                                    <p class="text-xs text-soft-gray-500 ml-7 mt-0.5">{{ $ownerAcad['sub_prodi'] ?? 'General Concentration' }}</p>
+                                                </div>
 
-                                                    <div class="border-b border-gray-50 pb-4">
-                                                        <span class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Education Level</span>
-                                                        <p class="text-[13px] font-bold text-gray-900 mt-1.5">{{ $ownerAcad['edu_level'] ?? 'Not Recorded' }}</p>
+                                                <div class="py-3 flex items-center justify-between">
+                                                    <div class="flex items-center gap-3">
+                                                        <i class="bi bi-bar-chart-steps text-gray-400"></i>
+                                                        <span class="text-sm font-medium text-gray-500">Education Level</span>
                                                     </div>
+                                                    <span class="text-sm font-bold text-gray-900">{{ $ownerAcad['edu_level'] ?? 'N/A' }}</span>
+                                                </div>
 
-                                                    <div class="border-b border-gray-50 pb-4">
-                                                        <span class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Enrollment Status</span>
-                                                        <p class="text-sm font-medium mt-1.5">
-                                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-[11px] font-bold uppercase tracking-wider {{ $owner->Is_Graduate ? 'bg-indigo-100 text-indigo-700' : 'bg-green-100 text-green-700' }}">
-                                                                {{ $owner->Is_Graduate ? 'Alumni' : 'Active Student' }}
-                                                            </span>
-                                                        </p>
+                                                <div class="py-3 flex items-center justify-between">
+                                                    <div class="flex items-center gap-3">
+                                                        <i class="bi bi-check-circle text-gray-400"></i>
+                                                        <span class="text-sm font-medium text-gray-500">Status</span>
                                                     </div>
+                                                    <span class="inline-flex items-center px-2 py-0.5 bg-gray-100 text-gray-900 rounded text-[10px] font-bold uppercase">{{ $owner->Is_Graduate ? 'Alumni' : 'Active' }}</span>
+                                                </div>
 
-                                                    <div class="">
-                                                        <span class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Prof. Certifications</span>
+                                                <div class="py-4">
+                                                    <div class="flex items-center gap-3 mb-2">
+                                                        <i class="bi bi-patch-check text-gray-400"></i>
+                                                        <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Certifications</span>
+                                                    </div>
+                                                    <div class="ml-7 space-y-3">
                                                         @if(!empty($ownerAcad['certificate_no_1']) || !empty($ownerAcad['certificate_no_2']))
-                                                            <ul class="text-[13px] font-medium text-gray-900 mt-2 list-disc pl-4 space-y-1.5">
-                                                                @if(!empty($ownerAcad['certificate_no_1']))
-                                                                    <li>{{ $ownerAcad['certificate_no_1'] }} <span class="text-[10px] text-gray-400 font-bold">({{ $ownerAcad['certificate_date_1'] ?? 'No Date' }})</span></li>
-                                                                @endif
-                                                                @if(!empty($ownerAcad['certificate_no_2']))
-                                                                    <li>{{ $ownerAcad['certificate_no_2'] }} <span class="text-[10px] text-gray-400 font-bold">({{ $ownerAcad['certificate_date_2'] ?? 'No Date' }})</span></li>
-                                                                @endif
-                                                            </ul>
+                                                            @if(!empty($ownerAcad['certificate_no_1']))
+                                                                <div>
+                                                                    <p class="text-sm font-bold text-gray-900">{{ $ownerAcad['certificate_no_1'] }}</p>
+                                                                    <p class="text-[10px] text-gray-400 font-semibold italic">{{ $ownerAcad['certificate_date_1'] ?? '' }}</p>
+                                                                </div>
+                                                            @endif
                                                         @else
-                                                            <div class="mt-2 p-3 bg-gray-50 rounded-lg text-center border border-dashed border-gray-200 text-xs text-gray-500 italic">No certifications registered.</div>
+                                                            <div class="py-10 text-center">
+                                                                <i class="bi bi-shield-slash text-2xl text-gray-200 mb-2 block"></i>
+                                                                <p class="text-xs text-gray-400 font-medium">No registered records</p>
+                                                            </div>
                                                         @endif
                                                     </div>
                                                 </div>
                                             </div>
-
                                         </div>
                                     </div>
                                 </div>
