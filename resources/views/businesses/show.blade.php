@@ -227,7 +227,7 @@
                             : null;
                     @endphp
 
-                    <div x-data="{ open: false, tab: 'basic' }" x-init="open = false" @keydown.escape.window="open = false"
+                    <div x-data="{ tab: 'basic' }" @keydown.escape.window="showUserModal = false"
                         class="flex flex-col sm:flex-row items-start gap-4 mb-6 pb-6 border-b-2 border-soft-gray-100">
 
                         {{-- Avatar --}}
@@ -293,7 +293,7 @@
                         {{-- ============================================ --}}
                         {{-- POPUP CARD                                   --}}
                         {{-- ============================================ --}}
-                        <template x-if="open">
+                        <template x-if="showUserModal">
                             <div>
 
                                 {{-- Backdrop --}}
@@ -301,7 +301,7 @@
                                     x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
                                     x-transition:leave="transition ease-in duration-150"
                                     x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
-                                    @click="open = false" class="fixed inset-0 z-40 bg-black/60"></div>
+                                    @click="showUserModal = false" class="fixed inset-0 z-40 bg-black/60"></div>
 
                                 {{-- Card --}}
                                 <div x-transition:enter="transition ease-out duration-200"
@@ -323,7 +323,7 @@
                                         ? 'from-uco-orange-500 to-uco-yellow-400'
                                         : 'from-blue-500 to-blue-400') }}
                                 relative">
-                                            <button @click="open = false"
+                                            <button @click="showUserModal = false"
                                                 class="absolute top-2 right-2 w-6 h-6 rounded-lg bg-black/20 hover:bg-black/30 text-white flex items-center justify-center transition-colors duration-150">
                                                 <i class="bi bi-x text-sm leading-none"></i>
                                             </button>
