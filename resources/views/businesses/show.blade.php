@@ -310,320 +310,143 @@
                                     x-transition:leave="transition ease-in duration-150"
                                     x-transition:leave-start="opacity-100 scale-100 translate-y-0"
                                     x-transition:leave-end="opacity-0 scale-95 translate-y-1" @click.stop
-                                    class="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-72">
-                                    <div
-                                        class="bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
+                                    class="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-md max-h-[90vh] overflow-y-auto">
+                                    <div class="bg-gray-50 rounded-2xl shadow-2xl overflow-hidden relative">
 
-                                        {{-- Top color strip --}}
-                                        <div
-                                            class="h-14 bg-gradient-to-r
-                                {{ $owner->role === 'admin'
-                                    ? 'from-red-500 to-red-400'
-                                    : ($owner->role === 'alumni'
-                                        ? 'from-uco-orange-500 to-uco-yellow-400'
-                                        : 'from-blue-500 to-blue-400') }}
-                                relative">
+                                        {{-- Top Section (Clean) --}}
+                                        <div class="bg-white px-6 py-8 text-center relative">
                                             <button @click="showUserModal = false"
-                                                class="absolute top-2 right-2 w-6 h-6 rounded-lg bg-black/20 hover:bg-black/30 text-white flex items-center justify-center transition-colors duration-150">
-                                                <i class="bi bi-x text-sm leading-none"></i>
+                                                class="absolute top-4 right-4 w-8 h-8 rounded-full bg-gray-50 hover:bg-gray-100 text-gray-400 hover:text-gray-700 flex items-center justify-center transition-colors duration-150">
+                                                <i class="bi bi-x text-lg"></i>
                                             </button>
-                                        </div>
-
-                                        {{-- Avatar centered, overlapping strip --}}
-                                        <div class="flex justify-center -mt-8 mb-2 relative z-10">
-                                            @if ($ownerPhotoBig)
-                                                <img src="{{ $ownerPhotoBig }}" alt="{{ $owner->name }}"
-                                                    class="w-16 h-16 rounded-2xl object-cover border-[3px] border-white shadow-lg">
-                                            @else
-                                                <div
-                                                    class="w-16 h-16 rounded-2xl bg-gradient-to-br from-uco-orange-500 to-uco-yellow-500 border-[3px] border-white shadow-lg flex items-center justify-center text-white text-2xl font-bold">
-                                                    {{ strtoupper(substr($owner->name, 0, 1)) }}
-                                                </div>
-                                            @endif
-                                        </div>
-
-                                        {{-- Name + role + meta --}}
-                                        <div class="text-center px-4 pb-3">
-                                            <p class="text-sm font-bold text-gray-900 leading-tight">
-                                                {{ $owner->name }}</p>
-                                            <p class="text-xs text-gray-400 mt-0.5">{{ $owner->username }}</p>
-                                            <div class="flex items-center justify-center gap-1.5 mt-2 flex-wrap">
-                                                <span
-                                                    class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wide
-                                        {{ $owner->role === 'admin'
-                                            ? 'bg-red-100 text-red-600'
-                                            : ($owner->role === 'alumni'
-                                                ? 'bg-uco-orange-100 text-uco-orange-600'
-                                                : 'bg-blue-100 text-blue-600') }}">
-                                                    {{ $ownerRole }}
-                                                </span>
-                                                @if ($ownerCgpa)
-                                                    <span
-                                                        class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-gray-100 text-gray-600">
-                                                        <i class="bi bi-award text-[10px]"></i>
-                                                        {{ number_format((float) $ownerCgpa, 2) }}
-                                                    </span>
+                                            <div class="relative inline-block mb-4 mt-2">
+                                                @if($ownerPhotoBig)
+                                                    <img src="{{ $ownerPhotoBig }}" 
+                                                         class="w-24 h-24 object-cover rounded-full border-[3px] border-gray-50 shadow-sm" alt="photo">
+                                                @else
+                                                    <div class="w-24 h-24 bg-gray-50 text-gray-400 rounded-full flex items-center justify-center text-3xl font-bold border-[3px] border-white shadow-sm">
+                                                        {{ strtoupper(substr($owner->name, 0, 1)) }}
+                                                    </div>
                                                 @endif
-                                                <span
-                                                    class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-gray-100 text-gray-600">
-                                                    <i class="bi bi-shop text-[10px]"></i> {{ $ownerBizCount }}
-                                                </span>
+                                                <span class="absolute bottom-1 right-1 w-5 h-5 rounded-full border-2 border-white {{ $owner->is_active ? 'bg-green-500' : 'bg-red-500' }}"></span>
                                             </div>
+                                            <h2 class="text-xl font-bold text-gray-900">{{ $owner->name }}</h2>
                                         </div>
 
                                         {{-- Tabs nav --}}
-                                        <div class="flex border-t border-b border-gray-100">
-                                            @php
-                                                $popupTabs = [
-                                                    ['id' => 'basic', 'icon' => 'bi-person', 'title' => 'Basic'],
-                                                    [
-                                                        'id' => 'personal',
-                                                        'icon' => 'bi-telephone',
-                                                        'title' => 'Contact',
-                                                    ],
-                                                    [
-                                                        'id' => 'academic',
-                                                        'icon' => 'bi-mortarboard',
-                                                        'title' => 'Academic',
-                                                    ],
-                                                    ['id' => 'parents', 'icon' => 'bi-people', 'title' => 'Parents'],
-                                                    ['id' => 'business', 'icon' => 'bi-briefcase', 'title' => 'Work'],
-                                                ];
-                                            @endphp
-                                            @foreach ($popupTabs as $pt)
-                                                <button @click="tab = '{{ $pt['id'] }}'"
-                                                    :class="tab === '{{ $pt['id'] }}'
-                                                        ?
-                                                        'text-gray-900 bg-gray-50 border-b-2 border-gray-900' :
-                                                        'text-gray-400 hover:text-gray-600 border-b-2 border-transparent'"
-                                                    class="flex-1 py-2.5 flex items-center justify-center transition-all duration-150"
-                                                    title="{{ $pt['title'] }}">
-                                                    <i class="bi {{ $pt['icon'] }} text-sm"></i>
-                                                </button>
-                                            @endforeach
+                                        <div class="flex border-b border-gray-100 bg-white">
+                                            <button @click="tab = 'basic'"
+                                                :class="tab === 'basic' ? 'text-gray-900 border-b-2 border-gray-900 font-bold bg-gray-50/50' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50 border-b-2 border-transparent'"
+                                                class="flex-1 py-3 text-[11px] font-bold uppercase tracking-widest transition-all duration-150">
+                                                <i class="bi bi-person mr-1.5"></i> Profile Info
+                                            </button>
+                                            <button @click="tab = 'academic'"
+                                                :class="tab === 'academic' ? 'text-gray-900 border-b-2 border-gray-900 font-bold bg-gray-50/50' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50 border-b-2 border-transparent'"
+                                                class="flex-1 py-3 text-[11px] font-bold uppercase tracking-widest transition-all duration-150">
+                                                <i class="bi bi-mortarboard mr-1.5"></i> Academic
+                                            </button>
                                         </div>
 
-                                        {{-- Tab panels --}}
-                                        <div class="px-3 py-2 h-44 overflow-y-auto">
+                                        <div class="p-4 bg-gray-50/30">
+                                            {{-- TAB: BASIC PROFILE --}}
+                                            <div x-show="tab === 'basic'" x-transition:enter="transition ease-out duration-300 transform" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" class="space-y-4">
+                                                {{-- Base Info --}}
+                                                <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+                                                    <div class="flex justify-between items-center py-2 border-b border-gray-50">
+                                                        <span class="text-sm text-gray-500">Username</span>
+                                                        <span class="text-sm font-medium text-gray-900">{{ $owner->username }}</span>
+                                                    </div>
+                                                    <div class="flex justify-between items-center py-2 border-b border-gray-50">
+                                                        <span class="text-sm text-gray-500">Email</span>
+                                                        <span class="text-sm font-medium text-gray-900">{{ $owner->email }}</span>
+                                                    </div>
+                                                    <div class="flex justify-between items-center pt-2">
+                                                        <span class="text-sm text-gray-500">Official Email</span>
+                                                        <span class="text-sm font-medium text-gray-900">{{ $ownerGrad['official_email'] ?? '-' }}</span>
+                                                    </div>
+                                                </div>
 
-                                            {{-- Basic --}}
-                                            <div x-show="tab === 'basic'" style="display:none;">
-                                                @php
-                                                    $basicRows = array_filter(
-                                                        [
-                                                            [
-                                                                'icon' => 'bi-envelope',
-                                                                'label' => 'Email',
-                                                                'value' => $owner->email,
-                                                            ],
-                                                            [
-                                                                'icon' => 'bi-shield-check',
-                                                                'label' => 'Role',
-                                                                'value' => $ownerRole,
-                                                            ],
-                                                            [
-                                                                'icon' => 'bi-calendar-check',
-                                                                'label' => 'Joined',
-                                                                'value' => $owner->created_at?->format('d M Y'),
-                                                            ],
-                                                        ],
-                                                        fn($r) => !empty($r['value']),
-                                                    );
-                                                @endphp
-                                                @foreach ($basicRows as $row)
-                                                    @include('businesses._owner_info_row', $row)
-                                                @endforeach
+                                                {{-- Social --}}
+                                                <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+                                                    <h3 class="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-4">Social Network</h3>
+                                                    <div class="space-y-3">
+                                                        <div class="flex items-center gap-3">
+                                                            <div class="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center text-green-600">
+                                                                <i class="bi bi-whatsapp"></i>
+                                                            </div>
+                                                            <span class="text-sm text-gray-700 font-medium">{{ $owner->whatsapp ?? '-' }}</span>
+                                                        </div>
+                                                        <div class="flex items-center gap-3">
+                                                            <div class="w-8 h-8 rounded-lg bg-pink-50 flex items-center justify-center text-pink-600">
+                                                                <i class="bi bi-instagram"></i>
+                                                            </div>
+                                                            <span class="text-sm text-gray-700 font-medium">{{ $ownerPerso['instagram'] ?? '-' }}</span>
+                                                        </div>
+                                                        <div class="flex items-center gap-3">
+                                                            <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">
+                                                                <i class="bi bi-facebook"></i>
+                                                            </div>
+                                                            <span class="text-sm text-gray-700 font-medium">{{ $ownerPerso['facebook'] ?? '-' }}</span>
+                                                        </div>
+                                                        <div class="flex items-center gap-3">
+                                                            <div class="w-8 h-8 rounded-lg bg-sky-50 flex items-center justify-center text-sky-600">
+                                                                <i class="bi bi-twitter-x"></i>
+                                                            </div>
+                                                            <span class="text-sm text-gray-700 font-medium">{{ $ownerPerso['twitter'] ?? '-' }}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {{-- Demographics --}}
+                                                <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+                                                    <span class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Demographics</span>
+                                                    <p class="text-sm font-medium text-gray-900 mt-2">
+                                                        {{ $ownerPerso['gender'] ?? '-' }}, 
+                                                        {{ $owner->birth_date ? \Carbon\Carbon::parse($owner->birth_date)->format('d M Y') : '-' }} 
+                                                        @if($owner->birth_city) ({{ $owner->birth_city }}) @endif
+                                                    </p>
+                                                </div>
                                             </div>
 
-                                            {{-- Contact --}}
-                                            <div x-show="tab === 'personal'" style="display:none;">
-                                                @php
-                                                    $personalRows = array_filter(
-                                                        [
-                                                            [
-                                                                'icon' => 'bi-gender-ambiguous',
-                                                                'label' => 'Gender',
-                                                                'value' => $ownerPerso['gender'] ?? null,
-                                                            ],
-                                                            [
-                                                                'icon' => 'bi-telephone',
-                                                                'label' => 'Phone',
-                                                                'value' =>
-                                                                    $owner->phone_number ??
-                                                                    ($ownerPerso['phone'] ?? null),
-                                                            ],
-                                                            [
-                                                                'icon' => 'bi-whatsapp',
-                                                                'label' => 'WhatsApp',
-                                                                'value' => $ownerPerso['whatsapp'] ?? null,
-                                                            ],
-                                                            [
-                                                                'icon' => 'bi-geo-alt',
-                                                                'label' => 'Address',
-                                                                'value' => $ownerPerso['address'] ?? null,
-                                                            ],
-                                                            [
-                                                                'icon' => 'bi-instagram',
-                                                                'label' => 'Instagram',
-                                                                'value' => $ownerPerso['instagram'] ?? null,
-                                                            ],
-                                                        ],
-                                                        fn($r) => !empty($r['value']),
-                                                    );
-                                                @endphp
-                                                @forelse($personalRows as $row)
-                                                    @include('businesses._owner_info_row', $row)
-                                                @empty
-                                                    <p class="text-[11px] text-gray-400 text-center py-4">No contact
-                                                        info.</p>
-                                                @endforelse
-                                            </div>
+                                            {{-- TAB: ACADEMIC & EXTENDED --}}
+                                            <div x-show="tab === 'academic'" style="display: none;" x-transition:enter="transition ease-out duration-300 transform" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" class="space-y-4">
+                                                {{-- Extended Academic Data --}}
+                                                <div class="bg-white rounded-xl p-5 shadow-sm border border-gray-100 space-y-4">
+                                                    <div class="border-b border-gray-50 pb-4">
+                                                        <span class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Academic Target</span>
+                                                        <p class="text-[13px] leading-tight font-bold text-gray-900 mt-1.5">{{ $ownerAcad['prodi'] ?? ($ownerMajor ?? 'Not Recorded') }} / {{ $ownerAcad['sub_prodi'] ?? 'N/A' }}</p>
+                                                    </div>
 
-                                            {{-- Academic --}}
-                                            <div x-show="tab === 'academic'" style="display:none;">
-                                                @php
-                                                    $academicRows = array_filter(
-                                                        [
-                                                            [
-                                                                'icon' => 'bi-hash',
-                                                                'label' => 'NIS',
-                                                                'value' => $ownerNis,
-                                                            ],
-                                                            [
-                                                                'icon' => 'bi-mortarboard',
-                                                                'label' => 'Major',
-                                                                'value' => $ownerMajor,
-                                                            ],
-                                                            [
-                                                                'icon' => 'bi-calendar3',
-                                                                'label' => 'Angkatan',
-                                                                'value' => $ownerYear,
-                                                            ],
-                                                            [
-                                                                'icon' => 'bi-award',
-                                                                'label' => 'GPA',
-                                                                'value' => $ownerCgpa
-                                                                    ? number_format((float) $ownerCgpa, 2)
-                                                                    : null,
-                                                            ],
-                                                            [
-                                                                'icon' => 'bi-person-check',
-                                                                'label' => 'Graduate',
-                                                                'value' => isset($owner->Is_Graduate)
-                                                                    ? ($owner->Is_Graduate
-                                                                        ? 'Yes'
-                                                                        : 'No')
-                                                                    : null,
-                                                            ],
-                                                            [
-                                                                'icon' => 'bi-journal-text',
-                                                                'label' => 'Edu Level',
-                                                                'value' =>
-                                                                    $ownerAcad['Edu_Level'] ??
-                                                                    ($ownerAcad['edu_level'] ?? null),
-                                                            ],
-                                                            [
-                                                                'icon' => 'bi-person-lines-fill',
-                                                                'label' => 'Advisor',
-                                                                'value' =>
-                                                                    $ownerAcad['Academic_Advisor'] ??
-                                                                    ($ownerAcad['academic_advisor'] ?? null),
-                                                            ],
-                                                        ],
-                                                        fn($r) => !empty($r['value']),
-                                                    );
-                                                @endphp
-                                                @forelse($academicRows as $row)
-                                                    @include('businesses._owner_info_row', $row)
-                                                @empty
-                                                    <p class="text-[11px] text-gray-400 text-center py-4">No academic
-                                                        info.</p>
-                                                @endforelse
-                                            </div>
+                                                    <div class="border-b border-gray-50 pb-4">
+                                                        <span class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Education Level</span>
+                                                        <p class="text-[13px] font-bold text-gray-900 mt-1.5">{{ $ownerAcad['edu_level'] ?? 'Not Recorded' }}</p>
+                                                    </div>
 
-                                            {{-- Parents --}}
-                                            <div x-show="tab === 'parents'" style="display:none;">
-                                                @php
-                                                    $ownerFather = $owner->father_data ?? [];
-                                                    $ownerMother = $owner->mother_data ?? [];
-                                                    $parentsRows = array_filter(
-                                                        [
-                                                            [
-                                                                'icon' => 'bi-person',
-                                                                'label' => 'Father',
-                                                                'value' => $ownerFather['name'] ?? null,
-                                                            ],
-                                                            [
-                                                                'icon' => 'bi-telephone',
-                                                                'label' => 'Father Phone',
-                                                                'value' => $ownerFather['phone'] ?? null,
-                                                            ],
-                                                            [
-                                                                'icon' => 'bi-briefcase',
-                                                                'label' => 'Father Job',
-                                                                'value' => $ownerFather['job'] ?? null,
-                                                            ],
-                                                            [
-                                                                'icon' => 'bi-person',
-                                                                'label' => 'Mother',
-                                                                'value' => $ownerMother['name'] ?? null,
-                                                            ],
-                                                            [
-                                                                'icon' => 'bi-telephone',
-                                                                'label' => 'Mother Phone',
-                                                                'value' => $ownerMother['phone'] ?? null,
-                                                            ],
-                                                            [
-                                                                'icon' => 'bi-briefcase',
-                                                                'label' => 'Mother Job',
-                                                                'value' => $ownerMother['job'] ?? null,
-                                                            ],
-                                                        ],
-                                                        fn($r) => !empty($r['value']),
-                                                    );
-                                                @endphp
-                                                @forelse($parentsRows as $row)
-                                                    @include('businesses._owner_info_row', $row)
-                                                @empty
-                                                    <p class="text-[11px] text-gray-400 text-center py-4">No parent
-                                                        info.</p>
-                                                @endforelse
-                                            </div>
+                                                    <div class="border-b border-gray-50 pb-4">
+                                                        <span class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Enrollment Status</span>
+                                                        <p class="text-sm font-medium mt-1.5">
+                                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-[11px] font-bold uppercase tracking-wider {{ $owner->Is_Graduate ? 'bg-indigo-100 text-indigo-700' : 'bg-green-100 text-green-700' }}">
+                                                                {{ $owner->Is_Graduate ? 'Alumni' : 'Active Student' }}
+                                                            </span>
+                                                        </p>
+                                                    </div>
 
-                                            {{-- Work --}}
-                                            <div x-show="tab === 'business'" style="display:none;">
-                                                @php
-                                                    $ownerGradStatus = $owner->current_employment_status
-                                                        ? $owner->getEmploymentStatusLabel()
-                                                        : $ownerGrad['employment_status'] ?? null;
-                                                    $ownerBusinesses = $owner
-                                                        ->businesses()
-                                                        ->select('id', 'name')
-                                                        ->get();
-                                                @endphp
-                                                @if ($ownerGradStatus)
-                                                    @include('businesses._owner_info_row', [
-                                                        'icon' => 'bi-briefcase',
-                                                        'label' => 'Status',
-                                                        'value' => $ownerGradStatus,
-                                                    ])
-                                                @endif
-                                                <p
-                                                    class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mt-2 mb-1">
-                                                    Businesses</p>
-                                                @forelse($ownerBusinesses as $b)
-                                                    <a href="{{ route('businesses.show', $b) }}"
-                                                        class="flex items-center gap-1.5 py-1.5 px-2 rounded-lg hover:bg-uco-orange-50 text-gray-700 hover:text-uco-orange-700 text-xs font-medium transition-colors group">
-                                                        <i
-                                                            class="bi bi-shop text-[11px] text-gray-400 group-hover:text-uco-orange-500 flex-shrink-0"></i>
-                                                        <span class="truncate">{{ $b->name }}</span>
-                                                        <i
-                                                            class="bi bi-arrow-right text-[10px] ml-auto text-gray-300 group-hover:text-uco-orange-400"></i>
-                                                    </a>
-                                                @empty
-                                                    <p class="text-[11px] text-gray-400 text-center py-3">No businesses
-                                                        yet.</p>
-                                                @endforelse
+                                                    <div class="">
+                                                        <span class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Prof. Certifications</span>
+                                                        @if(!empty($ownerAcad['certificate_no_1']) || !empty($ownerAcad['certificate_no_2']))
+                                                            <ul class="text-[13px] font-medium text-gray-900 mt-2 list-disc pl-4 space-y-1.5">
+                                                                @if(!empty($ownerAcad['certificate_no_1']))
+                                                                    <li>{{ $ownerAcad['certificate_no_1'] }} <span class="text-[10px] text-gray-400 font-bold">({{ $ownerAcad['certificate_date_1'] ?? 'No Date' }})</span></li>
+                                                                @endif
+                                                                @if(!empty($ownerAcad['certificate_no_2']))
+                                                                    <li>{{ $ownerAcad['certificate_no_2'] }} <span class="text-[10px] text-gray-400 font-bold">({{ $ownerAcad['certificate_date_2'] ?? 'No Date' }})</span></li>
+                                                                @endif
+                                                            </ul>
+                                                        @else
+                                                            <div class="mt-2 p-3 bg-gray-50 rounded-lg text-center border border-dashed border-gray-200 text-xs text-gray-500 italic">No certifications registered.</div>
+                                                        @endif
+                                                    </div>
+                                                </div>
                                             </div>
 
                                         </div>

@@ -40,20 +40,19 @@
             <div class="lg:col-span-1 space-y-6">
                 {{-- Account Profile card --}}
                 <div class="bg-white shadow-sm rounded-2xl overflow-hidden">
-                    <div class="bg-gray-900 px-6 py-8 text-center text-white">
+                    <div class="bg-white px-6 py-8 text-center border-b border-gray-50">
                         <div class="relative inline-block mb-4">
                             @if($user->profile_photo_url)
                                 <img src="{{ filter_var($user->profile_photo_url, FILTER_VALIDATE_URL) ? $user->profile_photo_url : Storage::url($user->profile_photo_url) }}" 
-                                     class="w-32 h-32 object-cover rounded-full border-4 border-white/20 shadow-xl" alt="photo">
+                                     class="w-32 h-32 object-cover rounded-full border-4 border-gray-50 shadow-sm" alt="photo">
                             @else
-                                <div class="w-24 h-24 bg-white/10 rounded-full flex items-center justify-center text-3xl font-bold border-2 border-white/20">
+                                <div class="w-24 h-24 bg-gray-50 text-gray-400 rounded-full flex items-center justify-center text-3xl font-bold border-2 border-white shadow-sm mx-auto">
                                     {{ substr($user->name, 0, 1) }}
                                 </div>
                             @endif
-                            <span class="absolute bottom-1 right-1 w-6 h-6 rounded-full border-2 border-gray-900 {{ $user->is_active ? 'bg-green-500' : 'bg-red-500' }}"></span>
+                            <span class="absolute bottom-1 right-1 w-6 h-6 rounded-full border-2 border-white {{ $user->is_active ? 'bg-green-500' : 'bg-red-500' }}"></span>
                         </div>
-                        <h2 class="text-xl font-bold">{{ $user->name }}</h2>
-                        <p class="text-gray-400 text-sm">{{ ucfirst($user->role) }} • ID: #{{ $user->id }}</p>
+                        <h2 class="text-xl font-bold text-gray-900">{{ $user->name }}</h2>
                     </div>
                     <div class="p-6 space-y-4">
                         <div class="flex justify-between items-center py-2 border-b border-gray-50">
@@ -64,13 +63,9 @@
                             <span class="text-sm text-gray-500">Email</span>
                             <span class="text-sm font-medium text-gray-900">{{ $user->email }}</span>
                         </div>
-                        <div class="flex justify-between items-center py-2 border-b border-gray-50">
+                        <div class="flex justify-between items-center pt-2">
                             <span class="text-sm text-gray-500">Official Email</span>
                             <span class="text-sm font-medium text-gray-900">{{ $graduationData['official_email'] ?? '-' }}</span>
-                        </div>
-                        <div class="flex justify-between items-center pt-2">
-                            <span class="text-sm text-gray-500">Last Verified</span>
-                            <span class="text-sm font-medium text-gray-500">{{ $user->email_verified_at ? $user->email_verified_at->format('M d, Y') : 'Pending' }}</span>
                         </div>
                     </div>
                 </div>
