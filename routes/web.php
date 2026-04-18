@@ -127,6 +127,7 @@ Route::middleware(['auth', 'verified', 'admin'])->group(function () {
     Route::get('/admin/business-approvals', [\App\Http\Controllers\Admin\BusinessApprovalController::class, 'index'])->name('admin.business-approvals.index');
     Route::get('/admin/business-approvals/{business}', [\App\Http\Controllers\Admin\BusinessApprovalController::class, 'show'])->name('admin.business-approvals.show');
     Route::post('/admin/business-approvals/{business}/approve', [\App\Http\Controllers\Admin\BusinessApprovalController::class, 'approve'])->name('admin.business-approvals.approve');
+    Route::post('/admin/business-approvals/{business}/need-revision', [\App\Http\Controllers\Admin\BusinessApprovalController::class, 'needRevision'])->name('admin.business-approvals.need-revision');
     Route::post('/admin/business-approvals/{business}/reject', [\App\Http\Controllers\Admin\BusinessApprovalController::class, 'reject'])->name('admin.business-approvals.reject');
 });
 

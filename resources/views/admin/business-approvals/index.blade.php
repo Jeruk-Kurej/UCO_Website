@@ -1,17 +1,25 @@
 <x-app-layout>
     <div class="w-full max-w-[1600px] 2xl:max-w-[1720px] mx-auto py-8">
         {{-- Page Header --}}
-        <div class="mb-12 reveal-on-scroll">
+        <div class="mb-12">
             <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div>
                     <h1 class="text-4xl font-extrabold text-gray-900 tracking-tight mb-2">Business Approvals</h1>
                     <p class="text-lg text-gray-500 max-w-2xl leading-relaxed mb-0">Review and moderate business registrations before they go public.</p>
                 </div>
                 
-                <div class="flex bg-gray-100 p-1 rounded-2xl">
+                <div class="flex flex-wrap gap-2 bg-gray-100 p-1.5 rounded-2xl">
                     <a href="{{ route('admin.business-approvals.index', ['status' => 'pending']) }}" 
                        class="px-6 py-2.5 rounded-xl text-sm font-bold transition-all {{ $status === 'pending' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700' }}">
                         Pending
+                    </a>
+                    <a href="{{ route('admin.business-approvals.index', ['status' => 'need_revision']) }}" 
+                       class="px-6 py-2.5 rounded-xl text-sm font-bold transition-all {{ $status === 'need_revision' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700' }}">
+                        Needs Revision
+                    </a>
+                    <a href="{{ route('admin.business-approvals.index', ['status' => 'approved']) }}" 
+                       class="px-6 py-2.5 rounded-xl text-sm font-bold transition-all {{ $status === 'approved' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700' }}">
+                        Approved
                     </a>
                     <a href="{{ route('admin.business-approvals.index', ['status' => 'rejected']) }}" 
                        class="px-6 py-2.5 rounded-xl text-sm font-bold transition-all {{ $status === 'rejected' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700' }}">
@@ -25,7 +33,7 @@
             {{-- Businesses Grid --}}
             <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 mb-12">
                 @foreach($businesses as $b)
-                    <div class="group bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-2xl hover:border-uco-orange-300 transition-all duration-500 overflow-hidden flex flex-col reveal-on-scroll">
+                    <div class="group bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-2xl hover:border-uco-orange-300 transition-all duration-500 overflow-hidden flex flex-col">
                         {{-- Cover Image / Logo --}}
                         <div class="h-48 bg-gray-50 relative overflow-hidden">
                             @php 
@@ -73,10 +81,12 @@
                                 {{ $b->description ?: 'No description provided' }}
                             </p>
 
-                            @if($b->status === 'rejected' && $b->rejection_reason)
-                                <div class="mb-6 p-3 bg-red-50 border border-red-100 rounded-xl">
-                                    <p class="text-[10px] font-bold text-red-600 uppercase tracking-wider mb-1">Previous Rejection Reason:</p>
-                                    <p class="text-xs text-red-700 italic line-clamp-2">"{{ $b->rejection_reason }}"</p>
+                            @if(in_array($b->status, ['rejected', 'need_revision']) && $b->rejection_reason)
+                                <div class="mb-6 p-3 {{ $b->status === 'rejected' ? 'bg-red-50 border-red-100' : 'bg-blue-50 border-blue-100' }} border rounded-xl">
+                                    <p class="text-[10px] font-bold {{ $b->status === 'rejected' ? 'text-red-600' : 'text-blue-600' }} uppercase tracking-wider mb-1">
+                                        {{ $b->status === 'rejected' ? 'Rejection Reason:' : 'Revision Request:' }}
+                                    </p>
+                                    <p class="text-xs {{ $b->status === 'rejected' ? 'text-red-700' : 'text-blue-700' }} italic line-clamp-2">"{{ $b->rejection_reason }}"</p>
                                 </div>
                             @endif
 
@@ -95,7 +105,7 @@
                 {{ $businesses->links() }}
             </div>
         @else
-            <div class="bg-white border-2 border-dashed border-gray-200 rounded-3xl p-20 text-center reveal-on-scroll">
+            <div class="bg-white border-2 border-dashed border-gray-200 rounded-3xl p-20 text-center">
                 <div class="w-24 h-24 bg-soft-gray-50 text-soft-gray-300 rounded-full flex items-center justify-center mx-auto mb-8 shadow-inner">
                     <i class="bi bi-journal-check text-5xl"></i>
                 </div>

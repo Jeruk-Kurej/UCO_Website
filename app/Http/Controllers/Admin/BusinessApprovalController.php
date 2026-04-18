@@ -57,6 +57,25 @@ class BusinessApprovalController extends Controller
     }
 
     /**
+     * Set the business as needing revision with a reason.
+     */
+    public function needRevision(Request $request, Business $business)
+    {
+        $request->validate([
+            'rejection_reason' => 'required|string|max:1000',
+        ]);
+
+        $business->update([
+            'status' => Business::STATUS_NEED_REVISION,
+            'rejection_reason' => $request->rejection_reason
+        ]);
+
+        return redirect()
+            ->route('admin.business-approvals.index')
+            ->with('success', "Business '{$business->name}' has been marked as needing revision. The owner will see your feedback.");
+    }
+
+    /**
      * Reject the specified business with a reason.
      */
     public function reject(Request $request, Business $business)

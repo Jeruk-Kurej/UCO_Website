@@ -72,10 +72,12 @@
                                 {{ $b->description ?: 'No description provided' }}
                             </p>
 
-                            @if($b->status === 'rejected' && $b->rejection_reason)
-                                <div class="mb-4 p-3 bg-red-50 border border-red-100 rounded-xl">
-                                    <p class="text-[10px] font-bold text-red-600 uppercase tracking-wider mb-1">Revision Feedback:</p>
-                                    <p class="text-xs text-red-700 italic">"{{ $b->rejection_reason }}"</p>
+                            @if(in_array($b->status, ['rejected', 'need_revision']) && $b->rejection_reason)
+                                <div class="mb-4 p-3 {{ $b->status === 'rejected' ? 'bg-red-50 border-red-100' : 'bg-blue-50 border-blue-100' }} border rounded-xl">
+                                    <p class="text-[10px] font-bold {{ $b->status === 'rejected' ? 'text-red-600' : 'text-blue-600' }} uppercase tracking-wider mb-1">
+                                        {{ $b->status === 'rejected' ? 'Rejection Reason:' : 'Revision Feedback:' }}
+                                    </p>
+                                    <p class="text-xs {{ $b->status === 'rejected' ? 'text-red-700' : 'text-blue-700' }} italic">"{{ $b->rejection_reason }}"</p>
                                 </div>
                             @endif
 

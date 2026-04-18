@@ -15,6 +15,7 @@ class Business extends Model
     public const STATUS_PENDING = 'pending';
     public const STATUS_APPROVED = 'approved';
     public const STATUS_REJECTED = 'rejected';
+    public const STATUS_NEED_REVISION = 'need_revision';
 
     protected $fillable = [
         'user_id',
@@ -368,6 +369,14 @@ class Business extends Model
     }
 
     /**
+     * Scope a query to only include businesses that need revision.
+     */
+    public function scopeNeedRevision($query)
+    {
+        return $query->where('status', self::STATUS_NEED_REVISION);
+    }
+
+    /**
      * Get the status badge color (Tailwind classes)
      */
     public function getStatusColorAttribute(): string
@@ -375,6 +384,7 @@ class Business extends Model
         return match($this->status) {
             self::STATUS_APPROVED => 'green',
             self::STATUS_REJECTED => 'red',
+            self::STATUS_NEED_REVISION => 'blue',
             default => 'orange',
         };
     }
@@ -384,6 +394,9 @@ class Business extends Model
      */
     public function getStatusLabelAttribute(): string
     {
+        if ($this->status === self::STATUS_NEED_REVISION) {
+            return 'Needs Revision';
+        }
         return ucfirst($this->status);
     }
 }

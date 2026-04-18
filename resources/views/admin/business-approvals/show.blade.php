@@ -1,5 +1,5 @@
 <x-app-layout>
-    <div class="w-full max-w-[1200px] mx-auto py-8 px-4" x-data="{ showRejectModal: false }">
+    <div class="w-full max-w-[1200px] mx-auto py-8 px-4" x-data="{ showRejectModal: false, showRevisionModal: false }">
         {{-- Back Button --}}
         <div class="mb-8">
             <a href="{{ route('admin.business-approvals.index') }}" 
@@ -80,7 +80,7 @@
                                 <dd class="text-sm font-semibold text-gray-700">{{ $business->employee_count ?: 'N/A' }} employees</dd>
                             </div>
                             <div>
-                                <p class="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">Category / Type</p>
+                                <p class="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">Revenue Range</p>
                                 <dd class="text-sm font-semibold text-gray-700">{{ $business->revenue_range ?: 'N/A' }}</dd>
                             </div>
                         </dl>
@@ -98,7 +98,7 @@
                                 <dd class="text-sm font-semibold text-gray-700">{{ $business->address ?: 'N/A' }}</dd>
                             </div>
                             <div>
-                                <p class="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">Owner / Position</p>
+                                <p class="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">Location</p>
                                 <dd class="text-sm font-semibold text-gray-700">{{ $business->city ?: 'N/A' }}, {{ $business->province ?: 'N/A' }}</dd>
                             </div>
                             @if($business->phone)
@@ -141,52 +141,92 @@
                                 <span>Approve Business</span>
                             </button>
                         </form>
+                        <button @click="showRevisionModal = true"
+                                class="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-white hover:bg-blue-50 border-2 border-blue-500 text-blue-600 rounded-xl font-bold transition-all duration-200">
+                            <i class="bi bi-pencil-square"></i>
+                            <span>Request Revision</span>
+                        </button>
                         <button @click="showRejectModal = true"
                                 class="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-white hover:bg-red-50 border-2 border-red-500 text-red-600 rounded-xl font-bold transition-all duration-200">
                             <i class="bi bi-x-circle-fill"></i>
-                            <span>Reject / Revise</span>
+                            <span>Reject Business</span>
                         </button>
                     </div>
                     
                     <p class="text-[10px] text-gray-400 text-center mt-6 uppercase font-bold tracking-widest leading-loose">
                         By approving, this business will be immediately visible on the public listing.
                     </p>
-                </div>
-            </div>
-        </div>
 
-        {{-- Reject Modal --}}
-        <div x-show="showRejectModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm">
-            <div @click.away="showRejectModal = false" class="bg-white w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden p-8 reveal-on-scroll">
-                <div class="flex items-center justify-between mb-6">
-                    <div>
-                        <p class="text-xs uppercase tracking-widest font-semibold text-uco-orange-600">Moderation System</p>
-                        <h1 class="text-2xl sm:text-3xl font-bold text-slate-800 mt-1">Approval Details</h1>
-                        <p class="text-slate-600 mt-2 text-sm sm:text-base">Review the business details carefully before making a decision</p>
+                    {{-- Revision Modal --}}
+                    <div x-show="showRevisionModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm text-left">
+                        <div @click.away="showRevisionModal = false" class="bg-white w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden p-8 reveal-on-scroll">
+                            <div class="flex items-center justify-between mb-6">
+                                <div>
+                                    <p class="text-xs uppercase tracking-widest font-semibold text-uco-orange-600">Moderation System</p>
+                                    <h1 class="text-2xl sm:text-3xl font-bold text-slate-800 mt-1">Request Revision</h1>
+                                    <p class="text-slate-600 mt-2 text-sm sm:text-base">Explain what needs to be changed before approval.</p>
+                                </div>
+                                <button @click="showRevisionModal = false" class="text-gray-400 hover:text-gray-600">
+                                    <i class="bi bi-x-lg"></i>
+                                </button>
+                            </div>
+                            
+                            <form action="{{ route('admin.business-approvals.need-revision', $business) }}" method="POST">
+                                @csrf
+                                <div class="mb-8">
+                                    <label for="rejection_reason_revision" class="block text-sm font-semibold text-slate-700 mb-2">Revision Notes</label>
+                                    <textarea name="rejection_reason" id="rejection_reason_revision" rows="4" required
+                                              class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-sm"
+                                              placeholder="E.g., Please upload a clearer logo, or fix the address..."></textarea>
+                                </div>
+                                
+                                <div class="flex items-center gap-4">
+                                    <button type="button" @click="showRevisionModal = false" class="flex-1 py-4 bg-gray-100 text-gray-600 font-bold rounded-2xl hover:bg-gray-200 transition-all">
+                                        Cancel
+                                    </button>
+                                    <button type="submit" class="flex-1 py-4 bg-blue-500 text-white font-black rounded-2xl hover:bg-blue-600 transition-all shadow-lg shadow-blue-100">
+                                        Send Request
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
-                    <button @click="showRejectModal = false" class="text-gray-400 hover:text-gray-600">
-                        <i class="bi bi-x-lg"></i>
-                    </button>
+
+                    {{-- Reject Modal --}}
+                    <div x-show="showRejectModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm text-left">
+                        <div @click.away="showRejectModal = false" class="bg-white w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden p-8 reveal-on-scroll">
+                            <div class="flex items-center justify-between mb-6">
+                                <div>
+                                    <p class="text-xs uppercase tracking-widest font-semibold text-uco-orange-600">Moderation System</p>
+                                    <h1 class="text-2xl sm:text-3xl font-bold text-slate-800 mt-1">Reject Business</h1>
+                                    <p class="text-slate-600 mt-2 text-sm sm:text-base">Provide a reason for rejecting this registration.</p>
+                                </div>
+                                <button @click="showRejectModal = false" class="text-gray-400 hover:text-gray-600">
+                                    <i class="bi bi-x-lg"></i>
+                                </button>
+                            </div>
+                            
+                            <form action="{{ route('admin.business-approvals.reject', $business) }}" method="POST">
+                                @csrf
+                                <div class="mb-8">
+                                    <label for="rejection_reason_reject" class="block text-sm font-semibold text-slate-700 mb-2">Rejection Reason</label>
+                                    <textarea name="rejection_reason" id="rejection_reason_reject" rows="4" required
+                                              class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-red-500 focus:border-red-500 transition-all duration-200 text-sm"
+                                              placeholder="Provide a reason for rejecting..."></textarea>
+                                </div>
+                                
+                                <div class="flex items-center gap-4">
+                                    <button type="button" @click="showRejectModal = false" class="flex-1 py-4 bg-gray-100 text-gray-600 font-bold rounded-2xl hover:bg-gray-200 transition-all">
+                                        Cancel
+                                    </button>
+                                    <button type="submit" class="flex-1 py-4 bg-red-500 text-white font-black rounded-2xl hover:bg-red-600 transition-all shadow-lg shadow-red-100">
+                                        Confirm Rejection
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
                 </div>
-                
-                <form action="{{ route('admin.business-approvals.reject', $business) }}" method="POST">
-                    @csrf
-                    <div class="mb-8">
-                        <label for="rejection_reason" class="block text-sm font-semibold text-slate-700 mb-2">Rejection Reason / Revision Notes</label>
-                        <textarea name="rejection_reason" id="rejection_reason" rows="4" 
-                                  class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-red-500 focus:border-red-500 transition-all duration-200 text-sm"
-                                  placeholder="Provide a reason if rejecting or requesting a revision..."></textarea>
-                    </div>
-                    
-                    <div class="flex items-center gap-4">
-                        <button type="button" @click="showRejectModal = false" class="flex-1 py-4 bg-gray-100 text-gray-600 font-bold rounded-2xl hover:bg-gray-200 transition-all">
-                            Cancel
-                        </button>
-                        <button type="submit" class="flex-1 py-4 bg-red-500 text-white font-black rounded-2xl hover:bg-red-600 transition-all shadow-lg shadow-red-100">
-                            Confirm Rejection
-                        </button>
-                    </div>
-                </form>
             </div>
         </div>
     </div>
