@@ -23,7 +23,10 @@ use Illuminate\Support\Str;
 
 class UsersImport implements ToModel, WithHeadingRow, WithValidation, WithChunkReading, ShouldQueue, WithEvents, WithColumnLimit, SkipsEmptyRows
 {
+    use \App\Traits\UcAuthTrait;
+
     public $importId;
+    public $timeout = 3600; // Allow up to 1 hour per chunk if images are slow
     protected $errors = [];
     protected $successCount = 0;
     protected $skippedCount = 0;
@@ -31,6 +34,8 @@ class UsersImport implements ToModel, WithHeadingRow, WithValidation, WithChunkR
     public function __construct($importId = null)
     {
         $this->importId = $importId;
+        // Boost memory for image processing
+        @ini_set('memory_limit', '512M');
     }
 
     /**
@@ -38,7 +43,7 @@ class UsersImport implements ToModel, WithHeadingRow, WithValidation, WithChunkR
      */
     public function chunkSize(): int
     {
-        return 10;
+        return 5; // Reduced to 5 for maximum safety with large images
     }
 
     /**
@@ -636,8 +641,9 @@ class UsersImport implements ToModel, WithHeadingRow, WithValidation, WithChunkR
             return null;
         }
 
-        $response = Http::retry(3, 200)->timeout(15)->withOptions(['verify' => true])->get($url);
-        if (!$response->ok()) return null;
+        // Use the UC bot trait to automatically download even protected images
+        $response = $this->fetchSecureUcFile($url);
+        if (!$response || !$response->ok()) return null;
 
         $contentType = $response->header('Content-Type') ?? '';
         if (stripos($contentType, 'image/') !== 0) return null;
@@ -654,7 +660,23 @@ class UsersImport implements ToModel, WithHeadingRow, WithValidation, WithChunkR
         if (empty($basename)) $basename = 'image_' . uniqid();
 
         $path = "imports/users/{$userId}/" . uniqid() . '_' . $basename;
-        Storage::disk($disk)->put($path, $body);
+        
+        // Use Base64 Data URI for Cloudinary to avoid path/URL parsing issues
+        if ($disk === 'cloudinary') {
+            $base64 = base64_encode($body);
+            $dataUri = "data:{$contentType};base64,{$base64}";
+            Storage::disk($disk)->put($path, $dataUri);
+        } else {
+            Storage::disk($disk)->put($path, $body);
+        }
+        
+        // Save mapping for deduplication
+        $this->storeImageMapping($url, $path, $disk);
+
+        // Clean up memory
+        unset($body, $base64, $dataUri);
+        if (rand(1, 10) === 1) gc_collect_cycles();
+        
         return $path;
     }
 

@@ -39,4 +39,11 @@ return [
         'api_key' => env('GEMINI_API_KEY'),
     ],
 
+    'uc' => [
+        'username' => env('UC_USERNAME'),
+        'password' => env('UC_PASSWORD'),
+        'session_cookie' => env('UC_SESSION_COOKIE'),
+        'cookie_raw' => env('UC_COOKIE_RAW'),
+    ],
+
 ];
