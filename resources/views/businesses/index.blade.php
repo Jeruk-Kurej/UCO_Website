@@ -445,7 +445,7 @@
                                 @endphp
                                 @if ($logoUrl)
                                     <img src="{{ $logoUrl }}" alt="{{ $business->name }}"
-                                        class="w-16 h-16 sm:w-20 sm:h-20 rounded-xl object-cover shadow-sm ring-1 ring-gray-900/5 mt-1">
+                                        class="w-16 h-16 sm:w-20 sm:h-20 rounded-xl object-contain aspect-square shadow-sm ring-1 ring-gray-900/5 mt-1">
                                 @else
                                     <div
                                         class="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl flex items-center justify-center text-gray-400 shadow-sm ring-1 ring-gray-900/5 mt-1">
