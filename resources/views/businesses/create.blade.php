@@ -667,10 +667,7 @@
             </div>
 
             {{-- TAB 4: DOCUMENTS & CERTIFICATIONS --}}
-            <div x-show="activeTab === 'documents'" class="bg-white border-x border-b border-slate-200 rounded-b-2xl shadow-sm p-8 space-y-5">
-                class="bg-white border-x border-b border-slate-200 rounded-b-2xl shadow-sm p-8 space-y-8" style="display: none;">
-                
-
+            <div x-show="activeTab === 'documents'" class="bg-white border-x border-b border-slate-200 rounded-b-2xl shadow-sm p-8 space-y-5">                
 
                 <div class="grid md:grid-cols-2 gap-8">
                     <!-- Dokumen Legal -->
