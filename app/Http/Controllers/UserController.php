@@ -488,7 +488,7 @@ class UserController extends Controller
             'nis',
             'nisn',
             'prodi',
-            'sub_prodi',
+            'peminatan',
             'student_year',
             'major',
             'is_graduate',
@@ -639,7 +639,7 @@ class UserController extends Controller
             '12345678',                    // nis
             '1234567890',                  // nisn
             'Computer Science',            // prodi
-            'Software Engineering',        // sub_prodi
+            'Software Engineering',        // peminatan
             '2023',                        // student_year
             'Computer Science',            // major
             '0',                          // is_graduate

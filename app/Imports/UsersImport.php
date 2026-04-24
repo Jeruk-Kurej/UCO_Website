@@ -443,7 +443,7 @@ class UsersImport implements ToModel, WithHeadingRow, WithValidation, WithChunkR
             // Student IDs
             'nisn' => $row['nisn'] ?? null,
             'prodi' => $row['prodi'] ?? null,
-            'sub_prodi' => $row['sub_prodi'] ?? null,
+            'peminatan' => $row['peminatan'] ?? $row['sub_prodi'] ?? null,
 
             // Education History
             'edu_level' => $row['edu_level'] ?? null,

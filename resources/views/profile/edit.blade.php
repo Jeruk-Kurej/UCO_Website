@@ -94,6 +94,11 @@
                             class="flex-1 py-4 px-4 text-sm text-center transition-all duration-200">
                         Academic
                     </button>
+                    <button type="button" @click="activeTab = 'identity'" 
+                            :class="activeTab === 'identity' ? 'border-b-2 border-gray-900 text-gray-900 font-semibold' : 'text-gray-500 hover:text-gray-700'"
+                            class="flex-1 py-4 px-4 text-sm text-center transition-all duration-200">
+                        Identity & PII
+                    </button>
                     <button type="button" @click="activeTab = 'security'" 
                             :class="activeTab === 'security' ? 'border-b-2 border-gray-900 text-gray-900 font-semibold' : 'text-gray-500 hover:text-gray-700'"
                             class="flex-1 py-4 px-4 text-sm text-center transition-all duration-200">
@@ -337,6 +342,84 @@
                             <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-uco-orange-500 transition-colors duration-300"></div>
                             <span class="ml-3 text-sm font-bold text-gray-700 uppercase tracking-tight">I have graduated</span>
                         </label>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Identity & PII Tab --}}
+            <div x-show="activeTab === 'identity'" class="bg-white shadow-sm rounded-xl p-6">
+                <div class="flex items-center justify-between mb-6 pb-3 border-b-2 border-gray-100">
+                    <h2 class="text-lg font-bold text-gray-900">
+                        Identity & Sensitive Information
+                    </h2>
+                    @if(auth()->user()->isAdmin())
+                        <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 border border-red-200">
+                            <i class="bi bi-shield-lock-fill mr-1"></i> Admin Access
+                        </span>
+                    @endif
+                </div>
+
+                @if(!auth()->user()->isAdmin())
+                    <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6">
+                        <div class="flex items-start gap-3">
+                            <i class="bi bi-exclamation-triangle-fill text-amber-600 text-xl mt-0.5"></i>
+                            <div>
+                                <p class="font-semibold text-amber-900">Restricted Information</p>
+                                <p class="text-sm text-amber-700 mt-1">Sensitive identity data (Passport, Tax ID) is managed by the administration. If you need to update this information, please contact the UCO Academic Office.</p>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {{-- Citizenship --}}
+                    <div>
+                        <label for="citizenship" class="block text-sm font-medium text-gray-700 mb-2">Citizenship</label>
+                        <input type="text" name="personal_data[citizenship]" id="citizenship" 
+                               value="{{ old('personal_data.citizenship', $user->personal_data['citizenship'] ?? '') }}"
+                               @if(!auth()->user()->isAdmin()) readonly @endif
+                               class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl {{ !auth()->user()->isAdmin() ? 'bg-gray-50 text-gray-500 cursor-not-allowed' : 'focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900' }}"
+                               placeholder="e.g., Indonesian">
+                    </div>
+
+                    {{-- NIK / Citizenship No --}}
+                    <div>
+                        <label for="citizenship_no" class="block text-sm font-medium text-gray-700 mb-2">National ID (NIK)</label>
+                        <input type="text" name="personal_data[citizenship_no]" id="citizenship_no" 
+                               value="{{ old('personal_data.citizenship_no', $user->personal_data['citizenship_no'] ?? '') }}"
+                               @if(!auth()->user()->isAdmin()) readonly @endif
+                               class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl {{ !auth()->user()->isAdmin() ? 'bg-gray-50 text-gray-500 cursor-not-allowed' : 'focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900' }}"
+                               placeholder="16-digit National ID">
+                    </div>
+
+                    {{-- Passport No --}}
+                    <div>
+                        <label for="passport_no" class="block text-sm font-medium text-gray-700 mb-2">Passport Number</label>
+                        <input type="text" name="personal_data[passport_no]" id="passport_no" 
+                               value="{{ old('personal_data.passport_no', $user->personal_data['passport_no'] ?? '') }}"
+                               @if(!auth()->user()->isAdmin()) readonly @endif
+                               class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl {{ !auth()->user()->isAdmin() ? 'bg-gray-50 text-gray-500 cursor-not-allowed' : 'focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900' }}"
+                               placeholder="Enter passport number">
+                    </div>
+
+                    {{-- Tax ID (NPWP) --}}
+                    <div>
+                        <label for="npwp_no" class="block text-sm font-medium text-gray-700 mb-2">Tax ID (NPWP)</label>
+                        <input type="text" name="personal_data[npwp_no]" id="npwp_no" 
+                               value="{{ old('personal_data.npwp_no', $user->personal_data['npwp_no'] ?? '') }}"
+                               @if(!auth()->user()->isAdmin()) readonly @endif
+                               class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl {{ !auth()->user()->isAdmin() ? 'bg-gray-50 text-gray-500 cursor-not-allowed' : 'focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900' }}"
+                               placeholder="Enter NPWP number">
+                    </div>
+
+                    {{-- BPJS --}}
+                    <div>
+                        <label for="bpjs_no" class="block text-sm font-medium text-gray-700 mb-2">BPJS Number</label>
+                        <input type="text" name="personal_data[bpjs_no]" id="bpjs_no" 
+                               value="{{ old('personal_data.bpjs_no', $user->personal_data['bpjs_no'] ?? '') }}"
+                               @if(!auth()->user()->isAdmin()) readonly @endif
+                               class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl {{ !auth()->user()->isAdmin() ? 'bg-gray-50 text-gray-500 cursor-not-allowed' : 'focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900' }}"
+                               placeholder="Enter BPJS number">
                     </div>
                 </div>
             </div>

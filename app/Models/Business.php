@@ -401,4 +401,36 @@ class Business extends Model
         }
         return ucfirst($this->status);
     }
+
+    /**
+     * Calculate business profile completeness/quality score (0-100)
+     */
+    public function getQualityScore(): int
+    {
+        $score = 0;
+        
+        // 1. Basic Info (20%)
+        if ($this->logo_url) $score += 10;
+        if (strlen($this->description) > 50) $score += 10;
+        
+        // 2. Photos (20%)
+        $photoCount = $this->photos()->count();
+        if ($photoCount > 0) $score += 10;
+        if ($photoCount >= 3) $score += 10;
+        
+        // 3. Contact Methods (20%)
+        $contactCount = $this->contacts()->count();
+        if ($contactCount > 0) $score += 10;
+        if ($contactCount >= 2) $score += 10;
+        
+        // 4. Team & Ownership (20%)
+        if ($this->owners()->count() > 0) $score += 10;
+        if ($this->teamMembers()->count() > 0) $score += 10;
+        
+        // 5. Enhanced Data (20%)
+        if ($this->city || $this->province) $score += 10;
+        if ($this->established_date || $this->revenue_range) $score += 10;
+        
+        return $score;
+    }
 }

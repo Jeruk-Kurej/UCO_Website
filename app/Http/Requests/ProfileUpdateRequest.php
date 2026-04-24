@@ -49,6 +49,14 @@ class ProfileUpdateRequest extends FormRequest
             'Major' => ['nullable', 'string', 'max:255'],
             'CGPA' => ['nullable', 'numeric', 'min:0', 'max:4'],
             'Is_Graduate' => ['nullable', 'boolean'],
+
+            // Personal Data (JSON)
+            'personal_data' => ['nullable', 'array'],
+            'personal_data.citizenship' => ['nullable', 'string', 'max:100'],
+            'personal_data.citizenship_no' => ['nullable', 'string', 'max:100'],
+            'personal_data.passport_no' => ['nullable', 'string', 'max:100'],
+            'personal_data.npwp_no' => ['nullable', 'string', 'max:100'],
+            'personal_data.bpjs_no' => ['nullable', 'string', 'max:100'],
             
             // Password Change (ALL fields required if changing password)
             'current_password' => ['nullable', 'required_with:password', 'string'],

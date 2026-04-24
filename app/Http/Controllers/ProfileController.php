@@ -50,6 +50,31 @@ class ProfileController extends Controller
             
             $user->fill($fillableData);
 
+            // Handle personal_data (Identity/PII) - Only admins can update sensitive fields
+            if ($request->has('personal_data')) {
+                $newPersonalData = $request->input('personal_data');
+                $existingPersonalData = $user->personal_data ?? [];
+                
+                // Fields that only admins can change
+                $restrictedFields = ['citizenship', 'citizenship_no', 'passport_no', 'npwp_no', 'bpjs_no'];
+                
+                foreach ($newPersonalData as $key => $value) {
+                    if (in_array($key, $restrictedFields)) {
+                        if ($user->isAdmin()) {
+                            $existingPersonalData[$key] = $value;
+                        }
+                        // Skip if not admin (don't overwrite)
+                    } else {
+                        // Regular fields in personal_data (if any)
+                        $existingPersonalData[$key] = $value;
+                    }
+                }
+                
+                $user->personal_data = $existingPersonalData;
+            }
+
+            $user->save();
+
             // Handle profile photo upload
             if ($request->hasFile('profile_photo')) {
                 $file = $request->file('profile_photo');

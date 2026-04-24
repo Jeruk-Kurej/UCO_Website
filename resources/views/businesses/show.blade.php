@@ -1,11 +1,28 @@
 @use('Illuminate\Support\Facades\Storage')
 
+@push('meta')
+    <meta name="description" content="{{ Str::limit($business->description, 160) }}">
+    <meta property="og:title" content="{{ $business->name }} | UCO Platform">
+    <meta property="og:description" content="{{ Str::limit($business->description, 160) }}">
+    @php
+        $logo = $business->logo_url ? storage_image_url($business->logo_url, 'logo') : null;
+    @endphp
+    @if($logo)
+        <meta property="og:image" content="{{ $logo }}">
+    @endif
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ $business->name }}">
+    <meta name="twitter:description" content="{{ Str::limit($business->description, 160) }}">
+@endpush
+
 <x-app-layout>
     @php
         $canManageBusiness = auth()->check() && $business->canBeManagedBy(auth()->user());
     @endphp
     <div x-data="{
         showUserModal: false,
+        showCollabModal: false,
         fullscreenOpen: false,
         fullscreenSrc: '',
         fullscreenAlt: '',
@@ -15,7 +32,8 @@
             this.fullscreenOpen = true;
         }
     }" x-init="$watch('showUserModal', val => document.body.style.overflow = val ? 'hidden' : '');
-    $watch('fullscreenOpen', val => { if (val) { document.body.style.overflow = 'hidden'; } else if (!showUserModal) { document.body.style.overflow = ''; } })">
+    $watch('showCollabModal', val => document.body.style.overflow = val ? 'hidden' : '');
+    $watch('fullscreenOpen', val => { if (val) { document.body.style.overflow = 'hidden'; } else if (!showUserModal && !showCollabModal) { document.body.style.overflow = ''; } })">
         {{-- Hero Section with Elegant Back Button --}}
         <div class="mb-8 px-4 sm:px-0">
             <div class="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
@@ -93,7 +111,7 @@
                             </span>
                         </div>
                         <h1 class="text-2xl sm:text-3xl font-bold text-soft-gray-900 tracking-tight leading-tight">
-                            {{ $business->name }}</h1>
+                            {{ strtoupper($business->name) }}</h1>
                     </div>
                 </div>
                 @auth
@@ -242,7 +260,7 @@
                         @endif
                         <div class="flex-1">
                             <div class="flex items-center gap-2 mb-1">
-                                <p class="text-xs font-semibold text-soft-gray-500 uppercase tracking-wider">Listed by
+                                <p class="text-xs font-semibold text-soft-gray-500 uppercase tracking-wider">UCO Student
                                 </p>
                                 <button @click="showUserModal = true" title="View Profile"
                                     class="text-soft-gray-400 hover:text-soft-gray-900 transition-colors p-1 rounded-full hover:bg-soft-gray-100 flex items-center justify-center">
@@ -254,7 +272,10 @@
                                     </svg>
                                 </button>
                             </div>
-                            <h3 class="text-xl font-bold text-soft-gray-900 mb-1">{{ $business->user->name }}</h3>
+                            <div class="flex items-center gap-3 mb-1">
+                                <h3 class="text-3xl font-bold text-soft-gray-900">{{ $business->user->name }}</h3>
+                                <span class="px-2 py-0.5 bg-indigo-50 text-indigo-600 text-[10px] font-bold uppercase rounded-md border border-indigo-100">Entrepreneur</span>
+                            </div>
                             @if ($business->position)
                                 <div class="flex items-center gap-2">
                                     <div
@@ -608,75 +629,64 @@
                 </div>
             </div>
 
-            {{-- Tabs Navigation - Elegant Design --}}
-            <div id="business-tabs" x-data="{
-                activeTab: '{{ session('activeTab', $business->isProductMode() ? 'products' : 'services') }}'
-            }"
-                class="mt-10 bg-white shadow-lg sm:rounded-2xl border border-soft-gray-100">
-                <div class="border-b-2 border-soft-gray-100">
-                    <nav class="flex -mb-px px-6 overflow-x-auto">
-                        @if ($business->isProductMode())
-                            <button @click="activeTab = 'products'"
-                                :class="activeTab === 'products' ? 'border-soft-gray-900 text-soft-gray-900' :
-                                    'border-transparent text-soft-gray-500 hover:text-soft-gray-700 hover:border-soft-gray-300'"
-                                class="flex items-center gap-2 py-4 px-4 border-b-2 font-semibold text-sm transition duration-150 whitespace-nowrap">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                                </svg>
-                                Products
-                                <span
-                                    :class="activeTab === 'products' ? 'bg-soft-gray-900 text-white' :
-                                        'bg-soft-gray-100 text-soft-gray-600'"
-                                    class="px-2.5 py-0.5 rounded-full text-xs font-semibold transition-colors">{{ $business->products->count() }}</span>
-                            </button>
-                        @endif
+            {{-- Two-Column Layout for Desktop --}}
+            <div class="lg:grid lg:grid-cols-12 lg:gap-8 mt-10">
+                {{-- Main Content Column (Left) --}}
+                <div class="lg:col-span-8 space-y-8">
+                    {{-- Tabs Navigation - Elegant Design --}}
+                    <div id="business-tabs" x-data="{
+                        activeTab: '{{ session('activeTab', $business->products->count() > 0 ? 'products' : ($business->services->count() > 0 ? 'services' : 'photos')) }}'
+                    }"
+                        class="bg-white shadow-lg sm:rounded-2xl border border-soft-gray-100 overflow-hidden">
+                        <div class="border-b-2 border-soft-gray-100 bg-soft-gray-50/30">
+                            <nav class="flex -mb-px px-6 overflow-x-auto">
+                                @if ($business->products->count() > 0)
+                                    <button @click="activeTab = 'products'"
+                                        :class="activeTab === 'products' ? 'border-soft-gray-900 text-soft-gray-900 bg-white' :
+                                            'border-transparent text-soft-gray-500 hover:text-soft-gray-700 hover:border-soft-gray-300'"
+                                        class="flex items-center gap-2 py-4 px-6 border-b-2 font-semibold text-sm transition duration-150 whitespace-nowrap">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                                        </svg>
+                                        Products
+                                    </button>
+                                @endif
 
-                        @if ($business->isServiceMode())
-                            <button @click="activeTab = 'services'"
-                                :class="activeTab === 'services' ? 'border-soft-gray-900 text-soft-gray-900' :
-                                    'border-transparent text-soft-gray-500 hover:text-soft-gray-700 hover:border-soft-gray-300'"
-                                class="flex items-center gap-2 py-4 px-4 border-b-2 font-semibold text-sm transition duration-150 whitespace-nowrap">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                                </svg>
-                                Services
-                                <span
-                                    :class="activeTab === 'services' ? 'bg-soft-gray-900 text-white' :
-                                        'bg-soft-gray-100 text-soft-gray-600'"
-                                    class="px-2.5 py-0.5 rounded-full text-xs font-semibold transition-colors">{{ $business->services->count() }}</span>
-                            </button>
-                        @endif
+                                @if ($business->services->count() > 0)
+                                    <button @click="activeTab = 'services'"
+                                        :class="activeTab === 'services' ? 'border-soft-gray-900 text-soft-gray-900 bg-white' :
+                                            'border-transparent text-soft-gray-500 hover:text-soft-gray-700 hover:border-soft-gray-300'"
+                                        class="flex items-center gap-2 py-4 px-6 border-b-2 font-semibold text-sm transition duration-150 whitespace-nowrap">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                        </svg>
+                                        Services
+                                    </button>
+                                @endif
 
-                        <button @click="activeTab = 'photos'"
-                            :class="activeTab === 'photos' ? 'border-soft-gray-900 text-soft-gray-900' :
-                                'border-transparent text-soft-gray-500 hover:text-soft-gray-700 hover:border-soft-gray-300'"
-                            class="flex items-center gap-2 py-4 px-4 border-b-2 font-semibold text-sm transition duration-150 whitespace-nowrap">
-                            <i class="bi bi-images text-base"></i>
-                            Gallery
-                            <span
-                                :class="activeTab === 'photos' ? 'bg-soft-gray-900 text-white' :
-                                    'bg-soft-gray-100 text-soft-gray-600'"
-                                class="px-2.5 py-0.5 rounded-full text-xs font-semibold transition-colors">{{ $business->photos->count() }}</span>
-                        </button>
+                                <button @click="activeTab = 'photos'"
+                                    :class="activeTab === 'photos' ? 'border-soft-gray-900 text-soft-gray-900 bg-white' :
+                                        'border-transparent text-soft-gray-500 hover:text-soft-gray-700 hover:border-soft-gray-300'"
+                                    class="flex items-center gap-2 py-4 px-6 border-b-2 font-semibold text-sm transition duration-150 whitespace-nowrap">
+                                    <i class="bi bi-images text-base"></i>
+                                    Gallery
+                                </button>
 
-                        <button @click="activeTab = 'contacts'"
-                            :class="activeTab === 'contacts' ? 'border-soft-gray-900 text-soft-gray-900' :
-                                'border-transparent text-soft-gray-500 hover:text-soft-gray-700 hover:border-soft-gray-300'"
-                            class="flex items-center gap-2 py-4 px-4 border-b-2 font-semibold text-sm transition duration-150 whitespace-nowrap">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                            </svg>
-                            Contacts
-                            <span
-                                :class="activeTab === 'contacts' ? 'bg-soft-gray-900 text-white' :
-                                    'bg-soft-gray-100 text-soft-gray-600'"
-                                class="px-2.5 py-0.5 rounded-full text-xs font-semibold transition-colors">{{ $business->contacts->count() }}</span>
-                        </button>
-                    </nav>
-                </div>
+                                {{-- Contacts Tab (Mobile Only - hidden on desktop sidebar) --}}
+                                <button @click="activeTab = 'contacts'"
+                                    :class="activeTab === 'contacts' ? 'border-soft-gray-900 text-soft-gray-900 bg-white' :
+                                        'border-transparent text-soft-gray-500 hover:text-soft-gray-700 hover:border-soft-gray-300'"
+                                    class="lg:hidden flex items-center gap-2 py-4 px-6 border-b-2 font-semibold text-sm transition duration-150 whitespace-nowrap">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                    </svg>
+                                    Contacts
+                                </button>
+                            </nav>
+                        </div>
 
                 {{-- Tab: Products --}}
                 @if ($business->isProductMode())
@@ -1015,7 +1025,14 @@
                                     <div class="flex-1 min-w-0">
                                         <p class="text-sm font-semibold text-gray-900">
                                             {{ $contact->contactType->platform_name }}</p>
-                                        <p class="text-sm text-gray-600 truncate">{{ $contact->contact_value }}</p>
+                                        @php $link = $contact->getLink(); @endphp
+                                        @if($link)
+                                            <a href="{{ $link }}" target="_blank" rel="noopener noreferrer" class="text-sm text-gray-600 truncate hover:text-uco-orange-600 transition-colors block">
+                                                {{ $contact->contact_value }}
+                                            </a>
+                                        @else
+                                            <p class="text-sm text-gray-600 truncate">{{ $contact->contact_value }}</p>
+                                        @endif
                                     </div>
                                     @if ($contact->is_primary)
                                         <span
@@ -1088,281 +1105,138 @@
             </div>
         </div>
 
-        {{-- User Profile Modal --}}
-        <div x-show="showUserModal" x-cloak class="fixed inset-0 z-[100] overflow-y-auto"
-            aria-labelledby="modal-title" role="dialog" aria-modal="true">
-            <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-                {{-- Background overlay with blur --}}
-                <div x-show="showUserModal" x-transition:enter="ease-out duration-300"
-                    x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
-                    x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100"
-                    x-transition:leave-end="opacity-0" @click="showUserModal = false"
-                    class="fixed inset-0 transition-opacity bg-gray-900/60 backdrop-blur-sm" aria-hidden="true"></div>
+        {{-- Collaboration Request Modal --}}
+        <div x-show="showCollabModal" x-cloak class="fixed inset-0 z-[120] flex items-center justify-center p-4">
+            <div class="absolute inset-0 bg-black/50" @click="showCollabModal = false"></div>
+            <div class="bg-white rounded-2xl p-6 w-full max-w-md relative shadow-2xl">
+                <h3 class="text-lg font-bold text-gray-900 mb-4">Ajukan Kolaborasi</h3>
+                <p class="text-sm text-gray-500 mb-6">Kirim permintaan kolaborasi ke bisnis ini.</p>
+                <form action="#" method="POST">
+                    <textarea class="w-full border border-gray-200 rounded-xl p-3 mb-4" rows="3" placeholder="Tulis pesan kolaborasi Anda..."></textarea>
+                    <div class="flex gap-2">
+                        <button type="button" @click="showCollabModal = false" class="flex-1 px-4 py-2 bg-gray-100 rounded-xl font-bold">Batal</button>
+                        <button type="submit" class="flex-1 px-4 py-2 bg-uco-orange-500 text-white rounded-xl font-bold">Kirim</button>
+                    </div>
+                </form>
+            </div>
+        </div>
 
-                <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        </div>
 
-                {{-- Modal panel --}}
-                <div x-show="showUserModal" x-transition:enter="ease-out duration-300 transform"
-                    x-transition:enter-start="opacity-0 translate-y-8 sm:translate-y-0 sm:scale-95"
-                    x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
-                    x-transition:leave="ease-in duration-200 transform"
-                    x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
-                    x-transition:leave-end="opacity-0 translate-y-8 sm:translate-y-0 sm:scale-95"
-                    class="inline-block overflow-hidden text-left align-bottom transition-all transform bg-white rounded-2xl shadow-2xl sm:my-8 sm:align-middle sm:max-w-md sm:w-full border border-gray-100">
 
-                    {{-- Modal Header & Avatar --}}
-                    <div
-                        class="relative bg-gradient-to-br from-soft-gray-50 to-white px-6 pt-8 pb-6 border-b border-gray-100">
-                        <button type="button" @click="showUserModal = false"
-                            class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-2 rounded-xl transition-colors">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                        </button>
-
-                        <div class="flex flex-col items-center">
-                            @if ($business->user->profile_photo_url)
-                                <img src="{{ storage_image_url($business->user->profile_photo_url, 'profile_thumb') }}"
-                                    alt="{{ $business->user->name }}"
-                                    class="w-24 h-24 rounded-2xl object-cover shadow-lg mb-4 border-2 border-white">
-                            @else
-                                <div
-                                    class="w-24 h-24 rounded-2xl bg-gradient-to-br from-uco-orange-500 to-uco-yellow-500 flex items-center justify-center text-white text-3xl font-bold shadow-lg mb-4 border-2 border-white">
-                                    {{ strtoupper(substr($business->user->name, 0, 1)) }}
-                                </div>
-                            @endif
-                            <h3 class="text-xl font-bold text-gray-900">{{ $business->user->name }}</h3>
-                            <p class="text-sm font-medium text-gray-500 mt-1">
-                                @if ($business->user->role === 'student')
-                                    Student
-                                @elseif($business->user->role === 'alumni')
-                                    Alumni
-                                @elseif($business->user->role === 'admin')
-                                    Administrator
+                {{-- Sidebar Column (Right) - Visible on Desktop --}}
+                <div class="hidden lg:block lg:col-span-4">
+                    <div class="sticky top-8 space-y-6">
+                        {{-- Contacts Sidebar Card --}}
+                        <div class="bg-white shadow-lg rounded-2xl border border-soft-gray-100 overflow-hidden">
+                            <div class="p-6 border-b border-soft-gray-100 bg-soft-gray-50/50">
+                                <h3 class="text-lg font-bold text-soft-gray-900 flex items-center gap-2">
+                                    <i class="bi bi-telephone-outbound text-uco-orange-500"></i>
+                                    Connect & Inquire
+                                </h3>
+                                <p class="text-xs text-soft-gray-500 mt-1">Official business channels</p>
+                            </div>
+                            <div class="p-6">
+                                @if ($business->contacts->count() > 0)
+                                    <div class="space-y-4">
+                                        @foreach ($business->contacts as $contact)
+                                            @php $link = $contact->getLink(); @endphp
+                                            <div class="flex items-center gap-4 group">
+                                                <div class="w-10 h-10 rounded-xl bg-soft-gray-50 text-soft-gray-400 flex items-center justify-center border border-soft-gray-100 group-hover:bg-uco-orange-50 group-hover:text-uco-orange-600 transition-all">
+                                                    <i class="bi {{ $contact->contactType->icon_class }} text-lg"></i>
+                                                </div>
+                                                <div class="flex-1 min-w-0">
+                                                    <p class="text-[10px] font-bold text-soft-gray-400 uppercase tracking-widest">{{ $contact->contactType->platform_name }}</p>
+                                                    @if($link)
+                                                        <a href="{{ $link }}" target="_blank" rel="noopener noreferrer" class="text-sm font-bold text-soft-gray-900 truncate hover:text-uco-orange-600 transition-colors block">
+                                                            {{ $contact->contact_value }}
+                                                        </a>
+                                                    @else
+                                                        <p class="text-sm font-bold text-soft-gray-900 truncate">{{ $contact->contact_value }}</p>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
                                 @else
-                                    User
+                                    <div class="text-center py-10">
+                                        <i class="bi bi-chat-dots text-soft-gray-200 text-4xl mb-2 block"></i>
+                                        <p class="text-sm text-soft-gray-400 italic">No contact methods listed</p>
+                                    </div>
+                                @endif
+
+                                @auth
+                                    @if ($canManageBusiness)
+                                        <div class="mt-8">
+                                            <a href="{{ route('businesses.contacts.create', $business) }}"
+                                                class="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-soft-gray-100 hover:bg-soft-gray-200 text-soft-gray-700 text-sm font-bold rounded-xl transition-all">
+                                                <i class="bi bi-plus-lg"></i>
+                                                Add Contact Info
+                                            </a>
+                                        </div>
+                                    @else
+                                        <button @click="showUserModal = true"
+                                            class="w-full bg-soft-gray-50 text-soft-gray-900 font-bold py-3 rounded-2xl border border-soft-gray-100 hover:bg-soft-gray-100 transition-all flex items-center justify-center gap-2">
+                                            <i class="bi bi-person-circle"></i>
+                                            View Owner Profile
+                                        </button>
+
+                                        <button @click="showCollabModal = true"
+                                            class="w-full mt-3 bg-uco-orange-50 text-uco-orange-600 font-bold py-3 rounded-2xl border border-uco-orange-100 hover:bg-uco-orange-100 transition-all flex items-center justify-center gap-2">
+                                            <i class="bi bi-people-fill"></i>
+                                            Ajukan Kolaborasi
+                                        </button>
+                                    @endif
+                                @endauth
+                            </div>
+                        </div>
+
+                        {{-- Quality Score Card --}}
+                        @php $score = $business->getQualityScore(); @endphp
+                        <div class="bg-white shadow-lg rounded-2xl border border-soft-gray-100 p-6">
+                            <div class="flex items-center justify-between mb-4">
+                                <h4 class="text-xs font-bold text-soft-gray-400 uppercase tracking-[0.2em]">Profile Strength</h4>
+                                <span class="text-sm font-bold {{ $score >= 80 ? 'text-green-600' : ($score >= 50 ? 'text-uco-orange-500' : 'text-red-500') }}">
+                                    {{ $score }}%
+                                </span>
+                            </div>
+                            <div class="w-full bg-gray-100 rounded-full h-2 mb-4 overflow-hidden">
+                                <div class="h-full rounded-full transition-all duration-1000 ease-out"
+                                     style="width: {{ $score }}%;"
+                                     :class="'{{ $score >= 80 ? 'bg-green-500' : ($score >= 50 ? 'bg-uco-orange-500' : 'bg-red-500') }}'">
+                                </div>
+                            </div>
+                            <p class="text-[10px] text-soft-gray-500 leading-relaxed">
+                                @if($score >= 90)
+                                    <i class="bi bi-patch-check-fill text-blue-500 mr-1"></i> Excellent profile! This listing is highly trustworthy.
+                                @elseif($score >= 70)
+                                    Great profile. Adding more photos could make it even better.
+                                @elseif($score >= 40)
+                                    Basic profile. Add more contact methods and a logo to increase visibility.
+                                @else
+                                    Profile needs attention. Fill out more details to attract more views.
                                 @endif
                             </p>
                         </div>
-                    </div>
 
-                    {{-- Modal Body: Tabbed Content --}}
-                    <div x-data="{ userTab: 'basic' }" class="bg-gray-50 rounded-b-2xl">
-                        <div class="flex border-b border-gray-200">
-                            <button @click="userTab = 'basic'"
-                                :class="userTab === 'basic' ? 'border-soft-gray-900 text-soft-gray-900 bg-white' :
-                                    'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 hover:bg-gray-100/50'"
-                                class="flex-1 py-3 px-4 border-b-2 font-semibold text-sm transition-colors text-center">
-                                Basic Info
-                            </button>
-                            <button @click="userTab = 'personal'"
-                                :class="userTab === 'personal' ? 'border-soft-gray-900 text-soft-gray-900 bg-white' :
-                                    'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 hover:bg-gray-100/50'"
-                                class="flex-1 py-3 px-4 border-b-2 font-semibold text-sm transition-colors text-center">
-                                Personal
-                            </button>
-                            <button @click="userTab = 'academic'"
-                                :class="userTab === 'academic' ? 'border-soft-gray-900 text-soft-gray-900 bg-white' :
-                                    'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 hover:bg-gray-100/50'"
-                                class="flex-1 py-3 px-4 border-b-2 font-semibold text-sm transition-colors text-center">
-                                Academic
-                            </button>
-                        </div>
-
-                        <div class="p-6">
-                            {{-- Basic Tab --}}
-                            <div x-show="userTab === 'basic'" x-transition:enter="transition ease-out duration-200"
-                                x-transition:enter-start="opacity-0 transform translate-y-2"
-                                x-transition:enter-end="opacity-100 transform translate-y-0"
-                                class="space-y-4 text-left">
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
-                                            Username</p>
-                                        <p class="text-sm font-medium text-gray-900">
-                                            {{ '@' . $business->user->username }}</p>
-                                    </div>
-                                    <div>
-                                        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
-                                            Full Name</p>
-                                        <p class="text-sm font-medium text-gray-900">{{ $business->user->name }}</p>
-                                    </div>
+                        {{-- Quick Business Info Sidebar Card --}}
+                        <div class="bg-gradient-to-br from-soft-gray-900 to-soft-gray-800 shadow-lg rounded-2xl p-6 text-white">
+                            <h4 class="text-xs font-bold text-soft-gray-400 uppercase tracking-[0.2em] mb-4">Quick Insights</h4>
+                            <div class="space-y-4">
+                                <div class="flex justify-between items-center pb-3 border-b border-white/10">
+                                    <span class="text-xs text-soft-gray-300">Category</span>
+                                    <span class="text-xs font-bold">{{ $business->businessType->name }}</span>
                                 </div>
-
-                                <div>
-                                    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Email
-                                        Address</p>
-                                    <a href="mailto:{{ $business->user->email }}"
-                                        class="inline-flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors bg-blue-50 px-3 py-1.5 rounded-lg hover:bg-blue-100">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z">
-                                            </path>
-                                        </svg>
-                                        {{ $business->user->email }}
-                                    </a>
+                                <div class="flex justify-between items-center pb-3 border-b border-white/10">
+                                    <span class="text-xs text-soft-gray-300">Business Model</span>
+                                    <span class="text-xs font-bold">{{ $business->isBothMode() ? 'Hybrid' : ($business->isProductMode() ? 'Product' : 'Service') }}</span>
                                 </div>
-
-                                <div class="grid grid-cols-2 gap-4 pt-2">
-                                    <div>
-                                        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
-                                            Phone/Mobile</p>
-                                        <p class="text-sm font-medium text-gray-900">
-                                            {{ $business->user->mobile_number ?? ($business->user->phone_number ?? '-') }}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
-                                            WhatsApp</p>
-                                        @if ($business->user->whatsapp)
-                                            <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $business->user->whatsapp) }}"
-                                                target="_blank"
-                                                class="inline-flex items-center gap-1.5 text-sm font-medium text-green-600 hover:text-green-800 transition-colors">
-                                                <i class="bi bi-whatsapp"></i> {{ $business->user->whatsapp }}
-                                            </a>
-                                        @else
-                                            <p class="text-sm font-medium text-gray-900">-</p>
-                                        @endif
-                                    </div>
-                                </div>
-
-                                <div class="pt-2 border-t border-gray-200">
-                                    <p class="text-xs text-gray-400 mt-2">Joined
-                                        {{ $business->user->created_at->format('M Y') }}</p>
-                                </div>
-                            </div>
-
-                            {{-- Personal Tab --}}
-                            <div x-show="userTab === 'personal'" x-cloak
-                                x-transition:enter="transition ease-out duration-200"
-                                x-transition:enter-start="opacity-0 transform translate-y-2"
-                                x-transition:enter-end="opacity-100 transform translate-y-0"
-                                class="space-y-4 text-left">
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
-                                            Birth City</p>
-                                        <p class="text-sm font-medium text-gray-900">
-                                            {{ $business->user->birth_city ?? '-' }}</p>
-                                    </div>
-                                    <div>
-                                        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
-                                            Birth Date</p>
-                                        <p class="text-sm font-medium text-gray-900">
-                                            {{ $business->user->birth_date ? $business->user->birth_date->format('d M Y') : '-' }}
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
-                                        Religion</p>
-                                    <p class="text-sm font-medium text-gray-900">
-                                        {{ $business->user->religion ?? '-' }}</p>
-                                </div>
-
-                                @if ($business->user->bio ?? false)
-                                    <div class="pt-2">
-                                        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
-                                            Bio</p>
-                                        <p class="text-sm text-gray-700 leading-relaxed">{{ $business->user->bio }}
-                                        </p>
-                                    </div>
-                                @endif
-                            </div>
-
-                            {{-- Academic Tab --}}
-                            <div x-show="userTab === 'academic'" x-cloak
-                                x-transition:enter="transition ease-out duration-200"
-                                x-transition:enter-start="opacity-0 transform translate-y-2"
-                                x-transition:enter-end="opacity-100 transform translate-y-0"
-                                class="space-y-4 text-left">
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
-                                            NIS (Student ID)</p>
-                                        <p class="text-sm font-mono font-medium text-gray-900">
-                                            {{ $business->user->NIS ?? '-' }}</p>
-                                    </div>
-                                    <div>
-                                        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
-                                            Class/Year</p>
-                                        <p class="text-sm font-medium text-gray-900">
-                                            {{ $business->user->Student_Year ?? '-' }}</p>
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
-                                        Major/Study Program</p>
-                                    <p class="text-sm font-medium text-gray-900">{{ $business->user->Major ?? '-' }}
-                                    </p>
-                                </div>
-
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
-                                            CGPA</p>
-                                        <p class="text-sm font-medium text-gray-900">
-                                            {{ $business->user->CGPA ? number_format($business->user->CGPA, 2) : '-' }}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
-                                            Status</p>
-                                        @if ($business->user->Is_Graduate)
-                                            <span
-                                                class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-md bg-green-100 text-green-800">
-                                                <i class="bi bi-mortarboard-fill"></i> Graduated
-                                            </span>
-                                        @else
-                                            <span
-                                                class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-md bg-blue-100 text-blue-800">
-                                                <i class="bi bi-book-half"></i> Active Student
-                                            </span>
-                                        @endif
-                                    </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-xs text-soft-gray-300">Region</span>
+                                    <span class="text-xs font-bold">{{ $business->city->name ?? 'N/A' }}</span>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
-
-    {{-- Smart Scroll Restoration Script --}}
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // Restore scroll position after a reload/redirect if stored
-            const scrollPos = sessionStorage.getItem('uco_business_scroll_pos');
-            if (scrollPos) {
-                // Use setTimeout to ensure all dynamic elements are rendered
-                setTimeout(() => {
-                    window.scrollTo({
-                        top: parseInt(scrollPos),
-                        behavior: 'instant'
-                    });
-                    sessionStorage.removeItem('uco_business_scroll_pos');
-                }, 50);
-            }
-
-            // Store scroll position on form submissions or specific actions
-            const saveScrollPos = () => {
-                sessionStorage.setItem('uco_business_scroll_pos', window.scrollY);
-            };
-
-            // Global listener for forms and action buttons that redirect back
-            document.querySelectorAll('form, .btn-save-scroll').forEach(el => {
-                el.addEventListener('submit', saveScrollPos);
-                el.addEventListener('click', (e) => {
-                    if (e.currentTarget.tagName === 'A' || e.currentTarget.tagName === 'BUTTON') {
-                        saveScrollPos();
-                    }
-                });
-            });
-        });
-    </script>
-</x-app-layout>

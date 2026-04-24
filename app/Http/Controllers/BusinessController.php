@@ -61,13 +61,26 @@ class BusinessController extends Controller
         if ($type) {
             $query->where('businesses.business_type_id', $type);
         }
+
+        // Advanced Filters: City & Province
+        if ($request->has('city') && $request->city) {
+            $query->where('businesses.city', 'LIKE', "%{$request->city}%");
+        }
+
+        if ($request->has('province') && $request->province) {
+            $query->where('businesses.province', 'LIKE', "%{$request->province}%");
+        }
         
         $businesses = $query->orderBy('businesses.is_featured', 'desc')->orderBy('businesses.created_at', 'desc')->paginate(12);
         
         // Also load business types for the filter bar
         $businessTypes = BusinessType::all();
+        
+        // Get unique cities and provinces for filters
+        $availableCities = Business::approved()->whereNotNull('city')->distinct()->pluck('city')->sort();
+        $availableProvinces = Business::approved()->whereNotNull('province')->distinct()->pluck('province')->sort();
 
-        return view('businesses.index', compact('businesses', 'businessTypes'));
+        return view('businesses.index', compact('businesses', 'businessTypes', 'availableCities', 'availableProvinces'));
     }
 
     /**

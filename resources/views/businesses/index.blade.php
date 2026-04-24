@@ -316,24 +316,35 @@
         </section>
 
         {{-- Search and Filter Card --}}
-        <div class="bg-white border border-gray-200 rounded-xl p-4 mb-8 shadow-sm space-y-2" x-data="{
+        <div class="bg-white border border-gray-200 rounded-xl p-6 mb-8 shadow-sm space-y-6" x-data="{
             search: '{{ request('search') }}',
             selectedType: '{{ request('type') }}',
+            selectedCity: '{{ request('city') }}',
+            selectedProvince: '{{ request('province') }}',
             isSearching: false,
             performSearch() {
                 this.isSearching = true;
                 const params = new URLSearchParams();
                 if (this.search.trim()) params.append('search', this.search.trim());
                 if (this.selectedType) params.append('type', this.selectedType);
+                if (this.selectedCity) params.append('city', this.selectedCity);
+                if (this.selectedProvince) params.append('province', this.selectedProvince);
         
                 const url = '{{ route('businesses.index') }}' + (params.toString() ? '?' + params.toString() : '');
         
                 window.location.href = url;
+            },
+            clearFilters() {
+                this.search = '';
+                this.selectedType = '';
+                this.selectedCity = '';
+                this.selectedProvince = '';
+                this.performSearch();
             }
         }">
-            <div class="flex gap-3">
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
                 {{-- Search Input --}}
-                <div class="flex-1">
+                <div class="md:col-span-6">
                     <div class="relative group">
                         <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                             <svg class="w-5 h-5 text-gray-400 group-focus-within:text-uco-orange-500 transition-colors"
@@ -342,12 +353,11 @@
                                     d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                             </svg>
                         </div>
-                        <input type="text" x-model="search" @input.debounce.500ms="performSearch()"
-                            @keydown.enter="performSearch()"
+                        <input type="text" x-model="search" @keydown.enter="performSearch()"
                             placeholder="Search businesses by name, description, or category..."
-                            class="block w-full pl-10 pr-12 py-2.5 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-uco-orange-500 focus:border-uco-orange-500 transition-all shadow-sm">
+                            class="block w-full pl-10 pr-12 py-3 bg-white border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-uco-orange-500 focus:border-uco-orange-500 transition-all shadow-sm">
 
-                        <div x-show="isSearching" class="absolute inset-y-0 right-0 flex items-center pr-3">
+                        <div x-show="isSearching" class="absolute inset-y-0 right-10 flex items-center pr-3">
                             <svg class="animate-spin h-5 w-5 text-uco-orange-500" xmlns="http://www.w3.org/2000/svg"
                                 fill="none" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10"
@@ -365,27 +375,53 @@
                         </button>
                     </div>
                 </div>
+
+                {{-- Province Filter --}}
+                <div class="md:col-span-3">
+                    <select x-model="selectedProvince" @change="performSearch()"
+                        class="block w-full py-3 px-4 bg-white border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-uco-orange-500 focus:border-uco-orange-500 transition-all shadow-sm">
+                        <option value="">All Provinces</option>
+                        @foreach($availableProvinces as $province)
+                            <option value="{{ $province }}">{{ $province }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                {{-- City Filter --}}
+                <div class="md:col-span-3">
+                    <select x-model="selectedCity" @change="performSearch()"
+                        class="block w-full py-3 px-4 bg-white border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-uco-orange-500 focus:border-uco-orange-500 transition-all shadow-sm">
+                        <option value="">All Cities</option>
+                        @foreach($availableCities as $city)
+                            <option value="{{ $city }}">{{ $city }}</option>
+                        @endforeach
+                    </select>
+                </div>
             </div>
 
-            {{-- Category Filter Chips --}}
-
-            <div class="flex items-center gap-3 overflow-x-auto py-4 scrollbar-hide -mx-1 px-1">
-                <button @click="selectedType = ''; performSearch()"
-                    :class="selectedType === '' ?
-                        'bg-soft-gray-900 text-white shadow-lg shadow-gray-200 ring-4 ring-gray-900/10' :
-                        'bg-white text-gray-600 border-gray-200 hover:border-soft-gray-300 hover:bg-gray-50'"
-                    class="whitespace-nowrap px-6 py-3 rounded-full text-sm font-bold border transition-all duration-300">
-                    All Categories
-                </button>
-                @foreach ($businessTypes as $type)
-                    <button @click="selectedType = '{{ $type->id }}'; performSearch()"
-                        :class="selectedType === '{{ $type->id }}' ?
-                            'bg-uco-orange-500 text-white shadow-lg shadow-uco-orange-100 ring-4 ring-uco-orange-500/10' :
+            <div class="flex items-center justify-between border-t border-gray-100 pt-4">
+                <div class="flex items-center gap-3 overflow-x-auto scrollbar-hide flex-1">
+                    <button @click="selectedType = ''; performSearch()"
+                        :class="selectedType === '' ?
+                            'bg-soft-gray-900 text-white shadow-lg shadow-gray-200 ring-4 ring-gray-900/10' :
                             'bg-white text-gray-600 border-gray-200 hover:border-soft-gray-300 hover:bg-gray-50'"
-                        class="whitespace-nowrap px-6 py-3 rounded-full text-sm font-bold border transition-all duration-300">
-                        {{ $type->name }}
+                        class="whitespace-nowrap px-5 py-2 rounded-full text-xs font-bold border transition-all duration-300">
+                        All Categories
                     </button>
-                @endforeach
+                    @foreach ($businessTypes as $type)
+                        <button @click="selectedType = '{{ $type->id }}'; performSearch()"
+                            :class="selectedType === '{{ $type->id }}' ?
+                                'bg-uco-orange-500 text-white shadow-lg shadow-uco-orange-100 ring-4 ring-uco-orange-500/10' :
+                                'bg-white text-gray-600 border-gray-200 hover:border-soft-gray-300 hover:bg-gray-50'"
+                            class="whitespace-nowrap px-5 py-2 rounded-full text-xs font-bold border transition-all duration-300">
+                            {{ $type->name }}
+                        </button>
+                    @endforeach
+                </div>
+                
+                <button @click="clearFilters()" class="text-xs font-bold text-red-500 hover:text-red-600 transition-colors ml-4 flex items-center gap-1">
+                    <i class="bi bi-arrow-counterclockwise"></i> Reset
+                </button>
             </div>
         </div>
 
@@ -465,6 +501,11 @@
                                                 <span class="truncate">{{ $business->businessType->name }}</span>
                                             </span>
                                         @endif
+                                        @php $score = $business->getQualityScore(); @endphp
+                                        <span class="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider {{ $score >= 80 ? 'text-green-600' : ($score >= 50 ? 'text-uco-orange-500' : 'text-gray-400') }}">
+                                            <i class="bi bi-shield-check"></i>
+                                            {{ $score }}%
+                                        </span>
                                     </div>
 
                                     <div class="min-h-[2.5rem] mb-3">

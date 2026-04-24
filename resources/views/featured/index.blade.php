@@ -96,7 +96,7 @@
             <div
                 class="flex flex-col gap-4 border-b border-soft-gray-200 pb-5 md:flex-row md:items-end md:justify-between reveal-on-scroll">
                 <div>
-                    <h2 class="text-3xl font-bold text-soft-gray-900">Featured Businesses</h2>
+                    <h2 class="text-3xl font-bold text-soft-gray-900">UCO Student & Alumni Ventures</h2>
                     <p class="mt-2 text-sm text-soft-gray-600">Curated ventures from our UCO entrepreneurial community.
                     </p>
                 </div>
@@ -228,19 +228,22 @@
                             x-transition:enter="transition ease-out duration-500"
                             x-transition:enter-start="opacity-0 translate-x-2"
                             x-transition:enter-end="opacity-100 translate-x-0" class="space-y-4">
-                            <div class="flex items-center gap-1 text-uco-yellow-500">
-                                @for ($star = 1; $star <= 5; $star++)
-                                    <i class="bi {{ $star <= $testimony->rating ? 'bi-star-fill' : 'bi-star' }}"></i>
-                                @endfor
+                            <div class="flex items-center gap-4">
+                                @if($testimony->user && $testimony->user->profile_photo_url)
+                                    <img src="{{ storage_image_url($testimony->user->profile_photo_url, 'profile_thumb') }}" class="h-14 w-14 rounded-full object-cover border-2 border-uco-orange-100 shadow-sm" alt="">
+                                @else
+                                    <div class="flex h-14 w-14 items-center justify-center rounded-full bg-uco-orange-100 text-lg font-bold text-uco-orange-700 border-2 border-uco-orange-100 shadow-sm">
+                                        {{ strtoupper(substr($testimony->user->name ?? $testimony->customer_name ?? 'U', 0, 1)) }}
+                                    </div>
+                                @endif
+                                <div>
+                                    <p class="text-sm font-bold text-soft-gray-900">{{ $testimony->user->name ?? $testimony->customer_name }}</p>
+                                    <p class="text-xs text-soft-gray-500">{{ optional($testimony->date)->format('F Y') }}</p>
+                                </div>
                             </div>
-                            <p class="text-lg leading-relaxed text-soft-gray-700 md:text-xl">
+                            <p class="text-lg leading-relaxed text-soft-gray-700 italic md:text-xl">
                                 “{{ $testimony->display_content ?? \Illuminate\Support\Str::limit($testimony->content, 260) }}”
                             </p>
-                            <div>
-                                <p class="text-sm font-bold text-soft-gray-900">{{ $testimony->customer_name }}</p>
-                                <p class="text-xs text-soft-gray-500">{{ optional($testimony->date)->format('F Y') }}
-                                </p>
-                            </div>
                         </article>
                     @endforeach
                 </div>
@@ -274,7 +277,7 @@
             class="overflow-hidden rounded-3xl border border-uco-orange-200 bg-gradient-to-r from-uco-orange-50 via-white to-uco-yellow-50 p-6 md:p-8 reveal-on-scroll">
             <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div>
-                    <h2 class="text-2xl font-bold text-soft-gray-900 md:text-3xl">Have a UCO business to showcase?</h2>
+                    <h2 class="text-2xl font-bold text-soft-gray-900 md:text-3xl">Are you a UCO student, and have a business?</h2>
                     <p class="mt-2 text-sm text-soft-gray-600">Reach out and become part of our growing student &
                         alumni business directory.</p>
                 </div>
