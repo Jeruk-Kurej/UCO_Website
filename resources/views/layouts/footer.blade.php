@@ -5,7 +5,7 @@
             {{-- Column 1: About UCO --}}
             <div>
                 <div class="flex items-center gap-2.5 mb-4">
-                    <img src="{{ asset('images/Logo UCO.png') }}" alt="UCO Logo" class="w-10 h-10 object-contain">
+                    <img src="{{ storage_image_url('assets/logo_uco.png') }}" alt="UCO Logo" class="w-10 h-10 object-contain">
                     <div>
                         <h3 class="font-bold text-base text-gray-900">UC Online Learning</h3>
                         <p class="text-xs text-gray-600">Student & Alumni Community</p>
