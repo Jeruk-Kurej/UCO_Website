@@ -19,6 +19,10 @@
         "VIEW_COMPILED_PATH": "/tmp",
         "CACHE_DRIVER": "array",
         "LOG_CHANNEL": "stderr",
-        "SESSION_DRIVER": "cookie"
+        "SESSION_DRIVER": "cookie",
+        "FILESYSTEM_DISK": "cloudinary",
+        "CLOUDINARY_CLOUD_NAME": "dwn2aljyi",
+        "CLOUDINARY_API_KEY": "799343324633623",
+        "CLOUDINARY_API_SECRET": "YvqdmI6kX0DuMU7FiV8urZA1Sfc"
     }
 }
