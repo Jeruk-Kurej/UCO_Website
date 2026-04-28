@@ -3,7 +3,7 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "build": "vite build && mkdir -p dist && cp -rv public/* dist/ && php artisan migrate --force && php artisan db:seed --class=UserSeeder --force && php artisan db:seed --class=BusinessTypeSeeder --force && php artisan db:seed --class=ContactTypeSeeder --force",
+        "build": "vite build && mkdir -p dist && cp -rv public/* dist/",
         "dev": "vite"
     },
     "devDependencies": {
