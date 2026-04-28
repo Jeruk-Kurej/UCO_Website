@@ -16,37 +16,43 @@ class UserSeeder extends Seeder
         $this->command->info('🔄 Seeding Users...');
 
         // Admin User
-        User::create([
-            'username' => 'admin',
-            'name' => 'Admin UCO',
-            'email' => 'admin@uco.com',
-            'password' => Hash::make('password'),
-            'role' => 'admin',
-            'is_active' => true,
-            'email_verified_at' => now(),
-        ]);
+        User::updateOrCreate(
+            ['email' => 'admin@uco.com'],
+            [
+                'username' => 'admin',
+                'name' => 'Admin UCO',
+                'password' => Hash::make('password'),
+                'role' => 'admin',
+                'is_active' => true,
+                'email_verified_at' => now(),
+            ]
+        );
 
         // Student User
-        User::create([
-            'username' => 'student',
-            'name' => 'Student UCO',
-            'email' => 'student@uco.com',
-            'password' => Hash::make('password'),
-            'role' => 'student',
-            'is_active' => true,
-            'email_verified_at' => now(),
-        ]);
+        User::updateOrCreate(
+            ['email' => 'student@uco.com'],
+            [
+                'username' => 'student',
+                'name' => 'Student UCO',
+                'password' => Hash::make('password'),
+                'role' => 'student',
+                'is_active' => true,
+                'email_verified_at' => now(),
+            ]
+        );
 
         // Alumni User
-        User::create([
-            'username' => 'alumni',
-            'name' => 'Alumni UCO',
-            'email' => 'alumni@uco.com',
-            'password' => Hash::make('password'),
-            'role' => 'alumni',
-            'is_active' => true,
-            'email_verified_at' => now(),
-        ]);
+        User::updateOrCreate(
+            ['email' => 'alumni@uco.com'],
+            [
+                'username' => 'alumni',
+                'name' => 'Alumni UCO',
+                'password' => Hash::make('password'),
+                'role' => 'alumni',
+                'is_active' => true,
+                'email_verified_at' => now(),
+            ]
+        );
 
         $this->command->info('✅ Users seeded successfully!');
     }

@@ -28,7 +28,7 @@ class ContactTypeSeeder extends Seeder
         ];
 
         foreach ($contactTypes as $type) {
-            ContactType::create($type);
+            ContactType::firstOrCreate(['platform_name' => $type['platform_name']], $type);
         }
 
         $this->command->info('✅ Contact Types seeded successfully!');

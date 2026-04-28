@@ -38,7 +38,7 @@ class BusinessTypeSeeder extends Seeder
         ];
 
         foreach ($businessTypes as $type) {
-            BusinessType::create($type);
+            BusinessType::firstOrCreate(['name' => $type['name']], $type);
         }
 
         $this->command->info('✅ Business Types seeded successfully!');
