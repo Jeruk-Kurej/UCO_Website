@@ -549,31 +549,7 @@
                     </div>
                     @endif
 
-                    {{-- Business Challenges & Spacing --}}
-                    <div class="grid grid-cols-1 gap-12 mb-20">
-                        {{-- Strategic Challenges --}}
-                        <div class="space-y-4">
-                            <div class="flex items-center gap-2">
-                                <div class="w-1.5 h-4 bg-slate-900 rounded-full"></div>
-                                <h4 class="text-[11px] font-black text-slate-900 uppercase tracking-[0.2em]">Strategic Challenges</h4>
-                            </div>
-                            <div class="flex flex-wrap gap-2.5">
-                                @if($business->business_challenges && count($business->business_challenges) > 0)
-                                    @foreach($business->business_challenges as $challenge)
-                                        <div class="px-3.5 py-2 bg-white text-slate-600 text-[11px] font-bold rounded-xl border border-slate-200 shadow-sm flex items-center gap-2 hover:border-slate-800 hover:text-slate-900 transition-all cursor-default">
-                                            <i class="bi bi-chevron-right text-[8px] text-uco-orange-500"></i>
-                                            {{ $challenge }}
-                                        </div>
-                                    @endforeach
-                                @else
-                                    <div class="flex items-center gap-3 p-4 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200 w-full max-w-md">
-                                        <i class="bi bi-shield-check text-slate-400 text-xl"></i>
-                                        <p class="text-xs text-slate-500 font-medium leading-relaxed italic">The business is currently operating with stable strategic planning. No major challenges reported.</p>
-                                    </div>
-                                @endif
-                            </div>
-                        </div>
-                    </div>
+
 
                     {{-- Original Documents Links (Hidden if empty or moved to Insights) --}}
                     @if ($business->legal_document_path || $business->certification_path)
@@ -608,14 +584,19 @@
                 </div>
             </div>
 
-            {{-- Tabs Navigation - Elegant Design --}}
+            @if(
+                ($business->isProductMode() && $business->products->count() > 0) || 
+                ($business->isServiceMode() && $business->services->count() > 0) || 
+                $business->photos->count() > 0 || 
+                $business->contacts->count() > 0
+            )
             <div id="business-tabs" x-data="{
-                activeTab: '{{ session('activeTab', $business->isProductMode() ? 'products' : 'services') }}'
+                activeTab: '{{ session('activeTab', ($business->isProductMode() && $business->products->count() > 0) ? 'products' : (($business->isServiceMode() && $business->services->count() > 0) ? 'services' : ($business->photos->count() > 0 ? 'photos' : 'contacts'))) }}'
             }"
                 class="mt-10 bg-white shadow-lg sm:rounded-2xl border border-soft-gray-100">
                 <div class="border-b-2 border-soft-gray-100">
                     <nav class="flex -mb-px px-6 overflow-x-auto">
-                        @if ($business->isProductMode())
+                        @if ($business->isProductMode() && $business->products->count() > 0)
                             <button @click="activeTab = 'products'"
                                 :class="activeTab === 'products' ? 'border-soft-gray-900 text-soft-gray-900' :
                                     'border-transparent text-soft-gray-500 hover:text-soft-gray-700 hover:border-soft-gray-300'"
@@ -632,7 +613,7 @@
                             </button>
                         @endif
 
-                        @if ($business->isServiceMode())
+                        @if ($business->isServiceMode() && $business->services->count() > 0)
                             <button @click="activeTab = 'services'"
                                 :class="activeTab === 'services' ? 'border-soft-gray-900 text-soft-gray-900' :
                                     'border-transparent text-soft-gray-500 hover:text-soft-gray-700 hover:border-soft-gray-300'"
@@ -649,6 +630,7 @@
                             </button>
                         @endif
 
+                        @if ($business->photos->count() > 0)
                         <button @click="activeTab = 'photos'"
                             :class="activeTab === 'photos' ? 'border-soft-gray-900 text-soft-gray-900' :
                                 'border-transparent text-soft-gray-500 hover:text-soft-gray-700 hover:border-soft-gray-300'"
@@ -660,7 +642,9 @@
                                     'bg-soft-gray-100 text-soft-gray-600'"
                                 class="px-2.5 py-0.5 rounded-full text-xs font-semibold transition-colors">{{ $business->photos->count() }}</span>
                         </button>
+                        @endif
 
+                        @if ($business->contacts->count() > 0)
                         <button @click="activeTab = 'contacts'"
                             :class="activeTab === 'contacts' ? 'border-soft-gray-900 text-soft-gray-900' :
                                 'border-transparent text-soft-gray-500 hover:text-soft-gray-700 hover:border-soft-gray-300'"
@@ -675,6 +659,7 @@
                                     'bg-soft-gray-100 text-soft-gray-600'"
                                 class="px-2.5 py-0.5 rounded-full text-xs font-semibold transition-colors">{{ $business->contacts->count() }}</span>
                         </button>
+                        @endif
                     </nav>
                 </div>
 
@@ -1072,6 +1057,7 @@
                 </div>
 
             </div>
+            @endif
         </div>
 
         {{-- Fullscreen Photo Modal --}}
