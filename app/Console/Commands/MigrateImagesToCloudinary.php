@@ -10,34 +10,34 @@ use Exception;
 
 class MigrateImagesToCloudinary extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
     protected $signature = 'migrate:images-to-cloudinary
-                            {--tables= : Comma-separated table.column pairs (default: businesses.logo_url,business_photos.photo_url,product_photos.photo_url,users.profile_photo_url)}
+                            {--tables= : Comma-separated table.column pairs (default: users.profile_photo_url,businesses.logo_url,companies.logo_url)}
                             {--limit=0 : Maximum rows per table to process (0 = no limit)}
                             {--dry-run : Do not write to disk or update database}
-                            {--domain= : Only process URLs that contain this domain (optional)}';
+                            {--domain= : Only process URLs that contain this domain (optional)}
+                            {--include-local : Also upload local extracted_images/ paths to Cloudinary}';
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Download remote image URLs and upload them to the configured filesystem (e.g. Cloudinary). Updates DB columns to the new stored URL.';
+    protected $description = 'Download remote image URLs (with cookie auth for employee.uc.ac.id) and upload them to Cloudinary. Updates DB columns to new Cloudinary URL.';
 
     public function handle()
     {
         $disk = config('filesystems.default', env('FILESYSTEM_DISK', 'public'));
-        $tablesOption = $this->option('tables') ?? 'businesses.logo_url,business_photos.photo_url,product_photos.photo_url,users.profile_photo_url';
+        $tablesOption = $this->option('tables') ?? 'users.profile_photo_url,businesses.logo_url,companies.logo_url';
         $tables = array_map('trim', explode(',', $tablesOption));
         $limit = (int) $this->option('limit');
         $dry = $this->option('dry-run');
         $domain = $this->option('domain');
+        $includeLocal = $this->option('include-local');
+
+        // Load UC cookies from .env for authenticated downloads
+        $ucCookieRaw = env('UC_COOKIE_RAW', '');
 
         $this->info("Using disk: {$disk}");
+        if ($ucCookieRaw) {
+            $this->info("UC cookies loaded for employee.uc.ac.id auth.");
+        }
+
+        $stats = ['uploaded' => 0, 'skipped' => 0, 'failed' => 0];
 
         foreach ($tables as $pair) {
             if (!str_contains($pair, '.')) {
@@ -47,7 +47,14 @@ class MigrateImagesToCloudinary extends Command
 
             [$table, $column] = explode('.', $pair, 2);
 
-            $query = DB::table($table)->where($column, 'like', 'http%');
+            // Build query: remote URLs + optionally local extracted_images paths
+            $query = DB::table($table)->where(function ($q) use ($column, $includeLocal) {
+                $q->where($column, 'like', 'http%');
+                if ($includeLocal) {
+                    $q->orWhere($column, 'like', 'extracted_images/%');
+                }
+            });
+
             if ($domain) {
                 $query->where($column, 'like', "%{$domain}%");
             }
@@ -63,66 +70,99 @@ class MigrateImagesToCloudinary extends Command
                 $id = $row->id ?? null;
                 $url = $row->{$column} ?? null;
                 if (!$url) {
-                    $this->line("Skipping id={$id} (empty)");
+                    $stats['skipped']++;
                     continue;
                 }
 
                 // Skip already-cloudinary URLs
                 if (str_contains($url, 'cloudinary.com') || str_contains($url, 'res.cloudinary.com')) {
-                    $this->line("Skipping already-cloudinary id={$id} -> {$url}");
+                    $this->line("  ⏩ id={$id} already on Cloudinary");
+                    $stats['skipped']++;
                     continue;
                 }
 
                 try {
-                    $this->line("Downloading id={$id} -> {$url}");
-                    $response = Http::timeout(30)->get($url);
-                    if (!$response->ok()) {
-                        $this->error("Failed to download id={$id}: HTTP {$response->status()}");
+                    $contents = null;
+                    $basename = null;
+
+                    // Case 1: Local file from extracted_images/
+                    if (str_starts_with($url, 'extracted_images/')) {
+                        $localPath = storage_path('app/public/' . $url);
+                        if (!file_exists($localPath)) {
+                            $this->error("  ❌ id={$id} local file missing: {$localPath}");
+                            $stats['failed']++;
+                            continue;
+                        }
+                        $contents = file_get_contents($localPath);
+                        $basename = basename($url);
+                        $this->line("  📁 id={$id} reading local: {$basename}");
+                    }
+                    // Case 2: employee.uc.ac.id URL (needs cookies)
+                    elseif (str_contains($url, 'employee.uc.ac.id') && $ucCookieRaw) {
+                        $this->line("  🔐 id={$id} downloading with cookies: {$url}");
+                        $response = Http::timeout(30)
+                            ->withHeaders(['Cookie' => $ucCookieRaw])
+                            ->get($url);
+
+                        if (!$response->ok()) {
+                            $this->error("  ❌ id={$id} HTTP {$response->status()}");
+                            $stats['failed']++;
+                            continue;
+                        }
+                        $contents = $response->body();
+                        $basename = basename(parse_url($url, PHP_URL_PATH) ?? 'image.jpg');
+                    }
+                    // Case 3: Regular public URL
+                    else {
+                        $this->line("  🌐 id={$id} downloading: {$url}");
+                        $response = Http::timeout(30)->get($url);
+                        if (!$response->ok()) {
+                            $this->error("  ❌ id={$id} HTTP {$response->status()}");
+                            $stats['failed']++;
+                            continue;
+                        }
+                        $contents = $response->body();
+                        $basename = basename(parse_url($url, PHP_URL_PATH) ?? 'image.jpg');
+                    }
+
+                    if (!$contents || strlen($contents) < 100) {
+                        $this->error("  ❌ id={$id} empty or too small response");
+                        $stats['failed']++;
                         continue;
                     }
 
-                    $contents = $response->body();
-                    $pathInfo = pathinfo(parse_url($url, PHP_URL_PATH) ?? '');
-                    $basename = $pathInfo['basename'] ?? 'image.jpg';
+                    // Sanitize filename
                     $sanitized = preg_replace('/[^A-Za-z0-9_.-]/', '_', $basename);
-                    $ext = $pathInfo['extension'] ?? null;
-                    if (!$ext) {
-                        // try to guess from content-type
-                        $ct = $response->header('Content-Type', 'image/jpeg');
-                        if (str_contains($ct, 'png')) $ext = 'png';
-                        else if (str_contains($ct, 'gif')) $ext = 'gif';
-                        else $ext = 'jpg';
-                    }
-
-                    $filename = time() . '_' . $sanitized;
-                    if (!str_ends_with($filename, ".{$ext}")) {
-                        $filename .= ".{$ext}";
-                    }
-
-                    $targetPath = "migrated/{$table}/{$id}/{$filename}";
+                    $targetPath = "uco/{$table}/{$id}/{$sanitized}";
 
                     if ($dry) {
-                        $this->info("[dry-run] would store {$url} -> {$disk}:{$targetPath}");
+                        $this->info("  [dry-run] would store → {$disk}:{$targetPath}");
                         continue;
                     }
 
+                    // Upload to Cloudinary (or configured disk)
                     $stored = Storage::disk($disk)->put($targetPath, $contents);
                     if (!$stored) {
-                        $this->error("Failed storing id={$id} to disk");
+                        $this->error("  ❌ id={$id} failed to store on {$disk}");
+                        $stats['failed']++;
                         continue;
                     }
 
-                    $newUrl = Storage::url($targetPath);
+                    // Get the new URL and update DB
+                    $newUrl = Storage::disk($disk)->url($targetPath);
                     DB::table($table)->where('id', $id)->update([$column => $newUrl]);
-                    $this->info("Stored and updated id={$id} -> {$newUrl}");
+                    $this->info("  ✅ id={$id} → {$newUrl}");
+                    $stats['uploaded']++;
 
                 } catch (Exception $e) {
-                    $this->error("Error processing id={$id}: " . $e->getMessage());
+                    $this->error("  ❌ id={$id}: " . $e->getMessage());
+                    $stats['failed']++;
                 }
             }
         }
 
-        $this->info('Done.');
+        $this->newLine();
+        $this->info("Done! Uploaded: {$stats['uploaded']} | Skipped: {$stats['skipped']} | Failed: {$stats['failed']}");
         return 0;
     }
 }

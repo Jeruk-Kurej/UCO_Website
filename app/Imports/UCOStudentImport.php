@@ -17,6 +17,7 @@ use Maatwebsite\Excel\Events\BeforeImport;
 use Maatwebsite\Excel\Events\AfterImport;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
 
 /**
@@ -171,6 +172,9 @@ class UCOStudentImport implements ToArray, WithStartRow, WithChunkReading, WithE
             };
 
             // ── Upsert User ──
+            // Upload profile photo to Cloudinary if it's an employee URL
+            $profilePhotoUrl = $this->uploadToCloudinary($cell(49), 'users', $nis ?? $loginEmail);
+
             $userData = array_filter([
                 'name'               => $studentName,
                 'nis'                => $nis,
@@ -181,7 +185,7 @@ class UCOStudentImport implements ToArray, WithStartRow, WithChunkReading, WithE
                 'major'              => $major,
                 'student_status'     => $studentStatus,
                 'year_of_enrollment' => $studentYear,
-                'profile_photo_url'  => $cell(49),
+                'profile_photo_url'  => $profilePhotoUrl,
                 'email_verified_at'  => now(),
             ], fn($v) => $v !== null);
 
@@ -200,12 +204,14 @@ class UCOStudentImport implements ToArray, WithStartRow, WithChunkReading, WithE
             // Company (Intrapreneur) — col 22
             $companyName = $cell(22);
             if ($companyName) {
+                $companyName = $this->cleanName($companyName);
                 $this->upsertCompany($user, $companyName, $cell, $row);
             }
 
             // Business (Entrepreneur) — col 34 (detailed), or col 13 (legacy)
             $entrepreneurBizName = $cell(34) ?? $legacyBizName;
             if ($entrepreneurBizName) {
+                $entrepreneurBizName = $this->cleanName($entrepreneurBizName);
                 $this->upsertBusiness($user, $entrepreneurBizName, $cell);
             }
 
@@ -233,12 +239,14 @@ class UCOStudentImport implements ToArray, WithStartRow, WithChunkReading, WithE
             $categoryId = $cat->id;
         }
 
+        $logoUrl = $this->uploadToCloudinary($cell(43), 'companies', $companyName);
+
         $data = array_filter([
             'category_id'          => $categoryId,
             'position'             => $cell(23),
             'job_description'      => $cell(25),
             'year_started_working' => $cell(24),
-            'logo_url'             => $cell(43),
+            'logo_url'             => $logoUrl,
         ], fn($v) => $v !== null);
 
         $company = Company::where('user_id', $user->id)->where('name', $companyName)->first()
@@ -262,6 +270,8 @@ class UCOStudentImport implements ToArray, WithStartRow, WithChunkReading, WithE
             $categoryId = $cat->id;
         }
 
+        $logoUrl = $this->uploadToCloudinary($cell(43), 'businesses', $bizName);
+
         $data = array_filter([
             'category_id'       => $categoryId,
             'position'          => $cell(38),
@@ -273,7 +283,7 @@ class UCOStudentImport implements ToArray, WithStartRow, WithChunkReading, WithE
             'revenue_range'     => $cell(32),
             'business_legality' => $cell(35),
             'product_legality'  => $cell(36),
-            'logo_url'          => $cell(43),
+            'logo_url'          => $logoUrl,
             'type'              => 'entrepreneur',
         ], fn($v) => $v !== null);
 
@@ -302,6 +312,91 @@ class UCOStudentImport implements ToArray, WithStartRow, WithChunkReading, WithE
         if (!$val) return null;
         $val = preg_replace('/[^0-9+]/', '', $val);
         return strlen($val) >= 6 ? $val : null;
+    }
+
+    /**
+     * Clean a name field: strip <br> tags, take first entry if multiple, truncate to 250 chars.
+     */
+    private function cleanName(?string $val): ?string
+    {
+        if (!$val) return null;
+        // Split on <br> variants and take first non-empty entry
+        $val = str_replace(["\r", "\n"], ' ', $val);
+        $parts = preg_split('/\s*<br\s*\/?\s*>\s*/i', $val);
+        $parts = array_filter(array_map('trim', $parts), fn($p) => $p !== '');
+        $first = reset($parts) ?: $val;
+        // Strip any remaining tags and truncate
+        $first = trim(strip_tags($first));
+        return Str::limit($first, 250, '');
+    }
+
+    /**
+     * Download image from URL (with cookie auth for employee.uc.ac.id) and upload to Cloudinary.
+     * Returns the Cloudinary URL, or the original URL if upload fails.
+     */
+    private function uploadToCloudinary(?string $url, string $folder, ?string $identifier): ?string
+    {
+        if (!$url) return null;
+
+        // Clean the URL strictly: remove tags, non-printable chars, and trim
+        $url = preg_replace('/[[:cntrl:]]/', '', strip_tags($url));
+        $url = trim($url);
+        if (!$url || !filter_var($url, FILTER_VALIDATE_URL)) {
+            return $url;
+        }
+
+        // Already a Cloudinary URL — pass through
+        if (str_contains($url, 'cloudinary.com') || str_contains($url, 'res.cloudinary.com')) {
+            return $url;
+        }
+
+        try {
+            $contents = null;
+            $headers = [];
+
+            // Add cookies for employee.uc.ac.id
+            if (str_contains($url, 'employee.uc.ac.id')) {
+                $cookie = env('UC_COOKIE_RAW', '');
+                if (!$cookie) {
+                    Log::warning("[UCOStudentImport] No UC_COOKIE_RAW for: {$url}");
+                    return $url;
+                }
+                $headers['Cookie'] = $cookie;
+            }
+
+            $response = \Illuminate\Support\Facades\Http::timeout(60)
+                ->withHeaders($headers)
+                ->get($url);
+
+            if (!$response->ok() || strlen($response->body()) < 100) {
+                Log::warning("[UCOStudentImport] Failed download ({$response->status()}) or too small for: {$url}");
+                return $url;
+            }
+            $contents = $response->body();
+
+            // Prepare Cloudinary path
+            $sanitizedId = Str::slug($identifier ?? 'unknown');
+            $basename = basename(parse_url($url, PHP_URL_PATH) ?? 'image.jpg');
+            $sanitizedName = pathinfo($basename, PATHINFO_FILENAME);
+            $extension = pathinfo($basename, PATHINFO_EXTENSION) ?: 'jpg';
+            $sanitizedFileName = preg_replace('/[^A-Za-z0-9_]/', '_', $sanitizedName);
+
+            // Upload directly using cloudinary() helper to avoid Storage driver URI issues
+            $uploaded = cloudinary()->upload("data:image/{$extension};base64," . base64_encode($contents), [
+                'folder' => "uco/{$folder}/{$sanitizedId}",
+                'public_id' => $sanitizedFileName,
+                'overwrite' => true,
+                'resource_type' => 'image',
+            ]);
+
+            $cloudinaryUrl = $uploaded->getSecurePath();
+            Log::info("[UCOStudentImport] Uploaded to Cloudinary: {$cloudinaryUrl}");
+            return $cloudinaryUrl;
+
+        } catch (\Exception $e) {
+            Log::warning("[UCOStudentImport] Upload error for {$url}: " . $e->getMessage());
+            return $url;
+        }
     }
 
     private function parseDate(?string $val): ?string
@@ -354,6 +449,8 @@ class UCOStudentImport implements ToArray, WithStartRow, WithChunkReading, WithE
                 $progress['status'] = 'completed';
                 Cache::put($prefix, $progress, now()->addMinutes(60));
                 Log::info("[UCOStudentImport] Done: {$this->successCount} ok, {$this->skippedCount} skipped");
+
+                // Images are now uploaded inline during import — no post-import migration needed
             },
         ];
     }
