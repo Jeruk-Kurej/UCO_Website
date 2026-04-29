@@ -4,7 +4,7 @@
             {{-- Logo & Brand --}}
             <div class="flex items-center">
                 <a href="{{ route('home') }}" class="flex items-center gap-3">
-                    <img src="{{ asset('images/Logo UCO.png') }}" alt="UCO Logo" class="w-9 h-9 object-contain">
+                    <img src="{{ asset('images/logo-uco.png') }}" alt="UCO Logo" class="w-9 h-9 object-contain">
                     <span class="text-lg font-bold text-soft-gray-900">UC Online Learning</span>
                 </a>
             </div>
