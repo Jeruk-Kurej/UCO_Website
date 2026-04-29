@@ -19,11 +19,10 @@ class UserSeeder extends Seeder
         User::updateOrCreate(
             ['email' => 'admin@uco.com'],
             [
-                'username' => 'admin',
                 'name' => 'Admin UCO',
                 'password' => Hash::make('password'),
                 'role' => 'admin',
-                'is_active' => true,
+                'is_visible' => true,
                 'email_verified_at' => now(),
             ]
         );
@@ -32,11 +31,11 @@ class UserSeeder extends Seeder
         User::updateOrCreate(
             ['email' => 'student@uco.com'],
             [
-                'username' => 'student',
                 'name' => 'Student UCO',
                 'password' => Hash::make('password'),
-                'role' => 'student',
-                'is_active' => true,
+                'role' => 'user',
+                'student_status' => 'active',
+                'is_visible' => true,
                 'email_verified_at' => now(),
             ]
         );
@@ -45,11 +44,11 @@ class UserSeeder extends Seeder
         User::updateOrCreate(
             ['email' => 'alumni@uco.com'],
             [
-                'username' => 'alumni',
                 'name' => 'Alumni UCO',
                 'password' => Hash::make('password'),
-                'role' => 'alumni',
-                'is_active' => true,
+                'role' => 'user',
+                'student_status' => 'alumni',
+                'is_visible' => true,
                 'email_verified_at' => now(),
             ]
         );
