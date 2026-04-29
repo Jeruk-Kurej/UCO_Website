@@ -24,7 +24,7 @@ use Maatwebsite\Excel\Events\AfterImport;
 use Maatwebsite\Excel\Events\ImportFailed;
 use Illuminate\Support\Facades\Cache;
 
-class BusinessesImport implements ToModel, WithHeadingRow, WithValidation, WithChunkReading, ShouldQueue, WithEvents, WithColumnLimit, SkipsEmptyRows
+class BusinessesImport implements ToModel, WithHeadingRow, WithValidation, WithChunkReading, WithEvents, WithColumnLimit, SkipsEmptyRows
 {
     use \App\Traits\UcAuthTrait;
 
