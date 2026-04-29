@@ -120,13 +120,6 @@
                             <div
                                 class="absolute inset-0 bg-gradient-to-t from-soft-gray-900/70 via-soft-gray-900/10 to-transparent">
                             </div>
-                            <div class="absolute left-4 top-4">
-                                <span
-                                    class="rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-soft-gray-800 backdrop-blur"
-                                    title="{{ $business->businessType->name ?? 'Business' }}">
-                                    {{ $business->display_category ?? \Illuminate\Support\Str::limit($business->businessType->name ?? 'Business', 32) }}
-                                </span>
-                            </div>
 
                         </div>
 
@@ -134,7 +127,14 @@
                             <div>
                                 <h3 class="line-clamp-1 text-lg font-extrabold text-soft-gray-900 md:text-xl">
                                     {{ $business->name }}</h3>
-                                <p class="mt-2 line-clamp-3 text-sm leading-relaxed text-soft-gray-600">
+                                <div class="mt-2.5 mb-1">
+                                    <span
+                                        class="inline-block rounded-lg bg-soft-gray-50 border border-soft-gray-200 px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-widest text-soft-gray-600"
+                                        title="{{ $business->businessType->name ?? 'Business' }}">
+                                        {{ $business->display_category ?? \Illuminate\Support\Str::limit($business->businessType->name ?? 'Business', 32) }}
+                                    </span>
+                                </div>
+                                <p class="mt-3 line-clamp-3 text-sm leading-relaxed text-soft-gray-600">
                                     {{ $business->display_description }}</p>
                             </div>
 
