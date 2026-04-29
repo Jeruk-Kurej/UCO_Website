@@ -1,256 +1,92 @@
 <x-app-layout>
-    <div class="space-y-12">
+    <x-slot name="header">
+        <h2 class="font-black text-3xl text-gray-900 leading-tight tracking-tight">
+            {{ __('Command Center') }}
+        </h2>
+    </x-slot>
 
-        {{-- Featured Businesses - Professional & Elegant --}}
-        @if($featuredBusinesses->count() > 0)
-            <div class="relative">
-                {{-- Subtle Background Accent --}}
-                <div class="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-uco-orange-50 to-uco-yellow-50 rounded-full blur-3xl opacity-40 -z-10"></div>
-                
-                <div class="space-y-8">
-                    {{-- Section Header - Clean & Professional --}}
-                    <div class="flex items-end justify-between border-b border-soft-gray-200 pb-6">
-                        <div>
-                            <h2 class="text-3xl font-bold text-soft-gray-900 tracking-tight">
-                                Featured Businesses
-                            </h2>
-                            <p class="text-sm text-soft-gray-600 mt-2">
-                                A curated selection of standout businesses from our community
-                            </p>
-                        </div>
-                        @auth
-                            <a href="{{ route('businesses.index') }}" 
-                               class="hidden sm:inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-soft-gray-700 hover:text-soft-gray-900 border border-soft-gray-200 rounded-lg hover:border-soft-gray-300 hover:shadow-sm transition-all">
-                                View All
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                                </svg>
-                            </a>
-                        @endauth
-                    </div>
-
-                    {{-- Business Cards - Modern Professional Grid with 2 Columns --}}
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    @foreach($featuredBusinesses as $business)
-                        <a href="{{ route('businesses.show', $business) }}" class="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden group block">
-                            <div class="flex flex-col h-full">
-                                {{-- Header with Photo & Logo --}}
-                                <div class="relative h-56">
-                                    {{-- Category Badge - Top Left --}}
-                                    <div class="absolute top-3 left-3 z-10">
-                                            <span class="inline-flex items-center rounded-full bg-uco-orange-50 px-3 py-1 text-xs font-medium text-uco-orange-700 max-w-[170px]" title="{{ $business->businessType->name }}">
-                                                <span class="truncate">{{ $business->businessType->name }}</span>
-                                        </span>
-                                    </div>
-                                    
-                                    {{-- Business Photo Carousel (Modern & Clean) --}}
-                                    @php $photosCount = $business->photos->count(); @endphp
-                                    <div class="absolute inset-0 w-full h-full overflow-hidden" 
-                                         x-data="{ 
-                                            activeSlide: 0, 
-                                            slidesCount: {{ $photosCount }},
-                                            timer: null,
-                                            startTimer() {
-                                                if (this.slidesCount > 1) {
-                                                    this.timer = setInterval(() => {
-                                                        this.activeSlide = (this.activeSlide + 1) % this.slidesCount;
-                                                    }, 4000);
-                                                }
-                                            },
-                                            stopTimer() {
-                                                if(this.timer) clearInterval(this.timer);
-                                            }
-                                         }"
-                                         x-init="startTimer()"
-                                         @mouseenter="stopTimer()"
-                                         @mouseleave="startTimer()">
-                                        
-                                        @forelse($business->photos as $index => $photo)
-                                            <div x-show="activeSlide === {{ $index }}"
-                                                 x-transition:enter="transition ease-out duration-700"
-                                                 x-transition:enter-start="opacity-0 scale-105"
-                                                 x-transition:enter-end="opacity-100 scale-100"
-                                                 x-transition:leave="transition ease-in duration-700"
-                                                 x-transition:leave-start="opacity-100"
-                                                 x-transition:leave-end="opacity-0"
-                                                 class="absolute inset-0 w-full h-full">
-                                                <img src="{{ storage_image_url($photo->photo_url) }}" 
-                                                     alt="{{ $business->name }} - Photo {{ $index + 1 }}" 
-                                                     class="w-full h-full object-cover">
-                                                <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
-                                            </div>
-                                        @empty
-                                            <div class="w-full h-full bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center">
-                                                <i class="bi bi-briefcase text-6xl text-slate-400"></i>
-                                            </div>
-                                            <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent"></div>
-                                        @endforelse
-
-                                        {{-- Carousel Controls (only if multiple) --}}
-                                        @if($photosCount > 1)
-                                            {{-- Arrows --}}
-                                            <button @click.prevent="activeSlide = (activeSlide - 1 + {{ $photosCount }}) % {{ $photosCount }}" 
-                                                    class="absolute left-2.5 top-1/2 -translate-y-1/2 z-20 w-9 h-9 flex items-center justify-center rounded-full bg-black/20 hover:bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-all duration-300 backdrop-blur-sm border border-white/5">
-                                                <i class="bi bi-chevron-left text-sm"></i>
-                                            </button>
-                                            <button @click.prevent="activeSlide = (activeSlide + 1) % {{ $photosCount }}" 
-                                                    class="absolute right-2.5 top-1/2 -translate-y-1/2 z-20 w-9 h-9 flex items-center justify-center rounded-full bg-black/20 hover:bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-all duration-300 backdrop-blur-sm border border-white/5">
-                                                <i class="bi bi-chevron-right text-sm"></i>
-                                            </button>
-
-                                            {{-- Dots indicator (centered) --}}
-                                            <div class="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5 z-20">
-                                                @foreach($business->photos as $index => $photo)
-                                                    <div class="h-1 rounded-full transition-all duration-300 shadow-sm"
-                                                         :class="activeSlide === {{ $index }} ? 'w-5 bg-white' : 'w-1.5 bg-white/40'"></div>
-                                                @endforeach
-                                            </div>
-                                        @endif
-                                    </div>
-
-                                    
-                                    {{-- Logo & Featured Badge Overlay --}}
-                                    <div class="absolute bottom-4 left-4 flex items-end gap-4">
-                                        @if($business->logo_url)
-                                            <div class="w-20 h-20 rounded-xl bg-white shadow-lg border-2 border-white overflow-hidden flex-shrink-0">
-                                                <img src="{{ storage_image_url($business->logo_url) }}" 
-                                                     alt="{{ $business->name }} logo" 
-                                                     class="w-full h-full object-cover">
-                                            </div>
-                                        @else
-                                            <div class="w-20 h-20 rounded-xl bg-white shadow-lg border-2 border-white flex items-center justify-center flex-shrink-0">
-                                                <i class="bi bi-building text-3xl text-slate-400"></i>
-                                            </div>
-                                        @endif
-                                    </div>
-                                </div>
-
-                                {{-- Content --}}
-                                <div class="p-5 flex-1 flex flex-col">
-                                    {{-- Business Name --}}
-                                    <div class="mb-3">
-                                        <h3 class="text-xl font-bold text-gray-900 mb-2 line-clamp-1 group-hover:text-gray-700 transition" 
-                                            title="{{ $business->name }}">
-                                            {{ $business->name }}
-                                        </h3>
-                                    </div>
-                                    
-                                    {{-- Description --}}
-                                    <div class="min-h-[2.5rem] mb-4">
-                                        <p class="text-sm text-gray-600 line-clamp-2 overflow-hidden">{{ $business->description ?: 'No description provided' }}</p>
-                                    </div>
-                                    
-                                    {{-- Owner Info Card --}}
-                                    <div class="bg-white border border-gray-200 rounded-xl p-3 mb-4">
-                                        <div class="flex items-center gap-3">
-                                            {{-- Owner Avatar --}}
-                                            @if($business->user->profile_photo_url ?? false)
-                                                <img src="{{ storage_image_url($business->user->profile_photo_url) }}" 
-                                                     alt="{{ $business->user->name }}" 
-                                                     class="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm">
-                                            @else
-                                                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-slate-400 to-slate-600 flex items-center justify-center text-white font-bold text-sm border-2 border-white shadow-sm">
-                                                    {{ strtoupper(substr($business->user->name, 0, 1)) }}
-                                                </div>
-                                            @endif
-                                            
-                                            <div class="flex-1 min-w-0">
-                                                <p class="text-sm font-semibold text-gray-900 truncate" title="{{ $business->user->name }}">
-                                                    {{ $business->user->name }}
-                                                </p>
-                                                @if($business->position)
-                                                    <p class="text-xs text-slate-600 truncate" title="{{ $business->position }}">
-                                                        {{ $business->position }}
-                                                    </p>
-                                                @else
-                                                    <p class="text-xs text-slate-500">Owner</p>
-                                                @endif
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-
-                                </div>
+    <div class="py-12 bg-gray-50/50 min-h-screen">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-12">
+            
+            {{-- Platform Health: 50mm Focal Point --}}
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                @foreach([
+                    ['label' => 'Total Members', 'value' => $stats['total_users'], 'icon' => 'bi-people-fill', 'color' => 'text-blue-600', 'bg' => 'bg-blue-50'],
+                    ['label' => 'Active Ventures', 'value' => $stats['total_businesses'], 'icon' => 'bi-rocket-takeoff-fill', 'color' => 'text-uco-orange-500', 'bg' => 'bg-orange-50'],
+                    ['label' => 'Intrapreneurs', 'value' => $stats['total_companies'], 'icon' => 'bi-building-fill-check', 'color' => 'text-purple-600', 'bg' => 'bg-purple-50'],
+                    ['label' => 'Awaiting Review', 'value' => $stats['pending_visibility'], 'icon' => 'bi-shield-exclamation', 'color' => 'text-emerald-600', 'bg' => 'bg-emerald-50'],
+                ] as $card)
+                    <div class="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-500 group relative overflow-hidden">
+                        <div class="absolute -right-4 -bottom-4 w-24 h-24 {{ $card['bg'] }} opacity-20 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
+                        <div class="relative z-10 space-y-4">
+                            <div class="w-12 h-12 {{ $card['bg'] }} rounded-2xl flex items-center justify-center {{ $card['color'] }} text-xl border border-white shadow-sm">
+                                <i class="bi {{ $card['icon'] }}"></i>
                             </div>
-                        </a>
-                    @endforeach
-                    </div>
-                @else
-                    {{-- No Featured Businesses Message --}}
-                    <div class="text-center py-12">
-                        <svg class="w-16 h-16 text-slate-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                        </svg>
-                        <p class="text-slate-600">No featured businesses available at the moment.</p>
-                    </div>
-                @endif
-
-        {{-- What They Say About UCO Section --}}
-        @if(($testimonies ?? collect())->count() > 0)
-            <div class="relative">
-                {{-- Subtle Background Accent --}}
-                <div class="absolute top-0 left-0 w-96 h-96 bg-gradient-to-br from-uco-yellow-50 to-uco-orange-50 rounded-full blur-3xl opacity-40 -z-10"></div>
-                
-                <div class="space-y-8">
-                    {{-- Section Header --}}
-                    <div class="flex items-end justify-between border-b border-soft-gray-200 pb-6">
-                        <div>
-                            <h2 class="text-3xl font-bold text-soft-gray-900 tracking-tight">
-                                What They Say About UCO
-                            </h2>
-                            <p class="text-sm text-soft-gray-600 mt-2">
-                                Hear from our community of students and alumni
-                            </p>
+                            <div>
+                                <p class="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">{{ $card['label'] }}</p>
+                                <h3 class="text-4xl font-black text-gray-900 mt-1">{{ number_format($card['value']) }}</h3>
+                            </div>
                         </div>
-                        <a href="{{ route('uc-testimonies.index') }}"
-                           class="hidden sm:inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-uco-orange-500 to-uco-yellow-500 hover:from-uco-orange-600 hover:to-uco-yellow-600 rounded-lg shadow-sm hover:shadow-md transition-all">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                            </svg>
-                            Write to Us
-                        </a>
                     </div>
+                @endforeach
+            </div>
 
-                    {{-- Testimonies Grid --}}
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        @foreach($testimonies as $testimony)
-                            <div class="bg-white border border-soft-gray-200 rounded-xl p-6 hover:shadow-lg hover:border-soft-gray-300 transition-all">
-                                {{-- Rating Stars --}}
-                                <div class="flex items-center gap-1 mb-3">
-                                    @for($i = 1; $i <= 5; $i++)
-                                        <svg class="w-5 h-5 {{ $i <= $testimony->rating ? 'text-yellow-400' : 'text-gray-300' }} fill-current" viewBox="0 0 20 20">
-                                            <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/>
-                                        </svg>
-                                    @endfor
+            {{-- Secondary IA: Activity Streams --}}
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                
+                {{-- Recent Onboarding --}}
+                <section class="space-y-6">
+                    <div class="flex items-center justify-between px-2">
+                        <h4 class="text-xs font-black uppercase tracking-widest text-gray-400">New Talent</h4>
+                        <a href="{{ route('users.index') }}" class="text-[10px] font-black uppercase text-uco-orange-500 hover:tracking-widest transition-all">View All</a>
+                    </div>
+                    <div class="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm divide-y divide-gray-50 overflow-hidden">
+                        @foreach($recentUsers as $user)
+                            <div class="p-6 flex items-center gap-4 group hover:bg-gray-50/50 transition-colors">
+                                <div class="w-10 h-10 rounded-full bg-gray-100 flex-shrink-0 flex items-center justify-center text-gray-400 font-black text-xs border border-white">
+                                    {{ substr($user->name, 0, 2) }}
                                 </div>
-
-                                {{-- Testimony Content --}}
-                                <p class="text-soft-gray-700 text-sm leading-relaxed mb-4 line-clamp-4">
-                                    "{{ $testimony->content }}"
-                                </p>
-
-                                {{-- Author Info --}}
-                                <div class="pt-4 border-t border-soft-gray-100">
-                                    <p class="text-sm font-semibold text-soft-gray-900">{{ $testimony->customer_name }}</p>
-                                    <p class="text-xs text-soft-gray-500 mt-1">{{ optional($testimony->date)->format('F d, Y') }}</p>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-bold text-gray-900 truncate">{{ $user->name }}</p>
+                                    <p class="text-[10px] text-gray-500 font-medium">{{ $user->email }}</p>
                                 </div>
+                                <span class="px-3 py-1 rounded-full bg-gray-100 text-[9px] font-black uppercase tracking-tighter text-gray-500">
+                                    {{ $user->student_status ?? 'Student' }}
+                                </span>
                             </div>
                         @endforeach
                     </div>
+                </section>
 
-                    {{-- Mobile Write Button --}}
-                    <div class="sm:hidden flex justify-center">
-                        <a href="{{ route('uc-testimonies.index') }}"
-                           class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-uco-orange-500 to-uco-yellow-500 hover:from-uco-orange-600 hover:to-uco-yellow-600 rounded-lg shadow-sm hover:shadow-md transition-all">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                            </svg>
-                            Write to Us
-                        </a>
+                {{-- Recent Ventures --}}
+                <section class="space-y-6">
+                    <div class="flex items-center justify-between px-2">
+                        <h4 class="text-xs font-black uppercase tracking-widest text-gray-400">Latest Ventures</h4>
+                        <a href="{{ route('businesses.index') }}" class="text-[10px] font-black uppercase text-uco-orange-500 hover:tracking-widest transition-all">Explore</a>
                     </div>
-                </div>
+                    <div class="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm divide-y divide-gray-50 overflow-hidden">
+                        @foreach($recentBusinesses as $business)
+                            <div class="p-6 flex items-center gap-4 group hover:bg-gray-50/50 transition-colors">
+                                <div class="w-10 h-10 rounded-xl bg-gray-50 flex-shrink-0 flex items-center justify-center border border-gray-100 overflow-hidden">
+                                    @if($business->logo_url)
+                                        <img src="{{ $business->logo_url }}" class="w-full h-full object-contain p-1">
+                                    @else
+                                        <i class="bi bi-building text-gray-300"></i>
+                                    @endif
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-bold text-gray-900 truncate">{{ $business->name }}</p>
+                                    <p class="text-[10px] text-gray-500 font-medium">{{ $business->category->name ?? 'Uncategorized' }}</p>
+                                </div>
+                                <a href="{{ route('businesses.edit', $business) }}" class="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 hover:bg-gray-900 hover:text-white transition-all">
+                                    <i class="bi bi-pencil-fill text-[10px]"></i>
+                                </a>
+                            </div>
+                        @endforeach
+                    </div>
+                </section>
+
             </div>
-        @endif
-        
+        </div>
     </div>
 </x-app-layout>

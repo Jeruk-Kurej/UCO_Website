@@ -3,8 +3,6 @@
 namespace App\Http\Requests;
 
 use App\Models\Business;
-use App\Models\Province;
-use App\Models\Regency;
 use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -26,7 +24,6 @@ class UpdateBusinessRequest extends FormRequest
     {
         $this->merge([
             'products' => $this->normalizeInlineRows($this->input('products', []), 'product'),
-            'services' => $this->normalizeInlineRows($this->input('services', []), 'service'),
         ]);
     }
 
@@ -41,7 +38,7 @@ class UpdateBusinessRequest extends FormRequest
             // Basic fields
             'name' => 'required|string|max:255',
             'description' => 'required|string|max:1000',
-            'business_type_id' => 'required|exists:business_types,id',
+            'business_type_id' => 'required|exists:categories,id',
             'business_mode' => 'required|in:product,service,both',
             'user_id' => 'nullable|exists:users,id',
             'owner_ids' => 'nullable|array',
@@ -50,7 +47,7 @@ class UpdateBusinessRequest extends FormRequest
 
             // Location
             'city' => 'nullable|string|max:255',
-            'province' => 'nullable|string|max:255|exists:provinces,name',
+            'province' => 'nullable|string|max:255',
             'address' => 'nullable|string',
 
             // Enhanced fields
@@ -106,17 +103,7 @@ class UpdateBusinessRequest extends FormRequest
     {
         return [
             function ($validator) {
-                // City/Province logic
-                if ($this->filled('city') && $this->filled('province')) {
-                    $provinceId = Province::where('name', $this->input('province'))->value('id');
-                    $isValidCity = $provinceId
-                        ? Regency::where('province_id', $provinceId)->where('name', $this->input('city'))->exists()
-                        : false;
 
-                    if (!$isValidCity) {
-                        $validator->errors()->add('city', 'Selected city does not belong to the selected province.');
-                    }
-                }
 
                 $user = $this->user();
                 $business = $this->route('business');
@@ -124,14 +111,10 @@ class UpdateBusinessRequest extends FormRequest
                 // Validate business mode change - prevent breaking changes
                 $mode = $this->input('business_mode');
                 $hasProducts = $business->products()->count() > 0;
-                $hasServices = $business->services()->count() > 0;
                 
-                if ($mode !== $business->business_mode) {
+                if ($mode !== $business->offering_type) {
                     if ($mode === 'service' && $hasProducts) {
                         $validator->errors()->add('business_mode', 'Cannot change to Service Only while products exist. Delete products first or choose "Product & Service".');
-                    }
-                    if ($mode === 'product' && $hasServices) {
-                        $validator->errors()->add('business_mode', 'Cannot change to Product Only while services exist. Delete services first or choose "Product & Service".');
                     }
                 }
 

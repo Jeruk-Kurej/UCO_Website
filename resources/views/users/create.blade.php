@@ -290,36 +290,20 @@
                     </div>
 
                     {{-- Address City --}}
-                    @php
-                        $selectedPersonalProvince = old('personal_data.province');
-                        $selectedPersonalProvinceId = $selectedPersonalProvince ? optional($provinces->firstWhere('name', $selectedPersonalProvince))->id : null;
-                        $selectedPersonalCity = old('personal_data.address_city');
-                    @endphp
                     <div>
                         <label for="personal_province" class="block text-sm font-medium text-gray-700 mb-2">Province</label>
-                        <select name="personal_data[province]" id="personal_province"
-                                class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900">
-                            <option value="">Select Province</option>
-                            @foreach($provinces as $province)
-                                <option value="{{ $province->name }}" data-id="{{ $province->id }}" {{ old('personal_data.province') === $province->name ? 'selected' : '' }}>
-                                    {{ $province->name }}
-                                </option>
-                            @endforeach
-                        </select>
+                        <input type="text" name="personal_data[province]" id="personal_province"
+                               value="{{ old('personal_data.province') }}"
+                               class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900"
+                               placeholder="e.g. Jawa Timur">
                     </div>
 
                     <div>
                         <label for="personal_address_city" class="block text-sm font-medium text-gray-700 mb-2">City</label>
-                        <select name="personal_data[address_city]" id="personal_address_city"
-                                data-selected-city="{{ $selectedPersonalCity }}"
-                                data-selected-province-id="{{ $selectedPersonalProvinceId }}"
-                                class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900"
-                                {{ $selectedPersonalProvinceId ? '' : 'disabled' }}>
-                            <option value="">Select City</option>
-                            @if($selectedPersonalCity)
-                                <option value="{{ $selectedPersonalCity }}" selected>{{ $selectedPersonalCity }}</option>
-                            @endif
-                        </select>
+                        <input type="text" name="personal_data[address_city]" id="personal_address_city"
+                               value="{{ old('personal_data.address_city') }}"
+                               class="block w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-soft-gray-900 focus:border-soft-gray-900"
+                               placeholder="e.g. Surabaya">
                     </div>
 
                     {{-- Country --}}
@@ -801,63 +785,10 @@
     @push('scripts')
         <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
         <script>
-            const UCO_PROVINCE_MAP = @json($provinces->pluck('id', 'name'));
-
-            async function loadPersonalRegenciesByProvince(provinceId, citySelect, cityTSInstance = null) {
-                if (!provinceId) {
-                    if (cityTSInstance) {
-                        cityTSInstance.clearOptions();
-                        cityTSInstance.disable();
-                    }
-                    citySelect.innerHTML = '<option value="">Select City</option>';
-                    citySelect.disabled = true;
-                    return;
-                }
-
-                citySelect.innerHTML = '<option value="">Loading cities...</option>';
-                citySelect.disabled = false;
-                
-                if (cityTSInstance) {
-                    cityTSInstance.clearOptions();
-                    cityTSInstance.enable();
-                }
-
-                try {
-                    const response = await fetch(`{{ route('regions.regencies') }}?province_id=${provinceId}`, {
-                        headers: {
-                            'Accept': 'application/json',
-                            'X-Requested-With': 'XMLHttpRequest'
-                        }
-                    });
-                    const regencies = await response.json();
-
-                    if (cityTSInstance) {
-                        const options = regencies.map(r => ({ value: r.name, text: r.name }));
-                        cityTSInstance.addOptions(options);
-                        cityTSInstance.refreshOptions(false);
-                    } else {
-                        citySelect.innerHTML = '<option value="">Select City/Kabupaten</option>';
-                        regencies.forEach((regency) => {
-                            const option = document.createElement('option');
-                            option.value = regency.name;
-                            option.textContent = regency.name;
-                            citySelect.appendChild(option);
-                        });
-                    }
-                } catch (error) {
-                    citySelect.disabled = true;
-                    if (cityTSInstance) cityTSInstance.disable();
-                }
-            }
-
             document.addEventListener('DOMContentLoaded', () => {
                 const roleSelect = document.getElementById('role');
                 const genderSelect = document.getElementById('gender');
-                const provinceSelect = document.getElementById('personal_province');
-                const citySelect = document.getElementById('personal_address_city');
                 const eduLevelSelect = document.getElementById('edu_level');
-
-                let cityTS = null;
 
                 if (roleSelect && window.TomSelect) {
                     new TomSelect(roleSelect, { create: false, placeholder: "Select Role", searchField: ["text"] });
@@ -869,32 +800,6 @@
 
                 if (eduLevelSelect && window.TomSelect) {
                     new TomSelect(eduLevelSelect, { create: false, placeholder: "Select education level", searchField: ["text"] });
-                }
-
-                if (citySelect && window.TomSelect) {
-                    cityTS = new TomSelect(citySelect, { create: false, placeholder: "Select City", searchField: ["text"] });
-                }
-
-                if (provinceSelect && window.TomSelect) {
-                    const provinceTS = new TomSelect(provinceSelect, {
-                        create: false,
-                        placeholder: "Select Province",
-                        searchField: ["text"]
-                    });
-
-                    provinceTS.on('change', function(value) {
-                        const provinceId = UCO_PROVINCE_MAP[value] || null;
-                        loadPersonalRegenciesByProvince(provinceId, citySelect, cityTS);
-                    });
-
-                    // Initial load if province exists
-                    if (provinceTS.getValue()) {
-                        const provinceId = UCO_PROVINCE_MAP[provinceTS.getValue()] || null;
-                        const selectedCity = citySelect.dataset.selectedCity;
-                        loadPersonalRegenciesByProvince(provinceId, citySelect, cityTS).then(() => {
-                            if (selectedCity && cityTS) cityTS.setValue(selectedCity);
-                        });
-                    }
                 }
             });
         </script>

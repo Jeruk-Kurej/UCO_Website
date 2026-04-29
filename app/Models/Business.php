@@ -4,401 +4,178 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use App\Traits\HasSlug;
+use Illuminate\Support\Str;
 
 class Business extends Model
 {
-    use HasFactory, HasSlug;
-    
-    public const STATUS_PENDING = 'pending';
-    public const STATUS_APPROVED = 'approved';
-    public const STATUS_REJECTED = 'rejected';
-    public const STATUS_NEED_REVISION = 'need_revision';
+    use HasFactory, \App\Traits\HasImage;
 
     protected $fillable = [
         'user_id',
-        'business_type_id',
-        'business_mode',
+        'category_id',
         'name',
         'slug',
-        'description',
-        'position', // User's position in this business
-        
-        // Enhanced Fields
-        'logo_url',
+        'position',
         'established_date',
-        'address',
-        'city',
+        'description',
         'province',
+        'city',
+        'address',
+        'phone_number',
+        'whatsapp',
+        'email',
+        'website',
+        'instagram',
+        'operational_status',
+        'offering_type',
+        'unique_value_proposition',
+        'target_market',
+        'customer_base_size',
         'employee_count',
         'revenue_range',
-        'is_from_college_project',
-        'is_continued_after_graduation',
-        'legal_documents',
-        'product_certifications',
-        'business_challenges',
-        'additional_data',
-        'legal_document_path',
-        'certification_path',
-        'status',
-        'rejection_reason',
+        'academic_heritage',
+        'company_profile_url',
+        'logo_url',
+        'business_challenge',
+        'business_scale',
+        'business_legality',
+        'product_legality',
+
+        // Platform management
+        'is_visible',
+        'type',
     ];
 
-    protected $casts = [
-        'established_date' => 'date',
-        'is_from_college_project' => 'boolean',
-        'is_continued_after_graduation' => 'boolean',
-        'legal_documents' => 'array',
-        'product_certifications' => 'array',
-        'business_challenges' => 'array',
-        'additional_data' => 'array',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'established_date' => 'date',
+            'is_visible' => 'boolean',
+        ];
+    }
 
-    public function user(): BelongsTo
+    // ─── Accessors ───
+
+    public function getLogoUrlAttribute($value)
+    {
+        return $this->resolveImage($value, 'business');
+    }
+
+    public function getNameAttribute($value)
+    {
+        $cleaned = preg_replace('/<br\s*\/?>/i', ' ', $value);
+        return trim(strip_tags($cleaned));
+    }
+
+    public function getDescriptionAttribute($value)
+    {
+        $cleaned = preg_replace('/<br\s*\/?>/i', ' ', $value);
+        return trim(strip_tags($cleaned));
+    }
+
+    public function getProfileQualityScoreAttribute()
+    {
+        $score = 0;
+        $total = 10;
+        
+        if (!empty($this->getRawOriginal('logo_url'))) $score++;
+        if (!empty($this->description)) $score++;
+        if (!empty($this->unique_value_proposition)) $score++;
+        if (!empty($this->city) || !empty($this->province) || !empty($this->address)) $score++;
+        if (!empty($this->phone_number) || !empty($this->whatsapp)) $score++;
+        if (!empty($this->website) || !empty($this->instagram)) $score++;
+        if (!empty($this->company_profile_url)) $score++;
+        if (!empty($this->target_market)) $score++;
+        
+        // Count related models (without triggering N+1 if loaded, but using count() if not)
+        if ($this->products()->count() > 0) $score++;
+        if ($this->legalDocuments()->count() > 0 || $this->certifications()->count() > 0) $score++;
+
+        return round(($score / $total) * 100);
+    }
+
+    // ─── Auto-generate slug ───
+
+    protected static function booted(): void
+    {
+        static::creating(function (Business $business) {
+            if (empty($business->slug)) {
+                $business->slug = static::generateUniqueSlug($business->name);
+            }
+        });
+    }
+
+    private static function generateUniqueSlug(string $name): string
+    {
+        $slug = Str::slug($name);
+        $original = $slug;
+        $i = 1;
+        while (static::where('slug', $slug)->exists()) {
+            $slug = $original . '-' . $i++;
+        }
+        return $slug;
+    }
+
+    // ─── Relationships ───
+
+    public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    public function businessType(): BelongsTo
+    public function category()
     {
-        return $this->belongsTo(BusinessType::class);
+        return $this->belongsTo(Category::class);
     }
 
-    public function productCategories(): HasMany
+    public function products()
     {
-        return $this->hasMany(ProductCategory::class);
+        return $this->hasMany(Product::class)->orderBy('sort_order');
     }
 
-    public function products(): HasMany
+    public function legalDocuments()
     {
-        return $this->hasMany(Product::class);
+        return $this->belongsToMany(LegalDocument::class, 'business_legal_document')->withTimestamps();
     }
 
-    public function services(): HasMany
+    public function certifications()
     {
-        return $this->hasMany(Service::class);
+        return $this->belongsToMany(Certification::class, 'business_certification')->withTimestamps();
     }
 
-    public function photos(): HasMany
+    public function members()
     {
-        return $this->hasMany(BusinessPhoto::class);
+        return $this->belongsToMany(User::class, 'business_user')->withPivot('position')->withTimestamps();
     }
 
-    public function contacts(): HasMany
+    // ─── Scopes ───
+
+    public function scopeVisible($query)
     {
-        return $this->hasMany(BusinessContact::class);
+        return $query->where('is_visible', true)
+            ->whereHas('user', fn ($q) => $q->where('is_visible', true));
     }
 
-    /**
-     * Check if business is in product mode
-     */
-    public function isProductMode(): bool
+    public function scopeEntrepreneur($query)
     {
-        return in_array($this->business_mode, ['product', 'both']);
+        return $query->where('type', 'entrepreneur');
     }
 
-    /**
-     * Check if business is in service mode
-     */
-    public function isServiceMode(): bool
+    public function scopeIntrapreneur($query)
     {
-        return in_array($this->business_mode, ['service', 'both']);
+        return $query->where('type', 'intrapreneur');
     }
 
-    /**
-     * Check if business has both products and services
-     */
-    public function isBothMode(): bool
+    public function canBeManagedBy(User $user): bool
     {
-        return $this->business_mode === 'both';
-    }
+        if ($user->isAdmin()) {
+            return true;
+        }
 
-    /**
-     * Get all team members (many-to-many with pivot data)
-     * Uses user_businesses_details pivot table
-     */
-    public function teamMembers(): BelongsToMany
-    {
-        return $this->belongsToMany(User::class, 'user_businesses_details')
-                    ->withPivot([
-                        'role_type',
-                        'Position_name',
-                        'Working_Date',
-                        'Company_Description',
-                        'Income',
-                        'end_date',
-                        'is_current'
-                    ])
-                    ->withTimestamps();
-    }
-
-    /**
-     * Get current active team members only
-     */
-    public function currentTeam(): BelongsToMany
-    {
-        return $this->teamMembers()->wherePivot('is_current', true);
-    }
-
-    /**
-     * Get founders/owners
-     */
-    public function founders(): BelongsToMany
-    {
-        return $this->teamMembers()->wherePivot('role_type', 'owner');
-    }
-
-    /**
-     * Get all owners (owner + co_founder role)
-     */
-    public function owners(): BelongsToMany
-    {
-        return $this->teamMembers()->wherePivotIn('role_type', ['owner', 'co_founder']);
-    }
-
-    /**
-     * Get employees
-     */
-    public function employees(): BelongsToMany
-    {
-        return $this->teamMembers()
-                    ->wherePivot('role_type', 'employee')
-                    ->wherePivot('is_current', true);
-    }
-
-    /**
-     * Get business employment details (direct access to pivot)
-     */
-    public function employmentDetails(): HasMany
-    {
-        return $this->hasMany(User_Businesses_Detail::class);
-    }
-
-    /**
-     * Check if business is from college project
-     */
-    public function isCollegeProject(): bool
-    {
-        return $this->is_from_college_project === true;
-    }
-
-    /**
-     * Get total team size
-     */
-    public function teamSize(): int
-    {
-        return $this->currentTeam()->count();
-    }
-
-    /**
-     * Check if user is part of this business
-     */
-    public function hasTeamMember(User $user): bool
-    {
-        return $this->teamMembers()->where('user_id', $user->id)->exists();
-    }
-
-    /**
-     * Check if user is one of the business owners
-     */
-    public function isOwnedBy(User $user): bool
-    {
         if ($this->user_id === $user->id) {
             return true;
         }
 
-        if ($this->relationLoaded('owners')) {
-            return $this->owners->contains('id', $user->id);
-        }
-
-        return $this->owners()->where('users.id', $user->id)->exists();
-    }
-
-    /**
-     * Check whether user can manage this business
-     */
-    public function canBeManagedBy(User $user): bool
-    {
-        return $user->isAdmin() || $this->isOwnedBy($user);
-    }
-
-    /**
-     * Get business age in years
-     */
-    public function getAgeInYears(): ?int
-    {
-        if (!$this->established_date) {
-            return null;
-        }
-        
-        return $this->established_date->diffInYears(now());
-    }
-
-    /**
-     * Check if business has legal documents
-     */
-    public function hasLegalDocuments(): bool
-    {
-        return !empty($this->legal_documents);
-    }
-
-    /**
-     * Check if products have certifications
-     */
-    public function hasCertifications(): bool
-    {
-        return !empty($this->product_certifications);
-    }
-
-    /**
-     * Get formatted revenue range label
-     */
-    public function getRevenueLabel(): string
-    {
-        if (!$this->revenue_range) {
-            return 'Not specified';
-        }
-        
-        return $this->revenue_range;
-    }
-
-    /**
-     * Check if business is still operating
-     */
-    public function isActive(): bool
-    {
-        return $this->is_continued_after_graduation === true;
-    }
-
-    /**
-     * Get total challenges count
-     */
-    public function getChallengesCount(): int
-    {
-        return !empty($this->business_challenges) ? count($this->business_challenges) : 0;
-    }
-
-    /**
-     * Accessor for logo attribute (maps to logo_url)
-     */
-    public function getLogoAttribute()
-    {
-        return $this->logo_url;
-    }
-
-    /**
-     * Accessors for additional_data JSON fields
-     * These fields are stored in the additional_data JSON column
-     */
-    public function getPhoneAttribute(): ?string
-    {
-        return $this->additional_data['phone'] ?? null;
-    }
-
-    public function getEmailAttribute(): ?string
-    {
-        return $this->additional_data['email'] ?? null;
-    }
-
-    public function getWebsiteAttribute(): ?string
-    {
-        return $this->additional_data['website'] ?? null;
-    }
-
-    public function getInstagramHandleAttribute(): ?string
-    {
-        return $this->additional_data['instagram_handle'] ?? null;
-    }
-
-    public function getWhatsappNumberAttribute(): ?string
-    {
-        return $this->additional_data['whatsapp_number'] ?? null;
-    }
-
-    public function getProductNameAttribute(): ?string
-    {
-        return $this->additional_data['product_name'] ?? null;
-    }
-
-    public function getProductDescriptionAttribute(): ?string
-    {
-        return $this->additional_data['product_description'] ?? null;
-    }
-
-    public function getUniqueValuePropositionAttribute(): ?string
-    {
-        return $this->additional_data['unique_value_proposition'] ?? null;
-    }
-
-    public function getTargetMarketAttribute(): ?string
-    {
-        return $this->additional_data['target_market'] ?? null;
-    }
-
-    public function getCustomerBaseSizeAttribute(): ?int
-    {
-        $val = $this->additional_data['customer_base_size'] ?? null;
-        return $val !== null ? (int) $val : null;
-    }
-
-    public function getEstablishmentDateAttribute(): ?string
-    {
-        return $this->additional_data['establishment_date'] ?? null;
-    }
-
-    public function getOperationalStatusAttribute(): ?string
-    {
-        return $this->additional_data['operational_status'] ?? null;
-    }
-
-    /**
-     * Scope a query to only include approved businesses.
-     */
-    public function scopeApproved($query)
-    {
-        return $query->where('status', self::STATUS_APPROVED);
-    }
-
-    /**
-     * Scope a query to only include pending businesses.
-     */
-    public function scopePending($query)
-    {
-        return $query->where('status', self::STATUS_PENDING);
-    }
-
-    /**
-     * Scope a query to only include businesses that need revision.
-     */
-    public function scopeNeedRevision($query)
-    {
-        return $query->where('status', self::STATUS_NEED_REVISION);
-    }
-
-    /**
-     * Get the status badge color (Tailwind classes)
-     */
-    public function getStatusColorAttribute(): string
-    {
-        return match($this->status) {
-            self::STATUS_APPROVED => 'green',
-            self::STATUS_REJECTED => 'red',
-            self::STATUS_NEED_REVISION => 'blue',
-            default => 'orange',
-        };
-    }
-
-    /**
-     * Get the status label
-     */
-    public function getStatusLabelAttribute(): string
-    {
-        if ($this->status === self::STATUS_NEED_REVISION) {
-            return 'Needs Revision';
-        }
-        return ucfirst($this->status);
+        return $this->members()->where('users.id', $user->id)->exists();
     }
 }

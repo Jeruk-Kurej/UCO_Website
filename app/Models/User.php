@@ -2,320 +2,129 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, \App\Traits\HasImage;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
     protected $fillable = [
-        // Basic Auth
-        'username',
-        'name',
+        // System
         'email',
         'password',
-        'profile_photo_url',
         'role',
-        'is_active',
-        
-        // Employment Status (Stored in JSON)
-        // 'current_employment_status',
-        // 'has_side_business',
-        // 'profile_photo_url',
-        
-        // Core Personal Information
-        'birth_date',
-        'birth_city',
-        'religion',
-        
-        // Core Contact
+        'email_verified_at',
+
+        // CSV: Identity
+        'submitted_at',
+        'prefix_title',
+        'name',
+        'suffix_title',
+        'personal_email',
+
+        // CSV: Contact
         'phone_number',
         'mobile_number',
         'whatsapp',
-        
-        // Core Student Info
-        'NIS',
-        'Student_Year',
-        'Major',
-        'Is_Graduate',
-        'CGPA',
-        
-        // JSON Fields for Extended Data
-        'personal_data',    // gender, addresses, citizenship, passport, line, facebook, twitter, instagram, etc.
-        'academic_data',    // Edu_Level, Previous_School_Name, School_City, Academic_Advisor, certificates, final projects
-        'father_data',      // All father information
-        'mother_data',      // All mother information
-        'graduation_data',  // Official_Email, Current_Status, Class_Semester, Form_No, Start_Date, End_Date, business info
-        'additional_data',
+        'linkedin',
+
+        // CSV: Academic
+        'current_status',
+        'nis',
+        'year_of_enrollment',
+        'graduate_year',
+        'major',
+
+        // CSV: Profile extras
+        'testimony',
+        'cv_url',
+        'profile_photo_url',
+        'activities_doc_url',
+
+        // Platform management
+        'is_visible',
+        'student_status',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
+            'submitted_at' => 'datetime',
             'password' => 'hashed',
-            'is_active' => 'boolean',
-            'Is_Graduate' => 'boolean',
-            'birth_date' => 'date',
-            'CGPA' => 'decimal:2',
-            // 'has_side_business' => 'boolean',
-            // JSON fields - automatically encode/decode
-            'personal_data' => 'array',
-            'academic_data' => 'array',
-            'father_data' => 'array',
-            'mother_data' => 'array',
-            'graduation_data' => 'array',
-            'additional_data' => 'array',
+            'is_visible' => 'boolean',
         ];
     }
 
-    /**
-     * Get the route key for the model.
-     *
-     * @return string
-     */
-    public function getRouteKeyName()
+    // ─── Accessors ───
+
+    public function getProfilePhotoUrlAttribute($value)
     {
-        return 'username';
+        return $this->resolveImage($value, 'profile');
     }
 
-    /**
-     * Get all businesses owned by this user
-     */
-    public function businesses(): HasMany
+    public function getTestimonyAttribute($value)
+    {
+        $cleaned = preg_replace('/<br\s*\/?>/i', ' ', $value);
+        return trim(strip_tags($cleaned));
+    }
+
+    // ─── Relationships ───
+
+    public function businesses()
     {
         return $this->hasMany(Business::class);
     }
 
-    /**
-     * Alias for ownedBusinesses
-     */
-    public function ownedBusinesses(): HasMany
+    public function companies()
     {
-        return $this->businesses();
+        return $this->hasMany(Company::class);
     }
 
-    /**
-     * Get all businesses user is involved in (any role)
-     * Uses user_businesses_details pivot table
-     */
-    public function involvedBusinesses(): BelongsToMany
+    public function skills()
     {
-        return $this->belongsToMany(Business::class, 'user_businesses_details')
-                    ->withPivot([
-                        'role_type',
-                        'Position_name',
-                        'Working_Date',
-                        'Company_Description',
-                        'Income',
-                        'end_date',
-                        'is_current'
-                    ])
-                    ->withTimestamps();
+        return $this->belongsToMany(Skill::class, 'user_skill')->withTimestamps();
     }
 
-    /**
-     * Get current active business roles
-     */
-    public function currentEmployments(): BelongsToMany
+    public function memberOfBusinesses()
     {
-        return $this->involvedBusinesses()->wherePivot('is_current', true);
+        return $this->belongsToMany(Business::class, 'business_user')->withPivot('position')->withTimestamps();
     }
 
-    /**
-     * Get businesses where user is employee
-     */
-    public function employments(): BelongsToMany
-    {
-        return $this->involvedBusinesses()
-                    ->wherePivot('role_type', 'employee')
-                    ->wherePivot('is_current', true);
-    }
+    // ─── Helpers ───
 
-    /**
-     * Get businesses where user is owner/co-founder via pivot
-     */
-    public function ownerBusinesses(): BelongsToMany
-    {
-        return $this->involvedBusinesses()
-            ->wherePivotIn('role_type', ['owner', 'co_founder'])
-            ->wherePivot('is_current', true);
-    }
-
-    /**
-     * Get user's employment details (direct pivot access)
-     */
-    public function employmentDetails(): HasMany
-    {
-        return $this->hasMany(User_Businesses_Detail::class);
-    }
-
-    /**
-     * Get current employment details
-     */
-    public function currentEmploymentDetails(): HasMany
-    {
-        return $this->employmentDetails()->where('is_current', true);
-    }
-
-    /**
-     * Check if user is admin
-     */
     public function isAdmin(): bool
     {
         return $this->role === 'admin';
     }
 
-    /**
-     * Check if user is student
-     */
-    public function isStudent(): bool
-    {
-        return $this->role === 'student' && $this->is_active;
-    }
-
-    /**
-     * Check if user is alumni
-     */
-    public function isAlumni(): bool
-    {
-        return $this->role === 'alumni' || !$this->is_active;
-    }
-
-    /**
-     * Check if user is entrepreneur
-     */
     public function isEntrepreneur(): bool
     {
-        return $this->current_employment_status === 'entrepreneur';
+        return strtolower($this->current_status ?? '') === 'entrepreneur';
     }
 
-    /**
-     * Check if user has side business
-     */
-    public function hasSideBusiness(): bool
-    {
-        return $this->has_side_business === true;
-    }
-
-    /**
-     * Get total businesses count (owned + involved)
-     */
-    public function totalBusinessesCount(): int
-    {
-        $ownedCount = $this->businesses_count ?? (
-            $this->relationLoaded('businesses') ? $this->businesses->count() : $this->businesses()->count()
-        );
-
-        $involvedCount = $this->current_employments_count ?? (
-            $this->relationLoaded('currentEmployments') ? $this->currentEmployments->count() : $this->currentEmployments()->count()
-        );
-
-        return $ownedCount + $involvedCount;
-    }
-
-    /**
-     * Check if user is intrapreneur (working but has side business)
-     */
     public function isIntrapreneur(): bool
     {
-        return $this->current_employment_status === 'employed_intrapreneur' && 
-               $this->has_side_business === true;
+        return strtolower($this->current_status ?? '') === 'intrapreneur';
+    }
+
+    public function getFullTitledNameAttribute(): string
+    {
+        return trim(($this->prefix_title ?? '') . ' ' . $this->name . ' ' . ($this->suffix_title ?? ''));
     }
 
     /**
-     * Check if user has any business
+     * Public-facing status: "Student" or "Alumni" only.
      */
-    public function hasBusiness(): bool
+    public function getDisplayStatusAttribute(): string
     {
-        return $this->totalBusinesses() > 0;
-    }
-
-    /**
-     * Get total businesses owned count
-     */
-    public function totalBusinesses(): int
-    {
-        $directCount = $this->businesses_count ?? (
-            $this->relationLoaded('businesses') ? $this->businesses->count() : $this->businesses()->count()
-        );
-
-        $ownerPivotCount = $this->owner_businesses_count ?? (
-            $this->relationLoaded('ownerBusinesses') ? $this->ownerBusinesses->count() : $this->ownerBusinesses()->count()
-        );
-
-        return $directCount + $ownerPivotCount;
-    }
-
-    /**
-     * Check if user has multiple businesses
-     */
-    public function hasMultipleBusinesses(): bool
-    {
-        return $this->totalBusinesses() > 1;
-    }
-
-    /**
-     * Get employment status label in Indonesian
-     */
-    public function getEmploymentStatusLabel(): string
-    {
-        return match($this->current_employment_status) {
-            'employed_intrapreneur' => 'Bekerja sebagai Profesional',
-            'entrepreneur' => 'Entrepreneur (Pemilik Bisnis)',
-            'job_seeking' => 'Mencari Pekerjaan',
-            'preparing_business' => 'Persiapan Entrepreneur',
-            default => 'Belum Diisi'
-        };
-    }
-
-    /**
-     * Scope query to only include active students
-     */
-    public function scopeActiveStudents($query)
-    {
-        return $query->where('role', 'student')->where('is_active', true);
-    }
-
-    /**
-     * Scope query to only include alumni
-     */
-    public function scopeAlumni($query)
-    {
-        return $query->where('role', 'alumni')->orWhere('is_active', false);
-    }
-
-    /**
-     * Scope query to only include admins
-     */
-    public function scopeAdmins($query)
-    {
-        return $query->where('role', 'admin');
+        return $this->student_status === 'alumni' ? 'Alumni' : 'Student';
     }
 }

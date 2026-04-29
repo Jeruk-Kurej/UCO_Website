@@ -43,6 +43,7 @@
             [x-cloak] { display: none !important; }
         </style>
 
+        @stack('meta')
         @stack('styles')
     </head>
     {{-- Layout body: keep background subtle and readable --}}
