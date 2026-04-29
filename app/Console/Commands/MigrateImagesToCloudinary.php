@@ -97,19 +97,53 @@ class MigrateImagesToCloudinary extends Command
                         $basename = basename($url);
                         $this->line("  📁 id={$id} reading local: {$basename}");
                     }
-                    // Case 2: employee.uc.ac.id URL (needs cookies)
-                    elseif (str_contains($url, 'employee.uc.ac.id') && $ucCookieRaw) {
+                    // Case 2: employee.uc.ac.id or employee.ciputra.ac.id (needs cookies)
+                    elseif ((str_contains($url, 'employee.uc.ac.id') || str_contains($url, 'employee.ciputra.ac.id')) && $ucCookieRaw) {
                         $this->line("  🔐 id={$id} downloading with cookies: {$url}");
-                        $response = Http::timeout(30)
-                            ->withHeaders(['Cookie' => $ucCookieRaw])
-                            ->get($url);
+                        
+                        $ch = curl_init();
+                        curl_setopt($ch, CURLOPT_URL, (string)$url);
+                        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+                        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+                        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                            "Cookie: " . trim($ucCookieRaw),
+                            "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                            "Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+                            "Referer: https://employee.uc.ac.id/index.php/login",
+                            "Connection: keep-alive"
+                        ]);
+                        
+                        $contents = curl_exec($ch);
+                        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                        $contentType = curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
 
-                        if (!$response->ok()) {
-                            $this->error("  ❌ id={$id} HTTP {$response->status()}");
+                        // FALLBACK: If we got HTML from employee.uc.ac.id, try swapping to employee.ciputra.ac.id
+                        if (str_contains($url, 'employee.uc.ac.id') && str_contains(strtolower($contentType ?? ''), 'text/html')) {
+                            $fallbackUrl = str_replace('employee.uc.ac.id', 'employee.ciputra.ac.id', $url);
+                            $this->line("    🔄 HTML detected on uc.ac.id. Trying fallback to ciputra.ac.id...");
+                            
+                            curl_setopt($ch, CURLOPT_URL, $fallbackUrl);
+                            $contents = curl_exec($ch);
+                            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                            $contentType = curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
+                        }
+
+                        curl_close($ch);
+
+                        if ($httpCode !== 200 || !$contents) {
+                            $this->error("  ❌ id={$id} HTTP {$httpCode}");
                             $stats['failed']++;
                             continue;
                         }
-                        $contents = $response->body();
+
+                        if (!str_contains(strtolower($contentType ?? ''), 'image')) {
+                            $this->error("  ❌ id={$id} Not an image (Type: {$contentType})");
+                            $stats['failed']++;
+                            continue;
+                        }
+
                         $basename = basename(parse_url($url, PHP_URL_PATH) ?? 'image.jpg');
                     }
                     // Case 3: Regular public URL
@@ -141,15 +175,37 @@ class MigrateImagesToCloudinary extends Command
                     }
 
                     // Upload to Cloudinary (or configured disk)
-                    $stored = Storage::disk($disk)->put($targetPath, $contents);
+                    if ($disk === 'cloudinary') {
+                        $tempFile = tempnam(sys_get_temp_dir(), 'uco_mig');
+                        file_put_contents($tempFile, $contents);
+                        
+                        try {
+                            $uploadResult = \CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary::uploadApi()->upload($tempFile, [
+                                'folder' => "uco/{$table}/{$id}",
+                                'public_id' => pathinfo($sanitized, PATHINFO_FILENAME),
+                                'overwrite' => true,
+                                'resource_type' => 'image'
+                            ]);
+                            $newUrl = $uploadResult['secure_url'];
+                            $stored = isset($newUrl);
+                        } catch (\Exception $e) {
+                            $this->error("  ❌ id={$id} Cloudinary Error: " . $e->getMessage());
+                            $stored = false;
+                        } finally {
+                            if (file_exists($tempFile)) unlink($tempFile);
+                        }
+                    } else {
+                        $stored = Storage::disk($disk)->put($targetPath, $contents);
+                        $newUrl = Storage::disk($disk)->url($targetPath);
+                    }
+
                     if (!$stored) {
                         $this->error("  ❌ id={$id} failed to store on {$disk}");
                         $stats['failed']++;
                         continue;
                     }
 
-                    // Get the new URL and update DB
-                    $newUrl = Storage::disk($disk)->url($targetPath);
+                    // Update DB with the new URL
                     DB::table($table)->where('id', $id)->update([$column => $newUrl]);
                     $this->info("  ✅ id={$id} → {$newUrl}");
                     $stats['uploaded']++;

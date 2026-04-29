@@ -28,3 +28,10 @@ DEBUG_BUSINESS_IMPORT.md
 SEARCH_FEATURE.md
 feature_list.md
 FEATURE_LIST_EXPORT.csv
+test_uri.php
+test_download.php
+test_db_simple.php
+test_cloudinary.php
+scratch_test_guzzle.php
+scratch_test_cookie.php
+scratch_test_cloudinary_uri.php

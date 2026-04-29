@@ -106,7 +106,7 @@ class UCOStudentImport implements ToArray, WithStartRow, WithChunkReading, WithE
 
     public function chunkSize(): int
     {
-        return 50;
+        return 10;
     }
 
     // ─── Main processor ────────────────────────────────────────────────────────
@@ -187,6 +187,7 @@ class UCOStudentImport implements ToArray, WithStartRow, WithChunkReading, WithE
                 'year_of_enrollment' => $studentYear,
                 'profile_photo_url'  => $profilePhotoUrl,
                 'email_verified_at'  => now(),
+                'is_visible'         => true,
             ], fn($v) => $v !== null);
 
             $user = User::where('email', $loginEmail)->first();
@@ -336,67 +337,175 @@ class UCOStudentImport implements ToArray, WithStartRow, WithChunkReading, WithE
      */
     private function uploadToCloudinary(?string $url, string $folder, ?string $identifier): ?string
     {
+        $url = $this->cleanUrl($url);
         if (!$url) return null;
-
-        // Clean the URL strictly: remove tags, non-printable chars, and trim
-        $url = preg_replace('/[[:cntrl:]]/', '', strip_tags($url));
-        $url = trim($url);
-        if (!$url || !filter_var($url, FILTER_VALIDATE_URL)) {
-            return $url;
-        }
 
         // Already a Cloudinary URL — pass through
         if (str_contains($url, 'cloudinary.com') || str_contains($url, 'res.cloudinary.com')) {
             return $url;
         }
 
+        $tmpFile = null;
         try {
-            $contents = null;
-            $headers = [];
+            Log::debug("[UCOStudentImport] Attempting native curl download: " . $url);
 
-            // Add cookies for employee.uc.ac.id
-            if (str_contains($url, 'employee.uc.ac.id')) {
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, (string)$url);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 60);
+            
+            $curlHeaders = [
+                'User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
+                'Accept-Language: en-US,en;q=0.9,id;q=0.8',
+                'Referer: https://employee.uc.ac.id/index.php/login',
+                'Connection: keep-alive',
+            ];
+            
+            // The session is often tied to either employee.uc.ac.id or employee.ciputra.ac.id
+            $isUniversityPortal = str_contains($url, 'employee.uc.ac.id') || str_contains($url, 'employee.ciputra.ac.id');
+            
+            if ($isUniversityPortal) {
                 $cookie = env('UC_COOKIE_RAW', '');
-                if (!$cookie) {
-                    Log::warning("[UCOStudentImport] No UC_COOKIE_RAW for: {$url}");
-                    return $url;
+                if ($cookie) {
+                    $curlHeaders[] = "Cookie: " . trim($cookie);
                 }
-                $headers['Cookie'] = $cookie;
             }
+            
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $curlHeaders);
+            
+            $contents = curl_exec($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            $contentType = curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
+            $curlError = curl_error($ch);
+            
+            // FALLBACK: If we got HTML from employee.uc.ac.id, try swapping to employee.ciputra.ac.id
+            // as the cookie is often domain-specific to ciputra.ac.id
+            if (str_contains($url, 'employee.uc.ac.id') && str_contains(strtolower($contentType ?? ''), 'text/html')) {
+                $fallbackUrl = str_replace('employee.uc.ac.id', 'employee.ciputra.ac.id', $url);
+                Log::debug("[UCOStudentImport] Detected HTML redirect on uc.ac.id. Trying fallback to ciputra.ac.id: {$fallbackUrl}");
+                
+                curl_setopt($ch, CURLOPT_URL, $fallbackUrl);
+                $contents = curl_exec($ch);
+                $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                $contentType = curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
+                $curlError = curl_error($ch);
+            }
+            
+            curl_close($ch);
 
-            $response = \Illuminate\Support\Facades\Http::timeout(60)
-                ->withHeaders($headers)
-                ->get($url);
+            Log::debug("[UCOStudentImport] Download result: Code={$httpCode}, Type={$contentType}, Size=" . ($contents ? strlen($contents) : 0));
 
-            if (!$response->ok() || strlen($response->body()) < 100) {
-                Log::warning("[UCOStudentImport] Failed download ({$response->status()}) or too small for: {$url}");
+            if ($contents === false || $httpCode !== 200 || strlen($contents) < 50) {
+                Log::warning("[UCOStudentImport] Download failed. Code: {$httpCode}, Error: {$curlError}, Size: " . ($contents ? strlen($contents) : 0));
                 return $url;
             }
-            $contents = $response->body();
 
-            // Prepare Cloudinary path
+            // Log the start of the content to see if it's HTML or real binary
+            $snippet = substr($contents, 0, 200);
+            Log::debug("[UCOStudentImport] Content snippet (hex): " . bin2hex($snippet));
+            Log::debug("[UCOStudentImport] Content snippet (text): " . preg_replace('/[^\x20-\x7E]/', '.', $snippet));
+
+            // Verify it's a valid image using GD
+            $imageInfo = @getimagesizefromstring($contents);
+            if (!$imageInfo) {
+                Log::warning("[UCOStudentImport] getimagesizefromstring failed. Not a valid image or corrupted. URL: {$url}");
+                // We'll still check the contentType, but this is a strong indicator of failure
+            } else {
+                Log::debug("[UCOStudentImport] Valid image detected: {$imageInfo[0]}x{$imageInfo[1]} ({$imageInfo['mime']})");
+            }
+
+            // Check if it's actually an image
+            if (!str_contains(strtolower($contentType ?? ''), 'image')) {
+                Log::warning("[UCOStudentImport] Downloaded content is not an image. Content-Type: {$contentType}. URL: {$url}");
+                return $url;
+            }
+
+            // Save to temp file
+            $tmpFile = tempnam(sys_get_temp_dir(), 'uco_img_');
+            file_put_contents($tmpFile, $contents);
+            unset($contents); // Free memory immediately
+            gc_collect_cycles();
+
+            // Prepare Cloudinary public_id
             $sanitizedId = Str::slug($identifier ?? 'unknown');
             $basename = basename(parse_url($url, PHP_URL_PATH) ?? 'image.jpg');
             $sanitizedName = pathinfo($basename, PATHINFO_FILENAME);
-            $extension = pathinfo($basename, PATHINFO_EXTENSION) ?: 'jpg';
+            $extension = strtolower(pathinfo($basename, PATHINFO_EXTENSION) ?: 'jpg');
+            if (!in_array($extension, ['jpg', 'jpeg', 'png', 'webp', 'gif'])) {
+                $extension = 'jpg';
+            }
             $sanitizedFileName = preg_replace('/[^A-Za-z0-9_]/', '_', $sanitizedName);
+            
+            // Cloudinary public_id doesn't need extension
+            $publicId = "uco/{$folder}/{$sanitizedId}/{$sanitizedFileName}";
 
-            // Upload directly using cloudinary() helper to avoid Storage driver URI issues
-            $uploaded = cloudinary()->upload("data:image/{$extension};base64," . base64_encode($contents), [
-                'folder' => "uco/{$folder}/{$sanitizedId}",
-                'public_id' => $sanitizedFileName,
+            Log::debug("[UCOStudentImport] Uploading to Cloudinary: " . $publicId);
+
+            // Use the Cloudinary SDK directly to bypass Storage facade issues
+            // This assumes the 'cloudinary-labs/cloudinary-laravel' package is installed
+            // which provides the \CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary facade.
+            $uploadResult = \CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary::uploadApi()->upload($tmpFile, [
+                'public_id' => $publicId,
+                'folder'    => "uco/{$folder}/{$sanitizedId}", // The folder will be part of the public_id anyway if we include it
                 'overwrite' => true,
-                'resource_type' => 'image',
+                'resource_type' => 'image'
             ]);
 
-            $cloudinaryUrl = $uploaded->getSecurePath();
-            Log::info("[UCOStudentImport] Uploaded to Cloudinary: {$cloudinaryUrl}");
-            return $cloudinaryUrl;
+            if ($tmpFile && file_exists($tmpFile)) {
+                unlink($tmpFile);
+            }
 
-        } catch (\Exception $e) {
-            Log::warning("[UCOStudentImport] Upload error for {$url}: " . $e->getMessage());
+            if (isset($uploadResult['secure_url'])) {
+                Log::info("[UCOStudentImport] Uploaded to Cloudinary: " . $uploadResult['secure_url']);
+                return $uploadResult['secure_url'];
+            }
+
+            Log::warning("[UCOStudentImport] Cloudinary upload returned no secure_url for {$publicId}");
+            return $url;
+
+        } catch (\Throwable $e) {
+            if ($tmpFile && file_exists($tmpFile)) {
+                unlink($tmpFile);
+            }
+            Log::error("[UCOStudentImport] CRITICAL ERROR during Cloudinary process for {$url}: " . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
             return $url;
         }
+    }
+
+    /**
+     * Aggressively clean a URL to ensure it is absolute and valid for Guzzle.
+     */
+    private function cleanUrl(?string $url): ?string
+    {
+        if (!$url) return null;
+
+        // 1. Strip HTML tags
+        $url = strip_tags($url);
+
+        // 2. Remove all non-printable ASCII characters (including BOM, zero-width spaces, etc.)
+        $url = preg_replace('/[^\x20-\x7E]/', '', $url);
+
+        // 3. Trim whitespace and weird characters
+        $url = trim($url, " \t\n\r\0\x0B\xEF\xBB\xBF");
+
+        // 4. Nuclear fix: find the first instance of 'http' and throw away everything before it.
+        // This solves the "relative URI" error caused by leading garbage.
+        if (preg_match('/(https?:\/\/.*)$/i', $url, $matches)) {
+            $url = $matches[1];
+        }
+
+        // 5. Final check
+        if (!$url || !filter_var($url, FILTER_VALIDATE_URL)) {
+            return null;
+        }
+
+        return $url;
     }
 
     private function parseDate(?string $val): ?string
