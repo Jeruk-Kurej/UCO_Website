@@ -21,7 +21,7 @@ use Maatwebsite\Excel\Events\ImportFailed;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
-class UsersImport implements ToModel, WithHeadingRow, WithValidation, WithChunkReading, WithEvents, WithColumnLimit, SkipsEmptyRows
+class UsersImport implements ToModel, WithHeadingRow, WithValidation, WithChunkReading, ShouldQueue, WithEvents, WithColumnLimit, SkipsEmptyRows
 {
     use \App\Traits\UcAuthTrait;
 
