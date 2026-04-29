@@ -1,28 +1,45 @@
 <x-app-layout>
-<div class="w-full" x-data="{ activeTab: 'basic', businessMode: '{{ old('business_mode', $business->business_mode ?? 'both') }}' }">
+<div class="w-full" x-data="{ activeTab: 'basic', businessMode: '{{ old('business_mode', $business->offering_type ?? 'both') }}' }">
 {{-- Page Header --}}
 <div
 class="bg-gradient-to-br from-white via-uco-orange-50/30 to-uco-yellow-50/30 border border-slate-200 rounded-2xl shadow-sm px-4 sm:px-8 py-6 sm:py-8 mb-8">
-<div class="flex flex-col sm:flex-row sm:items-center gap-4">
-<a href="{{ auth()->user()->role === 'admin' ? route('businesses.index') : route('businesses.my') }}"
-class="group inline-flex items-center justify-center sm:justify-start gap-2.5 px-4 py-2.5 bg-white hover:bg-gray-900 border border-gray-200 hover:border-gray-900 text-gray-700 hover:text-white rounded-xl font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200 mb-4 sm:mb-0">
-<i
-class="bi bi-arrow-left text-base group-hover:-translate-x-0.5 transition-transform duration-200"></i>
-<span>Back</span>
-</a>
-<div class="flex-1 text-center sm:text-left">
-<p class="text-xs uppercase tracking-widest font-semibold text-uco-orange-600">Business Management
-</p>
-<h1 class="text-2xl sm:text-3xl font-bold text-slate-800 mt-1">Edit Business</h1>
-<p class="text-slate-600 mt-2 text-sm sm:text-base">{{ $business->name }}</p>
-<div class="mt-3 flex flex-wrap gap-2 justify-center sm:justify-start">
-<span
-class="inline-flex items-center px-3 py-1 rounded-lg text-xs font-semibold bg-uco-orange-100 text-uco-orange-700">{{ $business->businessType->name ?? 'Business Type' }}</span>
-<span
-class="inline-flex items-center px-3 py-1 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700">Mode:
-{{ ucfirst($business->business_mode ?? 'unknown') }}</span>
-</div>
-</div>
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+    <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+    <a href="{{ auth()->user()->role === 'admin' ? route('businesses.index') : route('businesses.my') }}"
+    class="group inline-flex items-center justify-center sm:justify-start gap-2.5 px-4 py-2.5 bg-white hover:bg-gray-900 border border-gray-200 hover:border-gray-900 text-gray-700 hover:text-white rounded-xl font-medium text-sm shadow-sm hover:shadow-md transition-all duration-200 mb-4 sm:mb-0">
+    <i
+    class="bi bi-arrow-left text-base group-hover:-translate-x-0.5 transition-transform duration-200"></i>
+    <span>Back</span>
+    </a>
+    <div class="flex-1 text-center sm:text-left">
+    <p class="text-xs uppercase tracking-widest font-semibold text-uco-orange-600">Business Management
+    </p>
+    <h1 class="text-2xl sm:text-3xl font-bold text-slate-800 mt-1">Edit Business</h1>
+    <p class="text-slate-600 mt-2 text-sm sm:text-base">{{ $business->name }}</p>
+    <div class="mt-3 flex flex-wrap gap-2 justify-center sm:justify-start">
+    <span
+    class="inline-flex items-center px-3 py-1 rounded-lg text-xs font-semibold bg-uco-orange-100 text-uco-orange-700">{{ $business->category->name ?? 'Business Type' }}</span>
+    <span
+    class="inline-flex items-center px-3 py-1 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700">Mode:
+    {{ ucfirst($business->offering_type ?? 'unknown') }}</span>
+    </div>
+    </div>
+    </div>
+    
+    <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col gap-2 min-w-[200px] w-full sm:w-auto">
+        <div class="flex items-center justify-between">
+            <span class="text-[10px] font-black uppercase tracking-widest text-gray-400">Profile Quality</span>
+            <span class="text-xl font-black {{ $business->profile_quality_score >= 80 ? 'text-emerald-500' : ($business->profile_quality_score >= 50 ? 'text-uco-orange-500' : 'text-red-500') }}">{{ $business->profile_quality_score }}%</span>
+        </div>
+        <div class="w-full bg-gray-100 rounded-full h-2">
+            <div class="h-2 rounded-full transition-all duration-1000 {{ $business->profile_quality_score >= 80 ? 'bg-emerald-500' : ($business->profile_quality_score >= 50 ? 'bg-uco-orange-500' : 'bg-red-500') }}" style="width: {{ $business->profile_quality_score }}%"></div>
+        </div>
+        @if($business->profile_quality_score < 100)
+            <p class="text-[10px] text-gray-400 font-medium text-right mt-1">Complete missing fields to improve score</p>
+        @else
+            <p class="text-[10px] text-emerald-500 font-medium text-right mt-1">Outstanding profile!</p>
+        @endif
+    </div>
 </div>
 </div>
 {{-- Tab Navigation --}}
@@ -103,10 +120,10 @@ Business Category <span class="text-red-500">*</span>
 </label>
 <select name="business_type_id" id="business_type_id" required
 class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('business_type_id') border-gray-200 @enderror transition">
-<option value="" disabled {{ old('business_type_id', $business->business_type_id) ? '' : 'selected' }}>Select Category</option>
+<option value="" disabled {{ old('business_type_id', $business->category_id) ? '' : 'selected' }}>Select Category</option>
 @foreach ($businessTypes as $type)
 <option value="{{ $type->id }}"
-{{ old('business_type_id', $business->business_type_id) == $type->id || $business->business_type_id == $type->id ? 'selected' : '' }}>
+{{ old('business_type_id', $business->category_id) == $type->id || $business->category_id == $type->id ? 'selected' : '' }}>
 {{ $type->name }}
 </option>
 @endforeach
@@ -122,15 +139,15 @@ Offering Type <span class="text-red-500">*</span>
 <select name="business_mode" id="business_mode" required
 x-model="businessMode"
 class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('business_mode') border-gray-200 @enderror transition">
-<option value="" disabled {{ old('business_mode', $business->business_mode) ? '' : 'selected' }}>Select Offering Type</option>
+<option value="" disabled {{ old('business_mode', $business->offering_type) ? '' : 'selected' }}>Select Offering Type</option>
 <option value="product"
-{{ old('business_mode', $business->business_mode) == 'product' || $business->business_mode == 'product' ? 'selected' : '' }}>
+{{ old('business_mode', $business->offering_type) == 'product' || $business->offering_type == 'product' ? 'selected' : '' }}>
 Product Only</option>
 <option value="service"
-{{ old('business_mode', $business->business_mode) == 'service' || $business->business_mode == 'service' ? 'selected' : '' }}>
+{{ old('business_mode', $business->offering_type) == 'service' || $business->offering_type == 'service' ? 'selected' : '' }}>
 Service Only</option>
 <option value="both"
-{{ old('business_mode', $business->business_mode) == 'both' || $business->business_mode == 'both' ? 'selected' : '' }}>
+{{ old('business_mode', $business->offering_type) == 'both' || $business->offering_type == 'both' ? 'selected' : '' }}>
 Product & Service</option>
 </select>
 @error('business_mode')
@@ -151,29 +168,15 @@ placeholder="Describe your business...">{{ old('description', $business->descrip
 <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
 @enderror
 </div>
-{{-- Location Fields --}}
-@php
-$selectedProvinceName = old('province', $business->province);
-$selectedProvinceId = $selectedProvinceName
-? optional($provinces->firstWhere('name', $selectedProvinceName))->id
-: null;
-$selectedCityName = old('city', $business->city);
-@endphp
 <div class="grid md:grid-cols-2 gap-5">
 <div>
 <label for="province" class="block text-sm font-medium text-gray-700 mb-2">
 Province
 </label>
-<select name="province" id="province"
-class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('province') border-gray-200 @enderror transition">
-<option value="" disabled {{ old('province', $business->province) ? '' : 'selected' }}>Select Province</option>
-@foreach ($provinces as $province)
-<option value="{{ $province->name }}" data-id="{{ $province->id }}"
-{{ old('province', $business->province) === $province->name ? 'selected' : '' }}>
-{{ $province->name }}
-</option>
-@endforeach
-</select>
+<input type="text" name="province" id="province"
+value="{{ old('province', $business->province) }}"
+class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('province') border-red-500 @enderror transition"
+placeholder="e.g., Jawa Timur">
 @error('province')
 <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
 @enderror
@@ -182,17 +185,10 @@ class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-
 <label for="city" class="block text-sm font-medium text-gray-700 mb-2">
 City
 </label>
-<select name="city" id="city" data-selected-city="{{ $selectedCityName }}"
-data-selected-province-id="{{ $selectedProvinceId }}"
-class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 disabled:bg-gray-50 disabled:text-gray-500 disabled:border-gray-200 disabled:shadow-inner disabled:cursor-not-allowed @error('city') border-gray-200 @enderror transition"
-{{ $selectedProvinceId ? '' : 'disabled' }}>
-<option value="" disabled {{ $selectedProvinceId ? '' : 'selected' }}>
-{{ $selectedProvinceId ? 'Select City/Regency' : 'Select Province first' }}
-</option>
-@if ($selectedCityName)
-<option value="{{ $selectedCityName }}" selected>{{ $selectedCityName }}</option>
-@endif
-</select>
+<input type="text" name="city" id="city"
+value="{{ old('city', $business->city) }}"
+class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('city') border-red-500 @enderror transition"
+placeholder="e.g., Surabaya">
 @error('city')
 <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
 @enderror
@@ -217,7 +213,7 @@ placeholder="Full business address...">{{ old('address', $business->address) }}<
 Phone Number
 </label>
 <input type="text" name="phone" id="phone"
-value="{{ old('phone', $business->phone) }}"
+value="{{ old('phone', $business->phone_number) }}"
 class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('phone') border-gray-200 @enderror transition"
 placeholder="e.g., 0812-3456-7890">
 @error('phone')
@@ -273,7 +269,7 @@ Instagram Handle
 <div class="relative">
 <span class="absolute left-4 top-3.5 text-slate-400">@</span>
 <input type="text" name="instagram_handle" id="instagram_handle"
-value="{{ old('instagram_handle', $business->instagram_handle) }}"
+value="{{ old('instagram_handle', $business->instagram) }}"
 class="block w-full pl-8 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('instagram_handle') border-gray-200 @enderror transition"
 placeholder="username">
 </div>
@@ -286,7 +282,7 @@ placeholder="username">
 WhatsApp Number
 </label>
 <input type="text" name="whatsapp_number" id="whatsapp_number"
-value="{{ old('whatsapp_number', $business->whatsapp_number) }}"
+value="{{ old('whatsapp_number', $business->whatsapp) }}"
 class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('whatsapp_number') border-gray-200 @enderror transition"
 placeholder="628123456789">
 @error('whatsapp_number')
@@ -296,7 +292,7 @@ placeholder="628123456789">
 </div>
                 @if (auth()->user()->role === 'admin')
                     @php
-                        $selectedOwnerIds = old('owner_ids', $business->owners()->pluck('users.id')->all());
+                        $selectedOwnerIds = old('owner_ids', $business->members()->pluck('users.id')->all());
                     @endphp
                     {{-- Admin Owner Section - Grid for Consistency --}}
                     <div class="grid md:grid-cols-2 gap-5 mb-5">
@@ -357,19 +353,9 @@ fn($product) => [
 if (empty($existingProducts)) {
 $existingProducts = [];
 }
-$existingServices = old('services');
-if ($existingServices === null) {
-$existingServices = $business->services
-->map(
-fn($service) => [
-'id' => $service->id,
-'name' => $service->name,
-'description' => $service->description,
-'price_type' => $service->price_type,
-'price' => $service->price,
-],
-)
-->toArray();
+$existingServices = old('services', $existingServices ?? []);
+if (!is_array($existingServices)) {
+    $existingServices = [];
 }
 if (empty($existingServices)) {
 $existingServices = [];
@@ -394,7 +380,7 @@ class="text-xs px-2 py-1 rounded-lg bg-red-50 text-red-600">Delete</button>
 <input type="text" name="products[{{ $index }}][name]"
 value="{{ $product['name'] ?? '' }}"
 class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm"
-placeholder="Example: Arabica Coffee 250gr">
+placeholder="e.g., Arabica Coffee 250gr">
 </div>
 <div>
 <label class="block text-xs text-slate-600 mb-1">Price</label>
@@ -437,7 +423,7 @@ class="text-xs px-2 py-1 rounded-lg bg-red-50 text-red-600">Delete</button>
 <input type="text" name="services[{{ $index }}][name]"
 value="{{ $service['name'] ?? '' }}"
 class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm"
-placeholder="Example: Branding Consultation">
+placeholder="e.g., Branding Consultation">
 </div>
 <div>
 <label class="block text-xs text-slate-600 mb-1">Price Type</label>
@@ -512,7 +498,7 @@ Target Market
 <input type="text" name="target_market" id="target_market"
 value="{{ old('target_market', $business->target_market) }}"
 class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('target_market') border-gray-200 @enderror transition"
-placeholder="e.g., Milenial, Profesional muda, Pecinta kopi">
+placeholder="e.g., Millennial, Young Professionals, Coffee Lovers">
 @error('target_market')
 <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
 @enderror
@@ -585,29 +571,15 @@ placeholder="e.g., 5">
 <label for="revenue_range" class="block text-sm font-medium text-gray-700 mb-2">
 Revenue Range (per month)
 </label>
-<select name="revenue_range" id="revenue_range"
-class="block w-full px-4 py-3 focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('revenue_range') border-red-500 @enderror transition">
+<select name="revenue_range" id="revenue_range" class="w-full">
 <option value="">Select Range</option>
-@php
-$commonRanges = [
-// Intrapreneur / Salary Style
-'< Rp 5 Juta',
-'Rp 5 Juta - Rp 10 Juta',
-'> Rp 10 Juta - Rp 15 Juta',
-'> Rp 15 Juta',
-// Entrepreneur / UMKM Style
-'Mikro: <= Rp 300 Juta',
-'Kecil: > Rp 300 Juta - Rp 2,5 Milyar',
-'Menengah: > Rp 2,5 Milyar - Rp 50 Milyar',
-'Besar: > Rp 50 Milyar'
-];
-$currentRevenue = old('revenue_range', $business->revenue_range);
-@endphp
-@foreach($commonRanges as $range)
-<option value="{{ $range }}" {{ $currentRevenue == $range ? 'selected' : '' }}>{{ $range }}</option>
-@endforeach
-@if($currentRevenue && !in_array($currentRevenue, $commonRanges))
-<option value="{{ $currentRevenue }}" selected>{{ $currentRevenue }}</option>
+<option value="0 - 50 Million" {{ $business->revenue_range == '0 - 50 Million' ? 'selected' : '' }}>0 - 50 Million</option>
+<option value="50 - 100 Million" {{ $business->revenue_range == '50 - 100 Million' ? 'selected' : '' }}>50 - 100 Million</option>
+<option value="100 - 500 Million" {{ $business->revenue_range == '100 - 500 Million' ? 'selected' : '' }}>100 - 500 Million</option>
+<option value="500 Million - 1 Billion" {{ $business->revenue_range == '500 Million - 1 Billion' ? 'selected' : '' }}>500 Million - 1 Billion</option>
+<option value="> 1 Billion" {{ $business->revenue_range == '> 1 Billion' ? 'selected' : '' }}>> 1 Billion</option>
+@if($business->revenue_range && !in_array($business->revenue_range, ['0 - 50 Million', '50 - 100 Million', '100 - 500 Million', '500 Million - 1 Billion', '> 1 Billion']))
+<option value="{{ $business->revenue_range }}" selected>{{ $business->revenue_range }}</option>
 @endif
 </select>
 <p class="mt-1 text-[10px] text-gray-400">Searchable dropdown. You can also type custom values.</p>
@@ -651,7 +623,7 @@ Business Challenges
 <div class="flex gap-2">
 <input type="text" name="business_challenges[]" value="{{ $challenge }}"
 class="flex-1 px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 transition"
-placeholder="e.g., Keterbatasan modal">
+placeholder="e.g., Limited capital">
 <button type="button" onclick="this.parentElement.remove()"
 class="px-4 py-2 bg-red-100 text-red-700 rounded-xl">
 ✖
@@ -662,7 +634,7 @@ class="px-4 py-2 bg-red-100 text-red-700 rounded-xl">
 <div class="flex gap-2">
 <input type="text" name="business_challenges[]"
 class="flex-1 px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 transition"
-placeholder="e.g., Keterbatasan modal">
+placeholder="e.g., Limited capital">
 </div>
 @endif
 </div>
@@ -799,7 +771,7 @@ handleSelect(e) { if (e.target.files.length) this.addFiles(Array.from(e.target.f
 addFiles(newFiles) {
 const validFiles = newFiles.filter(f => f.size <= 20 * 1024 * 1024);
 if (newFiles.length !== validFiles.length) {
-showValidationToast('Gagal: Beberapa file terlalu besar (Maksimal 20MB per file).');
+showValidationToast('Error: Some files are too large (Max 20MB per file).');
 }
 this.files = [...this.files, ...validFiles];
 this.syncInput();
@@ -816,11 +788,11 @@ this.$refs.fileInput.files = dt.files;
 megabytes(b) { return (b / (1024 * 1024)).toFixed(2) + ' MB'; }
 }">
 <label class="block text-sm font-medium text-gray-700 mb-2">
-Sertifikasi Produk (Bisa banyak file)
+Product Certification (Can add multiple)
 </label>
 @if (!empty($certifications))
 <div class="mb-3 p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
-<p class="text-xs font-semibold text-slate-600">Sertifikasi saat ini:</p>
+<p class="text-xs font-semibold text-slate-600">Current certifications:</p>
 @foreach ($certifications as $index => $cert)
 @php
 $certUrl = storage_image_url($cert['file_path'] ?? null);
@@ -841,7 +813,7 @@ class="text-blue-600 hover:underline truncate">
 <input type="checkbox" name="remove_certifications[]"
 value="{{ $index }}"
 class="rounded border-gray-300 text-red-600">
-<span class="text-red-600">Hapus</span>
+<span class="text-red-600">Delete</span>
 </span>
 </label>
 @endforeach
@@ -859,7 +831,7 @@ class="bi bi-cloud-arrow-up text-lg text-slate-400 group-hover:text-uco-orange-6
 <div class="flex-1 min-w-0">
 <p
 class="text-sm font-semibold text-slate-700 group-hover:text-uco-orange-700 truncate">
-Pilih Sertifikasi
+Select Certification
 </p>
 <p class="text-[10px] text-slate-500 truncate">Format PDF/JPG/PNG (Max 20MB)
 </p>
@@ -910,8 +882,8 @@ class="shrink-0 w-7 h-7 flex items-center justify-center rounded-lg text-red-400
 <div class="flex items-center gap-2">
 <i class="bi bi-exclamation-triangle-fill text-lg"></i>
 <div class="flex flex-col">
-<span class="text-sm font-medium">Validasi Gagal!</span>
-<span id="validationToastMsg" class="text-xs text-red-100 font-medium">Pastikan form diisi dengan benar.</span>
+<span class="text-sm font-medium">Validation Failed!</span>
+<span id="validationToastMsg" class="text-xs text-red-100 font-medium">Ensure all fields are filled correctly.</span>
 </div>
 </div>
 <button type="button" onclick="hideValidationToast()" class="text-white opacity-90 hover:opacity-100 transition-opacity flex-shrink-0 mt-0.5">
@@ -1074,58 +1046,8 @@ Update Business
     <script>
         let productIndex = 0;
         let serviceIndex = 0;
-        let cityTomSelect = null;
-        let provinceTomSelect = null;
 
-        async function loadRegenciesByProvince(provinceId, citySelect, cityTSInstance = null) {
-            if (!provinceId) {
-                if (cityTSInstance) {
-                    cityTSInstance.clearOptions();
-                    cityTSInstance.disable();
-                }
-                citySelect.innerHTML = '<option value="" disabled selected>Pilih Provinsi terlebih dahulu</option>';
-                citySelect.disabled = true;
-                return;
-            }
 
-            // Show loading state in raw select for screen readers/fallback
-            citySelect.innerHTML = '<option value="" disabled selected>Memuat kota...</option>';
-            citySelect.disabled = false;
-            
-            if (cityTSInstance) {
-                cityTSInstance.clearOptions();
-                cityTSInstance.enable();
-            }
-
-            try {
-                const response = await fetch(`{{ route('regions.regencies') }}?province_id=${provinceId}`, {
-                    headers: {
-                        'Accept': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                });
-                if (!response.ok) throw new Error('Failed to fetch regencies');
-                const regencies = await response.json();
-
-                if (cityTSInstance) {
-                    const options = regencies.map(r => ({ value: r.name, text: r.name }));
-                    cityTSInstance.addOptions(options);
-                    cityTSInstance.refreshOptions(false);
-                } else {
-                    citySelect.innerHTML = '<option value="" disabled selected>Pilih Kota/Kabupaten</option>';
-                    regencies.forEach((regency) => {
-                        const option = document.createElement('option');
-                        option.value = regency.name;
-                        option.textContent = regency.name;
-                        citySelect.appendChild(option);
-                    });
-                }
-            } catch (error) {
-                console.error("Error loading regencies:", error);
-                citySelect.disabled = true;
-                if (cityTSInstance) cityTSInstance.disable();
-            }
-        }
 
         function addChallenge() {
             const container = document.getElementById('challengesContainer');
@@ -1135,7 +1057,7 @@ Update Business
                 <input type="text" 
                        name="business_challenges[]" 
                        class="flex-1 px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 transition"
-                       placeholder="Masukkan tantangan">
+                       placeholder="Enter challenge">
                 <button type="button" 
                         onclick="this.parentElement.remove()"
                         class="px-4 py-2 bg-red-100 text-red-700 rounded-xl hover:bg-red-200 transition">
@@ -1153,22 +1075,22 @@ Update Business
             element.innerHTML = `
                 <input type="hidden" name="products[${idx}][id]" value="${data.id || ''}">
                 <div class="flex justify-between items-center mb-3">
-                    <p class="text-xs font-semibold text-slate-500">Produk Baru</p>
-                    <button type="button" onclick="this.closest('.product-item').remove()" class="text-xs px-2 py-1 rounded-lg bg-red-50 text-red-600 hover:bg-red-100">Hapus</button>
+                    <p class="text-xs font-semibold text-slate-500">New Product</p>
+                    <button type="button" onclick="this.closest('.product-item').remove()" class="text-xs px-2 py-1 rounded-lg bg-red-50 text-red-600 hover:bg-red-100">Delete</button>
                 </div>
                 <div class="grid md:grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-xs text-slate-600 mb-1">Nama Produk</label>
-                        <input type="text" name="products[${idx}][name]" value="${data.name || ''}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="Contoh: Kopi Arabica 250gr">
+                        <label class="block text-xs text-slate-600 mb-1">Product Name</label>
+                        <input type="text" name="products[${idx}][name]" value="${data.name || ''}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="e.g., Arabica Coffee 250gr">
                     </div>
                     <div>
-                        <label class="block text-xs text-slate-600 mb-1">Harga</label>
+                        <label class="block text-xs text-slate-600 mb-1">Price</label>
                         <input type="number" step="any" min="0" name="products[${idx}][price]" value="${data.price || ''}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="50000">
                     </div>
                 </div>
                 <div class="mt-3">
-                    <label class="block text-xs text-slate-600 mb-1">Deskripsi</label>
-                    <textarea name="products[${idx}][description]" rows="2" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="Deskripsi produk...">${data.description || ''}</textarea>
+                    <label class="block text-xs text-slate-600 mb-1">Description</label>
+                    <textarea name="products[${idx}][description]" rows="2" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="Product description...">${data.description || ''}</textarea>
                 </div>
             `;
             container.appendChild(element);
@@ -1182,26 +1104,26 @@ Update Business
             element.innerHTML = `
                 <input type="hidden" name="services[${idx}][id]" value="${data.id || ''}">
                 <div class="flex justify-between items-center mb-3">
-                    <p class="text-xs font-semibold text-slate-500">Layanan Baru</p>
-                    <button type="button" onclick="this.closest('.service-item').remove()" class="text-xs px-2 py-1 rounded-lg bg-red-50 text-red-600 hover:bg-red-100">Hapus</button>
+                    <p class="text-xs font-semibold text-slate-500">New Service</p>
+                    <button type="button" onclick="this.closest('.service-item').remove()" class="text-xs px-2 py-1 rounded-lg bg-red-50 text-red-600 hover:bg-red-100">Delete</button>
                 </div>
                 <div class="grid md:grid-cols-3 gap-3">
                     <div>
-                        <label class="block text-xs text-slate-600 mb-1">Nama Layanan</label>
-                        <input type="text" name="services[${idx}][name]" value="${data.name || ''}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="Contoh: Konsultasi Branding">
+                        <label class="block text-xs text-slate-600 mb-1">Service Name</label>
+                        <input type="text" name="services[${idx}][name]" value="${data.name || ''}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="e.g., Branding Consultation">
                     </div>
                     <div>
-                        <label class="block text-xs text-slate-600 mb-1">Tipe Harga</label>
+                        <label class="block text-xs text-slate-600 mb-1">Price Type</label>
                         <input type="text" name="services[${idx}][price_type]" value="${data.price_type || 'fixed'}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="fixed / per session / per hour">
                     </div>
                     <div>
-                        <label class="block text-xs text-slate-600 mb-1">Harga</label>
+                        <label class="block text-xs text-slate-600 mb-1">Price</label>
                         <input type="number" step="any" min="0" name="services[${idx}][price]" value="${data.price || ''}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="150000">
                     </div>
                 </div>
                 <div class="mt-3">
-                    <label class="block text-xs text-slate-600 mb-1">Deskripsi</label>
-                    <textarea name="services[${idx}][description]" rows="2" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="Deskripsi layanan...">${data.description || ''}</textarea>
+                    <label class="block text-xs text-slate-600 mb-1">Description</label>
+                    <textarea name="services[${idx}][description]" rows="2" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="Service description...">${data.description || ''}</textarea>
                 </div>
             `;
             container.appendChild(element);
@@ -1229,52 +1151,7 @@ Update Business
             setTimeout(() => toast.classList.add('hidden'), 300);
         }
 
-        const UCO_PROVINCE_MAP = @json($provinces->pluck('id', 'name'));
-
-        document.addEventListener('DOMContentLoaded', () => {
-            productIndex = document.querySelectorAll('#productsContainer .product-item').length;
-            serviceIndex = document.querySelectorAll('#servicesContainer .service-item').length;
-            
-            ucoInitImagePreview('logo', 'edit-logo-preview', 2, true);
-
-            const provinceSelect = document.getElementById('province');
-            const citySelect = document.getElementById('city');
-            const selectedProvinceId = citySelect.dataset.selectedProvinceId;
-            const selectedCity = citySelect.dataset.selectedCity;
-
-            // Province & City TomSelect
-            if (provinceSelect && window.TomSelect) {
-                provinceTS = new TomSelect(provinceSelect, {
-                    create: false,
-                    placeholder: "Pilih Provinsi",
-                    searchField: ["text"],
-                });
-
-                provinceTS.on('change', function (value) {
-                    const provinceId = UCO_PROVINCE_MAP[value] || null;
-                    loadRegenciesByProvince(provinceId, citySelect, cityTS);
-                });
-            }
-
-            if (citySelect && window.TomSelect) {
-                cityTS = new TomSelect(citySelect, {
-                    create: false,
-                    placeholder: "Pilih Kota/Kabupaten",
-                    searchField: ["text"],
-                });
-            }
-
-            // Initial trigger for edit view
-            if (selectedProvinceId) {
-                loadRegenciesByProvince(selectedProvinceId, citySelect, cityTS).then(() => {
-                    if (selectedCity && cityTS) cityTS.setValue(selectedCity);
-                });
-            } else if (provinceTS && provinceTS.getValue()) {
-                const provinceId = UCO_PROVINCE_MAP[provinceTS.getValue()] || null;
-                loadRegenciesByProvince(provinceId, citySelect, cityTS).then(() => {
-                    if (selectedCity && cityTS) cityTS.setValue(selectedCity);
-                });
-            }
+            // Region JS removed as provinces table is deleted
 
             // Initialize TomSelect for Business Type
             const typeSelect = document.getElementById("business_type_id");
@@ -1317,7 +1194,7 @@ Update Business
             if (userIdSelect && window.TomSelect) {
                 new TomSelect(userIdSelect, {
                     create: false,
-                    placeholder: "Pilih primary owner",
+                    placeholder: "Select primary owner",
                     searchField: ["text"],
                 });
             }
@@ -1325,7 +1202,7 @@ Update Business
             if (ownerIdsSelect && window.TomSelect) {
                 new TomSelect(ownerIdsSelect, {
                     create: false,
-                    placeholder: "Pilih additional owner",
+                    placeholder: "Select additional owners",
                     plugins: ["remove_button"],
                     searchField: ["text"],
                 });
@@ -1364,7 +1241,7 @@ Update Business
                         if (wrapper && !wrapper.querySelector('.validation-error-msg')) {
                             const errMsg = document.createElement('p');
                             errMsg.className = 'validation-error-msg mt-1.5 text-sm text-red-600 flex items-center gap-1.5';
-                            errMsg.innerHTML = '<i class="bi bi-exclamation-triangle"></i> <span>' + labelText + ' wajib diisi</span>';
+                            errMsg.innerHTML = '<i class="bi bi-exclamation-triangle"></i> <span>' + labelText + ' is required</span>';
                             field.insertAdjacentElement('afterend', errMsg);
                         }
                         if (!firstInvalid) firstInvalid = field;
@@ -1387,7 +1264,7 @@ Update Business
                         firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
                         firstInvalid.focus();
                     }, 400);
-                    showValidationToast('Ada ' + emptyLabels.length + ' field wajib yang belum diisi.');
+                    showValidationToast('There are ' + emptyLabels.length + ' required fields left empty.');
                 }
             });
         });

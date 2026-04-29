@@ -163,27 +163,14 @@
                     @enderror
                 </div>
 
-                {{-- Location Fields --}}
-                @php
-                    $selectedProvinceName = old('province');
-                    $selectedProvinceId = $selectedProvinceName ? optional($provinces->firstWhere('name', $selectedProvinceName))->id : null;
-                    $selectedCityName = old('city');
-                @endphp
                 <div class="grid md:grid-cols-2 gap-5">
                     <div>
                         <label for="province" class="block text-sm font-medium text-gray-700 mb-2">
                             Province
                         </label>
-                        <select name="province"
-                                id="province"
-                               class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('province') border-gray-200 @enderror transition">
-                            <option value="" disabled selected>Select Province</option>
-                            @foreach($provinces as $province)
-                                <option value="{{ $province->name }}" data-id="{{ $province->id }}" {{ old('province') === $province->name ? 'selected' : '' }}>
-                                    {{ $province->name }}
-                                </option>
-                            @endforeach
-                        </select>
+                        <input type="text" name="province" id="province" value="{{ old('province') }}"
+                               class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('province') border-red-500 @enderror transition"
+                               placeholder="e.g., Jawa Timur">
                         @error('province')
                             <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
                         @enderror
@@ -193,17 +180,9 @@
                         <label for="city" class="block text-sm font-medium text-gray-700 mb-2">
                             City
                         </label>
-                        <select name="city"
-                                id="city"
-                                data-selected-city="{{ $selectedCityName }}"
-                                data-selected-province-id="{{ $selectedProvinceId }}"
-                                class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 disabled:bg-gray-50 disabled:text-gray-500 disabled:border-gray-200 disabled:shadow-inner disabled:cursor-not-allowed @error('city') border-gray-200 @enderror transition"
-                                {{ $selectedProvinceId ? '' : 'disabled' }}>
-                            <option value="" disabled selected>{{ $selectedProvinceId ? 'Select City/Regency' : 'Select Province first' }}</option>
-                            @if($selectedCityName)
-                                <option value="{{ $selectedCityName }}" selected>{{ $selectedCityName }}</option>
-                            @endif
-                        </select>
+                        <input type="text" name="city" id="city" value="{{ old('city') }}"
+                               class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('city') border-red-500 @enderror transition"
+                               placeholder="e.g., Surabaya">
                         @error('city')
                             <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
                         @enderror
@@ -392,8 +371,7 @@
                                 </div>
                                 <div class="grid md:grid-cols-2 gap-3">
                                     <div>
-                                        <label class="block text-xs text-slate-600 mb-1">Product Name</label>
-                                        <input type="text" name="products[{{ $index }}][name]" value="{{ $product['name'] ?? '' }}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="Example: Arabica Coffee 250gr">
+                                        <input type="text" name="products[{{ $index }}][name]" value="{{ $product['name'] ?? '' }}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="e.g., Arabica Coffee 250gr">
                                     </div>
                                     <div>
                                         <label class="block text-xs text-slate-600 mb-1">Price</label>
@@ -424,8 +402,7 @@
                                 </div>
                                 <div class="grid md:grid-cols-3 gap-3">
                                     <div>
-                                        <label class="block text-xs text-slate-600 mb-1">Service Name</label>
-                                        <input type="text" name="services[{{ $index }}][name]" value="{{ $service['name'] ?? '' }}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="Example: Branding Consultation">
+                                        <input type="text" name="services[{{ $index }}][name]" value="{{ $service['name'] ?? '' }}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="e.g., Branding Consultation">
                                     </div>
                                     <div>
                                         <label class="block text-xs text-slate-600 mb-1">Price Type</label>
@@ -503,7 +480,7 @@
                            id="target_market" 
                            value="{{ old('target_market') }}"
                            class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 @error('target_market') border-gray-200 @enderror transition"
-                           placeholder="e.g., Milenial, Profesional muda, Pecinta kopi">
+                           placeholder="e.g., Millennial, Young Professionals, Coffee Lovers">
                     @error('target_market')
                         <p class="mt-1.5 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -591,16 +568,11 @@
                             <option value="">Select Range</option>
                             @php
                                 $commonRanges = [
-                                    // Intrapreneur / Salary Style
-                                    '< Rp 5 Juta',
-                                    'Rp 5 Juta - Rp 10 Juta',
-                                    '> Rp 10 Juta - Rp 15 Juta',
-                                    '> Rp 15 Juta',
-                                    // Entrepreneur / UMKM Style
-                                    'Mikro: <= Rp 300 Juta',
-                                    'Kecil: > Rp 300 Juta - Rp 2,5 Milyar',
-                                    'Menengah: > Rp 2,5 Milyar - Rp 50 Milyar',
-                                    'Besar: > Rp 50 Milyar'
+                                    '0 - 50 Million',
+                                    '50 - 100 Million',
+                                    '100 - 500 Million',
+                                    '500 Million - 1 Billion',
+                                    '> 1 Billion'
                                 ];
                                 $currentRevenue = old('revenue_range');
                             @endphp
@@ -667,11 +639,8 @@
             </div>
 
             {{-- TAB 4: DOCUMENTS & CERTIFICATIONS --}}
-            <div x-show="activeTab === 'documents'" class="bg-white border-x border-b border-slate-200 rounded-b-2xl shadow-sm p-8 space-y-5">
-                class="bg-white border-x border-b border-slate-200 rounded-b-2xl shadow-sm p-8 space-y-8" style="display: none;">
+            <div x-show="activeTab === 'documents'" class="bg-white border-x border-b border-slate-200 rounded-b-2xl shadow-sm p-8 space-y-8" style="display: none;">
                 
-
-
                 <div class="grid md:grid-cols-2 gap-8">
                     <!-- Dokumen Legal -->
                     <div x-data="{
@@ -851,8 +820,8 @@
                 <div class="flex items-center gap-2">
                     <i class="bi bi-exclamation-triangle-fill text-lg"></i>
                     <div class="flex flex-col">
-                        <span class="text-sm font-medium">Validasi Gagal!</span>
-                        <span id="validationToastMsg" class="text-xs text-red-100 font-medium">Pastikan form diisi dengan benar.</span>
+                        <span class="text-sm font-medium">Validation Failed!</span>
+                        <span id="validationToastMsg" class="text-xs text-red-100 font-medium">Please ensure the form is filled out correctly.</span>
                     </div>
                 </div>
                 <button type="button" onclick="hideValidationToast()" class="text-white opacity-90 hover:opacity-100 transition-opacity flex-shrink-0 mt-0.5">
@@ -873,11 +842,12 @@
                 <div class="flex items-center gap-3">
                     <button type="submit" form="businessCreateForm"
                         class="inline-flex items-center gap-2 px-6 py-2.5 bg-soft-gray-900 hover:bg-soft-gray-800 text-white font-semibold rounded-xl shadow-md transition duration-200">
-                        Simpan Business
+                        Save Business
                     </button>
                 </div>
             </div>
         </div>
+
     </div>
 
 
@@ -1021,7 +991,7 @@
                 <input type="text" 
                        name="business_challenges[]" 
                        class="flex-1 px-4 py-3 border border-gray-200 rounded-xl focus:ring-soft-gray-900 focus:border-soft-gray-900 transition"
-                       placeholder="Masukkan tantangan">
+                       placeholder="Enter challenge">
                 <button type="button" 
                         onclick="this.parentElement.remove()"
                         class="px-4 py-2 bg-red-100 text-red-700 rounded-xl hover:bg-red-200 transition">
@@ -1038,22 +1008,22 @@
             element.className = 'product-item border border-slate-200 rounded-xl p-4 bg-white';
             element.innerHTML = `
                 <div class="flex justify-between items-center mb-3">
-                    <p class="text-xs font-semibold text-slate-500">Produk Baru</p>
-                    <button type="button" onclick="this.closest('.product-item').remove()" class="text-xs px-2 py-1 rounded-lg bg-red-50 text-red-600 hover:bg-red-100">Hapus</button>
+                    <p class="text-xs font-semibold text-slate-500">New Product</p>
+                    <button type="button" onclick="this.closest('.product-item').remove()" class="text-xs px-2 py-1 rounded-lg bg-red-50 text-red-600 hover:bg-red-100">Delete</button>
                 </div>
                 <div class="grid md:grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-xs text-slate-600 mb-1">Nama Produk</label>
-                        <input type="text" name="products[${idx}][name]" value="${data.name || ''}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="Contoh: Kopi Arabica 250gr">
+                        <label class="block text-xs text-slate-600 mb-1">Product Name</label>
+                        <input type="text" name="products[${idx}][name]" value="${data.name || ''}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="e.g., Arabica Coffee 250gr">
                     </div>
                     <div>
-                        <label class="block text-xs text-slate-600 mb-1">Harga</label>
+                        <label class="block text-xs text-slate-600 mb-1">Price</label>
                         <input type="number" step="any" min="0" name="products[${idx}][price]" value="${data.price || ''}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="50000">
                     </div>
                 </div>
                 <div class="mt-3">
-                    <label class="block text-xs text-slate-600 mb-1">Deskripsi</label>
-                    <textarea name="products[${idx}][description]" rows="2" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="Deskripsi produk...">${data.description || ''}</textarea>
+                    <label class="block text-xs text-slate-600 mb-1">Description</label>
+                    <textarea name="products[${idx}][description]" rows="2" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="Product description...">${data.description || ''}</textarea>
                 </div>
             `;
             container.appendChild(element);
@@ -1066,26 +1036,26 @@
             element.className = 'service-item border border-slate-200 rounded-xl p-4 bg-white';
             element.innerHTML = `
                 <div class="flex justify-between items-center mb-3">
-                    <p class="text-xs font-semibold text-slate-500">Layanan Baru</p>
-                    <button type="button" onclick="this.closest('.service-item').remove()" class="text-xs px-2 py-1 rounded-lg bg-red-50 text-red-600 hover:bg-red-100">Hapus</button>
+                    <p class="text-xs font-semibold text-slate-500">New Service</p>
+                    <button type="button" onclick="this.closest('.service-item').remove()" class="text-xs px-2 py-1 rounded-lg bg-red-50 text-red-600 hover:bg-red-100">Delete</button>
                 </div>
                 <div class="grid md:grid-cols-3 gap-3">
                     <div>
-                        <label class="block text-xs text-slate-600 mb-1">Nama Layanan</label>
-                        <input type="text" name="services[${idx}][name]" value="${data.name || ''}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="Contoh: Konsultasi Branding">
+                        <label class="block text-xs text-slate-600 mb-1">Service Name</label>
+                        <input type="text" name="services[${idx}][name]" value="${data.name || ''}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="e.g., Branding Consultation">
                     </div>
                     <div>
-                        <label class="block text-xs text-slate-600 mb-1">Tipe Harga</label>
+                        <label class="block text-xs text-slate-600 mb-1">Price Type</label>
                         <input type="text" name="services[${idx}][price_type]" value="${data.price_type || 'fixed'}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="fixed / per session / per hour">
                     </div>
                     <div>
-                        <label class="block text-xs text-slate-600 mb-1">Harga</label>
+                        <label class="block text-xs text-slate-600 mb-1">Price</label>
                         <input type="number" step="any" min="0" name="services[${idx}][price]" value="${data.price || ''}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="150000">
                     </div>
                 </div>
                 <div class="mt-3">
-                    <label class="block text-xs text-slate-600 mb-1">Deskripsi</label>
-                    <textarea name="services[${idx}][description]" rows="2" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="Deskripsi layanan...">${data.description || ''}</textarea>
+                    <label class="block text-xs text-slate-600 mb-1">Description</label>
+                    <textarea name="services[${idx}][description]" rows="2" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="Service description...">${data.description || ''}</textarea>
                 </div>
             `;
             container.appendChild(element);
@@ -1109,56 +1079,7 @@
             });
         }
 
-        async function loadRegenciesByProvince(provinceId, citySelect, cityTSInstance = null) {
-            if (!provinceId) {
-                if (cityTSInstance) {
-                    cityTSInstance.clearOptions();
-                    cityTSInstance.disable();
-                }
-                citySelect.innerHTML = '<option value="" disabled selected>Pilih Provinsi terlebih dahulu</option>';
-                citySelect.disabled = true;
-                return;
-            }
 
-            // Show loading state in raw select for screen readers/fallback
-            citySelect.innerHTML = '<option value="" disabled selected>Memuat kota...</option>';
-            citySelect.disabled = false;
-            
-            if (cityTSInstance) {
-                cityTSInstance.clearOptions();
-                cityTSInstance.enable();
-                // Optionally show a loading placeholder in TomSelect if needed, but clearing is usually enough
-            }
-
-            try {
-                const response = await fetch(`{{ route('regions.regencies') }}?province_id=${provinceId}`, {
-                    headers: {
-                        'Accept': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                });
-                if (!response.ok) throw new Error('Failed to fetch regencies');
-                const regencies = await response.json();
-
-                if (cityTSInstance) {
-                    const options = regencies.map(r => ({ value: r.name, text: r.name }));
-                    cityTSInstance.addOptions(options);
-                    cityTSInstance.refreshOptions(false);
-                } else {
-                    citySelect.innerHTML = '<option value="" disabled selected>Pilih Kota/Kabupaten</option>';
-                    regencies.forEach((regency) => {
-                        const option = document.createElement('option');
-                        option.value = regency.name;
-                        option.textContent = regency.name;
-                        citySelect.appendChild(option);
-                    });
-                }
-            } catch (error) {
-                console.error("Error loading regencies:", error);
-                citySelect.disabled = true;
-                if (cityTSInstance) cityTSInstance.disable();
-            }
-        }
 
         // Client-side form validation
         let toastTimeout = null;
@@ -1193,45 +1114,7 @@
             // Initialize image preview for Logo
             ucoInitImagePreview('logo', 'create-logo-preview', 2, true);
 
-            const provinceSelect = document.getElementById('province');
-            const citySelect = document.getElementById('city');
-            const UCO_PROVINCE_MAP = @json($provinces->pluck('id', 'name'));
-
-            // Province & City TomSelect
-            let provinceTS = null;
-            let cityTS = null;
-
-            if (provinceSelect && window.TomSelect) {
-                provinceTS = new TomSelect(provinceSelect, {
-                    create: false,
-                    placeholder: "Pilih Provinsi",
-                    searchField: ["text"],
-                });
-
-                provinceTS.on('change', function (value) {
-                    const provinceId = UCO_PROVINCE_MAP[value] || null;
-                    loadRegenciesByProvince(provinceId, citySelect, cityTS);
-                });
-            }
-
-            if (citySelect && window.TomSelect) {
-                cityTS = new TomSelect(citySelect, {
-                    create: false,
-                    placeholder: "Pilih Kota/Kabupaten",
-                    searchField: ["text"],
-                });
-            }
-
-            // Initial trigger if province is pre-selected (e.g., from old input)
-            if (provinceTS && provinceTS.getValue()) {
-                const provinceId = UCO_PROVINCE_MAP[provinceTS.getValue()] || null;
-                const selectedCity = citySelect.dataset.selectedCity || null;
-                loadRegenciesByProvince(provinceId, citySelect, cityTS).then(() => {
-                    if (selectedCity && cityTS) {
-                        cityTS.setValue(selectedCity);
-                    }
-                });
-            }
+            // Region JS removed as provinces table is deleted
 
             // Initialize TomSelect for Business Type
             const typeSelect = document.getElementById("business_type_id");
@@ -1249,14 +1132,14 @@
             if (userIdSelect && window.TomSelect) {
                 new TomSelect(userIdSelect, {
                     create: false,
-                    placeholder: "Pilih primary owner",
+                    placeholder: "Select primary owner",
                     searchField: ["text"],
                 });
             }
             if (ownerIdsSelect && window.TomSelect) {
                 new TomSelect(ownerIdsSelect, {
                     create: false,
-                    placeholder: "Pilih additional owner",
+                    placeholder: "Select additional owners",
                     plugins: ["remove_button"],
                     searchField: ["text"],
                 });
@@ -1323,7 +1206,7 @@
                             if (wrapper && !wrapper.querySelector('.validation-error-msg')) {
                                 const errMsg = document.createElement('p');
                                 errMsg.className = 'validation-error-msg mt-1.5 text-sm text-red-600 flex items-center gap-1.5';
-                                errMsg.innerHTML = '<svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg> <span>' + labelText + ' wajib diisi</span>';
+                                errMsg.innerHTML = '<svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg> <span>' + labelText + ' is required</span>';
                                 field.insertAdjacentElement('afterend', errMsg);
                             }
 
@@ -1371,7 +1254,7 @@
                         }, scrollDelay);
 
                         const count = emptyLabels.length;
-                        showValidationToast('Ada ' + count + ' field wajib yang belum diisi: ' + emptyLabels.slice(0, 3).join(', ') + (count > 3 ? '...' : ''));
+                        showValidationToast('There are ' + count + ' required fields left empty: ' + emptyLabels.slice(0, 3).join(', ') + (count > 3 ? '...' : ''));
                     }
                 });
             }

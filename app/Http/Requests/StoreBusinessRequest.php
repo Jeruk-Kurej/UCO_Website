@@ -3,8 +3,6 @@
 namespace App\Http\Requests;
 
 use App\Models\Business;
-use App\Models\Province;
-use App\Models\Regency;
 use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -40,7 +38,7 @@ class StoreBusinessRequest extends FormRequest
             // Basic fields
             'name' => 'required|string|max:255',
             'description' => 'required|string|max:1000',
-            'business_type_id' => 'required|exists:business_types,id',
+            'business_type_id' => 'required|exists:categories,id',
             'business_mode' => 'required|in:product,service,both',
             'user_id' => 'nullable|exists:users,id',
             'owner_ids' => 'nullable|array',
@@ -49,7 +47,7 @@ class StoreBusinessRequest extends FormRequest
 
             // Location
             'city' => 'nullable|string|max:255',
-            'province' => 'nullable|string|max:255|exists:provinces,name',
+            'province' => 'nullable|string|max:255',
             'address' => 'nullable|string',
 
             // Enhanced fields
@@ -101,17 +99,7 @@ class StoreBusinessRequest extends FormRequest
     {
         return [
             function ($validator) {
-                // City/Province logic
-                if ($this->filled('city') && $this->filled('province')) {
-                    $provinceId = Province::where('name', $this->input('province'))->value('id');
-                    $isValidCity = $provinceId
-                        ? Regency::where('province_id', $provinceId)->where('name', $this->input('city'))->exists()
-                        : false;
 
-                    if (!$isValidCity) {
-                        $validator->errors()->add('city', 'Selected city does not belong to the selected province.');
-                    }
-                }
 
                 $user = $this->user();
 

@@ -4,53 +4,43 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-
-use App\Traits\HasSlug;
 
 class Product extends Model
 {
-    use HasFactory, HasSlug;
-
-    /*
-    |--------------------------------------------------------------------------
-    | Mass Assignment
-    |--------------------------------------------------------------------------
-    */
+    use HasFactory, \App\Traits\HasImage;
 
     protected $fillable = [
         'business_id',
-        'product_category_id',
         'name',
-        'slug',
         'description',
         'price',
+        'photo_url',
+        'sort_order',
     ];
 
-    protected $casts = [
-        'price' => 'decimal:2',
-    ];
+    // ─── Accessors ───
 
-    /*
-    |--------------------------------------------------------------------------
-    | Relationships
-    |--------------------------------------------------------------------------
-    */
+    public function getPhotoUrlAttribute($value)
+    {
+        return $this->resolveImage($value, 'product');
+    }
 
-    public function business(): BelongsTo
+    public function getNameAttribute($value)
+    {
+        $cleaned = preg_replace('/<br\s*\/?>/i', ' ', $value);
+        return trim(strip_tags($cleaned));
+    }
+
+    public function getDescriptionAttribute($value)
+    {
+        $cleaned = preg_replace('/<br\s*\/?>/i', ' ', $value);
+        return trim(strip_tags($cleaned));
+    }
+
+    // ─── Relationships ───
+
+    public function business()
     {
         return $this->belongsTo(Business::class);
     }
-
-    public function productCategory(): BelongsTo
-    {
-        return $this->belongsTo(ProductCategory::class, 'product_category_id');
-    }
-
-    public function photos(): HasMany
-    {
-        return $this->hasMany(ProductPhoto::class);
-    }
 }
-
